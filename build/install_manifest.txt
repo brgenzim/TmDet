@@ -1,0 +1,7 @@
+/home/tusi/works/pdbtm_4.0/TmDet/lib/libTmDetLib.a
+/home/tusi/works/pdbtm_4.0/TmDet/bin/test
+/home/tusi/works/pdbtm_4.0/TmDet/bin/test2
+/home/tusi/works/pdbtm_4.0/TmDet/bin/fragment_cif
+/home/tusi/works/pdbtm_4.0/TmDet/bin/dssp
+/home/tusi/works/pdbtm_4.0/TmDet/bin/domdist
+/home/tusi/works/pdbtm_4.0/TmDet/bin/domdist_af

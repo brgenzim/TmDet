@@ -1,0 +1,20 @@
+#/*
+# *  README
+# *  Thu Nov 04 10:36:23 2023
+# *  Copyright (c)  2001-2024 Gabor E. Tusnady
+# *  <tusi@enzim.hu>
+# *  All rights reserved.
+# */
+
+Quick install of PdbLib package:
+
+>tar -xzvf PdbLib.tgz
+>cd PdbLib
+>mkdir build
+>cd build
+>cmake ..
+>make
+>sudo make install
+
+Usage of PdbLib package:
+copy cmake/FindPdbLib.txt to the cmake directory of the project which use PdbLib

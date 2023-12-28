@@ -1,0 +1,1 @@
+/usr/bin/c++ -g CMakeFiles/fragment_cif.dir/cli/fragment_cif.cpp.o -o fragment_cif   -L/home/tusi/works/pdbtm_4.0/TmDet/lib  -Wl,-rpath,/home/tusi/works/pdbtm_4.0/TmDet/lib: libTmDetLib.a -lz 
