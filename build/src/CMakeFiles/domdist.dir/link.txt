@@ -1,1 +1,0 @@
-/usr/bin/c++ -g CMakeFiles/domdist.dir/cli/domdist.cpp.o -o domdist   -L/home/tusi/works/pdbtm_4.0/TmDet/lib  -Wl,-rpath,/home/tusi/works/pdbtm_4.0/TmDet/lib: -lz /usr/local/lib/libgemmi_cpp.a /usr/lib/x86_64-linux-gnu/libz.so 

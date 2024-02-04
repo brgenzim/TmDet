@@ -1,2 +1,0 @@
-/usr/bin/ar qc libTmDetLib.a CMakeFiles/TmDetLib.dir/Utils/pdbDist.cpp.o CMakeFiles/TmDetLib.dir/Utils/pdbDssp.cpp.o CMakeFiles/TmDetLib.dir/Types/PdbAtomTypes.cpp.o
-/usr/bin/ranlib libTmDetLib.a

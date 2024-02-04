@@ -6,6 +6,7 @@
 #include <gemmi/model.hpp>
 #include <pdbDssp.hpp>
 #include <pdbDist.hpp>
+#include <pdbArgs.hpp>
 
 namespace cif = gemmi::cif;
 
@@ -13,17 +14,12 @@ __attribute__((noreturn)) void usage(const char *fileName);
 
 using namespace UniTmp::PdbLib::Utils;
 
+pdbArgs setArguments(int argc, char *argv[]);
+
 int main(int argc, char *argv[]) {
 
-    auto input = (char *)nullptr;
-    for(int i=1; i<argc-1; i++) {
-        if (!strcmp(argv[i],"-i")) {
-            input = argv[i+1];
-        }
-    }
-    if (input == (char *)nullptr) {
-        usage(argv[0]);
-    }
+    pdbArgs args = setArguments(argc,argv);
+    auto input = args.getValueAsString("i");
     //cif::Document doc = cif::read(gemmi::MaybeGzipped(input));
     gemmi::Structure pdb = gemmi::make_structure(cif::read(gemmi::MaybeGzipped(input)));
     auto distHelper = pdbDistance(pdb, 9.0);
@@ -34,9 +30,10 @@ int main(int argc, char *argv[]) {
     UniTmp::PdbLib::Utils::pdbWriteDsspOnStructure(pdb);
 }
 
-void usage(const char *fileName) {
-    std::cerr << "Usage: " << fileName << R"(
-    -i : input cif file
-)";
-    exit(EXIT_FAILURE);
+pdbArgs setArguments(int argc, char *argv[]) {
+    pdbArgs args;
+    args.define(true,"i","input","Input cif file path","string","");
+    args.set(argc,argv);
+    args.check();
+    return args;
 }

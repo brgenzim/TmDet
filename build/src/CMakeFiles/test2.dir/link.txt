@@ -1,1 +1,0 @@
-/usr/bin/c++ -g CMakeFiles/test2.dir/cli/test2.cpp.o -o test2   -L/home/tusi/works/pdbtm_4.0/TmDet/lib  -Wl,-rpath,/home/tusi/works/pdbtm_4.0/TmDet/lib: -lz 
