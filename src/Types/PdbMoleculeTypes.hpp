@@ -120,6 +120,7 @@ namespace UniTmp::PdbLib::Types {
             {"MET", MET}, {"ASN", ASN}, {"PRO", PRO}, {"GLN", GLN}, {"ARG", ARG},
             {"SER", SER}, {"THR", THR}, {"VAL", VAL}, {"TRP", TRP}, {"TYR", TYR}
         };
+
     }
 }
 

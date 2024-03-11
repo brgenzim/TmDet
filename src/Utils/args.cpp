@@ -1,29 +1,29 @@
 #include <unordered_map>
 #include <iostream>
 #include <string.h>
-#include "pdbArgs.hpp"
+#include <args.hpp>
 
 using namespace std;
 
-namespace UniTmp::PdbLib::Utils {
+namespace UniTmp::Utils {
 
     /**
      * Constuctor
      */
-    pdbArgs::pdbArgs() {
+    Args::Args() {
         this->define(false,"h","help","Get list of arguments","bool","false");
     }
 
-    void pdbArgs::define(bool mandatory, string shortFlag, string longFlag,
+    void Args::define(bool mandatory, string shortFlag, string longFlag,
                 string descr, string type, string defaultValue) {
         this->_args.emplace(
             shortFlag.c_str(),
-            _pdbArg({mandatory, false, shortFlag, longFlag, descr, 
+            _arg({mandatory, false, shortFlag, longFlag, descr, 
                 type, defaultValue, (defaultValue.length() > 0?defaultValue:"")})
         );
     }
 
-    void pdbArgs::check() {
+    void Args::check() {
         bool err = false;
         if (this->_args[(char *)"h"].value == "false") {
             for (const auto& [name, arg] : this->_args){
@@ -39,7 +39,7 @@ namespace UniTmp::PdbLib::Utils {
         }
     }
 
-    void pdbArgs::list() {
+    void Args::list() {
         for (const auto& [name, arg] : this->_args){
             cerr << "-" << arg.shortFlag << ", --" << arg.longFlag << (arg.type=="bool"?"":"=") << endl;
             cerr << "\t\t" << arg.description;
@@ -54,7 +54,7 @@ namespace UniTmp::PdbLib::Utils {
         }
     }
 
-    void pdbArgs::set(int argc, char *argv[]) {
+    void Args::set(int argc, char *argv[]) {
         char *c=(char *)nullptr;
         char flag[1024];
         string name;
@@ -89,7 +89,7 @@ namespace UniTmp::PdbLib::Utils {
         }
     }
 
-    string pdbArgs::_setValueByLongFlag(char *flag) {
+    string Args::_setValueByLongFlag(char *flag) {
         for(auto [name, arg] : _args) {
             if (arg.longFlag == (string)flag) {
                 return name;
@@ -98,7 +98,7 @@ namespace UniTmp::PdbLib::Utils {
         return (char *)nullptr;
     }
 
-    string pdbArgs::_setValueByShortFlag(char *flag) {
+    string Args::_setValueByShortFlag(char *flag) {
         for(auto [name, arg] : _args) {
             if (arg.shortFlag == (string)flag) {
                 return name;
@@ -107,7 +107,7 @@ namespace UniTmp::PdbLib::Utils {
         return (char *)nullptr;
     }
 
-    void pdbArgs::_setValue(string name, char *value) {
+    void Args::_setValue(string name, char *value) {
         if (value != (char *)nullptr) {
             this->_args[name].value = (string)value;
             this->_args[name].has = 1;
@@ -119,7 +119,7 @@ namespace UniTmp::PdbLib::Utils {
         }
     }
 
-    bool pdbArgs::getValueAsBool(string name) {
+    bool Args::getValueAsBool(string name) {
         if (this->_args.contains(name)) {
             if (this->_args[name].type == "bool") {
                 return this->_args[name].value == "true"?true:false;
@@ -133,7 +133,7 @@ namespace UniTmp::PdbLib::Utils {
         exit(EXIT_FAILURE);
     }
 
-    int pdbArgs::getValueAsInt(string name) {
+    int Args::getValueAsInt(string name) {
         if (this->_args.contains(name)) {
             if (this->_args[name].type == "int") {
                 return atoi(this->_args[name].value.c_str());
@@ -147,7 +147,7 @@ namespace UniTmp::PdbLib::Utils {
         exit(EXIT_FAILURE);
     }
 
-    string pdbArgs::getValueAsString(string name) {
+    string Args::getValueAsString(string name) {
         if (this->_args.contains(name)) {
             if (this->_args[name].type == "string") {
                 return this->_args[name].value;

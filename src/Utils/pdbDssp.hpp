@@ -6,7 +6,7 @@
 #include <any>
 #include <gemmi/model.hpp>
 
-#define DSSPTEMP(res) (std::any_cast<dsspTemp>((res).any.at(dsspTempIdx)))
+#define DSSPTEMP(res) (std::any_cast<dsspTemp&>((res).any.at(dsspTempIdx)))
 
 namespace UniTmp::PdbLib::Utils {
 
@@ -38,7 +38,7 @@ namespace UniTmp::PdbLib::Utils {
     void pdbWriteDsspOnChain(gemmi::Chain& chain);
     void pdbCreateDsspTemp(gemmi::Chain& chain);
     void pdbCreateHydrogenBonds(gemmi::Chain& chain);
-    void pdbSetHydrogenBond(gemmi::Residue donor, gemmi::Residue akceptor, double energy);
+    void pdbSetHydrogenBond(gemmi::Residue* donor, gemmi::Residue akceptor, double energy);
     void pdbDetectTurns(gemmi::Chain& chain, int d);
 }
 #endif
