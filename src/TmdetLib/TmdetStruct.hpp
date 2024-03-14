@@ -31,24 +31,29 @@ namespace UniTmp::TmdetLib {
 
     struct _tmdetModification {
         string date;
-        string text;
+        string descr;
     };
 
     class TmdetStruct {
         private:
             string _code;
             bool _tmp;
+            string _date;
+            vector<_tmdetModification> _modifications;
             TmdetProteinType _type;
             double _qValue;
             TmdetMembrane _membrane;
+
         
         public:
-            TmdetStruct(string protType, string membType);
+            TmdetStruct();
             ~TmdetStruct();
             void code(string code);
             string code();
             void tmp(bool tmp);
             bool tmp();
+            void read(string path);
+            void write(string path);
 
     };
 }

@@ -37,9 +37,9 @@ UniTmp::Utils::Args setArguments(int argc, char *argv[]) {
 }
 
 void notTransmembrane(string xmlPath) {
-    UniTmp::TmdetLib::TmdetXml xml;
-    xml.read(xmlPath);
-    //tmdet.setTmp=false;
-    xml.write(xmlPath);
+    UniTmp::TmdetLib::TmdetStruct tmdet;
+    tmdet.read(xmlPath);
+    tmdet.tmp(false);
+    tmdet.write(xmlPath);
     exit(EXIT_SUCCESS);
 }
