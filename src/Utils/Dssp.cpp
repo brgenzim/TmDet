@@ -1,9 +1,9 @@
 #include <iostream>
 #include <array>
 #include <gemmi/model.hpp>
-#include "pdbDssp.hpp"
+#include <Utils/Dssp.hpp>
 
-namespace UniTmp::PdbLib::Utils {
+namespace Tmdet::Utils {
 
 #define DSSP_Q -27888
 #define DSSP_PDB_DL 0.5 /*0.5*/

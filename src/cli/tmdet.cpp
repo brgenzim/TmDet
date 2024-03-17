@@ -1,16 +1,22 @@
 #include <iostream>
 #include <string>
-#include <args.hpp>
-#include <TmdetStruct.hpp>
-#include <TmdetXml.hpp>
+#include <Utils/Args.hpp>
+#include <ValueObjects/Struct.hpp>
+#include <DTOs/Struct.hpp>
+#include <gemmi/cif.hpp>
+#include <gemmi/gz.hpp>
+#include <gemmi/mmcif.hpp>
+#include <gemmi/model.hpp>
+
 
 using namespace std;
 
-UniTmp::Utils::Args setArguments(int argc, char *argv[]);
+Tmdet::Utils::Args setArguments(int argc, char *argv[]);
 void notTransmembrane(string x);
 
 int main(int argc, char *argv[]) {
-    UniTmp::Utils::Args args = setArguments(argc,argv);
+    gemmi::Structure pdb;
+    Tmdet::Utils::Args args = setArguments(argc,argv);
     string inputPath = args.getValueAsString("i");
     string xmlPath = args.getValueAsString("x");
     string outputPdbPath = args.getValueAsString("p");
@@ -20,12 +26,15 @@ int main(int argc, char *argv[]) {
     if (n) {
         notTransmembrane(xmlPath);
     }
+    if (inputPath != "") {
+        pdb = gemmi::make_structure(cif::read(gemmi::MaybeGzipped(inputPath)));
+    }
 
 }
 
-UniTmp::Utils::Args setArguments(int argc, char *argv[]) {
-    UniTmp::Utils::Args args;
-    args.define(false,"i","input","Input PDB file path (either cif or ent)","string","");
+Tmdet::Utils::Args setArguments(int argc, char *argv[]) {
+    Tmdet::Utils::Args args;
+    args.define(false,"i","input","Input PDB file path (in cif format)","string","");
     args.define(true,"x","xml","Input/output xml file path","string","");
     args.define(false,"p","pdb_out","Output pdb file path","string","");
     args.define(false,"n","not","Set transmembrane='not' in the xml file","bool","false");
@@ -37,9 +46,9 @@ UniTmp::Utils::Args setArguments(int argc, char *argv[]) {
 }
 
 void notTransmembrane(string xmlPath) {
-    UniTmp::TmdetLib::TmdetStruct tmdet;
-    tmdet.read(xmlPath);
-    tmdet.tmp(false);
-    tmdet.write(xmlPath);
+    Tmdet::ValueObjects::Struct tmdetVO;
+    Tmdet::DTOS::Struct::read(tmdetVO, xmlPath);
+    tmdetVO.tmp = false;
+    Tmdet::DTOS::Struct::write(tmdetVO, xmlPath);
     exit(EXIT_SUCCESS);
 }

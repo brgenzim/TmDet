@@ -1,12 +1,12 @@
-#ifndef __UNITMP_UTILS_ARGS__
-#define __UNITMP_UTILS_ARGS__
+#ifndef __TMDET_UTILS_ARGS__
+#define __TMDET_UTILS_ARGS__
 
 #include <unordered_map>
 #include <string>
 
 using namespace std;
 
-namespace UniTmp::Utils {
+namespace Tmdet::Utils {
     
     struct _arg {
         bool mandatory;

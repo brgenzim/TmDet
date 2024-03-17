@@ -1,5 +1,5 @@
-#ifndef __UNITMP_PDBLIB_UTILS_PDBDSSP__
-#define __UNITMP_PDBLIB_UTILS_PDBDSSP__
+#ifndef __TMDET_UTILS_DSSP__
+#define __TMDET_UTILS_DSSP__
 
 #include <array>
 #include <string>
@@ -8,7 +8,7 @@
 
 #define DSSPTEMP(res) (std::any_cast<dsspTemp&>((res).any.at(dsspTempIdx)))
 
-namespace UniTmp::PdbLib::Utils {
+namespace Tmdet::Utils {
 
     const std::string dsspTempIdx = "dsspTemp";
 

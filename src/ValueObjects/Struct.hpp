@@ -1,0 +1,31 @@
+#ifndef __TMDET_VALUE_OBJECTS_STRUCT__
+#define __TMDET_VALUE_OBJECTS_STRUCT__
+
+#include <string>
+#include <vector>
+#include <ValueObjects/Modification.hpp>
+#include <ValueObjects/BioMatrix.hpp>
+#include <ValueObjects/Membrane.hpp>
+#include <ValueObjects/Chain.hpp>
+#include <Types/Protein.hpp>
+
+using namespace std;
+
+namespace Tmdet::ValueObjects {
+
+    struct Struct {
+        string code;
+        bool tmp;
+        string date;
+        vector<Modification> modifications;
+        double qValue;
+        Tmdet::Types::Protein type;
+        string spres;
+        string pdbkwres;
+        BioMatrix bioMatrix;
+        vector<Membrane> membranes;
+        vector<Chain> chains;
+    };
+}
+
+#endif

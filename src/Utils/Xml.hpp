@@ -1,20 +1,27 @@
-#ifndef __UNITMP_TMDETLIB_TMDET_XML__
-#define __UNITMP_TMDETLIB_TMDET_XML__
+#ifndef __TMDET_UTILS_XML__
+#define __TMDET_UTILS_XML__
 
 #include <string>
 #include <vector>
 #include <pugixml.hpp>
-#include <TmdetStruct.hpp>
+#include <ValueObjects/Membrane.hpp>
+#include <ValueObjects/BioMatrix.hpp>
+#include <ValueObjects/Modification.hpp>
+#include <ValueObjects/TMatrix.hpp>
+#include <ValueObjects/Chain.hpp>
 
 using namespace std;
 using namespace gemmi;
 
-namespace UniTmp::TmdetLib {
+namespace Tmdet::Utils {
 
-    class TmdetXml {
+    class Xml {
         private:
             pugi::xml_document _doc;
             pugi::xml_node _root;
+            Tmdet::ValueObjects::TMatrix getTMatrix(pugi::xml_node& node);
+            void setTMatrix(pugi::xml_node& node, Tmdet::ValueObjects::TMatrix& tmatrix);
+
             const string _pdbtm_xml=R"(
 <pdbtm xmlns="https://pdbtm.unitmp.org" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://pdbtm.unitmp.org/data/pdbtm.xsd pdbtm.xsd" ID="xxxx" TMP="unk">
   <COPYRIGHT>
@@ -33,31 +40,34 @@ namespace UniTmp::TmdetLib {
     <SPRES>xxxx</SPRES>
     <PDBKWRES>xxx</PDBKWRES>
   </RAWRES>
-  <MEMBRANE>
-    <NORMAL X="0.0" Y="0.0" Z="15.0"/>
-    <TMATRIX>
-      <ROWX X="1.00000000" Y="0.00000000" Z="0.00000000" T="0.00000000"/>
-      <ROWY X="0.00000000" Y="1.00000000" Z="0.00000000" T="0.00000000"/>
-      <ROWZ X="0.00000000" Y="0.00000000" Z="1.00000000" T="0.00000000"/>
-    </TMATRIX>
-  </MEMBRANE>
 </pdbtm>
 )";
             const string _biomatrix_xml=R"(
-    <MATRIX ID="xxx">
-      <APPLY_TO_CHAIN CHAINID="xxx" NEW_CHAINID="xxx"/>
-      <TMATRIX>
-        <ROWX X="1.00000000" Y="0.00000000" Z="0.00000000" T="0.00000000"/>
-        <ROWY X="0.00000000" Y="1.00000000" Z="0.00000000" T="0.00000000"/>
-        <ROWZ X="0.00000000" Y="0.00000000" Z="1.00000000" T="0.00000000"/>
-        </TMATRIX>
-    </MATRIX>
+<MATRIX ID="xxx">
+  <APPLY_TO_CHAIN CHAINID="xxx" NEW_CHAINID="xxx"/>
+  <TMATRIX>
+    <ROWX X="1.00000000" Y="0.00000000" Z="0.00000000" T="0.00000000"/>
+    <ROWY X="0.00000000" Y="1.00000000" Z="0.00000000" T="0.00000000"/>
+    <ROWZ X="0.00000000" Y="0.00000000" Z="1.00000000" T="0.00000000"/>
+  </TMATRIX>
+</MATRIX>
+)";
+
+            const string _membrane_xml=R"(
+<MEMBRANE>
+  <NORMAL X="0.0" Y="0.0" Z="15.0"/>
+  <TMATRIX>
+    <ROWX X="1.00000000" Y="0.00000000" Z="0.00000000" T="0.00000000"/>
+    <ROWY X="0.00000000" Y="1.00000000" Z="0.00000000" T="0.00000000"/>
+    <ROWZ X="0.00000000" Y="0.00000000" Z="1.00000000" T="0.00000000"/>
+  </TMATRIX>
+</MEMBRANE>
 )";
             const string _chain_xml=R"(
-  <CHAIN CHAINID="xxx" NUM_TM="xxx" TYPE="xxx">
-    <SEQ>
-    </SEQ>
-  </CHAIN>
+<CHAIN CHAINID="xxx" NUM_TM="xxx" TYPE="xxx">
+  <SEQ>
+  </SEQ>
+</CHAIN>
 )";
             const char* XML_ATTR_CHAINID="CHAINID";
             const char* XML_ATTR_ID="ID";
@@ -70,6 +80,7 @@ namespace UniTmp::TmdetLib {
             const char* XML_ATTR_TMP="TMP";
             const char* XML_ATTR_TYPE="TYPE";
             const char* XML_ATTR_type="type";
+            const char* XML_ATTR_T="T";
             const char* XML_ATTR_X="X";
             const char* XML_ATTR_Y="Y";
             const char* XML_ATTR_Z="Z";
@@ -100,24 +111,35 @@ namespace UniTmp::TmdetLib {
             const char* XML_NODE_TMTYPE="TMTYPE";
 
         public:
-            TmdetXml();
-            ~TmdetXml();
-
-            void read(string path);
-            void write(string path);
+            
+            void read(string& path);
+            void write(string& path);
             void create();
             bool getTmp();
-            void setTmp(bool tmp);
+            void setTmp(bool& tmp);
             string getCode();
-            void setCode(string code);
+            void setCode(string& code);
             string getCreateDate();
-            void setCreateDate(string date);
-            vector<_tmdetModification> getModifications();
-            void setModifications(vector<_tmdetModification> mods);
+            void setCreateDate(string& date);
+            vector<Tmdet::ValueObjects::Modification> getModifications();
+            void setModifications(vector<Tmdet::ValueObjects::Modification>& mods);
             double getQvalue();
-            void setQvalue(double q);
+            void setQvalue(double& q);
             string getTmtype();
-            void setTmtype(const char* type);
+            void setTmtype(string& type);
+            string getSpres();
+            void setSpres(string& type);
+            string getPdbkwres();
+            void setPdbkwres(string& type);
+            Tmdet::ValueObjects::BioMatrix getBioMatrix();
+            void setBioMatrix(Tmdet::ValueObjects::BioMatrix& bioMatrix);
+            vector<Tmdet::ValueObjects::Membrane> getMembranes();
+            void setMembranes(vector<Tmdet::ValueObjects::Membrane>& membranes);
+            vector<Tmdet::ValueObjects::Chain> getChains();
+            void setChains(vector<Tmdet::ValueObjects::Chain>& chains);
+            vector<Tmdet::ValueObjects::Region> getRegions(pugi::xml_node& cnode);
+            void setRegions(pugi::xml_node& pnode, vector<Tmdet::ValueObjects::Region>& regions);
+    
     };
 }
 

@@ -64,9 +64,7 @@ find_package(gemmi 0.6.4 CONFIG REQUIRED)
 
 # Include files (system)
   INCLUDE_DIRECTORIES( AFTER SYSTEM 
-    "${PROJECT_SOURCE_DIR}/src/Utils"
-    "${PROJECT_SOURCE_DIR}/src/TmdetLib"
-    "${PROJECT_SOURCE_DIR}/src/Types"
+    "${PROJECT_SOURCE_DIR}/src/"
     "${PROJECT_SOURCE_DIR}/../contrib/pugixml/src/"
   )
 
