@@ -1,5 +1,5 @@
-#ifndef __TMDET_VALUE_OBJECTS_STRUCT__
-#define __TMDET_VALUE_OBJECTS_STRUCT__
+#ifndef __TMDET_VALUE_OBJECTS_TMDETSTRUCT__
+#define __TMDET_VALUE_OBJECTS_TMDETSTRUCT__
 
 #include <string>
 #include <vector>
@@ -8,12 +8,14 @@
 #include <ValueObjects/Membrane.hpp>
 #include <ValueObjects/Chain.hpp>
 #include <Types/Protein.hpp>
+#include <gemmi/model.hpp>
+#include <gemmi/neighbor.hpp>
 
 using namespace std;
 
 namespace Tmdet::ValueObjects {
 
-    struct Struct {
+    struct TmdetStruct {
         string code;
         bool tmp;
         string date;
@@ -25,6 +27,10 @@ namespace Tmdet::ValueObjects {
         BioMatrix bioMatrix;
         vector<Membrane> membranes;
         vector<Chain> chains;
+        gemmi::Structure& gemmi;
+        gemmi::NeighborSearch neighbors;
+        TmdetStruct(gemmi::Structure& _gemmi) : gemmi(_gemmi) {}
+        ~TmdetStruct() {}
     };
 }
 

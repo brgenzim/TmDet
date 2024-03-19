@@ -5,40 +5,41 @@
 #include <string>
 #include <any>
 #include <gemmi/model.hpp>
+#include <ValueObjects/TmdetStruct.hpp>
 
-#define DSSPTEMP(res) (std::any_cast<dsspTemp&>((res).any.at(dsspTempIdx)))
+using namespace std;
 
 namespace Tmdet::Utils {
 
-    const std::string dsspTempIdx = "dsspTemp";
+    class Dssp {
+        private:
+            Tmdet::ValueObjects::TmdetStruct& tmdetVO;
+            void calcDsspOnChain(Tmdet::ValueObjects::Chain& chain);
+            void writeDsspOnChain(Tmdet::ValueObjects::Chain& chain);
+            void createHydrogenBonds(Tmdet::ValueObjects::Chain& chain);
+            void scanNeighbors(Tmdet::ValueObjects::Chain& chain, int r1, const gemmi::Atom* CA, const gemmi::Atom* N, gemmi::Position hcoord);
+            void setHydrogenBond(Tmdet::ValueObjects::Residue& donor, Tmdet::ValueObjects::Residue& akceptor, double energy);
+            void detectTurns(Tmdet::ValueObjects::Chain& chain, int d, string key);
+            bool checkHbond1(Tmdet::ValueObjects::Residue& res, int d);
+            bool checkHbond2(Tmdet::ValueObjects::Residue& res, int d);
+            void initPbs(Tmdet::ValueObjects::Chain& chain);
+            void detectSecStructH(Tmdet::ValueObjects::Chain& chain,string key);
+            void detectSecStructG(Tmdet::ValueObjects::Chain& chain,string key);
+            void detectSecStructI(Tmdet::ValueObjects::Chain& chain,string key);
+            void detectSecStructT(Tmdet::ValueObjects::Chain& chain);
+            void detectSecStructS(Tmdet::ValueObjects::Chain& chain);
+            void detectSecStructBE(Tmdet::ValueObjects::Chain& chain);
+            bool checkPb(Tmdet::ValueObjects::Chain& chain, int i, int j);
+            bool checkApb(Tmdet::ValueObjects::Chain& chain, int i, int j);
+            bool checkIfAreOther(Tmdet::ValueObjects::Chain& chain, Tmdet::Types::SecStruct ss,int i, int d);
+            bool checkIfTurn(Tmdet::ValueObjects::Chain& chain,int pos, int r, string key);
 
-    const int t3 = 0;
-    const int t4 = 1;
-    const int t5 = 2;
-    const int ms = 3;
-    const int PB = 0;
-    const int APB = 1;
+        public:
+            Dssp(Tmdet::ValueObjects::TmdetStruct& _tmdetVO) : tmdetVO(_tmdetVO) {} ;
+            ~Dssp() {};
 
-    struct dsspTemp {
-        gemmi::Residue *residue; //parent residue
-        std::array<gemmi::Residue *, 2> to = {nullptr,nullptr}; //first two best hydrogen bond akceptor residue
-        std::array<double, 2> energy = {-1e30,-1e30};   //first two best hydrogen bond energy
-        std::array<char, 4> ts = {' ',' ',' ',' '};     //t3, t4, t5, ms helpers
-        std::array<int, 2> pbs = {-1, -1};              //pb helpers
-
-        explicit dsspTemp(gemmi::Residue *res) :
-            residue(res) {};
+            void calcDsspOnStructure();
+            void writeDsspOnStructure();
     };
-
-    void pdbCalcDsspOnStructure(gemmi::Structure& pdb);
-    void pdbCalcDsspOnModel(gemmi::Model& model);
-    void pdbCalcDsspOnChain(gemmi::Chain& chain);
-    void pdbWriteDsspOnStructure(gemmi::Structure& pdb);
-    void pdbWriteDsspOnModel(gemmi::Model& model);
-    void pdbWriteDsspOnChain(gemmi::Chain& chain);
-    void pdbCreateDsspTemp(gemmi::Chain& chain);
-    void pdbCreateHydrogenBonds(gemmi::Chain& chain);
-    void pdbSetHydrogenBond(gemmi::Residue* donor, gemmi::Residue akceptor, double energy);
-    void pdbDetectTurns(gemmi::Chain& chain, int d);
 }
 #endif

@@ -5,6 +5,8 @@
 #include <vector>
 #include <Types/Chain.hpp>
 #include <ValueObjects/Region.hpp>
+#include <ValueObjects/Residue.hpp>
+#include <gemmi/model.hpp>
 
 using namespace std;
 
@@ -17,6 +19,12 @@ namespace Tmdet::ValueObjects {
         string seq;
         vector<Tmdet::ValueObjects::Region> regions;
         Tmdet::Types::Chain type;
+        gemmi::Chain& gemmi;
+        vector<Residue> residues;
+        int idx;
+        int length;
+        Chain(gemmi::Chain& _gemmi) : gemmi(_gemmi) {}
+        ~Chain() {}
     };
 }
 

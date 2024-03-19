@@ -135,7 +135,7 @@ namespace Tmdet::Utils {
             void setBioMatrix(Tmdet::ValueObjects::BioMatrix& bioMatrix);
             vector<Tmdet::ValueObjects::Membrane> getMembranes();
             void setMembranes(vector<Tmdet::ValueObjects::Membrane>& membranes);
-            vector<Tmdet::ValueObjects::Chain> getChains();
+            void getChains(vector<Tmdet::ValueObjects::Chain>& chains);
             void setChains(vector<Tmdet::ValueObjects::Chain>& chains);
             vector<Tmdet::ValueObjects::Region> getRegions(pugi::xml_node& cnode);
             void setRegions(pugi::xml_node& pnode, vector<Tmdet::ValueObjects::Region>& regions);

@@ -7,6 +7,7 @@
 #include <ValueObjects/BioMatrix.hpp>
 #include <ValueObjects/Modification.hpp>
 #include <ValueObjects/TMatrix.hpp>
+#include <ValueObjects/Chain.hpp>
 
 using namespace std;
 using namespace gemmi;
@@ -201,22 +202,26 @@ namespace Tmdet::Utils {
         }
     }
 
-    vector<Tmdet::ValueObjects::Chain> Xml::getChains() {
-        vector<Tmdet::ValueObjects::Chain> chains;
+    void Xml::getChains(vector<Tmdet::ValueObjects::Chain>& chains) {
         for (pugi::xml_node c_node = _root.child(XML_NODE_CHAIN); c_node; c_node = c_node.next_sibling(XML_NODE_CHAIN)) {
             string type = c_node.attribute(XML_ATTR_TYPE).as_string();
-            cerr << type << endl;
-            Tmdet::ValueObjects::Chain c = {
-                c_node.attribute(XML_ATTR_CHAINID).as_string(),
-                true,
-                c_node.attribute(XML_ATTR_NUM_TM).as_int(),
-                c_node.child(XML_NODE_SEQ).text().get(),
-                getRegions(c_node),
-                Tmdet::Types::Chains.at(type)
-            };
-            chains.emplace_back(c);
+            bool found = false;
+            for( auto& c: chains) {
+                if (c.id == c_node.attribute(XML_ATTR_CHAINID).as_string()) {
+                    c.selected = true;
+                    c.numtm = c_node.attribute(XML_ATTR_NUM_TM).as_int();
+                    c.seq = c_node.child(XML_NODE_SEQ).text().get();
+                    c.regions = getRegions(c_node);
+                    c.type = Tmdet::Types::Chains.at(type);
+                    found = true;
+                    continue;
+                }
+            }
+            if (!found) {
+                cerr << "Could not find gemmi chain for " << c_node.attribute(XML_ATTR_CHAINID).as_string() << endl;
+                exit(EXIT_FAILURE);
+            }
         }
-        return chains;
     }
 
     void Xml::setChains(vector<Tmdet::ValueObjects::Chain>& chains) {

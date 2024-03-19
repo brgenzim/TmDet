@@ -1,0 +1,35 @@
+#ifndef __TMDET_VALUE_OBJECTS_RESIDUE__
+#define __TMDET_VALUE_OBJECTS_RESIDUE__
+
+#include <string>
+#include <vector>
+#include <any>
+#include <unordered_map>
+#include <Types/SecStruct.hpp>
+#include <ValueObjects/Atom.hpp>
+#include <ValueObjects/HBond.hpp>
+#include <gemmi/model.hpp>
+
+using namespace std;
+
+namespace Tmdet::ValueObjects {
+
+    struct Residue {
+        gemmi::Residue& gemmi;
+        vector<Atom> atoms;
+        double surface;
+        Tmdet::Types::SecStruct ss = Tmdet::Types::SecStructs.at('-');
+        HBond hbond1;
+        HBond hbond2;
+        int idx;
+        int chainIdx;
+        unordered_map<string,any> temp;
+        Residue(gemmi::Residue& _gemmi) : gemmi(_gemmi) {}
+        ~Residue() {}
+        int resn() {
+            return (int)gemmi.seqid.num;
+        }
+    };
+}
+
+#endif

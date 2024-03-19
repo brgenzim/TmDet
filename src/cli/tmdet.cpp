@@ -1,18 +1,18 @@
 #include <iostream>
 #include <string>
 #include <Utils/Args.hpp>
-#include <ValueObjects/Struct.hpp>
-#include <DTOs/Struct.hpp>
+#include <Utils/Dssp.hpp>
+#include <ValueObjects/TmdetStruct.hpp>
+#include <DTOs/TmdetStruct.hpp>
 #include <gemmi/cif.hpp>
 #include <gemmi/gz.hpp>
 #include <gemmi/mmcif.hpp>
 #include <gemmi/model.hpp>
 
-
 using namespace std;
 
 Tmdet::Utils::Args setArguments(int argc, char *argv[]);
-void notTransmembrane(string x);
+void notTransmembrane(string x, Tmdet::ValueObjects::TmdetStruct& tmdetVO);
 
 int main(int argc, char *argv[]) {
     gemmi::Structure pdb;
@@ -23,18 +23,23 @@ int main(int argc, char *argv[]) {
     bool n = args.getValueAsBool("n");
     bool nd = args.getValueAsBool("nd");
     bool tm = args.getValueAsBool("tm");
+    
+    //input is mandatory
+    pdb = gemmi::make_structure(cif::read(gemmi::MaybeGzipped(inputPath)));
+    Tmdet::ValueObjects::TmdetStruct tmdetVO = Tmdet::ValueObjects::TmdetStruct(pdb);
+    Tmdet::DTOS::TmdetStruct::parse(tmdetVO);
+    Tmdet::Utils::Dssp dssp = Tmdet::Utils::Dssp(tmdetVO);
+    dssp.calcDsspOnStructure();
+    dssp.writeDsspOnStructure();
     if (n) {
-        notTransmembrane(xmlPath);
-    }
-    if (inputPath != "") {
-        pdb = gemmi::make_structure(cif::read(gemmi::MaybeGzipped(inputPath)));
+        notTransmembrane(xmlPath, tmdetVO);
     }
 
 }
 
 Tmdet::Utils::Args setArguments(int argc, char *argv[]) {
     Tmdet::Utils::Args args;
-    args.define(false,"i","input","Input PDB file path (in cif format)","string","");
+    args.define(true,"i","input","Input PDB file path (in cif format)","string","");
     args.define(true,"x","xml","Input/output xml file path","string","");
     args.define(false,"p","pdb_out","Output pdb file path","string","");
     args.define(false,"n","not","Set transmembrane='not' in the xml file","bool","false");
@@ -45,10 +50,9 @@ Tmdet::Utils::Args setArguments(int argc, char *argv[]) {
     return args;
 }
 
-void notTransmembrane(string xmlPath) {
-    Tmdet::ValueObjects::Struct tmdetVO;
-    Tmdet::DTOS::Struct::read(tmdetVO, xmlPath);
+void notTransmembrane(string xmlPath, Tmdet::ValueObjects::TmdetStruct& tmdetVO) {
+    Tmdet::DTOS::TmdetStruct::readXml(tmdetVO, xmlPath);
     tmdetVO.tmp = false;
-    Tmdet::DTOS::Struct::write(tmdetVO, xmlPath);
+    Tmdet::DTOS::TmdetStruct::writeXml(tmdetVO, xmlPath);
     exit(EXIT_SUCCESS);
 }
