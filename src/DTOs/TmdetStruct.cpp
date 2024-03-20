@@ -7,6 +7,7 @@
 #include <DTOs/TmdetStruct.hpp>
 #include <Utils/Xml.hpp>
 #include <Types/Protein.hpp>
+#include <Types/Residue.hpp>
 #include <ValueObjects/TmdetStruct.hpp>
 
 using namespace std;
@@ -80,10 +81,14 @@ namespace Tmdet::DTOS {
 
     void TmdetStruct::out(Tmdet::ValueObjects::TmdetStruct& tmdetVO) {
         for(auto& chain: tmdetVO.chains) {
+            cout << "CHAIN " << chain.gemmi.name << " " << chain.length << endl;
             for( auto& residue: chain.residues) {
-                cout << "\t" << residue.idx << ":" << residue.resn() << "(" << residue.gemmi.name << ")" <<endl;
+                cout << "\tRESIDUE " << residue.idx << ":" << residue.resn() << "(" << residue.gemmi.name << ") ";
+                cout << residue.surface << " " << residue.ss.code << endl;
                 for( auto& atom: residue.atoms) {
-                    cout << "\t\t" << atom.idx << ":" << atom.gemmi.name << endl;
+                    cout << "\t\tATOM " << atom.idx << ": " << atom.gemmi.name << " ";
+                    cout << atom.gemmi.pos.x << " " << atom.gemmi.pos.y << " " << atom.gemmi.pos.z << " ";
+                    cout << atom.surface << " " << atom.gemmi.element.vdw_r() << endl;
                 }
             }
         }

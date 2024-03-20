@@ -194,7 +194,7 @@ namespace Tmdet::Utils {
                 ((any_cast<char>(chain.residues[i-1].temp[key])=='>') || 
                 (any_cast<char>(chain.residues[i-1].temp[key])=='x'))) {
                     for(int j=0; j<4; j++) {
-                        chain.residues[i+j].ss = Tmdet::Types::SecStructs.at('H');
+                        chain.residues[i+j].ss = Tmdet::Types::SecStructType::H;
                     }
                 }
         }
@@ -206,9 +206,9 @@ namespace Tmdet::Utils {
                 (any_cast<char>(chain.residues[i].temp[key])=='x')) &&
                 ((any_cast<char>(chain.residues[i-1].temp[key])=='>') || 
                 (any_cast<char>(chain.residues[i-1].temp[key])=='x')) &&
-                checkIfAreOther(chain,Tmdet::Types::SecStructs.at('G'),i,3)) {
+                checkIfAreOther(chain,Tmdet::Types::SecStructType::G,i,3)) {
                     for(int j=0; j<3; j++) {
-                        chain.residues[i+j].ss = Tmdet::Types::SecStructs.at('G');
+                        chain.residues[i+j].ss = Tmdet::Types::SecStructType::G;
                     }
                 }
         }
@@ -220,9 +220,9 @@ namespace Tmdet::Utils {
                 (any_cast<char>(chain.residues[i].temp[key])=='x')) &&
                 ((any_cast<char>(chain.residues[i-1].temp[key])=='>') || 
                 (any_cast<char>(chain.residues[i-1].temp[key])=='x')) &&
-                checkIfAreOther(chain,Tmdet::Types::SecStructs.at('I'),i,5)) {
+                checkIfAreOther(chain,Tmdet::Types::SecStructType::I,i,5)) {
                     for(int j=0; j<5; j++) {
-                        chain.residues[i+j].ss = Tmdet::Types::SecStructs.at('I');
+                        chain.residues[i+j].ss = Tmdet::Types::SecStructType::I;
                     }
                 }
         }
@@ -230,8 +230,8 @@ namespace Tmdet::Utils {
 
     bool Dssp::checkIfAreOther(Tmdet::ValueObjects::Chain& chain, Tmdet::Types::SecStruct what,int pos, int r) {
         for( int i=0; i<r; i++) {
-            if (chain.residues[pos+i].ss.code != what.code and
-                chain.residues[pos+i].ss.code != Tmdet::Types::SecStructs.at('-').code) {
+            if (chain.residues[pos+i].ss != what and
+                chain.residues[pos+i].ss != Tmdet::Types::SecStructType::U) {
                     return false;
                 }
         }
@@ -240,11 +240,11 @@ namespace Tmdet::Utils {
 
     void Dssp::detectSecStructT(Tmdet::ValueObjects::Chain& chain) {
         for(int i=4; i<chain.length; i++) {
-            if (chain.residues[i].ss.code == Tmdet::Types::SecStructs.at('-').code &&
+            if (chain.residues[i].ss == Tmdet::Types::SecStructType::U &&
                 (checkIfTurn(chain,i,3,"t3") ||
                 checkIfTurn(chain,i,4,"t4") ||
                 checkIfTurn(chain,i,5,"t5"))) {
-                    chain.residues[i].ss = Tmdet::Types::SecStructs.at('T');
+                    chain.residues[i].ss = Tmdet::Types::SecStructType::T;
                 }
         }
     }
@@ -290,7 +290,7 @@ namespace Tmdet::Utils {
                     double skap = sqrt(1-ckap*ckap);
                     double kap = 180.0 * atan2(skap,ckap) / M_PI;
                     if (kap>70.0) {
-                        chain.residues[i].ss = Tmdet::Types::SecStructs.at('S');
+                        chain.residues[i].ss = Tmdet::Types::SecStructType::S;
                     }
                 }
             }
@@ -302,31 +302,31 @@ namespace Tmdet::Utils {
             if (any_cast<int>(chain.residues[i].temp["pb"]) >= 0) {
                 if (any_cast<int>(chain.residues[i-1].temp["pb"]) >=0 || 
                     any_cast<int>(chain.residues[i+1].temp["pb"]) >= 0) {
-                    chain.residues[i].ss = Tmdet::Types::SecStructs.at('E');
+                    chain.residues[i].ss = Tmdet::Types::SecStructType::E;
                 }
                 else {
-                    chain.residues[i].ss = Tmdet::Types::SecStructs.at('B');
+                    chain.residues[i].ss = Tmdet::Types::SecStructType::B;
                 }
             }
             if (any_cast<int>(chain.residues[i].temp["apb"]) > 0) {
                 if (any_cast<int>(chain.residues[i-1].temp["apb"]) >= 0 || 
                     any_cast<int>(chain.residues[i+1].temp["apb"]) >= 0) {
-                    chain.residues[i].ss = Tmdet::Types::SecStructs.at('E');
+                    chain.residues[i].ss = Tmdet::Types::SecStructType::E;
                 }
                 else {
-                    chain.residues[i].ss = Tmdet::Types::SecStructs.at('B');
+                    chain.residues[i].ss = Tmdet::Types::SecStructType::B;
                 }
             }
         }
         for(int i=1; i<chain.length-2; i++) {
-            if ((chain.residues[i].ss.code == Tmdet::Types::SecStructs.at('B').code ||
-                chain.residues[i].ss.code == Tmdet::Types::SecStructs.at('E').code) &&
-                chain.residues[i+1].ss.code == Tmdet::Types::SecStructs.at('-').code &&
-                (chain.residues[i+2].ss.code == Tmdet::Types::SecStructs.at('B').code ||
-                chain.residues[i+2].ss.code == Tmdet::Types::SecStructs.at('E').code)) {
+            if ((chain.residues[i].ss == Tmdet::Types::SecStructType::B ||
+                chain.residues[i].ss == Tmdet::Types::SecStructType::E) &&
+                chain.residues[i+1].ss == Tmdet::Types::SecStructType::U &&
+                (chain.residues[i+2].ss == Tmdet::Types::SecStructType::B ||
+                chain.residues[i+2].ss == Tmdet::Types::SecStructType::E)) {
                     chain.residues[i].ss = 
                     chain.residues[i+1].ss = 
-                    chain.residues[i+2].ss = Tmdet::Types::SecStructs.at('E');
+                    chain.residues[i+2].ss = Tmdet::Types::SecStructType::E;
                 }
         }
     }

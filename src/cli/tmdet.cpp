@@ -2,6 +2,7 @@
 #include <string>
 #include <Utils/Args.hpp>
 #include <Utils/Dssp.hpp>
+#include <Utils/Surface.hpp>
 #include <ValueObjects/TmdetStruct.hpp>
 #include <DTOs/TmdetStruct.hpp>
 #include <gemmi/cif.hpp>
@@ -29,8 +30,11 @@ int main(int argc, char *argv[]) {
     Tmdet::ValueObjects::TmdetStruct tmdetVO = Tmdet::ValueObjects::TmdetStruct(pdb);
     Tmdet::DTOS::TmdetStruct::parse(tmdetVO);
     Tmdet::Utils::Dssp dssp = Tmdet::Utils::Dssp(tmdetVO);
+    Tmdet::Utils::Surface surf = Tmdet::Utils::Surface(tmdetVO);
     dssp.calcDsspOnStructure();
     dssp.writeDsspOnStructure();
+    surf.main();
+    Tmdet::DTOS::TmdetStruct::out(tmdetVO);
     if (n) {
         notTransmembrane(xmlPath, tmdetVO);
     }

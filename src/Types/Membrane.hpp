@@ -13,22 +13,20 @@ namespace Tmdet::Types {
         string description;
     };
 
-    const unordered_map<string, Membrane> Membranes = {
-        { "Plain", {
-                "Plain", 
-                "Simple plain membrane used most of membrane proteins"
-            }
-        },
-        { "Curved", {
-                "Curved",
-                "Curved membrane represented by a radius"
-            }
-        },
-        { "Double", {
-                "Double",
-                "Double membrane for bacterial proteins"
-            }
-        }
+    namespace MembraneType {
+        const Membrane PLAIN = {
+            "Plain", 
+            "Simple plain membrane used most of membrane proteins"
+        };
+        const Membrane CURVED = {
+            "Curved",
+            "Curved membrane represented by a radius"
+        };
+    }
+
+    const unordered_map<string, const Membrane> Membranes = {
+        { "Plain", MembraneType::PLAIN },
+        { "Curved", MembraneType::CURVED }
     };
 
 }
