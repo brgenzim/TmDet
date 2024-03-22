@@ -14,14 +14,17 @@ namespace Tmdet::Utils {
 #define SURF_PROBSIZE 1.4
 #define SURF_ZSLICE 0.05
 #define SURF_DIST 0.1
-#define MAX(a,b) ((a)>(b)?(a):(b))
-#define MIN(a,b) ((a)<(b)?(a):(b))
-#define STEMP(a,b) (any_cast<surfTemp&>(a.temp["surfTemp"]).b)
+#define VDW(a) (any_cast<double&>(a.temp["vdw"]))
+
+    struct surfNeighbor {
+        Tmdet::ValueObjects::Atom atom;
+        double d;
+        double d2;
+        double beta;
+    };
 
     struct surfTemp {
-        vector<double> d;
-        vector<double> d2;
-        vector<double> beta;
+        vector<surfNeighbor> neighbors;
         vector<double> arc1;
         vector<double> arc2;
         vector<int> sorted;
@@ -30,11 +33,14 @@ namespace Tmdet::Utils {
     class Surface {
         private:
             Tmdet::ValueObjects::TmdetStruct& tmdetVO;
-            void createTempData();
-            void calcTempDataOfAtom(Tmdet::ValueObjects::Atom& atom);
-            void calcSurfaceOfAtom(Tmdet::ValueObjects::Atom& atom);
-
-
+            void initTempData();
+            void setContacts();
+            void setContactsOfAtom(Tmdet::ValueObjects::Atom& a_atom);
+            void setNeighbor(Tmdet::ValueObjects::Atom& a_atom, Tmdet::ValueObjects::Atom& b_atom, surfTemp& st);
+            void calcSurfaceOfAtom(Tmdet::ValueObjects::Atom& atom,  surfTemp& st);
+            bool calcArcsOfAtom(Tmdet::ValueObjects::Atom& a_atom, surfTemp& st, double z);
+            double calcSumArcsOfAtom(Tmdet::ValueObjects::Atom& atom, surfTemp& st, bool ss);
+            
         public:
             Surface(Tmdet::ValueObjects::TmdetStruct& _tmdetVO) : tmdetVO(_tmdetVO) {} ;
             ~Surface() {};
