@@ -19,7 +19,8 @@ namespace Tmdet::ValueObjects {
         int residueIdx;
         unordered_map<string,any> temp;
 
-        Atom(gemmi::Atom& _gemmi) : gemmi(_gemmi) {}
+        Atom(gemmi::Atom& _gemmi) : 
+            gemmi(_gemmi) {}
         ~Atom() {}
     };
 }

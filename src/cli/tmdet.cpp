@@ -34,6 +34,7 @@ int main(int argc, char *argv[]) {
     dssp.calcDsspOnStructure();
     dssp.writeDsspOnStructure();
     surf.main();
+    surf.setOutsideSurface();
     Tmdet::DTOS::TmdetStruct::out(tmdetVO);
     if (n) {
         notTransmembrane(xmlPath, tmdetVO);

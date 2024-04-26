@@ -24,7 +24,7 @@ namespace Tmdet::Utils {
             for(auto& residue: chain.residues) {
                 for(auto& atom: residue.atoms) {
                     double vdw = Tmdet::Types::Residues.at(residue.gemmi.name).atoms.at(atom.gemmi.name).atom.vdw + SURF_PROBSIZE;
-                    atom.temp.insert({{"vdw",any_cast<double>(vdw)}});
+                    atom.temp.insert({"vdw",any_cast<double>(vdw)});
                 }
             }
         }
@@ -67,7 +67,7 @@ namespace Tmdet::Utils {
     void Surface::calcSurfaceOfAtom(Tmdet::ValueObjects::Atom& a_atom, surfTemp& st) {
         a_atom.surface = 0.0;
         auto& a_gatom = a_atom.gemmi;
-        double& vdwa = VDW(a_atom);
+        double vdwa = VDW(a_atom);
         for(double z=a_gatom.pos.z-vdwa+SURF_ZSLICE/2; z<a_gatom.pos.z+vdwa/*+SURF_ZSLICE/2*/; z+=SURF_ZSLICE) {
             a_atom.surface += calcSumArcsOfAtom(a_atom,st,calcArcsOfAtom(a_atom,st,z)) * SURF_ZSLICE;
         }
@@ -75,7 +75,7 @@ namespace Tmdet::Utils {
     }
 
     bool Surface::calcArcsOfAtom(Tmdet::ValueObjects::Atom& a_atom, surfTemp& st, double z) {
-        double& vdwa = VDW(a_atom);
+        double vdwa = VDW(a_atom);
         double ra2 = vdwa * vdwa - (a_atom.gemmi.pos.z - z) * (a_atom.gemmi.pos.z - z);
         double ra = sqrt(ra2);
         bool ss = true;
@@ -145,4 +145,173 @@ namespace Tmdet::Utils {
         }
         return arcsum;
     }
+
+    void Surface::setOutsideSurface() {
+        boundingBox box;
+        setBoundingBox(box);
+        initFrame(box);
+        setFrame(box);
+        smoothFrame(box);
+        findClosestAtoms(box);
+        for (int z=0; z<(box.zmax-box.zmin); z++) {
+	        for (int i=0; i<box.op; i++) {
+	            if (box.closestAtoms[z][i]!=NULL) {
+                    box.closestAtoms[z][i]->temp.at("outside") = any_cast<double>(box.closestAtoms[z][i]->surface);
+                }
+            }
+        }
+	}
+
+    void Surface::setBoundingBox(boundingBox& box) {
+        box.xmin=10000; box.xmax=-10000;        
+	    box.ymin=10000; box.ymax=-10000;        
+        box.zmin=10000; box.zmax=-10000;        
+	    
+        for(auto& chain: tmdetVO.chains) {
+            for(auto& residue: chain.residues) {
+                for(auto& atom: residue.atoms) {
+                    box.xmin = MIN(box.xmin,atom.gemmi.pos.x);
+                    box.xmax = MAX(box.xmax,atom.gemmi.pos.x);
+                    box.ymin = MIN(box.ymin,atom.gemmi.pos.y);
+                    box.ymax = MAX(box.ymax,atom.gemmi.pos.y);
+                    box.zmin = MIN(box.zmin,atom.gemmi.pos.z);
+                    box.zmax = MAX(box.zmax,atom.gemmi.pos.z);
+		        }
+ 	        }
+        }
+	    box.xmin=ceilf(box.xmin-1)-2; box.xmax=ceilf(box.xmax)+2;
+	    box.ymin=ceilf(box.ymin-1)-2; box.ymax=ceilf(box.ymax)+2;
+        box.zmin=ceilf(box.zmin-1)-2; box.zmax=ceilf(box.zmax)+2;
+
+        box.l1 = (box.xmax - box.xmin) + 1; 
+	    box.l2 = 2 * (box.xmax - box.xmin) + 2;
+	    box.l3 = 2 * (box.xmax - box.xmin) + 2 + (box.ymax - box.ymin) + 1;	
+	    box.op = 2 * (box.xmax - box.xmin) + 2 * (box.ymax - box.ymin) + 2;
+    }
+
+    void Surface::initFrame(boundingBox& box) {
+        for (int i=0; i<(box.zmax-box.zmin)+1; i++) {
+            box.closestAtoms.emplace_back(vector<Tmdet::ValueObjects::Atom *>(box.op));
+            box.frame.emplace_back(vector<gemmi::Position>(box.op));
+        }
+        box.closestDist = vector<double>(box.zmax-box.zmin+1);
+    
+        for (int z=0; z < (box.zmax-box.zmin)+1; z++) {
+            int i,k;
+        	for (i=0, k=0; i<box.l1; i++,k++)  {
+            	box.frame[z][i].x = k+box.ymin;
+                box.frame[z][i].y = box.ymax;
+                box.frame[z][i].z = 0;
+            }
+            for (i=box.l1, k=0; i<box.l2; i++,k++) {
+            	box.frame[z][i].x = k+box.ymin;
+                box.frame[z][i].y = box.ymin;
+                box.frame[z][i].z = 0;
+            }
+            for (i=box.l2, k=0; i<box.l3; i++,k++) {
+            	box.frame[z][i].x = k+box.xmin;
+                box.frame[z][i].y = box.ymax;
+                box.frame[z][i].z = 0;
+            }
+            for (i=box.l3, k=0; i<box.op; i++,k++) {
+            	box.frame[z][i].x = k+box.xmin;
+                box.frame[z][i].y = box.ymin;
+                box.frame[z][i].z = 0;
+            }
+        }
+    }
+
+    void Surface::setFrame(boundingBox& box) {
+        for(auto& chain: tmdetVO.chains) {
+            for(auto& residue: chain.residues) {
+                for(auto& atom: residue.atoms) {
+                    if (atom.temp.find("outside") == atom.temp.end()) {
+		                atom.temp.insert({"outside",any_cast<double>(0.0)});
+                    }
+                    else {
+                        atom.temp.at("outside") = any_cast<double>(0.0);
+                    }
+                    double x = floor(atom.gemmi.pos.x);
+                    double y = floor(atom.gemmi.pos.y);  	    
+                    int z = floor(atom.gemmi.pos.z) - box.zmin;
+                
+                    int k= (int)(x-box.xmin);
+                    box.frame[z][k].x = x;
+                    box.frame[z][k].y = MIN(box.frame[z][k].y,y-2);
+                    box.frame[z][k].z = (int)(atom.gemmi.pos.z); 
+                    
+                    box.frame[z][k+box.l1].x = x;
+                    box.frame[z][k+box.l1].y = MAX(box.frame[z][k+box.l1].y,y+2);
+                    box.frame[z][k+box.l1].z = (int)(atom.gemmi.pos.z);
+                    
+                    k=(int)(y-box.ymin);
+                    box.frame[z][k+box.l2].x = MIN(box.frame[z][k+box.l2].x, x-2);
+                    box.frame[z][k+box.l2].y = y;
+                    box.frame[z][k+box.l2].z = (int)(atom.gemmi.pos.z);
+                    
+                    box.frame[z][k+box.l3].x = MAX(box.frame[z][k+box.l3].x, x+2);
+                    box.frame[z][k+box.l3].y = y;
+                    box.frame[z][k+box.l3].z = (int)(atom.gemmi.pos.z);
+                }
+            }
+        }
+    }
+
+    void Surface::smoothFrame(boundingBox& box) {
+        for (int z=0; z<(box.zmax-box.zmin)+1; z++) {
+            int i,j;
+        	for (i=0; i<box.l1; i++) {
+                for (j=-2; j<2; j++) {
+                    if ((i+j>=0) && (i+j<box.l1) && box.frame[z][i+j].z!=0) {
+                        box.frame[z][i].y = MIN(box.frame[z][i+j].y, box.frame[z][i].y);
+                    }
+                }
+            }
+            for (i=box.l1; i<box.l2; i++) {
+                for (j=-2; j<2; j++) {
+                    if ((i+j>=box.l1) && (i+j<box.l2) && box.frame[z][i+j].z!=0) {
+                        box.frame[z][i].y = MAX(box.frame[z][i+j].y, box.frame[z][i].y);
+                    }
+                }
+            }
+            for (i=box.l2; i<box.l3; i++) {
+                for (j=-2; j<2; j++) {
+                    if ((i+j>=box.l2) && (i+j<box.l3) && box.frame[z][i+j].z!=0) {
+                        box.frame[z][i].x = MIN(box.frame[z][i+j].x, box.frame[z][i].x);
+                    }
+                }
+            }
+            for (i=box.l3; i<box.op; i++) {
+                for (j=-2; j<2; j++) {
+                    if ((i+j>=box.l3) && (i+j<box.op) && box.frame[z][i+j].z!=0) {
+                        box.frame[z][i].x = MAX(box.frame[z][i+j].x, box.frame[z][i].x);
+                    }
+                }
+            }
+        }
+    }
+
+    void Surface::findClosestAtoms(boundingBox& box) {
+        for (int i=0; i<box.op; i++) {
+		    for (int j=0; j<box.zmax-box.zmin; j++) {
+			    box.closestDist[j] = 10000000;
+            }
+            for(auto& chain: tmdetVO.chains) {
+                for(auto& residue: chain.residues) {
+                    for(auto& atom: residue.atoms) {
+				        int z = (int)(atom.gemmi.pos.z-box.zmin);
+				        double dist = 
+                            (atom.gemmi.pos.x - box.frame[z][i].x) * 
+                            (atom.gemmi.pos.x - box.frame[z][i].x) +
+                            (atom.gemmi.pos.y - box.frame[z][i].y) *
+                            (atom.gemmi.pos.y - box.frame[z][i].y);
+				        if (dist < box.closestDist[z]) {
+				        	box.closestAtoms[z][i] = &atom;
+					        box.closestDist[z]=dist;
+				        }
+                    }
+                }
+			}	
+		}
+ 	}
 }
