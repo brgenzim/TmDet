@@ -188,7 +188,7 @@ namespace Tmdet::Utils {
     }
 
     void Dssp::detectSecStructH(Tmdet::ValueObjects::Chain& chain,string key) {
-        for( int i=0; i<chain.length-4; i++) {
+        for( int i=1; i<chain.length-4; i++) {
             if (((any_cast<char>(chain.residues[i].temp[key])=='>') || 
                 (any_cast<char>(chain.residues[i].temp[key])=='x')) &&
                 ((any_cast<char>(chain.residues[i-1].temp[key])=='>') || 
@@ -201,7 +201,7 @@ namespace Tmdet::Utils {
     }
 
     void Dssp::detectSecStructG(Tmdet::ValueObjects::Chain& chain,string key) {
-        for( int i=0; i<chain.length-3; i++) {
+        for( int i=1; i<chain.length-3; i++) {
             if (((any_cast<char>(chain.residues[i].temp[key])=='>') || 
                 (any_cast<char>(chain.residues[i].temp[key])=='x')) &&
                 ((any_cast<char>(chain.residues[i-1].temp[key])=='>') || 
@@ -215,7 +215,7 @@ namespace Tmdet::Utils {
     }
 
     void Dssp::detectSecStructI(Tmdet::ValueObjects::Chain& chain,string key) {
-        for( int i=0; i<chain.length-5; i++) {
+        for( int i=1; i<chain.length-5; i++) {
             if (((any_cast<char>(chain.residues[i].temp[key])=='>') || 
                 (any_cast<char>(chain.residues[i].temp[key])=='x')) &&
                 ((any_cast<char>(chain.residues[i-1].temp[key])=='>') || 
