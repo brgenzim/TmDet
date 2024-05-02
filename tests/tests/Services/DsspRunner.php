@@ -20,6 +20,7 @@ class DsspRunner extends AbstractProcessRunner {
         foreach($lines as $line) {
             if (str_starts_with($line, static::HEADER_LINE_PREFIX)) {
                 $recordLines = true;
+                continue;
             }
             if ($recordLines) {
                 $selectedLines[] = $line;
@@ -49,9 +50,10 @@ class DsspRunner extends AbstractProcessRunner {
         return $line;
     }
 
-    public static function createRunner(string $pdbCode): static {
+    public static function createRunner(string $cifFile): static {
+
         $params = [
-            '-i', "$pdbCode.cif.gz",
+            '-i', "'$cifFile'",
             '--output-format', 'dssp'
         ];
         return new DsspRunner(static::EXEC, $params);

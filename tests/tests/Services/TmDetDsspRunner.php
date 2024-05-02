@@ -4,7 +4,7 @@ namespace Unitmp\TmdetTest\Services;
 
 class TmDetDsspRunner extends AbstractProcessRunner {
 
-    const EXEC = '/home/A/csongor/dev/UniTmp/Tmdet/build/src/tmdet';
+    const EXEC = '../build/src/tmdet';
 
     public array $chains = [];
     public array $dssps = [];
@@ -17,7 +17,9 @@ class TmDetDsspRunner extends AbstractProcessRunner {
             if (str_starts_with($line, 'CHAIN ')) {
                 $beforeDebugLines = false;
                 list(, $chain, ) = explode(' ', $line);
-                $this->chains[] = $chain;
+                if (!in_array($chain, $this->chains)) {
+                    $this->chains[] = $chain;
+                }
             }
             if ($beforeDebugLines) {
                 $selectedLines[] = $line;
@@ -35,9 +37,11 @@ class TmDetDsspRunner extends AbstractProcessRunner {
         return $line;
     }
 
-    public static function createRunner(string $pdbCode): static {
+    public static function createRunner(string $cifFile): static {
+
+        $pdbCode = static::getPdbCodeFromZippedCifPath($cifFile);
         $params = [
-            '-i', "$pdbCode.cif.gz",
+            '-i', "'$cifFile'",
             '-x', "$pdbCode.xml"
         ];
         return new TmDetDsspRunner(static::EXEC, $params);

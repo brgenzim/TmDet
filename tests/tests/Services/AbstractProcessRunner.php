@@ -2,6 +2,8 @@
 
 namespace Unitmp\TmdetTest\Services;
 
+use InvalidArgumentException;
+
 abstract class AbstractProcessRunner {
 
     public readonly string $execPath;
@@ -29,8 +31,13 @@ abstract class AbstractProcessRunner {
         $resultCode = null;
 
         $command = "$this->execPath " . implode(' ', $this->commandParams);
+        $command .= ' 2>&1';
         exec($command, $lines, $resultCode);
 
+        if ($resultCode !== 0) {
+            fprintf(STDERR, 'Failed: %s\n', $command);
+            fprintf(STDERR, 'Output:\n%s\n', implode("\n", $lines));
+        }
         $lines = $this->filterOutputLines($lines);
         foreach ($lines as $line) {
                 // just collect error message lines and jump to next line
@@ -44,5 +51,15 @@ abstract class AbstractProcessRunner {
         }
 
         return $resultCode === 0;
+    }
+
+    public static function getPdbCodeFromZippedCifPath(string $cifFilePath): string {
+
+        if (!str_ends_with($cifFilePath, '.cif.gz')) {
+            throw new InvalidArgumentException("Unexpected file path: $cifFilePath");
+        }
+        preg_match('/([^\/]*?\.cif\.gz$)/', $cifFilePath, $matches);
+
+        return $matches[1];
     }
 }
