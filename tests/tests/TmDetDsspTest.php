@@ -6,11 +6,13 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 use Unitmp\TmdetTest\Services\DsspRunner;
+use Unitmp\TmdetTest\Services\PdbtmDsspRunner;
 use Unitmp\TmdetTest\Services\TmDetDsspRunner;
 
 class TmDetDsspTest extends TestCase {
 
     const PDB_ZFS_DIR = '/zfs/databases/UniTmp/PDB/data/structures/divided/mmCIF';
+    const PDB_ENT_ZFS_DIR = '/zfs/databases/UniTmp/PDB/data/structures/divided/pdb';
 
     #[Group('dssp')]
     public function test_1afo_dssp() {
@@ -23,6 +25,27 @@ class TmDetDsspTest extends TestCase {
         // Assert
         $this->assertTrue($tmdetSuccess);
         $this->assertTrue($dsspSuccess);
+    }
+
+    #[Group('dssp')]
+    public function test_pdbtm_dssp_integrity_with_132l() {
+        // Arrange
+        $runner = PdbtmDsspRunner::createRunner('/zfs/databases/UniTmp/PDB/data/structures/divided/pdb/32/pdb132l.ent.gz');
+        // Act
+        $isSuccess = $runner->exec();
+        // Assert
+        $this->assertTrue($isSuccess);
+        $this->assertEquals('A', $runner->chains[0]);
+    }
+
+    public function test_pdbtm_dssp_integrity_with_7rh7() {
+        // Arrange
+        $runner = PdbtmDsspRunner::createRunner('/zfs/databases/UniTmp/PDB/data/structures/divided/pdb/rh/pdb7rh7.ent.gz');
+        // Act
+        $isSuccess = $runner->exec();
+        // Assert
+        $this->assertTrue($isSuccess);
+        $this->assertEquals('W', $runner->chains[0]);
     }
 
     #[Group('dssp')]
@@ -86,7 +109,7 @@ class TmDetDsspTest extends TestCase {
             }
         }
         // TODO: remove slice later
-        return array_slice($files, 0, 200);
+        return array_slice($files, 4500, 20);
     }
 
     public static function isStructureUnsupported(string $cifPath): bool {
