@@ -39,6 +39,9 @@ class StructurePreFilter {
      * Compares chains and their residues are identical.
      */
     public function checkEntryFiles(): void {
+        Assert::assertFileExists($this->entFile);
+        Assert::assertFileExists($this->cifFile);
+
         $this->cifChains = $this->checkEntryFile($this->cifFile);
         $this->entChains = $this->checkEntryFile($this->entFile);
         Assert::assertEquals($this->entChains, $this->cifChains);

@@ -5,8 +5,7 @@ namespace Unitmp\TmdetTest\Services;
 class PdbtmDsspRunner extends AbstractProcessRunner {
 
     const EXEC = '/home/tusi/works/pdbtm_3.0/TmdetUtils/bin/dssp';
-    const HEADER_LINE_PREFIX = '  #  RESIDUE AA STRUCTURE BP1 BP2  ACC';
-    const CHAIN_DELIMITER = '      !';
+    const DUMP_HEADER_LINE_PREFIX = 'ShowProt:';
     const CHAIN_COLUMN = 1;
     const STRUCTURE_COLUMN = 5;
 
@@ -25,16 +24,24 @@ class PdbtmDsspRunner extends AbstractProcessRunner {
         }
 
         $selectedLines = [];
-        $recordLines = false;
+        $recordLines = true;
         foreach($lines as $line) {
-            if (str_starts_with($line, static::HEADER_LINE_PREFIX)) {
-                $recordLines = true;
+            if (preg_match('/\s+CHAIN\s+(\S+)/', $line, $matches)) {
+                $this->chains[] = $matches[1];
+            }
+            if (str_starts_with($line, static::DUMP_HEADER_LINE_PREFIX)) {
+                $recordLines = false;
                 continue;
             }
-            if ($recordLines) {
+            if ($recordLines && preg_match('/^[-BEGHIST]+$/', $line, $matches)) {
                 $selectedLines[] = $line;
             }
         }
+        if (count($this->chains) != count($selectedLines)) {
+            var_dump($this->chains);
+            var_dump($selectedLines);
+        }
+        $this->dssps = array_combine($this->chains, $selectedLines);
 
         return $selectedLines;
     }
@@ -44,12 +51,6 @@ class PdbtmDsspRunner extends AbstractProcessRunner {
         if (!empty($this->dsspCacheFile)) {
             return $this->parseDsspLine($line);
         }
-
-        if (str_contains($line, static::CHAIN_DELIMITER)) {
-            return $line;
-        }
-
-        // TODO: collect dssp strings when there is no cache file
 
         return $line;
     }
@@ -76,10 +77,10 @@ class PdbtmDsspRunner extends AbstractProcessRunner {
         return $line;
     }
 
-    public static function createRunner(string $cifFile): static {
+    public static function createRunner(string $entFile): static {
 
         $params = [
-            '-i', "'$cifFile'",
+            '-i', "'$entFile'",
             '--output-format', 'dssp'
         ];
         return new PdbtmDsspRunner(static::EXEC, $params);

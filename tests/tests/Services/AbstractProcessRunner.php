@@ -35,8 +35,8 @@ abstract class AbstractProcessRunner {
         exec($command, $lines, $resultCode);
 
         if ($resultCode !== 0) {
-            fprintf(STDERR, 'Failed: %s\n', $command);
-            fprintf(STDERR, 'Output:\n%s\n', implode("\n", $lines));
+            fprintf(STDERR, "Failed: %s\n", $command);
+            fprintf(STDERR, "Output:\n%s\n", implode("\n", $lines));
         }
         $lines = $this->filterOutputLines($lines);
         foreach ($lines as $line) {

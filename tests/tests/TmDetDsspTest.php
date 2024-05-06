@@ -78,18 +78,34 @@ class TmDetDsspTest extends TestCase {
     }
 
     #[Group('dssp')]
+    public function test_8a1e_dssp() {
+        // Arrange
+        $pdbtmRunner = PdbtmDsspRunner::createRunner(static::PDB_ENT_ZFS_DIR . '/a1/pdb8a1e.ent.gz');
+        $tmdetRunner = TmDetDsspRunner::createRunner(static::PDB_ZFS_DIR . '/a1/8a1e.cif.gz');
+        // Act
+        $isSuccess = $pdbtmRunner->exec();
+        $isTmDetSuccess = $tmdetRunner->exec();
+        // Assert
+        $this->assertTrue($isSuccess);
+        $this->assertTrue($isTmDetSuccess);
+        $this->assertEquals($pdbtmRunner->dssps, $tmdetRunner->dssps);
+    }
+
+    #[Group('dssp')]
     #[DataProvider('getCifPaths')]
     public function test_whole_archive(string $cifPath) {
 
         // Pre-check
-        if (static::isStructureUnsupported($cifPath)) {
-            $this->markTestSkipped('DNA/RNA structures are unsupported');
-            return;
-        }
+        // if (static::isStructureUnsupported($cifPath)) {
+        //     $this->markTestSkipped('DNA/RNA structures are unsupported');
+        //     return;
+        // }
+        $filter = new StructurePreFilter($cifPath);
+        $filter->checkEntryFiles();
 
         // Arrange
         $tmdetRunner = TmDetDsspRunner::createRunner($cifPath);
-        $dsspRunner = DsspRunner::createRunner($cifPath);
+        $dsspRunner = PdbtmDsspRunner::createRunner($filter->entFile);
         // Act
         $dsspSuccess = $dsspRunner->exec();
         $tmdetSuccess = $tmdetRunner->exec();
@@ -123,7 +139,8 @@ class TmDetDsspTest extends TestCase {
             }
         }
         // TODO: remove slice later
-        return array_slice($files, 4500, 20);
+        return array_slice($files, 100, 1000);
+        //return $files;
     }
 
     public static function isStructureUnsupported(string $cifPath): bool {
