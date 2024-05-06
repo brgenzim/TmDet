@@ -5,14 +5,16 @@ namespace Unitmp\TmdetTest;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
+use Unitmp\TmdetTest\Constants\FileSystem;
 use Unitmp\TmdetTest\Services\DsspRunner;
 use Unitmp\TmdetTest\Services\PdbtmDsspRunner;
+use Unitmp\TmdetTest\Services\StructurePreFilter;
 use Unitmp\TmdetTest\Services\TmDetDsspRunner;
 
 class TmDetDsspTest extends TestCase {
 
-    const PDB_ZFS_DIR = '/zfs/databases/UniTmp/PDB/data/structures/divided/mmCIF';
-    const PDB_ENT_ZFS_DIR = '/zfs/databases/UniTmp/PDB/data/structures/divided/pdb';
+    const PDB_ZFS_DIR = FileSystem::PDB_ZFS_DIR;
+    const PDB_ENT_ZFS_DIR = FileSystem::PDB_ENT_ZFS_DIR;
 
     #[Group('dssp')]
     public function test_1afo_dssp() {
@@ -36,6 +38,14 @@ class TmDetDsspTest extends TestCase {
         // Assert
         $this->assertTrue($isSuccess);
         $this->assertEquals('A', $runner->chains[0]);
+    }
+
+    #[Group('dssp')]
+    public function test_pdbtm_dssp_integrity_with_1aft() {
+        $path = static::PDB_ZFS_DIR . '/af/1aft.cif.gz';
+        $filter = new StructurePreFilter($path);
+        $this->assertEquals('1aft', $filter->pdbCode);
+        $filter->checkEntryFiles();
     }
 
     #[Group('dssp')]
