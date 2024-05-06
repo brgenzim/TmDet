@@ -61,12 +61,12 @@ class PdbtmDsspRunner extends AbstractProcessRunner {
             if (!in_array($chain, $this->chains)) {
                 $this->chains[] = $chain;
             }
-        } elseif (count(explode(' ', $line)) == 7) {
-            $column = $line[static::CHAIN_COLUMN - 1];
+        } elseif (count(($columns = explode(' ', $line))) == 7) {
+            $column = $columns[static::CHAIN_COLUMN - 1];
             if (!array_key_exists($column, $this->dssps)) {
                 $this->dssps[$column] = '';
             }
-            $secondaryStructure = $line[static::STRUCTURE_COLUMN - 1];
+            $secondaryStructure = $columns[static::STRUCTURE_COLUMN - 1];
             if ($secondaryStructure == ' ') {
                 $secondaryStructure = '-';
             }

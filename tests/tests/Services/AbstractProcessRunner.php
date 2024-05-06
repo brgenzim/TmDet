@@ -53,13 +53,15 @@ abstract class AbstractProcessRunner {
         return $resultCode === 0;
     }
 
-    public static function getPdbCodeFromZippedCifPath(string $cifFilePath): string {
+    public static function getPdbCodeFromPath(string $pdbPath): string {
 
-        if (!str_ends_with($cifFilePath, '.cif.gz')) {
-            throw new InvalidArgumentException("Unexpected file path: $cifFilePath");
+        if (!str_ends_with($pdbPath, '.cif.gz') && !str_ends_with($pdbPath, '.ent.gz')) {
+            throw new InvalidArgumentException("Unexpected file path: $pdbPath");
         }
-        preg_match('/([^\/]*?\.cif\.gz$)/', $cifFilePath, $matches);
+        if (!preg_match('/(pdb)?([^\/]*?)\.(cif|ent)\.gz$/', $pdbPath, $matches)) {
+            throw new InvalidArgumentException("Unexpected file path: $pdbPath");
+        }
 
-        return $matches[1];
+        return $matches[2];
     }
 }

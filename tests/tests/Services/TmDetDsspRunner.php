@@ -27,6 +27,10 @@ class TmDetDsspRunner extends AbstractProcessRunner {
         }
 
         $selectedLines = preg_grep('/^\s*$/', $selectedLines, PREG_GREP_INVERT);
+        if (count($this->chains) != count($selectedLines)) {
+            var_dump($this->chains);
+            var_dump($selectedLines);
+        }
         $this->dssps = array_combine($this->chains, $selectedLines);
 
         return $selectedLines;
@@ -37,11 +41,11 @@ class TmDetDsspRunner extends AbstractProcessRunner {
         return $line;
     }
 
-    public static function createRunner(string $cifFile): static {
+    public static function createRunner(string $pdbFile): static {
 
-        $pdbCode = static::getPdbCodeFromZippedCifPath($cifFile);
+        $pdbCode = static::getPdbCodeFromPath($pdbFile);
         $params = [
-            '-i', "'$cifFile'",
+            '-i', "'$pdbFile'",
             '-x', "$pdbCode.xml"
         ];
         return new TmDetDsspRunner(static::EXEC, $params);

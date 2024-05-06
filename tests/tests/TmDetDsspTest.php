@@ -30,7 +30,7 @@ class TmDetDsspTest extends TestCase {
     #[Group('dssp')]
     public function test_pdbtm_dssp_integrity_with_132l() {
         // Arrange
-        $runner = PdbtmDsspRunner::createRunner('/zfs/databases/UniTmp/PDB/data/structures/divided/pdb/32/pdb132l.ent.gz');
+        $runner = PdbtmDsspRunner::createRunner(static::PDB_ZFS_DIR . '/32/pdb132l.ent.gz');
         // Act
         $isSuccess = $runner->exec();
         // Assert
@@ -38,29 +38,33 @@ class TmDetDsspTest extends TestCase {
         $this->assertEquals('A', $runner->chains[0]);
     }
 
-    public function test_pdbtm_dssp_integrity_with_7rh7() {
+    #[Group('dssp')]
+    public function test_pdbtm_dssp_integrity_with_7rh7_chain_w() {
         // Arrange
-        $runner = PdbtmDsspRunner::createRunner('/zfs/databases/UniTmp/PDB/data/structures/divided/pdb/rh/pdb7rh7.ent.gz');
+        $pdbtmRunner = PdbtmDsspRunner::createRunner(static::PDB_ENT_ZFS_DIR . '/rh/pdb7rh7.ent.gz');
+        $tmdetRunner = TmDetDsspRunner::createRunner(static::PDB_ZFS_DIR . '/rh/7rh7.cif.gz');
         // Act
-        $isSuccess = $runner->exec();
+        $isSuccess = $pdbtmRunner->exec();
+        $isTmDetSuccess = $tmdetRunner->exec();
         // Assert
         $this->assertTrue($isSuccess);
-        $this->assertEquals('W', $runner->chains[0]);
+        $this->assertTrue($isTmDetSuccess);
+        $this->assertEquals($pdbtmRunner->dssps['W'], $tmdetRunner->dssps['W']);
+        $this->assertEquals($pdbtmRunner->dssps, $tmdetRunner->dssps);
     }
 
     #[Group('dssp')]
     public function test_7rh7_dssp() {
         // Arrange
-        $tmdetRunner = TmDetDsspRunner::createRunner('7RH7');
-        $dsspRunner = DsspRunner::createRunner('7RH7');
+        $pdbtmRunner = PdbtmDsspRunner::createRunner(static::PDB_ENT_ZFS_DIR . '/rh/pdb7rh7.ent.gz');
+        $tmdetRunner = TmDetDsspRunner::createRunner(static::PDB_ZFS_DIR . '/rh/7rh7.cif.gz');
         // Act
-        $dsspSuccess = $dsspRunner->exec();
-        $tmdetSuccess = $tmdetRunner->exec();
+        $isSuccess = $pdbtmRunner->exec();
+        $isTmDetSuccess = $tmdetRunner->exec();
         // Assert
-        $this->assertTrue($tmdetSuccess);
-        $this->assertTrue($dsspSuccess);
-        $this->assertEquals($dsspRunner->dssps['E'], $tmdetRunner->dssps['E']);
-        $this->assertEquals($dsspRunner->dssps, $tmdetRunner->dssps);
+        $this->assertTrue($isSuccess);
+        $this->assertTrue($isTmDetSuccess);
+        $this->assertEquals($pdbtmRunner->dssps, $tmdetRunner->dssps);
     }
 
     #[Group('dssp')]
