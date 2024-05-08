@@ -9,6 +9,7 @@ abstract class AbstractProcessRunner {
     public readonly string $execPath;
     public readonly array $commandParams;
     public array $outputLines = [];
+    protected string $commandLine;
 
     public function __construct(string $execPath, array $commandParams) {
         $this->execPath = $execPath;
@@ -30,12 +31,12 @@ abstract class AbstractProcessRunner {
         $lines = null;
         $resultCode = null;
 
-        $command = "$this->execPath " . implode(' ', $this->commandParams);
-        $command .= ' 2>&1';
-        exec($command, $lines, $resultCode);
+        $this->commandLine = "$this->execPath " . implode(' ', $this->commandParams);
+        $this->commandLine .= ' 2>&1';
+        exec($this->commandLine, $lines, $resultCode);
 
         if ($resultCode !== 0) {
-            fprintf(STDERR, "Failed: %s\n", $command);
+            fprintf(STDERR, "Failed: %s\n", $this->commandLine);
             fprintf(STDERR, "Output:\n%s\n", implode("\n", $lines));
         }
         $lines = $this->filterOutputLines($lines);

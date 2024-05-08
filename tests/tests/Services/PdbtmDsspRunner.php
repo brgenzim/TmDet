@@ -26,9 +26,13 @@ class PdbtmDsspRunner extends AbstractProcessRunner {
         $selectedLines = [];
         $recordLines = true;
         foreach($lines as $line) {
-            if (preg_match('/\s+CHAIN\s+(\S+)/', $line, $matches)) {
+
+            if (preg_match('/\s+CHAIN\s+(\S+)\s+(\d+)/', $line, $matches)
+                && $matches[2] !== "0") {
+
                 $this->chains[] = $matches[1];
             }
+
             if (str_starts_with($line, static::DUMP_HEADER_LINE_PREFIX)) {
                 $recordLines = false;
                 continue;
@@ -38,6 +42,7 @@ class PdbtmDsspRunner extends AbstractProcessRunner {
             }
         }
         if (count($this->chains) != count($selectedLines)) {
+            printf("Command: %s\n", $this->commandLine);
             var_dump($this->chains);
             var_dump($selectedLines);
         }

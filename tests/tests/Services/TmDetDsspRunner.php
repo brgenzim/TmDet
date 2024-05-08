@@ -16,8 +16,8 @@ class TmDetDsspRunner extends AbstractProcessRunner {
         foreach($lines as $line) {
             if (str_starts_with($line, 'CHAIN ')) {
                 $beforeDebugLines = false;
-                list(, $chain, ) = explode(' ', $line);
-                if (!in_array($chain, $this->chains)) {
+                list(, $chain, $residueCount) = explode(' ', $line);
+                if ($residueCount !== "0" && !in_array($chain, $this->chains)) {
                     $this->chains[] = $chain;
                 }
             }
@@ -28,6 +28,7 @@ class TmDetDsspRunner extends AbstractProcessRunner {
 
         $selectedLines = preg_grep('/^\s*$/', $selectedLines, PREG_GREP_INVERT);
         if (count($this->chains) != count($selectedLines)) {
+            printf("Command: %s\n", $this->commandLine);
             var_dump($this->chains);
             var_dump($selectedLines);
         }

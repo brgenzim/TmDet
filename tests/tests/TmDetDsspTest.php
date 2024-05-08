@@ -92,7 +92,8 @@ class TmDetDsspTest extends TestCase {
     }
 
     #[Group('dssp')]
-    #[DataProvider('getCifPaths')]
+    //#[DataProvider('getCifPaths')]
+    #[DataProvider('staticCifPathProvider')]
     public function test_whole_archive(string $cifPath) {
 
         // Pre-check
@@ -140,9 +141,39 @@ class TmDetDsspTest extends TestCase {
             }
         }
         // TODO: remove slice later
-        return array_slice($files, 100, 25);
-        //return array_slice($files, 100, 1000);
+        //return array_slice($files, 100, 25);
+        return array_slice($files, 100, 1000);
         //return $files;
+    }
+
+    public static function staticCifPathProvider(): array {
+        return [
+            '154l.cif.gz' => [ static::PDB_ZFS_DIR . '/54/154l.cif.gz' ],
+            '1a0h.cif.gz' => [ static::PDB_ZFS_DIR . '/a0/1a0h.cif.gz' ],
+            '1a0t.cif.gz' => [ static::PDB_ZFS_DIR . '/a0/1a0t.cif.gz' ],
+            '2a0z.cif.gz' => [ static::PDB_ZFS_DIR . '/a0/2a0z.cif.gz' ],
+            '3a09.cif.gz' => [ static::PDB_ZFS_DIR . '/a0/3a09.cif.gz' ],
+            '3a0e.cif.gz' => [ static::PDB_ZFS_DIR . '/a0/3a0e.cif.gz' ],
+            '4a05.cif.gz' => [ static::PDB_ZFS_DIR . '/a0/4a05.cif.gz' ],
+            '4a0p.cif.gz' => [ static::PDB_ZFS_DIR . '/a0/4a0p.cif.gz' ],
+            '5a05.cif.gz' => [ static::PDB_ZFS_DIR . '/a0/5a05.cif.gz' ],
+            '5a09.cif.gz' => [ static::PDB_ZFS_DIR . '/a0/5a09.cif.gz' ],
+            '5a0a.cif.gz' => [ static::PDB_ZFS_DIR . '/a0/5a0a.cif.gz' ],
+            '5a0b.cif.gz' => [ static::PDB_ZFS_DIR . '/a0/5a0b.cif.gz' ],
+            '5a0c.cif.gz' => [ static::PDB_ZFS_DIR . '/a0/5a0c.cif.gz' ],
+            '6a0j.cif.gz' => [ static::PDB_ZFS_DIR . '/a0/6a0j.cif.gz' ],
+            '6a0k.cif.gz' => [ static::PDB_ZFS_DIR . '/a0/6a0k.cif.gz' ],
+            '6a0l.cif.gz' => [ static::PDB_ZFS_DIR . '/a0/6a0l.cif.gz' ],
+            '7a0k.cif.gz' => [ static::PDB_ZFS_DIR . '/a0/7a0k.cif.gz' ],
+            '7a0q.cif.gz' => [ static::PDB_ZFS_DIR . '/a0/7a0q.cif.gz' ],
+            '7a0t.cif.gz' => [ static::PDB_ZFS_DIR . '/a0/7a0t.cif.gz' ],
+            '8a0y.cif.gz' => [ static::PDB_ZFS_DIR . '/a0/8a0y.cif.gz' ],
+            '1a14.cif.gz' => [ static::PDB_ZFS_DIR . '/a1/1a14.cif.gz' ],
+            '6a1t.cif.gz' => [ static::PDB_ZFS_DIR . '/a1/6a1t.cif.gz' ],
+            '8a16.cif.gz' => [ static::PDB_ZFS_DIR . '/a1/8a16.cif.gz' ],
+            '8a17.cif.gz' => [ static::PDB_ZFS_DIR . '/a1/8a17.cif.gz' ],
+            '8a1f.cif.gz' => [ static::PDB_ZFS_DIR . '/a1/8a1f.cif.gz' ],
+        ];
     }
 
     public static function isStructureUnsupported(string $cifPath): bool {
