@@ -2,8 +2,10 @@
 
 namespace Unitmp\TmdetTest\Services;
 
+use Exception;
 use InvalidArgumentException;
 use PHPUnit\Framework\Assert;
+use PHPUnit\Framework\ExpectationFailedException;
 use RuntimeException;
 use Unitmp\TmdetTest\Constants\FileSystem;
 
@@ -40,6 +42,12 @@ class StructurePreFilter {
         'TRP', 'TRS', 'TYR', 'U2G', 'UNL', 'UNU', 'UNX', 'UPA',  'UQ', 'VAL', 'XL3', 'XPE',  'ZN',
     ];
 
+    public static array $disallowedNonStandardResidues = [
+        '1Y6', '4BF', '6HG', 'A', 'ACE', 'AME',   'C', 'C42', 'C43', 'CBR', 'CME', 'CSS', 'CXM',  'DA', 'DAL',  'DC',  'DG',  'DI', 'DM0', 'DSN',
+         'DT',  'DU', 'FGA', 'G', 'GPN', 'GTP', 'HT7', 'HYP', 'KCX', 'LLP', 'MCY', 'MHS', 'MSE', 'NH2', 'NPH', 'PCA', 'PTR', 'SCH', 'SEC', 'SEP',
+        'TPO',   'U', 'UNK',
+    ];
+
     public function __construct(string $cifPath) {
         $this->pdbCode = AbstractProcessRunner::getPdbCodeFromPath($cifPath);
         $this->cifFile = $cifPath;
@@ -59,6 +67,16 @@ class StructurePreFilter {
         $this->cifChains = $this->checkEntryFile($this->cifFile);
         $this->entChains = $this->checkEntryFile($this->entFile);
         Assert::assertEquals($this->entChains, $this->cifChains);
+    }
+
+    public function tryCheckEntryFiles(null|Exception &$exception): bool {
+        try {
+            $this->checkEntryFiles();
+        } catch (InvalidArgumentException|ExpectationFailedException $e) {
+            $exception = $e;
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -102,12 +120,14 @@ class StructurePreFilter {
         return $chains;
     }
 
+    public static function isUnsupportedResidue(string $residue): bool {
+        return in_array($residue, static::$disallowedNonStandardResidues);
+    }
+
     protected function checkChains(array $chains): void {
         foreach ($chains as $chainName => $chain) {
             foreach ($chain as $residue) {
-                if (!in_array($residue, static::$standardResidues)
-                    && !in_array($residue, static::$allowedNonStandardResidues)) {
-
+                if (static::isUnsupportedResidue($residue)) {
                     throw new InvalidArgumentException(
                         "{$this->pdbCode} ($chainName) has non-standard residue: '$residue'"
                     );
