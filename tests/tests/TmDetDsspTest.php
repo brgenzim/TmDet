@@ -92,8 +92,22 @@ class TmDetDsspTest extends TestCase {
     }
 
     #[Group('dssp')]
-    //#[DataProvider('getCifPaths')]
-    #[DataProvider('staticCifPathProvider')]
+    public function test_6a1t_dssp() {
+        // Arrange
+        $pdbtmRunner = PdbtmDsspRunner::createRunner(static::PDB_ENT_ZFS_DIR . '/a1/pdb6a1t.ent.gz');
+        $tmdetRunner = TmDetDsspRunner::createRunner(static::PDB_ZFS_DIR . '/a1/6a1t.cif.gz');
+        // Act
+        $isSuccess = $pdbtmRunner->exec();
+        $isTmDetSuccess = $tmdetRunner->exec();
+        // Assert
+        $this->assertTrue($isSuccess);
+        $this->assertTrue($isTmDetSuccess);
+        $this->assertEquals($pdbtmRunner->dssps, $tmdetRunner->dssps);
+    }
+
+    #[Group('dssp')]
+    #[DataProvider('getCifPaths')]
+    //#[DataProvider('staticCifPathProvider')]
     public function test_whole_archive(string $cifPath) {
 
         // Pre-check
@@ -142,7 +156,8 @@ class TmDetDsspTest extends TestCase {
         }
         // TODO: remove slice later
         //return array_slice($files, 100, 25);
-        return array_slice($files, 100, 1000);
+        //return array_slice($files, 100, 1000);
+        return array_slice($files, 40000, 1000);
         //return $files;
     }
 

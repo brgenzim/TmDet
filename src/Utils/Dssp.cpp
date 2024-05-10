@@ -99,6 +99,7 @@ namespace Tmdet::Utils {
             donor.hbond2.energy = donor.hbond1.energy;
             donor.hbond2.toChainIdx = donor.hbond1.toChainIdx;
             donor.hbond2.toResIdx = donor.hbond1.toResIdx;
+            // source of resIdx?
             donor.hbond1 = {energy, akceptor.chainIdx, akceptor.resn()};
         }
         else if (energy<donor.hbond2.energy) {
