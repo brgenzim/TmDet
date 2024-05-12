@@ -1,6 +1,7 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include <algorithm>
 #include <gemmi/model.hpp>
 #include <gemmi/modify.hpp>
 #include <gemmi/polyheur.hpp>
@@ -52,8 +53,14 @@ namespace Tmdet::DTOS {
         remove_ligands_and_waters(tmdetVO.gemmi.models[0]);
         remove_alternative_conformations(tmdetVO.gemmi.models[0]);
 
+        // Fill residue gaps in chains where there is usable entity sequence data
         for(auto& chain: tmdetVO.gemmi.models[0].chains) {
             auto sequence = getChainSequence(tmdetVO, chain);
+            if (sequence.size() == 0) {
+                // no supporting information to do gap fix
+                continue;
+            }
+
             int labelSeq = 1;
             std::vector<gemmi::Residue> newChainResidues;
             for( auto& residue: chain.residues) {
@@ -123,47 +130,20 @@ namespace Tmdet::DTOS {
     }
 
     std::vector<string> TmdetStruct::getChainSequence(
-        // const Tmdet::ValueObjects::TmdetStruct& tmdetVO, const Tmdet::ValueObjects::Chain& chainVO) {
         const Tmdet::ValueObjects::TmdetStruct& tmdetVO, const gemmi::Chain& chainVO) {
 
         std::vector<string> sequence;
         for (const auto& entity : tmdetVO.gemmi.entities) {
+            auto begin = entity.subchains.begin();
+            auto end = entity.subchains.end();
             if (entity.entity_type == gemmi::EntityType::Polymer
-                && entity.subchains[0] == chainVO.name) {
-                    sequence = entity.full_sequence;
-                    break;
+                && std::find(begin, end, chainVO.name) != end) {
+
+                sequence = entity.full_sequence;
+                break;
             }
         }
         return sequence;
-    }
-
-    int TmdetStruct::fillResidueGapIfNeeded(const Tmdet::ValueObjects::TmdetStruct& tmdetVO,
-        Tmdet::ValueObjects::Chain& chainVO, gemmi::Residue& residue,
-        int residueIndex, const std::vector<string> sequence) {
-
-        const int expectedIndex = residue.label_seq.value - 1;
-        int gapLength = expectedIndex - residueIndex;
-        std::vector<gemmi::Residue> newResidues;
-        while (gapLength > 0) {
-
-            auto residueForInsert = new gemmi::Residue();
-            int newSeqId = residue.seqid.num.value - gapLength;
-            residueForInsert->seqid.num.value = newSeqId;
-            residueForInsert->label_seq.value = residueIndex + 1;
-            residueForInsert->name = sequence[residueIndex];
-            residueForInsert->subchain = chainVO.gemmi.name;
-
-            Tmdet::ValueObjects::Residue residueVO = Tmdet::ValueObjects::Residue(*residueForInsert);
-            residueVO.chainIdx = chainVO.idx;
-            residueVO.idx = residueIndex;
-            residueVO.surface = 0.0;
-            chainVO.residues.emplace_back(residueVO);
-            newResidues.emplace_back(*residueForInsert);
-            residueIndex++;
-            gapLength--;
-        }
-        chainVO.gemmi.append_residues(newResidues);
-        return residueIndex;
     }
 
     std::vector<gemmi::Residue> TmdetStruct::simpleResidueGapFill(gemmi::Chain& chain, gemmi::Residue& residue,
@@ -177,7 +157,7 @@ namespace Tmdet::DTOS {
             int newSeqId = residue.seqid.num.value - gapLength;
             residueForInsert->seqid.num.value = newSeqId;
             residueForInsert->label_seq.value = labelSeq;
-            residueForInsert->name = sequence[labelSeq];
+            residueForInsert->name = sequence[labelSeq - 1];
             residueForInsert->subchain = chain.name;
 
             newResidues.emplace_back(*residueForInsert);
@@ -186,5 +166,5 @@ namespace Tmdet::DTOS {
         }
         return newResidues;
     }
-
 }
+

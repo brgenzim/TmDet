@@ -21,12 +21,7 @@ namespace Tmdet::DTOS {
         private:
 
         static std::vector<string> getChainSequence(const Tmdet::ValueObjects::TmdetStruct& tmdetVO,
-            // const Tmdet::ValueObjects::Chain& chainVO);
             const gemmi::Chain& chainVO);
-
-        static int fillResidueGapIfNeeded(const Tmdet::ValueObjects::TmdetStruct& tmdetVO,
-            Tmdet::ValueObjects::Chain& chainVO, gemmi::Residue& residue,
-            int from, const std::vector<string> sequence);
 
         static std::vector<gemmi::Residue> simpleResidueGapFill(gemmi::Chain& chain, gemmi::Residue& residue,
             int residueIndex, const std::vector<string> sequence);

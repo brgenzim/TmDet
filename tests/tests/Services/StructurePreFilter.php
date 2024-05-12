@@ -43,9 +43,11 @@ class StructurePreFilter {
     ];
 
     public static array $disallowedNonStandardResidues = [
-        '1Y6', '4BF', '6HG', 'A', 'ACE', 'AME',   'C', 'C42', 'C43', 'CBR', 'CME', 'CSS', 'CXM',  'DA', 'DAL',  'DC',  'DG',  'DI', 'DM0', 'DSN',
-         'DT',  'DU', 'FGA', 'G', 'GPN', 'GTP', 'HT7', 'HYP', 'KCX', 'LLP', 'MCY', 'MHS', 'MSE', 'NH2', 'NPH', 'PCA', 'PTR', 'SCH', 'SEC', 'SEP',
+        '1Y6', '4BF', '6HG',   'A', 'ACE', 'AME',   'C', 'C42', 'C43', 'CBR', 'CME', 'CSS', 'CXM',  'DA', 'DAL',  'DC',  'DG',  'DI', 'DM0', 'DSN',
+         'DT',  'DU', 'FGA',   'G', 'GPN', 'GTP', 'HT7', 'HYP', 'KCX', 'LLP', 'MCY', 'MHS', 'MSE', 'NH2', 'NPH', 'PCA', 'PTR', 'SCH', 'SEC', 'SEP',
         'TPO',   'U', 'UNK',
+        'ABA', 'ALY', 'BE2', 'CAF', 'CMT', 'CRO', 'CRQ', 'CSD', 'CSO', 'CSX', 'DAB', 'DAH', 'DBY', 'EME', 'FT6', 'GOA', 'HIC', 'MDO', 'NLE', 'OAS',
+        'OCS', 'OMT', 'OSE', 'ZAL',
     ];
 
     public function __construct(string $cifPath) {

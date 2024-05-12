@@ -1,22 +1,29 @@
 <?php
 
-$gdbCommands = unserialize(file_get_contents('failed_residues.ser'));
+if ($argc != 2) {
+    die('Usage: php ' . $argv[0] . " stacktrace_file\n");
+}
 
-$checkedResidues = [];
+$traceLines = explode("\n", file_get_contents($argv[1]));
+$traceLines = preg_grep('/std::unordered_map.+__k="/', $traceLines);
 
-foreach ($gdbCommands as $command) {
-    $command = str_replace('gdb', 'gdb --batch -ex r -ex bt -ex exit', $command);
-    exec($command, $output, $resultCode);
-    $output = preg_grep('/std::unordered_map.+__k="/', $output);
-    if (!$output) {
-        fprintf(STDOUT, "Pattern not found in output:\n\t%s\n", $command);
-    } elseif ($output && preg_match('/__k="(\S+?)"/', array_shift($output), $matches)) {
+
+$nonStdResidues = [];
+
+foreach ($traceLines as $line) {
+    if (preg_match('/__k="(\S+?)"/', $line, $matches)) {
         $residue = $matches[1];
-        if (!in_array($residue, $checkedResidues)) {
-            $checkedResidues[$residue] = $command;
+        if (!in_array($residue, $nonStdResidues)) {
+            $nonStdResidues[] = $residue;
         }
     }
 }
 
+sort($nonStdResidues);
 
-file_put_contents('gdb_checked_residues.ser', serialize($checkedResidues));
+foreach (array_chunk($nonStdResidues, 20) as $chunk) {
+    foreach ($chunk as $residue) {
+        printf("%5s, ", "'" . trim($residue) . "'");
+    }
+    printf("\n");
+}
