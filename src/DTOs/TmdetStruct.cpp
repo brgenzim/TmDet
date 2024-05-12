@@ -56,8 +56,9 @@ namespace Tmdet::DTOS {
         // Fill residue gaps in chains where there is usable entity sequence data
         for(auto& chain: tmdetVO.gemmi.models[0].chains) {
             auto sequence = getChainSequence(tmdetVO, chain);
-            if (sequence.size() == 0) {
+            if (sequence.empty() || chain.residues.empty()) {
                 // no supporting information to do gap fix
+                // or there is no residues for the iteration
                 continue;
             }
 
@@ -74,6 +75,23 @@ namespace Tmdet::DTOS {
             }
             chain.append_residues(newChainResidues);
             std::sort(chain.residues.begin(), chain.residues.end(), compareResidues);
+
+            // If chain sequence longer than atom sequence
+            size_t residueCount = chain.residues.size();
+            if (sequence.size() > residueCount) {
+                newChainResidues.resize(0);
+                int labelSeqNum = residueCount;
+                const int seqLength = sequence.size();
+                int nextSeqNum = chain.residues[residueCount - 1].seqid.num.value + 1;
+                while (labelSeqNum < seqLength) {
+                    string residueName = sequence[labelSeqNum];
+                    auto newResidue = createResidue(nextSeqNum, labelSeqNum, residueName, chain.name);
+                    newChainResidues.emplace_back(*newResidue);
+                    labelSeqNum++;
+                    nextSeqNum++;
+                }
+                chain.append_residues(newChainResidues);
+            }
         }
 
         int chainIdx = 0;
@@ -153,18 +171,22 @@ namespace Tmdet::DTOS {
         int gapLength = expectedIndex - labelSeq;
         std::vector<gemmi::Residue> newResidues;
         while (gapLength > 0) {
-            auto residueForInsert = new gemmi::Residue();
             int newSeqId = residue.seqid.num.value - gapLength;
-            residueForInsert->seqid.num.value = newSeqId;
-            residueForInsert->label_seq.value = labelSeq;
-            residueForInsert->name = sequence[labelSeq - 1];
-            residueForInsert->subchain = chain.name;
-
+            auto residueForInsert = createResidue(newSeqId, labelSeq, sequence[labelSeq - 1], chain.name);
             newResidues.emplace_back(*residueForInsert);
             labelSeq++;
             gapLength--;
         }
         return newResidues;
+    }
+
+    gemmi::Residue* TmdetStruct::createResidue(int seqNum, int labelSeqNum, string name, string chainName) {
+        auto residue = new gemmi::Residue();
+        residue->seqid.num.value = seqNum;
+        residue->label_seq.value = labelSeqNum;
+        residue->name = name;
+        residue->subchain = chainName;
+        return residue;
     }
 }
 
