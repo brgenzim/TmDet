@@ -5,6 +5,9 @@
 #include <gemmi/model.hpp>
 #include <gemmi/modify.hpp>
 #include <gemmi/polyheur.hpp>
+#include <gemmi/align.hpp>
+#include <gemmi/seqalign.hpp>
+#include <gemmi/seqtools.hpp>
 #include <DTOs/TmdetStruct.hpp>
 #include <Utils/Xml.hpp>
 #include <Types/Protein.hpp>
@@ -56,6 +59,7 @@ namespace Tmdet::DTOS {
         // Fill residue gaps in chains where there is usable entity sequence data
         for(auto& chain: tmdetVO.gemmi.models[0].chains) {
             auto sequence = getChainSequence(tmdetVO, chain);
+
             if (sequence.empty() || chain.residues.empty()) {
                 // no supporting information to do gap fix
                 // or there is no residues for the iteration
@@ -148,14 +152,13 @@ namespace Tmdet::DTOS {
     }
 
     std::vector<string> TmdetStruct::getChainSequence(
-        const Tmdet::ValueObjects::TmdetStruct& tmdetVO, const gemmi::Chain& chainVO) {
+        const Tmdet::ValueObjects::TmdetStruct& tmdetVO, const gemmi::Chain& chain) {
 
         std::vector<string> sequence;
+        auto entityId = chain.residues[0].entity_id;
         for (const auto& entity : tmdetVO.gemmi.entities) {
-            auto begin = entity.subchains.begin();
-            auto end = entity.subchains.end();
             if (entity.entity_type == gemmi::EntityType::Polymer
-                && std::find(begin, end, chainVO.name) != end) {
+                && entity.name == entityId) {
 
                 sequence = entity.full_sequence;
                 break;
