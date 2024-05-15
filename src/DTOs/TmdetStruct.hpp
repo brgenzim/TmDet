@@ -20,6 +20,8 @@ namespace Tmdet::DTOS {
 
         private:
 
+        static void alignResidues(const Tmdet::ValueObjects::TmdetStruct& tmdetVO);
+
         static std::vector<string> getChainSequence(const Tmdet::ValueObjects::TmdetStruct& tmdetVO,
             const gemmi::Chain& chainVO);
 
@@ -27,6 +29,8 @@ namespace Tmdet::DTOS {
             int residueIndex, const std::vector<string> sequence);
 
         static gemmi::Residue* createResidue(int seqNum, int labelSeqNum, string name, string chainName);
+
+        std::vector<std::pair<char, int>> parseCIGAR(const std::string& cigar);
 
     };
 }

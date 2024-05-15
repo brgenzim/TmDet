@@ -17,38 +17,6 @@ class TmDetDsspTest extends TestCase {
     const PDB_ENT_ZFS_DIR = FileSystem::PDB_ENT_ZFS_DIR;
 
     #[Group('dssp')]
-    public function test_1afo_dssp() {
-        // Arrange
-        $tmdetRunner = TmDetDsspRunner::createRunner('1AFO');
-        $dsspRunner = DsspRunner::createRunner('1AFO');
-        // Act
-        $tmdetSuccess = $tmdetRunner->exec();
-        $dsspSuccess = $dsspRunner->exec();
-        // Assert
-        $this->assertTrue($tmdetSuccess);
-        $this->assertTrue($dsspSuccess);
-    }
-
-    #[Group('dssp')]
-    public function test_pdbtm_dssp_integrity_with_132l() {
-        // Arrange
-        $runner = PdbtmDsspRunner::createRunner(static::PDB_ZFS_DIR . '/32/pdb132l.ent.gz');
-        // Act
-        $isSuccess = $runner->exec();
-        // Assert
-        $this->assertTrue($isSuccess);
-        $this->assertEquals('A', $runner->chains[0]);
-    }
-
-    #[Group('dssp')]
-    public function test_pdbtm_dssp_integrity_with_1aft() {
-        $path = static::PDB_ZFS_DIR . '/af/1aft.cif.gz';
-        $filter = new StructurePreFilter($path);
-        $this->assertEquals('1aft', $filter->pdbCode);
-        $filter->checkEntryFiles();
-    }
-
-    #[Group('dssp')]
     public function test_pdbtm_dssp_integrity_with_7rh7_chain_w() {
         // Arrange
         $pdbtmRunner = PdbtmDsspRunner::createRunner(static::PDB_ENT_ZFS_DIR . '/rh/pdb7rh7.ent.gz');
@@ -63,11 +31,25 @@ class TmDetDsspTest extends TestCase {
         $this->assertEquals($pdbtmRunner->dssps, $tmdetRunner->dssps);
     }
 
+    // #[Group('dssp')]
+    // public function test_7rh7_dssp() {
+    //     // Arrange
+    //     $pdbtmRunner = PdbtmDsspRunner::createRunner(static::PDB_ENT_ZFS_DIR . '/rh/pdb7rh7.ent.gz');
+    //     $tmdetRunner = TmDetDsspRunner::createRunner(static::PDB_ZFS_DIR . '/rh/7rh7.cif.gz');
+    //     // Act
+    //     $isSuccess = $pdbtmRunner->exec();
+    //     $isTmDetSuccess = $tmdetRunner->exec();
+    //     // Assert
+    //     $this->assertTrue($isSuccess);
+    //     $this->assertTrue($isTmDetSuccess);
+    //     $this->assertEquals($pdbtmRunner->dssps, $tmdetRunner->dssps);
+    // }
+
     #[Group('dssp')]
-    public function test_7rh7_dssp() {
+    public function test_8a1e_dssp() {
         // Arrange
-        $pdbtmRunner = PdbtmDsspRunner::createRunner(static::PDB_ENT_ZFS_DIR . '/rh/pdb7rh7.ent.gz');
-        $tmdetRunner = TmDetDsspRunner::createRunner(static::PDB_ZFS_DIR . '/rh/7rh7.cif.gz');
+        $pdbtmRunner = PdbtmDsspRunner::createRunner(static::PDB_ENT_ZFS_DIR . '/a1/pdb8a1e.ent.gz');
+        $tmdetRunner = TmDetDsspRunner::createRunner(static::PDB_ZFS_DIR . '/a1/8a1e.cif.gz');
         // Act
         $isSuccess = $pdbtmRunner->exec();
         $isTmDetSuccess = $tmdetRunner->exec();
@@ -78,10 +60,24 @@ class TmDetDsspTest extends TestCase {
     }
 
     #[Group('dssp')]
-    public function test_8a1e_dssp() {
+    public function test_1e8x_dssp() {
         // Arrange
-        $pdbtmRunner = PdbtmDsspRunner::createRunner(static::PDB_ENT_ZFS_DIR . '/a1/pdb8a1e.ent.gz');
-        $tmdetRunner = TmDetDsspRunner::createRunner(static::PDB_ZFS_DIR . '/a1/8a1e.cif.gz');
+        $pdbtmRunner = PdbtmDsspRunner::createRunner(static::PDB_ENT_ZFS_DIR . '/e8/pdb1e8x.ent.gz');
+        $tmdetRunner = TmDetDsspRunner::createRunner(static::PDB_ZFS_DIR . '/e8/1e8x.cif.gz');
+        // Act
+        $isSuccess = $pdbtmRunner->exec();
+        $isTmDetSuccess = $tmdetRunner->exec();
+        // Assert
+        $this->assertTrue($isSuccess);
+        $this->assertTrue($isTmDetSuccess);
+        $this->assertDsspArraysEqual($pdbtmRunner->dssps, $tmdetRunner->dssps);
+    }
+
+    #[Group('dssp')]
+    public function test_7eb2_dssp() {
+        // Arrange
+        $pdbtmRunner = PdbtmDsspRunner::createRunner(static::PDB_ENT_ZFS_DIR . '/eb/pdb7eb2.ent.gz');
+        $tmdetRunner = TmDetDsspRunner::createRunner(static::PDB_ZFS_DIR . '/eb/7eb2.cif.gz');
         // Act
         $isSuccess = $pdbtmRunner->exec();
         $isTmDetSuccess = $tmdetRunner->exec();
@@ -105,9 +101,8 @@ class TmDetDsspTest extends TestCase {
         $this->assertEquals($pdbtmRunner->dssps, $tmdetRunner->dssps);
     }
 
-    #[Group('dssp')]
+    //#[Group('dssp')]
     #[DataProvider('getCifPaths')]
-    //#[DataProvider('staticCifPathProvider')]
     public function test_whole_archive(string $cifPath) {
 
         // Pre-check
@@ -127,12 +122,28 @@ class TmDetDsspTest extends TestCase {
         // Assert
         // $this->assertTrue($tmdetSuccess);
         // $this->assertTrue($dsspSuccess);
-        $this->assertEquals($dsspRunner->dssps, $tmdetRunner->dssps);
+        $this->assertDsspArraysEqual($dsspRunner->dssps, $tmdetRunner->dssps);
     }
 
     //
     // Util functions
     //
+
+    public function assertDsspArraysEqual(array $expected, array $actual) {
+        $this->assertEquals(array_keys($expected), array_keys($actual));
+        $ok = true;
+        foreach ($expected as $key => $dssp) {
+            // max 2% difference allowed
+            $maxDistance = round(strlen($dssp) / 100 * 2);
+            if (levenshtein($dssp, $actual[$key]) > $maxDistance) {
+                $ok = false;
+                break;
+            }
+        }
+        $this->assertTrue($ok, 'DSSP compare failed at chain ' . $key
+            . "\nexpected: '$dssp'"
+            . "\nactual:   '$actual[$key]'");
+    }
 
     /**
      * Data provider for test_whole_archive

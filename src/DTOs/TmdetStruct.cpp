@@ -57,46 +57,7 @@ namespace Tmdet::DTOS {
         remove_alternative_conformations(tmdetVO.gemmi.models[0]);
 
         // Fill residue gaps in chains where there is usable entity sequence data
-        for(auto& chain: tmdetVO.gemmi.models[0].chains) {
-            auto sequence = getChainSequence(tmdetVO, chain);
-
-            if (sequence.empty() || chain.residues.empty()) {
-                // no supporting information to do gap fix
-                // or there is no residues for the iteration
-                continue;
-            }
-
-            int labelSeq = 1;
-            std::vector<gemmi::Residue> newChainResidues;
-            for( auto& residue: chain.residues) {
-                // insert residues, when there is difference between entity_poly and atom sites seq
-                auto newResidues = simpleResidueGapFill(chain, residue, labelSeq, sequence);
-                if (newResidues.size() > 0) {
-                    labelSeq += newResidues.size();
-                    newChainResidues.insert(newChainResidues.end(), newResidues.begin(), newResidues.end());
-                }
-                labelSeq++;
-            }
-            chain.append_residues(newChainResidues);
-            std::sort(chain.residues.begin(), chain.residues.end(), compareResidues);
-
-            // If chain sequence longer than atom sequence
-            size_t residueCount = chain.residues.size();
-            if (sequence.size() > residueCount) {
-                newChainResidues.resize(0);
-                int labelSeqNum = residueCount;
-                const int seqLength = sequence.size();
-                int nextSeqNum = chain.residues[residueCount - 1].seqid.num.value + 1;
-                while (labelSeqNum < seqLength) {
-                    string residueName = sequence[labelSeqNum];
-                    auto newResidue = createResidue(nextSeqNum, labelSeqNum, residueName, chain.name);
-                    newChainResidues.emplace_back(*newResidue);
-                    labelSeqNum++;
-                    nextSeqNum++;
-                }
-                chain.append_residues(newChainResidues);
-            }
-        }
+        alignResidues(tmdetVO);
 
         int chainIdx = 0;
         for(auto& chain: tmdetVO.gemmi.models[0].chains) {
@@ -180,6 +141,14 @@ namespace Tmdet::DTOS {
             labelSeq++;
             gapLength--;
         }
+        // if (newResidues.empty()) {
+        //     cout << residue.label_seq.value << ":" << residue.name;
+        // } else {
+        //     for (auto& res : newResidues) {
+        //         cout << res.label_seq.value << ":" << res.name << ", ";
+        //     }
+        // }
+        // cout << endl;
         return newResidues;
     }
 
@@ -191,5 +160,77 @@ namespace Tmdet::DTOS {
         residue->subchain = chainName;
         return residue;
     }
+
+    #include <iostream>
+    #include <vector>
+    #include <utility>
+    #include <cctype>
+    #include <cstdlib>
+
+    void TmdetStruct::alignResidues(const Tmdet::ValueObjects::TmdetStruct& tmdetVO) {
+
+        for(auto& chain: tmdetVO.gemmi.models[0].chains) {
+
+            auto sequence = getChainSequence(tmdetVO, chain);
+
+            if (sequence.empty() || chain.residues.empty()) {
+                // no supporting information to do gap fix
+                // or there is no residues for the iteration
+                continue;
+            }
+
+            std::vector<string> chainResidues;
+            for( auto& residue: chain.residues) {
+                chainResidues.emplace_back(residue.name);
+            }
+
+
+            const gemmi::AlignmentScoring* scoring = gemmi::AlignmentScoring::simple();
+            // cout << "one letterSEQ: " << gemmi::one_letter_code(sequence) << endl;
+
+            const std::vector<int> gapOpening;
+            auto alignmentResult2 = gemmi::align_string_sequences(sequence, chainResidues, gapOpening, scoring);
+
+            auto withGaps2 = alignmentResult2.add_gaps(gemmi::one_letter_code(chainResidues) , 2);
+            string cigar = alignmentResult2.cigar_str();
+            // cout << "CIGAR['" << chain.name << "']: " << cigar
+            //     << " identity: " << alignmentResult2.calculate_identity() << endl;
+            // cout << "with gaps2:    " << withGaps2 << endl;
+            // exit(1);
+
+            std::vector<gemmi::Residue>  newChainResidues;
+            int labelSeqNum = 1;
+            for (auto& oneLetterSeq : withGaps2) {
+
+                if (oneLetterSeq != '-') {
+                    labelSeqNum++;
+                    continue;
+                }
+
+                gemmi::Residue* newResidue = createResidue(0, labelSeqNum, sequence[labelSeqNum - 1], chain.name);
+                newChainResidues.emplace_back(*newResidue);
+                labelSeqNum++;
+            }
+            chain.append_residues(newChainResidues);
+            std::sort(chain.residues.begin(), chain.residues.end(), compareResidues);
+        }
+    }
+
+    std::vector<std::pair<char, int>> TmdetStruct::parseCIGAR(const std::string& cigar) {
+        std::vector<std::pair<char, int>> result;
+
+        int length = 0;
+        for (char c : cigar) {
+            if (std::isdigit(c)) {
+                length = length * 10 + (c - '0');
+            } else {
+                result.emplace_back(c, length);
+                length = 0;
+            }
+        }
+
+        return result;
+    }
+
 }
 
