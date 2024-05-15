@@ -25,13 +25,7 @@ namespace Tmdet::DTOS {
         static std::vector<string> getChainSequence(const Tmdet::ValueObjects::TmdetStruct& tmdetVO,
             const gemmi::Chain& chainVO);
 
-        static std::vector<gemmi::Residue> simpleResidueGapFill(gemmi::Chain& chain, gemmi::Residue& residue,
-            int residueIndex, const std::vector<string> sequence);
-
         static gemmi::Residue* createResidue(int seqNum, int labelSeqNum, string name, string chainName);
-
-        std::vector<std::pair<char, int>> parseCIGAR(const std::string& cigar);
-
     };
 }
 
