@@ -6,7 +6,6 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 use Unitmp\TmdetTest\Constants\FileSystem;
-use Unitmp\TmdetTest\Services\DsspRunner;
 use Unitmp\TmdetTest\Services\PdbtmDsspRunner;
 use Unitmp\TmdetTest\Services\StructurePreFilter;
 use Unitmp\TmdetTest\Services\TmDetDsspRunner;
@@ -31,77 +30,29 @@ class TmDetDsspTest extends TestCase {
         $this->assertEquals($pdbtmRunner->dssps, $tmdetRunner->dssps);
     }
 
-    // #[Group('dssp')]
-    // public function test_7rh7_dssp() {
-    //     // Arrange
-    //     $pdbtmRunner = PdbtmDsspRunner::createRunner(static::PDB_ENT_ZFS_DIR . '/rh/pdb7rh7.ent.gz');
-    //     $tmdetRunner = TmDetDsspRunner::createRunner(static::PDB_ZFS_DIR . '/rh/7rh7.cif.gz');
-    //     // Act
-    //     $isSuccess = $pdbtmRunner->exec();
-    //     $isTmDetSuccess = $tmdetRunner->exec();
-    //     // Assert
-    //     $this->assertTrue($isSuccess);
-    //     $this->assertTrue($isTmDetSuccess);
-    //     $this->assertEquals($pdbtmRunner->dssps, $tmdetRunner->dssps);
-    // }
-
     #[Group('dssp')]
-    public function test_8a1e_dssp() {
+    #[DataProvider('cifPathsWithErrorProvider')]
+    public function test_specific_dssp(string $cifPath) {
+        // Pre-check
+        $filter = new StructurePreFilter($cifPath);
+        $exception = null;
+        if (!$filter->tryCheckEntryFiles($exception)) {
+            printf("Skipping test: %s\n", $exception->getMessage());
+            $this->markTestSkipped('Unsupported CIF-ENT pair ' . $cifPath);
+        }
+
         // Arrange
-        $pdbtmRunner = PdbtmDsspRunner::createRunner(static::PDB_ENT_ZFS_DIR . '/a1/pdb8a1e.ent.gz');
-        $tmdetRunner = TmDetDsspRunner::createRunner(static::PDB_ZFS_DIR . '/a1/8a1e.cif.gz');
+        $tmdetRunner = TmDetDsspRunner::createRunner($cifPath);
+        $dsspRunner = PdbtmDsspRunner::createRunner($filter->entFile);
         // Act
-        $isSuccess = $pdbtmRunner->exec();
-        $isTmDetSuccess = $tmdetRunner->exec();
+        $dsspSuccess = $dsspRunner->exec();
+        $tmdetSuccess = $tmdetRunner->exec();
         // Assert
-        $this->assertTrue($isSuccess);
-        $this->assertTrue($isTmDetSuccess);
-        $this->assertEquals($pdbtmRunner->dssps, $tmdetRunner->dssps);
+        $this->assertTrue($dsspSuccess);
+        $this->assertTrue($tmdetSuccess);
+        $this->assertDsspArraysEqual($dsspRunner->dssps, $tmdetRunner->dssps);
     }
 
-    #[Group('dssp')]
-    public function test_1e8x_dssp() {
-        // Arrange
-        $pdbtmRunner = PdbtmDsspRunner::createRunner(static::PDB_ENT_ZFS_DIR . '/e8/pdb1e8x.ent.gz');
-        $tmdetRunner = TmDetDsspRunner::createRunner(static::PDB_ZFS_DIR . '/e8/1e8x.cif.gz');
-        // Act
-        $isSuccess = $pdbtmRunner->exec();
-        $isTmDetSuccess = $tmdetRunner->exec();
-        // Assert
-        $this->assertTrue($isSuccess);
-        $this->assertTrue($isTmDetSuccess);
-        $this->assertDsspArraysEqual($pdbtmRunner->dssps, $tmdetRunner->dssps);
-    }
-
-    #[Group('dssp')]
-    public function test_7eb2_dssp() {
-        // Arrange
-        $pdbtmRunner = PdbtmDsspRunner::createRunner(static::PDB_ENT_ZFS_DIR . '/eb/pdb7eb2.ent.gz');
-        $tmdetRunner = TmDetDsspRunner::createRunner(static::PDB_ZFS_DIR . '/eb/7eb2.cif.gz');
-        // Act
-        $isSuccess = $pdbtmRunner->exec();
-        $isTmDetSuccess = $tmdetRunner->exec();
-        // Assert
-        $this->assertTrue($isSuccess);
-        $this->assertTrue($isTmDetSuccess);
-        $this->assertEquals($pdbtmRunner->dssps, $tmdetRunner->dssps);
-    }
-
-    #[Group('dssp')]
-    public function test_6a1t_dssp() {
-        // Arrange
-        $pdbtmRunner = PdbtmDsspRunner::createRunner(static::PDB_ENT_ZFS_DIR . '/a1/pdb6a1t.ent.gz');
-        $tmdetRunner = TmDetDsspRunner::createRunner(static::PDB_ZFS_DIR . '/a1/6a1t.cif.gz');
-        // Act
-        $isSuccess = $pdbtmRunner->exec();
-        $isTmDetSuccess = $tmdetRunner->exec();
-        // Assert
-        $this->assertTrue($isSuccess);
-        $this->assertTrue($isTmDetSuccess);
-        $this->assertEquals($pdbtmRunner->dssps, $tmdetRunner->dssps);
-    }
-
-    //#[Group('dssp')]
     #[DataProvider('getCifPaths')]
     public function test_whole_archive(string $cifPath) {
 
@@ -120,8 +71,8 @@ class TmDetDsspTest extends TestCase {
         $dsspSuccess = $dsspRunner->exec();
         $tmdetSuccess = $tmdetRunner->exec();
         // Assert
-        // $this->assertTrue($tmdetSuccess);
-        // $this->assertTrue($dsspSuccess);
+        $this->assertTrue($tmdetSuccess);
+        $this->assertTrue($dsspSuccess);
         $this->assertDsspArraysEqual($dsspRunner->dssps, $tmdetRunner->dssps);
     }
 
@@ -150,7 +101,7 @@ class TmDetDsspTest extends TestCase {
      */
     public static function getCifPaths(): array {
 
-        printf("Scanning PDB directories...");
+        printf("Scanning PDB directories...\n");
         $dirs = scandir(static::PDB_ZFS_DIR);
         if (!$dirs || count($dirs) == 2) {
             return [];
@@ -172,38 +123,33 @@ class TmDetDsspTest extends TestCase {
         //return $files;
     }
 
-    public static function staticCifPathProvider(): array {
+    public static function cifPathsWithErrorProvider(): array {
         return [
-            '154l.cif.gz' => [ static::PDB_ZFS_DIR . '/54/154l.cif.gz' ],
-            '1a0h.cif.gz' => [ static::PDB_ZFS_DIR . '/a0/1a0h.cif.gz' ],
-            '1a0t.cif.gz' => [ static::PDB_ZFS_DIR . '/a0/1a0t.cif.gz' ],
-            '2a0z.cif.gz' => [ static::PDB_ZFS_DIR . '/a0/2a0z.cif.gz' ],
-            '3a09.cif.gz' => [ static::PDB_ZFS_DIR . '/a0/3a09.cif.gz' ],
-            '3a0e.cif.gz' => [ static::PDB_ZFS_DIR . '/a0/3a0e.cif.gz' ],
-            '4a05.cif.gz' => [ static::PDB_ZFS_DIR . '/a0/4a05.cif.gz' ],
-            '4a0p.cif.gz' => [ static::PDB_ZFS_DIR . '/a0/4a0p.cif.gz' ],
-            '5a05.cif.gz' => [ static::PDB_ZFS_DIR . '/a0/5a05.cif.gz' ],
-            '5a09.cif.gz' => [ static::PDB_ZFS_DIR . '/a0/5a09.cif.gz' ],
-            '5a0a.cif.gz' => [ static::PDB_ZFS_DIR . '/a0/5a0a.cif.gz' ],
-            '5a0b.cif.gz' => [ static::PDB_ZFS_DIR . '/a0/5a0b.cif.gz' ],
-            '5a0c.cif.gz' => [ static::PDB_ZFS_DIR . '/a0/5a0c.cif.gz' ],
-            '6a0j.cif.gz' => [ static::PDB_ZFS_DIR . '/a0/6a0j.cif.gz' ],
-            '6a0k.cif.gz' => [ static::PDB_ZFS_DIR . '/a0/6a0k.cif.gz' ],
-            '6a0l.cif.gz' => [ static::PDB_ZFS_DIR . '/a0/6a0l.cif.gz' ],
-            '7a0k.cif.gz' => [ static::PDB_ZFS_DIR . '/a0/7a0k.cif.gz' ],
-            '7a0q.cif.gz' => [ static::PDB_ZFS_DIR . '/a0/7a0q.cif.gz' ],
-            '7a0t.cif.gz' => [ static::PDB_ZFS_DIR . '/a0/7a0t.cif.gz' ],
-            '8a0y.cif.gz' => [ static::PDB_ZFS_DIR . '/a0/8a0y.cif.gz' ],
-            '1a14.cif.gz' => [ static::PDB_ZFS_DIR . '/a1/1a14.cif.gz' ],
-            '6a1t.cif.gz' => [ static::PDB_ZFS_DIR . '/a1/6a1t.cif.gz' ],
-            '8a16.cif.gz' => [ static::PDB_ZFS_DIR . '/a1/8a16.cif.gz' ],
-            '8a17.cif.gz' => [ static::PDB_ZFS_DIR . '/a1/8a17.cif.gz' ],
-            '8a1f.cif.gz' => [ static::PDB_ZFS_DIR . '/a1/8a1f.cif.gz' ],
+            '5e8d.cif.gz' => [ static::PDB_ZFS_DIR . '/e8/5e8d.cif.gz' ],
+            '3eap.cif.gz' => [ static::PDB_ZFS_DIR . '/ea/3eap.cif.gz' ],
+            '8eay.cif.gz' => [ static::PDB_ZFS_DIR . '/ea/8eay.cif.gz' ],
+            '6ebd.cif.gz' => [ static::PDB_ZFS_DIR . '/eb/6ebd.cif.gz' ],
+            '6ebq.cif.gz' => [ static::PDB_ZFS_DIR . '/eb/6ebq.cif.gz' ],
+            '5e9d.cif.gz' => [ static::PDB_ZFS_DIR . '/e9/5e9d.cif.gz' ],
+            '6eb4.cif.gz' => [ static::PDB_ZFS_DIR . '/eb/6eb4.cif.gz' ],
+            '6ebg.cif.gz' => [ static::PDB_ZFS_DIR . '/eb/6ebg.cif.gz' ],
+            '6e8r.cif.gz' => [ static::PDB_ZFS_DIR . '/e8/6e8r.cif.gz' ],
+            '6e9q.cif.gz' => [ static::PDB_ZFS_DIR . '/e9/6e9q.cif.gz' ],
+            '7e99.cif.gz' => [ static::PDB_ZFS_DIR . '/e9/7e99.cif.gz' ],
+            '4e8o.cif.gz' => [ static::PDB_ZFS_DIR . '/e8/4e8o.cif.gz' ],
+            '4e98.cif.gz' => [ static::PDB_ZFS_DIR . '/e9/4e98.cif.gz' ],
+            '6ebc.cif.gz' => [ static::PDB_ZFS_DIR . '/eb/6ebc.cif.gz' ],
+           
         ];
     }
 
-    public static function isStructureUnsupported(string $cifPath): bool {
-        exec("zgrep -P 'DNA|RNA' '$cifPath'", $lines, $resultCode);
-        return $resultCode === 0;
+    public static function regressionCifPathProvider(): array {
+        return [
+            '7rh7.cif.gz' => [ static::PDB_ZFS_DIR . '/rh/7rh7.cif.gz' ],
+            '6a1t.cif.gz' => [ static::PDB_ZFS_DIR . '/a1/6a1t.cif.gz' ],
+            '7eb2.cif.gz' => [ static::PDB_ZFS_DIR . '/eb/7eb2.cif.gz' ],
+            '1e8x.cif.gz' => [ static::PDB_ZFS_DIR . '/e8/1e8x.cif.gz' ],
+        ];
     }
+
 }
