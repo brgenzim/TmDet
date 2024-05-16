@@ -8,6 +8,7 @@
 #include <ValueObjects/Membrane.hpp>
 #include <ValueObjects/Chain.hpp>
 #include <Types/Protein.hpp>
+#include <gemmi/cifdoc.hpp>
 #include <gemmi/model.hpp>
 #include <gemmi/neighbor.hpp>
 
@@ -28,8 +29,10 @@ namespace Tmdet::ValueObjects {
         vector<Membrane> membranes;
         vector<Chain> chains;
         gemmi::Structure& gemmi;
+        gemmi::cif::Document& document;
         gemmi::NeighborSearch neighbors;
-        TmdetStruct(gemmi::Structure& _gemmi) : gemmi(_gemmi) {}
+        TmdetStruct(gemmi::Structure& _gemmi, gemmi::cif::Document& _document) : gemmi(_gemmi), document(_document) {
+        }
         ~TmdetStruct() {}
     };
 }

@@ -14,6 +14,7 @@ class TmDetDsspTest extends TestCase {
 
     const PDB_ZFS_DIR = FileSystem::PDB_ZFS_DIR;
     const PDB_ENT_ZFS_DIR = FileSystem::PDB_ENT_ZFS_DIR;
+    const MAX_ALLOWED_LEVENSHTEIN_DISTANCE_IN_PERCENT = 2;
 
     #[Group('dssp')]
     public function test_pdbtm_dssp_integrity_with_7rh7_chain_w() {
@@ -83,17 +84,24 @@ class TmDetDsspTest extends TestCase {
     public function assertDsspArraysEqual(array $expected, array $actual) {
         $this->assertEquals(array_keys($expected), array_keys($actual));
         $ok = true;
-        foreach ($expected as $key => $dssp) {
+        foreach ($expected as $key => $expectedDssp) {
+            $actualDssp = $actual[$key];
             // max 2% difference allowed
-            $maxDistance = round(strlen($dssp) / 100 * 2);
-            if (levenshtein($dssp, $actual[$key]) > $maxDistance) {
+            $maxDistance = round(strlen($expectedDssp) / 100 * static::MAX_ALLOWED_LEVENSHTEIN_DISTANCE_IN_PERCENT, 2);
+            $actualDistance = levenshtein($expectedDssp, $actualDssp);
+            $actualPercent = round($actualDistance / strlen($actualDssp) * 100, 2);
+            if ($actualDistance > $maxDistance) {
                 $ok = false;
                 break;
             }
         }
         $this->assertTrue($ok, 'DSSP compare failed at chain ' . $key
-            . "\nexpected: '$dssp'"
-            . "\nactual:   '$actual[$key]'");
+            . "\nexpected: '$expectedDssp'"
+            . "\nactual:   '$actualDssp'"
+            . "\nmax expected levenshtein distance (%): "
+            .  static::MAX_ALLOWED_LEVENSHTEIN_DISTANCE_IN_PERCENT
+            . ", actual distance (%): $actualPercent"
+            . "\nmax expected levenshtein distance: $maxDistance, actual distance: $actualDistance");
     }
 
     /**

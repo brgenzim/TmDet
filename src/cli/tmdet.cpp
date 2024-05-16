@@ -6,6 +6,7 @@
 #include <ValueObjects/TmdetStruct.hpp>
 #include <DTOs/TmdetStruct.hpp>
 #include <gemmi/cif.hpp>
+#include <gemmi/cifdoc.hpp>
 #include <gemmi/gz.hpp>
 #include <gemmi/mmcif.hpp>
 #include <gemmi/model.hpp>
@@ -26,8 +27,9 @@ int main(int argc, char *argv[]) {
     bool tm = args.getValueAsBool("tm");
     
     //input is mandatory
-    pdb = gemmi::make_structure(cif::read(gemmi::MaybeGzipped(inputPath)));
-    Tmdet::ValueObjects::TmdetStruct tmdetVO = Tmdet::ValueObjects::TmdetStruct(pdb);
+    gemmi::cif::Document document = gemmi::cif::read(gemmi::MaybeGzipped(inputPath));
+    pdb = gemmi::make_structure(std::move(document));
+    Tmdet::ValueObjects::TmdetStruct tmdetVO = Tmdet::ValueObjects::TmdetStruct(pdb, document);
     Tmdet::DTOS::TmdetStruct::parse(tmdetVO);
     Tmdet::Utils::Dssp dssp = Tmdet::Utils::Dssp(tmdetVO);
     dssp.calcDsspOnStructure();
