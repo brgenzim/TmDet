@@ -20,7 +20,6 @@ namespace Tmdet::DTOS {
 
         private:
 
-        static void parseSecondaryStructure(const Tmdet::ValueObjects::TmdetStruct& tmdetVO);
         static void alignResidues(const Tmdet::ValueObjects::TmdetStruct& tmdetVO);
 
         static std::vector<string> getChainSequence(const Tmdet::ValueObjects::TmdetStruct& tmdetVO,

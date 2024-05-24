@@ -95,7 +95,7 @@ namespace Tmdet::Utils {
                 return name;
             }
         }
-        return (char *)nullptr;
+        return string();
     }
 
     string Args::_setValueByShortFlag(char *flag) {
@@ -104,7 +104,7 @@ namespace Tmdet::Utils {
                 return name;
             }
         }
-        return (char *)nullptr;
+        return string();
     }
 
     void Args::_setValue(string name, char *value) {

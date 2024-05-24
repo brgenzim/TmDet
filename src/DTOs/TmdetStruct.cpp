@@ -139,79 +139,11 @@ namespace Tmdet::DTOS {
         return residue;
     }
 
-    void TmdetStruct::parseSecondaryStructure(const Tmdet::ValueObjects::TmdetStruct& tmdetVO) {
-
-        cif::Block& block = tmdetVO.document.blocks[0];
-        // TODO: check: has_mmcif_category
-        auto structConfLoop = block.find_loop_item("_struct_conf.id")->loop;
-        int loopLength = structConfLoop.length();
-        int idCol = structConfLoop.find_tag("_struct_conf.id");
-        int typeIdCol = structConfLoop.find_tag("_struct_conf.conf_type_id");
-        int beginCompCol = structConfLoop.find_tag("_struct_conf.beg_label_comp_id");
-        int beginAsymIdCol = structConfLoop.find_tag("_struct_conf.beg_label_asym_id");
-        int beginLabelSeqCol = structConfLoop.find_tag("_struct_conf.beg_label_seq_id");
-        int endLabelSeqCol = structConfLoop.find_tag("_struct_conf.end_label_seq_id");
-        int helixLengthCol = structConfLoop.find_tag("_struct_conf.pdbx_PDB_helix_length");
-
-        // TODO: chain A seq
-        auto sequence = getChainSequence(tmdetVO, tmdetVO.gemmi.models[0].chains[0]);
-        std::string dsspString(sequence.size(), '-');
-        for (int row = 0; row < loopLength; row++) {
-            // TODO separate chains in this for loop based on asymidcol
-            const int seqBegin = std::stoi(structConfLoop.val(row, beginLabelSeqCol), nullptr);
-            const std::string& type = structConfLoop.val(row, typeIdCol);
-            const int helixLength = std::stoi(structConfLoop.val(row, helixLengthCol));
-            char cType = '-';
-            if (type == "BEND") {
-                cType = 'B';
-            } else if (type.find("HELX") == 0) {
-                cType = 'H';
-            } else if (type == "OTHER") {
-                cType = 'O';
-            } else if (type == "STRN") {
-                cType = 'S';
-            } else if (type.find("TURN") == 0) {
-                cType = 'T';
-            }
-            auto begin = dsspString.begin() + seqBegin - 1;
-            auto end = begin + helixLength;
-            for (auto it = begin; it < end; it++) {
-                *it = cType;
-            }
-        }
-
-        // Beta strands
-        auto sheetRangeLoop = block.find_loop_item("_struct_sheet_range.id")->loop;
-        loopLength = sheetRangeLoop.length();
-        int sheetIdCol = sheetRangeLoop.find_tag("_struct_sheet_range.sheet_id");
-        idCol = sheetRangeLoop.find_tag("_struct_sheet_range.id");
-        beginCompCol = sheetRangeLoop.find_tag("_struct_sheet_range.beg_label_comp_id");
-        beginAsymIdCol = sheetRangeLoop.find_tag("_struct_sheet_range.beg_label_asym_id");
-        beginLabelSeqCol = sheetRangeLoop.find_tag("_struct_sheet_range.beg_label_seq_id");
-        endLabelSeqCol = sheetRangeLoop.find_tag("_struct_sheet_range.end_label_seq_id");
-        for (int row = 0; row < loopLength; row++) {
-            // TODO separate chains in this for loop based on asymidcol
-            const int seqBegin = std::stoi(sheetRangeLoop.val(row, beginLabelSeqCol), nullptr);
-            const int seqEnd = std::stoi(sheetRangeLoop.val(row, endLabelSeqCol));
-            auto begin = dsspString.begin() + seqBegin - 1;
-            auto end = dsspString.begin() + seqEnd - 1;
-            for (auto it = begin; it <= end; it++) {
-                *it = 'E';
-            }
-        }
-
-        cout << "DSSP: " << endl << dsspString << endl;
-        // TODO:
-        //exit(1);
-    }
-
     void TmdetStruct::alignResidues(const Tmdet::ValueObjects::TmdetStruct& tmdetVO) {
 
         for(auto& chain: tmdetVO.gemmi.models[0].chains) {
 
             auto sequence = getChainSequence(tmdetVO, chain);
-            parseSecondaryStructure(tmdetVO);
-
 
             if (sequence.empty() || chain.residues.empty()) {
                 // no supporting information to do gap fix

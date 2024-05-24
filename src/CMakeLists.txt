@@ -10,6 +10,7 @@ AUX_SOURCE_DIRECTORY( . LibrarySources )
 AUX_SOURCE_DIRECTORY( cli CliSources )
 AUX_SOURCE_DIRECTORY( Utils UtilsSources )
 AUX_SOURCE_DIRECTORY( DTOs DtoSources )
+AUX_SOURCE_DIRECTORY( Services ServicesSources )
 AUX_SOURCE_DIRECTORY( "${PROJECT_SOURCE_DIR}/../contrib/pugixml/src/" PugiSources)
 
 LIST (APPEND FULL_SRC
@@ -17,6 +18,7 @@ LIST (APPEND FULL_SRC
      ${UtilsSources}
      ${DtoSources}
      ${PugiSources}
+     ${ServicesSources}
 )
 
 ADD_LIBRARY( TmdetLib STATIC ${FULL_SRC} )
