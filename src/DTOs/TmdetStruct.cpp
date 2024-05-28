@@ -14,7 +14,10 @@
 #include <Utils/Xml.hpp>
 #include <Types/Protein.hpp>
 #include <Types/Residue.hpp>
+#include <Types/SecStruct.hpp>
 #include <ValueObjects/TmdetStruct.hpp>
+#include <Services/PromotifService.hpp>
+
 
 using namespace std;
 
@@ -60,15 +63,19 @@ namespace Tmdet::DTOS {
 
         // Fill residue gaps in chains where there is usable entity sequence data
         alignResidues(tmdetVO);
+        auto secondaryStructures = Tmdet::Services::PromotifService::process(tmdetVO.inputPath);
 
         int chainIdx = 0;
         for(auto& chain: tmdetVO.gemmi.models[0].chains) {
             Tmdet::ValueObjects::Chain chainVO = Tmdet::ValueObjects::Chain(chain);
             chainVO.idx = chainIdx++;
             int residueIdx = 0;
+            auto dsspString = secondaryStructures[chain.name];
             for( auto& residue: chain.residues) {
                 Tmdet::ValueObjects::Residue residueVO = Tmdet::ValueObjects::Residue(residue);
                 residueVO.chainIdx = chainVO.idx;
+                char dsspChar = dsspString[residueIdx];
+                residueVO.ss = Tmdet::Types::SecStructs.at(dsspChar);
                 residueVO.idx = residueIdx++;
                 residueVO.surface = 0.0;
                 int atomIdx = 0;

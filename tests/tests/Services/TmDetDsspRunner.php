@@ -21,8 +21,9 @@ class TmDetDsspRunner extends AbstractProcessRunner {
                     $this->chains[] = $chain;
                 }
             }
-            if ($beforeDebugLines) {
-                $selectedLines[] = $line;
+            if ($beforeDebugLines && str_contains($line, ':')) {
+                list($chain, $dsspString) = explode(':', $line);
+                $selectedLines[] = trim($dsspString);
             }
         }
 

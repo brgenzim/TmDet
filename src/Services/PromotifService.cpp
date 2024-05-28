@@ -27,19 +27,24 @@ namespace Tmdet::Services::PromotifService {
         int sequenceEnd;
     };
 
-    static std::map<char, std::string> parseOutput(const std::string& promotifOutput);
+    static std::map<std::string, std::string> parseOutput(const std::string& promotifOutput);
     static std::string exec(const std::string& cmd);
     static std::vector<string> getChainSequence(const gemmi::Structure& structure, const string& chainName);
     static std::map<string, std::vector<SecondaryStruct>> parseStructConf(gemmi::cif::Block& block);
     static std::map<string, std::vector<SecondaryStruct>> parseSheetRange(gemmi::cif::Block& block);
     static void updateDsspStrings(std::map<string, string>& dsspStrings, std::map<string, std::vector<SecondaryStruct>>& secondaryStructs);
+    static char getSecondaryStructureType(const string& mmCifType);
 
 
-    std::map<char, std::string> process(const std::string& cifPath) {
+    std::map<std::string, std::string> process(const std::string& cifPath) {
+
+        // TODO: get RCSBROOT env var
+        // TODO: check process_entry is in PATH env var
+
         std::string cmd = std::string(CMD_TEMPLATE);
         // NOTE std::format is not supported in gcc 11 (Ubuntu 22.04)
         if (cifPath.ends_with("gz")) {
-            // use zcat instead of cat defaulted in the command template
+            // use zcat instead of 'cat' defaulted in the command template
             cmd = "z" + cmd;
         }
         cmd = cmd.replace(cmd.find("{}"), 2, cifPath);
@@ -62,10 +67,9 @@ namespace Tmdet::Services::PromotifService {
         return result;
     }
 
-    static std::map<char, std::string> parseOutput(const std::string& promotifOutput) {
-        char getSecondaryStructureType(const string& mmCifType);
+    static std::map<std::string, std::string> parseOutput(const std::string& promotifOutput) {
 
-        std::map<char, std::string> chainStructures;
+        std::map<string, string> dsspStrings;
         std::istringstream stream(promotifOutput);
 
         gemmi::cif::Document document = gemmi::cif::read_string(promotifOutput);
@@ -76,7 +80,6 @@ namespace Tmdet::Services::PromotifService {
         auto sheetRanges = parseSheetRange(block);
 
         // init dssp strings
-        std::map<string, string> dsspStrings;
         for (const auto& chainId : structConfs) {
             const auto& sequence = getChainSequence(structure, chainId.first);
             string dssp(sequence.size(), '-');
@@ -97,7 +100,7 @@ namespace Tmdet::Services::PromotifService {
         for (auto& [key, value] : dsspStrings) {
             cout << key << ": " << value << endl;
         }
-        return chainStructures;
+        return dsspStrings;
     }
 
     std::vector<string> getChainSequence(const gemmi::Structure& structure, const string& chainName) {
@@ -180,7 +183,11 @@ namespace Tmdet::Services::PromotifService {
     std::map<string, std::vector<SecondaryStruct>> parseSheetRange(gemmi::cif::Block& block) {
         // Beta strands
         std::map<string, std::vector<SecondaryStruct>> secondaryStructures;
-        auto sheetRangeLoop = block.find_loop_item("_struct_sheet_range.id")->loop;
+        auto loopPointer = block.find_loop_item("_struct_sheet_range.id");
+        if (loopPointer == NULL) {
+            return secondaryStructures;
+        }
+        auto sheetRangeLoop = loopPointer->loop;
         int loopLength = sheetRangeLoop.length();
         // int sheetIdCol = sheetRangeLoop.find_tag("_struct_sheet_range.sheet_id");
         // int idCol = sheetRangeLoop.find_tag("_struct_sheet_range.id");

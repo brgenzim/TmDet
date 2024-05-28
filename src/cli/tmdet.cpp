@@ -30,9 +30,9 @@ int main(int argc, char *argv[]) {
     gemmi::cif::Document document = gemmi::cif::read(gemmi::MaybeGzipped(inputPath));
     pdb = gemmi::make_structure(std::move(document));
     Tmdet::ValueObjects::TmdetStruct tmdetVO = Tmdet::ValueObjects::TmdetStruct(pdb, document);
+    tmdetVO.inputPath = inputPath;
     Tmdet::DTOS::TmdetStruct::parse(tmdetVO);
     Tmdet::Utils::Dssp dssp = Tmdet::Utils::Dssp(tmdetVO);
-    dssp.calcDsspOnStructure();
     dssp.writeDsspOnStructure();
     Tmdet::Utils::Surface surf = Tmdet::Utils::Surface(tmdetVO);
     surf.main();

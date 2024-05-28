@@ -18,6 +18,7 @@ namespace Tmdet::ValueObjects {
 
     struct TmdetStruct {
         string code;
+        string inputPath;
         bool tmp;
         string date;
         vector<Modification> modifications;

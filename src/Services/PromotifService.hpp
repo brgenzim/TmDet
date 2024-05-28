@@ -6,7 +6,7 @@
 
 namespace Tmdet::Services::PromotifService {
 
-    std::map<char, std::string> process(const std::string& cifPath);
+    std::map<std::string, std::string> process(const std::string& cifPath);
 
 }
 
