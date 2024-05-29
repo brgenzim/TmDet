@@ -189,19 +189,4 @@ namespace Tmdet::DTOS {
         }
     }
 
-    void TmdetStruct::updateGemmiAtoms(Tmdet::ValueObjects::TmdetStruct& tmdetVO) {
-        for(auto& chain: tmdetVO.chains) {
-
-            auto gemmiChain = tmdetVO.gemmi.models[0].find_chain(chain.id);
-            if (gemmiChain == NULL) {
-                continue;
-            }
-
-            for( auto& residue: chain.residues) {
-                for( auto& atom: residue.atoms) {
-                    gemmiChain->residues[residue.idx].atoms[atom.idx].pos = atom.gemmi.pos;
-                }
-            }
-        }
-    }
 }

@@ -16,8 +16,6 @@ namespace Tmdet::DTOS {
         static void parse(Tmdet::ValueObjects::TmdetStruct& tmdetVO);
         static void out(Tmdet::ValueObjects::TmdetStruct& tmdetVO);
 
-        static void updateGemmiAtoms(Tmdet::ValueObjects::TmdetStruct& tmdetVO);
-
         private:
 
         static bool compareResidues(const gemmi::Residue& res1, const gemmi::Residue& res2);
