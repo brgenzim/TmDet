@@ -16,16 +16,18 @@ namespace Tmdet::DTOS {
         static void parse(Tmdet::ValueObjects::TmdetStruct& tmdetVO);
         static void out(Tmdet::ValueObjects::TmdetStruct& tmdetVO);
 
-        static bool compareResidues(const gemmi::Residue& res1, const gemmi::Residue& res2);
+        static void updateGemmiAtoms(Tmdet::ValueObjects::TmdetStruct& tmdetVO);
 
         private:
 
+        static bool compareResidues(const gemmi::Residue& res1, const gemmi::Residue& res2);
         static void alignResidues(const Tmdet::ValueObjects::TmdetStruct& tmdetVO);
 
         static std::vector<string> getChainSequence(const Tmdet::ValueObjects::TmdetStruct& tmdetVO,
             const gemmi::Chain& chainVO);
 
         static gemmi::Residue* createResidue(int seqNum, int labelSeqNum, string name, string chainName);
+
     };
 }
 

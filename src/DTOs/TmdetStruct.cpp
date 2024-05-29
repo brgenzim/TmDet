@@ -60,6 +60,8 @@ namespace Tmdet::DTOS {
         remove_hydrogens(tmdetVO.gemmi.models[0]);
         remove_ligands_and_waters(tmdetVO.gemmi.models[0]);
         remove_alternative_conformations(tmdetVO.gemmi.models[0]);
+        // keep only the first model
+        tmdetVO.gemmi.models.resize(1);
 
         // Fill residue gaps in chains where there is usable entity sequence data
         alignResidues(tmdetVO);
@@ -187,4 +189,19 @@ namespace Tmdet::DTOS {
         }
     }
 
+    void TmdetStruct::updateGemmiAtoms(Tmdet::ValueObjects::TmdetStruct& tmdetVO) {
+        for(auto& chain: tmdetVO.chains) {
+
+            auto gemmiChain = tmdetVO.gemmi.models[0].find_chain(chain.id);
+            if (gemmiChain == NULL) {
+                continue;
+            }
+
+            for( auto& residue: chain.residues) {
+                for( auto& atom: residue.atoms) {
+                    gemmiChain->residues[residue.idx].atoms[atom.idx].pos = atom.gemmi.pos;
+                }
+            }
+        }
+    }
 }

@@ -4,6 +4,7 @@
 #include <vector>
 #include <map>
 #include <cstdio>
+#include <cstdlib>
 #include <memory>
 
 #include <gemmi/cif.hpp>
@@ -13,6 +14,7 @@
 #include <Services/PromotifService.hpp>
 
 #define READ_BUFFER_SIZE 200
+#define PROCESS_ENTRY_CMD "process_entry"
 #define CMD_TEMPLATE "cat {} | process_entry -input /dev/stdin -input_format cif -output /dev/stdout -output_format cif -keep_original_numbering"
 #define SECONDARY_STRUCTURE_COLUMN 17
 
@@ -38,8 +40,15 @@ namespace Tmdet::Services::PromotifService {
 
     std::map<std::string, std::string> process(const std::string& cifPath) {
 
-        // TODO: get RCSBROOT env var
-        // TODO: check process_entry is in PATH env var
+        auto rcsbRoot = std::getenv("RCSBROOT");
+        if (rcsbRoot == nullptr) {
+            throw runtime_error(string("RCSBROOT environment variable is not set"));
+        }
+        auto res = exec(string("which ") + PROCESS_ENTRY_CMD);
+        if (res == "") {
+            throw runtime_error(string("command not found: '") + PROCESS_ENTRY_CMD + "' is not on your PATH");
+        }
+
 
         std::string cmd = std::string(CMD_TEMPLATE);
         // NOTE std::format is not supported in gcc 11 (Ubuntu 22.04)
