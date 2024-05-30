@@ -11,8 +11,6 @@
 #include <gemmi/gz.hpp>
 #include <gemmi/mmcif.hpp>
 #include <gemmi/model.hpp>
-#include <gemmi/to_cif.hpp>
-#include <gemmi/to_mmcif.hpp>
 
 using namespace std;
 
@@ -45,11 +43,6 @@ int main(int argc, char *argv[]) {
         notTransmembrane(xmlPath, tmdetVO);
     }
 
-    // TODO: implement cif writer function
-    std::ofstream outCif("/tmp/out.cif");
-    gemmi::cif::WriteOptions options(gemmi::cif::Style::Pdbx);
-    document = make_mmcif_document(tmdetVO.gemmi);
-    gemmi::cif::write_cif_to_stream(outCif, document, options);
 }
 
 Tmdet::Utils::Args setArguments(int argc, char *argv[]) {
