@@ -1,6 +1,7 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include <fstream>
 #include <algorithm>
 #include <cstdlib>
 #include <gemmi/cifdoc.hpp>
@@ -10,6 +11,8 @@
 #include <gemmi/align.hpp>
 #include <gemmi/seqalign.hpp>
 #include <gemmi/seqtools.hpp>
+#include <gemmi/to_cif.hpp>
+#include <gemmi/to_mmcif.hpp>
 #include <DTOs/TmdetStruct.hpp>
 #include <Utils/Xml.hpp>
 #include <Types/Protein.hpp>
@@ -54,6 +57,13 @@ namespace Tmdet::DTOS {
         xml.setMembranes(tmdetVO.membranes);
         xml.setChains(tmdetVO.chains);
         xml.write(path);
+    }
+
+    void TmdetStruct::writeCif(Tmdet::ValueObjects::TmdetStruct& tmdetVO, string path) {
+        std::ofstream outCif(path);
+        gemmi::cif::WriteOptions options(gemmi::cif::Style::Pdbx);
+        gemmi::cif::Document document = make_mmcif_document(tmdetVO.gemmi);
+        gemmi::cif::write_cif_to_stream(outCif, document, options);
     }
 
     void TmdetStruct::parse(Tmdet::ValueObjects::TmdetStruct& tmdetVO) {

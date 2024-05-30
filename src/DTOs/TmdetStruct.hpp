@@ -13,6 +13,7 @@ namespace Tmdet::DTOS {
     struct TmdetStruct {
         static void readXml(Tmdet::ValueObjects::TmdetStruct& tmdetVO, string path);
         static void writeXml(Tmdet::ValueObjects::TmdetStruct& tmdetVO, string path);
+        static void writeCif(Tmdet::ValueObjects::TmdetStruct& tmdetVO, string path);
         static void parse(Tmdet::ValueObjects::TmdetStruct& tmdetVO);
         static void out(Tmdet::ValueObjects::TmdetStruct& tmdetVO);
 
