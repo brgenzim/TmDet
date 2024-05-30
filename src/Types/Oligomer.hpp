@@ -30,6 +30,10 @@ namespace Tmdet::Types {
             "HomoHeteroOligomer",
             "There several different chains in the protein but multiple times"
         };
+        const Oligomer HETERO_WITH_HOMO_OLIGOMER = {
+            "HeteroWithHomoOligomer",
+            "There are several different chains, but one of them appears more than two times"
+        };
     }
 
     const unordered_map<string, const Oligomer> Oligomers = {
