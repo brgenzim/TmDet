@@ -33,4 +33,8 @@ TARGET_LINK_LIBRARIES(tmdet PRIVATE TmdetLib z gemmi::gemmi_cpp)
 INSTALL( TARGETS tmdet RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX_BIN} )
 
 
+ADD_EXECUTABLE( fragment_cif cli/fragment_cif.cpp)
+TARGET_LINK_LIBRARIES(fragment_cif TmdetLib z gemmi::gemmi_cpp)
+INSTALL( TARGETS fragment_cif RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX_BIN} )
+
 #INSTALL( FILES PdbLib.h DESTINATION include)
