@@ -2,6 +2,8 @@
 
 namespace Unitmp\TmdetTest\Services;
 
+use function PHPUnit\Framework\assertEquals;
+
 class TmDetDsspRunner extends AbstractProcessRunner {
 
     const EXEC = '../build/src/tmdet';
@@ -33,6 +35,8 @@ class TmDetDsspRunner extends AbstractProcessRunner {
             var_dump($this->chains);
             var_dump($selectedLines);
         }
+        assertEquals(count($this->chains), count($selectedLines),
+            'Chain counts do not match with number of dssp lines');
         $this->dssps = array_combine($this->chains, $selectedLines);
 
         return $selectedLines;

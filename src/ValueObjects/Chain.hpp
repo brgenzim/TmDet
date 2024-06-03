@@ -23,7 +23,9 @@ namespace Tmdet::ValueObjects {
         vector<Residue> residues;
         int idx;
         int length;
-        Chain(gemmi::Chain& _gemmi) : gemmi(_gemmi) {}
+        Chain(gemmi::Chain& _gemmi) : gemmi(_gemmi) {
+            this->id = gemmi.name;
+        }
         ~Chain() {}
     };
 }

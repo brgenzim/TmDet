@@ -2,6 +2,7 @@
 #define __TMDET_TYPES_RESIDUE__
 
 #include <unordered_map>
+#include <map>
 #include <string>
 #include <Types/Atom.hpp>
 
@@ -313,6 +314,9 @@ namespace Tmdet::Types {
                 {"OXT", {AtomType::O, 0, 0}}
             }
         };
+        extern map<string, Residue> ChemicalCompoundDictionary;
+
+        extern Residue getResidue(const string& threeLetterCode);
     };
 
     const unordered_map<string, const Residue> Residues = {

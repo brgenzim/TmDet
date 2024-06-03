@@ -14,7 +14,21 @@ class TmDetDsspTest extends TestCase {
 
     const PDB_ZFS_DIR = FileSystem::PDB_ZFS_DIR;
     const PDB_ENT_ZFS_DIR = FileSystem::PDB_ENT_ZFS_DIR;
-    const MAX_ALLOWED_LEVENSHTEIN_DISTANCE_IN_PERCENT = 15;
+    const MAX_ALLOWED_LEVENSHTEIN_DISTANCE_IN_PERCENT = 2;
+
+    #[Group('dssp')]
+    public function test_pdbtm_dssp_integrity_with_1afo_chain_A() {
+        // Arrange
+        $pdbtmRunner = PdbtmDsspRunner::createRunner(static::PDB_ENT_ZFS_DIR . '/af/pdb1afo.ent.gz');
+        $tmdetRunner = TmDetDsspRunner::createRunner(static::PDB_ZFS_DIR . '/af/1afo.cif.gz');
+        // Act
+        $isSuccess = $pdbtmRunner->exec();
+        $isTmDetSuccess = $tmdetRunner->exec();
+        // Assert
+        $this->assertTrue($isSuccess);
+        $this->assertTrue($isTmDetSuccess);
+        $this->assertDsspArraysEqual($pdbtmRunner->dssps, $tmdetRunner->dssps);
+    }
 
     #[Group('dssp')]
     public function test_pdbtm_dssp_integrity_with_7rh7_chain_w() {
@@ -85,7 +99,7 @@ class TmDetDsspTest extends TestCase {
         $this->assertEquals(array_keys($expected), array_keys($actual));
         $ok = true;
         foreach ($expected as $key => $expectedDssp) {
-            $expectedDssp = $this->promotifCompatible($expectedDssp);
+            //$expectedDssp = $this->promotifCompatible($expectedDssp);
             $actualDssp = $actual[$key];
             if (strlen($expectedDssp) != strlen($actualDssp)) {
                 break;
@@ -128,7 +142,7 @@ class TmDetDsspTest extends TestCase {
     public static function getCifPaths(): array {
 
         // TODO: remove later
-        //return [ [ 'not-existing.cif.gz' ] ];
+        return [ [ 'not-existing.cif.gz' ] ];
 
         printf("Scanning PDB directories...\n");
         $dirs = scandir(static::PDB_ZFS_DIR);

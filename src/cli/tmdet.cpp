@@ -34,6 +34,7 @@ int main(int argc, char *argv[]) {
     tmdetVO.inputPath = inputPath;
     Tmdet::DTOS::TmdetStruct::parse(tmdetVO);
     Tmdet::Utils::Dssp dssp = Tmdet::Utils::Dssp(tmdetVO);
+    dssp.calcDsspOnStructure();
     dssp.writeDsspOnStructure();
     Tmdet::Utils::Surface surf = Tmdet::Utils::Surface(tmdetVO);
     surf.main();

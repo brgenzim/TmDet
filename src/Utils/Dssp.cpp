@@ -42,7 +42,7 @@ namespace Tmdet::Utils {
     }
 
     void Dssp::writeDsspOnChain(Tmdet::ValueObjects::Chain& chain) {
-        cout << chain.id << endl;
+        cout << chain.id << ": ";
         for (Tmdet::ValueObjects::Residue& res : chain.residues) {
             cout << res.ss.code;
         }
