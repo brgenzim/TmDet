@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <Services/ConfigurationService.hpp>
 #include <Utils/Args.hpp>
 #include <Utils/Dssp.hpp>
 #include <Utils/Surface.hpp>
@@ -20,13 +21,15 @@ void notTransmembrane(string x, Tmdet::ValueObjects::TmdetStruct& tmdetVO);
 int main(int argc, char *argv[]) {
     gemmi::Structure pdb;
     Tmdet::Utils::Args args = setArguments(argc,argv);
+    Tmdet::Services::ConfigurationService::init();
+    // Tmdet::Services::ConfigurationService::dump();
     string inputPath = args.getValueAsString("i");
     string xmlPath = args.getValueAsString("x");
     string outputPdbPath = args.getValueAsString("p");
     bool n = args.getValueAsBool("n");
     bool nd = args.getValueAsBool("nd");
     bool tm = args.getValueAsBool("tm");
-    
+
     //input is mandatory
     gemmi::cif::Document document = gemmi::cif::read(gemmi::MaybeGzipped(inputPath));
     pdb = gemmi::make_structure(std::move(document));
