@@ -35,6 +35,9 @@ namespace Tmdet::Services::ConfigurationService {
         // set CCD and TMDET directories
         Config[Keys::TMDET_DIRECTORY] = baseDir;
         Config[Keys::CHEMICAL_COMPONENT_DIRECTORY] = baseDir + "/data/ccd";
+        Config[Keys::CHEMICAL_COMPONENT_FILE] = Config[Keys::CHEMICAL_COMPONENT_DIRECTORY] + "/components.cif.gz";
+        Config[Keys::CHEMICAL_COMPONENT_DOWNLOAD_SCRIPT] = Config[Keys::TMDET_DIRECTORY]
+            + "/scripts/get-chemical-component-directory.sh";
 
         // set RCSBROOT
         std::string value = getEnv("RCSBROOT");

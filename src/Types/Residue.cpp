@@ -5,6 +5,8 @@
 #include <gemmi/cifdoc.hpp>
 #include <gemmi/cif.hpp>
 #include <gemmi/gz.hpp>
+#include <Services/ConfigurationService.hpp>
+#include <Services/ChemicalComponentDirectoryService.hpp>
 
 using namespace std;
 
@@ -22,7 +24,11 @@ namespace Tmdet::Types {
                 return ChemicalCompoundDictionary[threeLetterCode];
             }
 
-            const string chemCompDirectory = string("CCD-fragments/") + threeLetterCode[0] + "/" + threeLetterCode[1];
+            if (!Tmdet::Services::ChemicalComponentDirectoryService::isBuilt()) {
+                Tmdet::Services::ChemicalComponentDirectoryService::build();
+            }
+            const string chemCompDirectory = string(Tmdet::Services::ConfigurationService::getValue(Tmdet::Services::ConfigurationService::Keys::CHEMICAL_COMPONENT_DIRECTORY))
+                + "/" + threeLetterCode[0] + "/" + threeLetterCode[1];
 
             gemmi::cif::Document document = gemmi::cif::read(gemmi::MaybeGzipped(chemCompDirectory + "/" + threeLetterCode + ".cif"));
             gemmi::cif::Block& block = document.blocks[0];

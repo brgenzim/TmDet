@@ -22,7 +22,6 @@ int main(int argc, char *argv[]) {
     gemmi::Structure pdb;
     Tmdet::Utils::Args args = setArguments(argc,argv);
     Tmdet::Services::ConfigurationService::init();
-    // Tmdet::Services::ConfigurationService::dump();
     string inputPath = args.getValueAsString("i");
     string xmlPath = args.getValueAsString("x");
     string outputPdbPath = args.getValueAsString("p");
