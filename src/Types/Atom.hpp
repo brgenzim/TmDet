@@ -60,6 +60,7 @@ namespace Tmdet::Types {
         const Atom TE = {"TE", 2.06};
         const Atom TL = {"TL", 1.96};
         const Atom U = {"U", 1.86};
+        const Atom V = {"V", 2.42};
         const Atom XE = {"XE", 2.16};
         const Atom ZN = {"ZN", 1.39};
         const Atom UNK = {"UNK", 1.8};
@@ -112,6 +113,7 @@ namespace Tmdet::Types {
         {"TE", AtomType::TE},
         {"TL", AtomType::TL},
         {"U", AtomType::U},
+        {"V", AtomType::V},
         {"XE", AtomType::XE},
         {"ZN", AtomType::ZN},
         {"UNK", AtomType::UNK}
