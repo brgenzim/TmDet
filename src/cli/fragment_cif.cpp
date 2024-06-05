@@ -7,7 +7,7 @@
 namespace cif = gemmi::cif;
 
 void usage(char *fileName);
-std::string createDir(const char *destDir, const char *cifName);
+std::string createDir(const std::string destDir, const std::string cifName);
 void writeCif(const char *cifPath, const cif::Block& block) ;
 
 int main(int argc, char *argv[]) {
@@ -32,7 +32,7 @@ int main(int argc, char *argv[]) {
     cif::Document doc = cif::read(gemmi::MaybeGzipped(input));
     for (cif::Block& block : doc.blocks) {
         std::string cifPath = (subDir?
-            createDir(destDir,block.name.c_str()):
+            createDir((std::string)destDir, block.name):
             (std::string)destDir) + "/" + block.name + ".cif";
         writeCif(cifPath.c_str(), block);
         std::cerr << "Writing " << block.name << " to " << cifPath << std::endl;
@@ -48,11 +48,13 @@ void usage(char *fileName) {
     exit(EXIT_FAILURE);
 }
 
-std::string createDir(const char *destDir, const char *cifName) {
-    std::string path = (std::string)destDir 
-            + "/" + cifName[0]
-            + "/" + cifName[1];
-    std::string cmd = (std::string)"mkdir -p " + path;
+std::string createDir(const std::string destDir, const std::string cifName) {
+    std::string path(destDir);
+    path += "/" + std::string(1, cifName[0]);
+    if (cifName.size() >= 2) {
+        path += "/" + std::string(1, cifName[1]);
+    }
+    std::string cmd = std::string("mkdir -p ") + path;
     system(cmd.c_str());
     return path;
 }

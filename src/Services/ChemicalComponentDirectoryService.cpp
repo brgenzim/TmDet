@@ -61,8 +61,11 @@ namespace Tmdet::Services::ChemicalComponentDirectoryService {
         if (!isBuilt()) {
             build();
         }
-        const string chemCompDirectory = string(ConfigurationService::getValue(ConfigurationService::Keys::CHEMICAL_COMPONENT_DIRECTORY))
-            + "/" + threeLetterCode[0] + "/" + threeLetterCode[1];
+        string chemCompDirectory = string(ConfigurationService::getValue(ConfigurationService::Keys::CHEMICAL_COMPONENT_DIRECTORY));
+        chemCompDirectory += "/" + std::string(1, threeLetterCode[0]);
+        if (threeLetterCode.size() >= 2) {
+            chemCompDirectory += "/" + std::string(1, threeLetterCode[1]);
+        }
 
         gemmi::cif::Document document = gemmi::cif::read(gemmi::MaybeGzipped(chemCompDirectory + "/" + threeLetterCode + ".cif"));
         gemmi::cif::Block& block = document.blocks[0];

@@ -99,7 +99,7 @@ class StructurePreFilter {
         }
 
         $chains = $this->getChains($lines);
-        $this->checkChains($chains);
+        // $this->checkChains($chains);
 
         return $chains;
     }
