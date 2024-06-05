@@ -9,7 +9,7 @@ namespace Tmdet::Services::ChemicalComponentDirectoryService {
 
     extern void build();
     extern bool isBuilt();
-    extern std::string getComponentPath(std::string componentCode);
+    Types::Residue getComponentAsResidue(const string& threeLetterCode);
 }
 
 #endif
