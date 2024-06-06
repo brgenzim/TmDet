@@ -12,8 +12,10 @@ namespace Tmdet::Types {
         string name;
         double vdw;
     };
-    
+
     namespace AtomType {
+        const double DEFAULT_VDW = 1.8;
+
         const Atom AG = {"AG", 1.72};
         const Atom AL = {"AL", 0.675};
         const Atom AR = {"AR", 1.88};
@@ -63,7 +65,7 @@ namespace Tmdet::Types {
         const Atom V = {"V", 2.42};
         const Atom XE = {"XE", 2.16};
         const Atom ZN = {"ZN", 1.39};
-        const Atom UNK = {"UNK", 1.8};
+        const Atom UNK = {"UNK", DEFAULT_VDW};
     };
 
     const unordered_map<string, const Atom> Atoms = {

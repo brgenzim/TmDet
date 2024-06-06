@@ -103,8 +103,11 @@ namespace Tmdet::Services::ChemicalComponentDirectoryService {
                 } else {
                     atom = Tmdet::Types::Atoms.at("C_ALI");
                 }
-            } else {
+            } else if (Tmdet::Types::Atoms.count(type) > 0) {
                 atom = Tmdet::Types::Atoms.at(type);
+            } else {
+                atom = Tmdet::Types::AtomType::UNK;
+                atom.name = type;
             }
             Types::AtomData atomData;
             atomData.atom = atom;
