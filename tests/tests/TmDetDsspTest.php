@@ -46,7 +46,8 @@ class TmDetDsspTest extends TestCase {
     }
 
     #[Group('dssp')]
-    #[DataProvider('cifPathsWithErrorProvider')]
+    //#[DataProvider('cifPathsWithErrorProvider')]
+    #[DataProvider('cifPathsForDebug')]
     public function test_specific_dssp(string $cifPath) {
         // Pre-check
         $filter = new StructurePreFilter($cifPath);
@@ -99,8 +100,9 @@ class TmDetDsspTest extends TestCase {
         $this->assertEquals(array_keys($expected), array_keys($actual));
         $ok = true;
         foreach ($expected as $key => $expectedDssp) {
-            $expectedDssp = $this->promotifCompatible($expectedDssp);
-            $actualDssp = $actual[$key];
+            $expectedOriginal = $expectedDssp;
+            $expectedDssp = $this->promotifCompatible($expectedOriginal);
+            $actualOriginal = $actualDssp = $actual[$key];
             $actualDssp = $this->promotifCompatible($actualDssp);
             if (strlen($expectedDssp) != strlen($actualDssp)) {
                 break;
@@ -115,11 +117,16 @@ class TmDetDsspTest extends TestCase {
             }
         }
         $this->assertEquals(strlen($expectedDssp), strlen($actualDssp),
-            'DSSP compare failed at chain ' . $key
+            'DSSP compare failed at chain ' . $key . ' - dssp string lengths differ'
             . "\nexpected: '$expectedDssp'"
-            . "\nactual:   '$actualDssp'");
+            . "\nactual:   '$actualDssp'"
+            . "\nOriginal DSSP string before 'promotif' conversion:"
+            . "\nexpected: '$expectedOriginal'"
+            . "\nactual:   '$actualOriginal'");
 
         $this->assertTrue($ok, 'DSSP compare failed at chain ' . $key
+            . "\nexpected: '$expectedDssp'"
+            . "\nactual:   '$actualDssp'"
             . "\nexpected: '$expectedDssp'"
             . "\nactual:   '$actualDssp'"
             . "\nmax expected levenshtein distance (%): "
@@ -143,7 +150,7 @@ class TmDetDsspTest extends TestCase {
     public static function getCifPaths(): array {
 
         // TODO: remove later
-        // return [ [ 'not-existing.cif.gz' ] ];
+        return [ [ 'not-existing.cif.gz' ] ];
 
         printf("Scanning PDB directories...\n");
         $dirs = scandir(static::PDB_ZFS_DIR);
@@ -163,7 +170,7 @@ class TmDetDsspTest extends TestCase {
         // TODO: remove slice later
         //return array_slice($files, 100, 25);
         //return array_slice($files, 100, 1000);
-        return array_slice($files, 40000, 1000);
+        return array_slice($files, 41000, 10000);
         //return $files;
     }
 
@@ -194,6 +201,13 @@ class TmDetDsspTest extends TestCase {
             '6a1t.cif.gz' => [ static::PDB_ZFS_DIR . '/a1/6a1t.cif.gz' ],
             '7eb2.cif.gz' => [ static::PDB_ZFS_DIR . '/eb/7eb2.cif.gz' ],
             '1e8x.cif.gz' => [ static::PDB_ZFS_DIR . '/e8/1e8x.cif.gz' ],
+        ];
+    }
+
+    public static function cifPathsForDebug(): array {
+        return [
+            '7ega.cif.gz' => [ static::PDB_ZFS_DIR . '/eg/7ega.cif.gz' ],
+//            '3edp.cif.gz' => [ static::PDB_ZFS_DIR . '/ed/3edp.cif.gz' ],
         ];
     }
 

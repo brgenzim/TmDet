@@ -4,7 +4,7 @@ namespace Unitmp\TmdetTest\Services;
 
 class PdbtmDsspRunner extends AbstractProcessRunner {
 
-    const EXEC = '/home/tusi/works/pdbtm_3.0/TmdetUtils/bin/dssp';
+    const EXEC = 'export PDB_CACHE_PATH=/tmp; /home/tusi/works/pdbtm_3.0/TmdetUtils/bin/dssp';
     const DUMP_HEADER_LINE_PREFIX = 'ShowProt:';
     const CHAIN_COLUMN = 1;
     const STRUCTURE_COLUMN = 5;
@@ -15,6 +15,7 @@ class PdbtmDsspRunner extends AbstractProcessRunner {
 
     protected function filterOutputLines(array $lines): array {
 
+        $lines = preg_grep('/^PDB_WARNING:/', $lines, PREG_GREP_INVERT);
         // first 50 lines should be enough to get dssp file path
         $dsspMatches = preg_grep('/^\/.+[0-9]+.dssp\s*$/', array_slice($lines, 0, 50));
         if (!empty($dsspMatches) && file_exists($dsspFile = array_shift($dsspMatches))) {
