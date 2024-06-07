@@ -40,13 +40,13 @@ namespace Tmdet::Services::ConfigurationService {
             + "/scripts/get-chemical-component-directory.sh";
 
         // set RCSBROOT
-        std::string value = getEnv("RCSBROOT");
-        if (value == "") {
-            std::cerr << AppName << ": WARNING: RCSBROOT environment variable not set."
-                << " Maxit-related PromotifService will fail"
-                << std::endl;
-        }
-        Config[Keys::RCSBROOT_DIRECTORY] = value;
+        // std::string value = getEnv("RCSBROOT");
+        // if (value == "") {
+        //     std::cerr << AppName << ": WARNING: RCSBROOT environment variable not set."
+        //         << " Maxit-related PromotifService will fail"
+        //         << std::endl;
+        // }
+        // Config[Keys::RCSBROOT_DIRECTORY] = value;
 
     }
 

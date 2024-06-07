@@ -47,7 +47,7 @@ class TmDetDsspTest extends TestCase {
 
     #[Group('dssp')]
     //#[DataProvider('cifPathsWithErrorProvider')]
-    #[DataProvider('cifPathsForDebug')]
+    #[DataProvider('cifPathsForLenvenshteinFailuresDebug')]
     public function test_specific_dssp(string $cifPath) {
         // Pre-check
         $filter = new StructurePreFilter($cifPath);
@@ -204,10 +204,110 @@ class TmDetDsspTest extends TestCase {
         ];
     }
 
-    public static function cifPathsForDebug(): array {
+    public static function cifPathsForLenvenshteinFailuresDebug(): array {
         return [
+            '5ei1.cif.gz' => [ static::PDB_ZFS_DIR . '/ei/5ei1.cif.gz' ],
+            '5eit.cif.gz' => [ static::PDB_ZFS_DIR . '/ei/5eit.cif.gz' ],
+            '8el5.cif.gz' => [ static::PDB_ZFS_DIR . '/el/8el5.cif.gz' ],
+            '5eqq.cif.gz' => [ static::PDB_ZFS_DIR . '/eq/5eqq.cif.gz' ],
+            '8ev2.cif.gz' => [ static::PDB_ZFS_DIR . '/ev/8ev2.cif.gz' ],
+            '4exw.cif.gz' => [ static::PDB_ZFS_DIR . '/ex/4exw.cif.gz' ],
+            '8f0l.cif.gz' => [ static::PDB_ZFS_DIR . '/f0/8f0l.cif.gz' ],
+            '5f1w.cif.gz' => [ static::PDB_ZFS_DIR . '/f1/5f1w.cif.gz' ],
+            '6f1x.cif.gz' => [ static::PDB_ZFS_DIR . '/f1/6f1x.cif.gz' ],
+            '8f12.cif.gz' => [ static::PDB_ZFS_DIR . '/f1/8f12.cif.gz' ],
+            '8f14.cif.gz' => [ static::PDB_ZFS_DIR . '/f1/8f14.cif.gz' ],
+            '8f17.cif.gz' => [ static::PDB_ZFS_DIR . '/f1/8f17.cif.gz' ],
+            '7f22.cif.gz' => [ static::PDB_ZFS_DIR . '/f2/7f22.cif.gz' ],
+            '6f9w.cif.gz' => [ static::PDB_ZFS_DIR . '/f9/6f9w.cif.gz' ],
+            '5ef5.cif.gz' => [ static::PDB_ZFS_DIR . '/ef/5ef5.cif.gz' ],
+            '4egy.cif.gz' => [ static::PDB_ZFS_DIR . '/eg/4egy.cif.gz' ],
+            '3eh4.cif.gz' => [ static::PDB_ZFS_DIR . '/eh/3eh4.cif.gz' ],
+            '8el4.cif.gz' => [ static::PDB_ZFS_DIR . '/el/8el4.cif.gz' ],
+            '3et1.cif.gz' => [ static::PDB_ZFS_DIR . '/et/3et1.cif.gz' ],
+            '7f20.cif.gz' => [ static::PDB_ZFS_DIR . '/f2/7f20.cif.gz' ],
+            '3f43.cif.gz' => [ static::PDB_ZFS_DIR . '/f4/3f43.cif.gz' ],
+            '1ee7.cif.gz' => [ static::PDB_ZFS_DIR . '/ee/1ee7.cif.gz' ],
+            '2efg.cif.gz' => [ static::PDB_ZFS_DIR . '/ef/2efg.cif.gz' ],
+            '3eh3.cif.gz' => [ static::PDB_ZFS_DIR . '/eh/3eh3.cif.gz' ],
+            '5ehj.cif.gz' => [ static::PDB_ZFS_DIR . '/eh/5ehj.cif.gz' ],
+            '8el3.cif.gz' => [ static::PDB_ZFS_DIR . '/el/8el3.cif.gz' ],
+            '8f0z.cif.gz' => [ static::PDB_ZFS_DIR . '/f0/8f0z.cif.gz' ],
+            '6f1y.cif.gz' => [ static::PDB_ZFS_DIR . '/f1/6f1y.cif.gz' ],
+            '8f16.cif.gz' => [ static::PDB_ZFS_DIR . '/f1/8f16.cif.gz' ],
+            '3f5h.cif.gz' => [ static::PDB_ZFS_DIR . '/f5/3f5h.cif.gz' ],
+            '6f5j.cif.gz' => [ static::PDB_ZFS_DIR . '/f5/6f5j.cif.gz' ],
+            '7ec3.cif.gz' => [ static::PDB_ZFS_DIR . '/ec/7ec3.cif.gz' ],
+            '6een.cif.gz' => [ static::PDB_ZFS_DIR . '/ee/6een.cif.gz' ],
+            '5egv.cif.gz' => [ static::PDB_ZFS_DIR . '/eg/5egv.cif.gz' ],
+            '3eh5.cif.gz' => [ static::PDB_ZFS_DIR . '/eh/3eh5.cif.gz' ],
+            '8el6.cif.gz' => [ static::PDB_ZFS_DIR . '/el/8el6.cif.gz' ],
+            '8eq6.cif.gz' => [ static::PDB_ZFS_DIR . '/eq/8eq6.cif.gz' ],
+            '8ev1.cif.gz' => [ static::PDB_ZFS_DIR . '/ev/8ev1.cif.gz' ],
+            '6exv.cif.gz' => [ static::PDB_ZFS_DIR . '/ex/6exv.cif.gz' ],
+            '8f10.cif.gz' => [ static::PDB_ZFS_DIR . '/f1/8f10.cif.gz' ],
+            '8f13.cif.gz' => [ static::PDB_ZFS_DIR . '/f1/8f13.cif.gz' ],
+            '8f15.cif.gz' => [ static::PDB_ZFS_DIR . '/f1/8f15.cif.gz' ],
+            '7f21.cif.gz' => [ static::PDB_ZFS_DIR . '/f2/7f21.cif.gz' ],
+            '7f4g.cif.gz' => [ static::PDB_ZFS_DIR . '/f4/7f4g.cif.gz' ],
+            '6f5u.cif.gz' => [ static::PDB_ZFS_DIR . '/f5/6f5u.cif.gz' ],
+            '6f7w.cif.gz' => [ static::PDB_ZFS_DIR . '/f7/6f7w.cif.gz' ],
+            '7f7g.cif.gz' => [ static::PDB_ZFS_DIR . '/f7/7f7g.cif.gz' ],
+        ];
+    }
+
+    public static function cifPathsForDsspLengthErrorDebug(): array {
+
+        return [
+            '6ecs.cif.gz' => [ static::PDB_ZFS_DIR . '/ec/6ecs.cif.gz' ],
             '7ega.cif.gz' => [ static::PDB_ZFS_DIR . '/eg/7ega.cif.gz' ],
-//            '3edp.cif.gz' => [ static::PDB_ZFS_DIR . '/ed/3edp.cif.gz' ],
+            '8eih.cif.gz' => [ static::PDB_ZFS_DIR . '/ei/8eih.cif.gz' ],
+            '6ejl.cif.gz' => [ static::PDB_ZFS_DIR . '/ej/6ejl.cif.gz' ],
+            '6em3.cif.gz' => [ static::PDB_ZFS_DIR . '/em/6em3.cif.gz' ],
+            '7etm.cif.gz' => [ static::PDB_ZFS_DIR . '/et/7etm.cif.gz' ],
+            '8etc.cif.gz' => [ static::PDB_ZFS_DIR . '/et/8etc.cif.gz' ],
+            '4ewc.cif.gz' => [ static::PDB_ZFS_DIR . '/ew/4ewc.cif.gz' ],
+            '6exn.cif.gz' => [ static::PDB_ZFS_DIR . '/ex/6exn.cif.gz' ],
+            '8f6n.cif.gz' => [ static::PDB_ZFS_DIR . '/f6/8f6n.cif.gz' ],
+            '5fbt.cif.gz' => [ static::PDB_ZFS_DIR . '/fb/5fbt.cif.gz' ],
+            '7edx.cif.gz' => [ static::PDB_ZFS_DIR . '/ed/7edx.cif.gz' ],
+            '2efw.cif.gz' => [ static::PDB_ZFS_DIR . '/ef/2efw.cif.gz' ],
+            '2efz.cif.gz' => [ static::PDB_ZFS_DIR . '/ef/2efz.cif.gz' ],
+            '3ef1.cif.gz' => [ static::PDB_ZFS_DIR . '/ef/3ef1.cif.gz' ],
+            '7efd.cif.gz' => [ static::PDB_ZFS_DIR . '/ef/7efd.cif.gz' ],
+            '7efh.cif.gz' => [ static::PDB_ZFS_DIR . '/ef/7efh.cif.gz' ],
+            '7efm.cif.gz' => [ static::PDB_ZFS_DIR . '/ef/7efm.cif.gz' ],
+            '5eg2.cif.gz' => [ static::PDB_ZFS_DIR . '/eg/5eg2.cif.gz' ],
+            '7eg9.cif.gz' => [ static::PDB_ZFS_DIR . '/eg/7eg9.cif.gz' ],
+            '4em0.cif.gz' => [ static::PDB_ZFS_DIR . '/em/4em0.cif.gz' ],
+            '4em2.cif.gz' => [ static::PDB_ZFS_DIR . '/em/4em2.cif.gz' ],
+            '6em5.cif.gz' => [ static::PDB_ZFS_DIR . '/em/6em5.cif.gz' ],
+            '7eo4.cif.gz' => [ static::PDB_ZFS_DIR . '/eo/7eo4.cif.gz' ],
+            '8epl.cif.gz' => [ static::PDB_ZFS_DIR . '/ep/8epl.cif.gz' ],
+            '8ev3.cif.gz' => [ static::PDB_ZFS_DIR . '/ev/8ev3.cif.gz' ],
+            '8ezr.cif.gz' => [ static::PDB_ZFS_DIR . '/ez/8ezr.cif.gz' ],
+            '7efg.cif.gz' => [ static::PDB_ZFS_DIR . '/ef/7efg.cif.gz' ],
+            '7efi.cif.gz' => [ static::PDB_ZFS_DIR . '/ef/7efi.cif.gz' ],
+            '7efn.cif.gz' => [ static::PDB_ZFS_DIR . '/ef/7efn.cif.gz' ],
+            '7eg8.cif.gz' => [ static::PDB_ZFS_DIR . '/eg/7eg8.cif.gz' ],
+            '8eii.cif.gz' => [ static::PDB_ZFS_DIR . '/ei/8eii.cif.gz' ],
+            '7ept.cif.gz' => [ static::PDB_ZFS_DIR . '/ep/7ept.cif.gz' ],
+            '8eti.cif.gz' => [ static::PDB_ZFS_DIR . '/et/8eti.cif.gz' ],
+            '8eup.cif.gz' => [ static::PDB_ZFS_DIR . '/eu/8eup.cif.gz' ],
+            '6f09.cif.gz' => [ static::PDB_ZFS_DIR . '/f0/6f09.cif.gz' ],
+            '6f2r.cif.gz' => [ static::PDB_ZFS_DIR . '/f2/6f2r.cif.gz' ],
+            '3f5b.cif.gz' => [ static::PDB_ZFS_DIR . '/f5/3f5b.cif.gz' ],
+            '2f69.cif.gz' => [ static::PDB_ZFS_DIR . '/f6/2f69.cif.gz' ],
+            '8edo.cif.gz' => [ static::PDB_ZFS_DIR . '/ed/8edo.cif.gz' ],
+            '3ee0.cif.gz' => [ static::PDB_ZFS_DIR . '/ee/3ee0.cif.gz' ],
+            '7ef3.cif.gz' => [ static::PDB_ZFS_DIR . '/ef/7ef3.cif.gz' ],
+            '7ef9.cif.gz' => [ static::PDB_ZFS_DIR . '/ef/7ef9.cif.gz' ],
+            '7efl.cif.gz' => [ static::PDB_ZFS_DIR . '/ef/7efl.cif.gz' ],
+            '7eg7.cif.gz' => [ static::PDB_ZFS_DIR . '/eg/7eg7.cif.gz' ],
+            '6em4.cif.gz' => [ static::PDB_ZFS_DIR . '/em/6em4.cif.gz' ],
+            '8euy.cif.gz' => [ static::PDB_ZFS_DIR . '/eu/8euy.cif.gz' ],
+            '8f2k.cif.gz' => [ static::PDB_ZFS_DIR . '/f2/8f2k.cif.gz' ],
+            '4f88.cif.gz' => [ static::PDB_ZFS_DIR . '/f8/4f88.cif.gz' ],
         ];
     }
 
