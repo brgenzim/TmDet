@@ -15,6 +15,8 @@ namespace Tmdet::ValueObjects {
 
     struct Membrane {
         TMatrix tmatrix;
+        Vec3 origo;
+        Vec3 normal;
         double h;
         double curver;
         double sizer;
