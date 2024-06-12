@@ -19,8 +19,6 @@
 #include <Types/Residue.hpp>
 #include <Types/SecStruct.hpp>
 #include <ValueObjects/TmdetStruct.hpp>
-//#include <Services/PromotifService.hpp>
-
 
 using namespace std;
 
@@ -75,24 +73,14 @@ namespace Tmdet::DTOS {
 
         // Fill residue gaps in chains where there is usable entity sequence data
         alignResidues(tmdetVO);
-#ifdef __TMDET_SERVICES_PROMOTIF__
-        auto secondaryStructures = Tmdet::Services::PromotifService::process(tmdetVO.inputPath);
-#endif
         int chainIdx = 0;
         for(auto& chain: tmdetVO.gemmi.models[0].chains) {
             Tmdet::ValueObjects::Chain chainVO = Tmdet::ValueObjects::Chain(chain);
             chainVO.idx = chainIdx++;
             int residueIdx = 0;
-#ifdef __TMDET_SERVICES_PROMOTIF__
-            auto dsspString = secondaryStructures[chain.name];
-#endif
             for( auto& residue: chain.residues) {
                 Tmdet::ValueObjects::Residue residueVO = Tmdet::ValueObjects::Residue(residue);
                 residueVO.chainIdx = chainVO.idx;
-#ifdef __TMDET_SERVICES_PROMOTIF__
-                char dsspChar = dsspString[residueIdx];
-                residueVO.ss = Tmdet::Types::SecStructs.at(dsspChar);
-#endif
                 residueVO.idx = residueIdx++;
                 residueVO.surface = 0.0;
                 int atomIdx = 0;
@@ -112,7 +100,6 @@ namespace Tmdet::DTOS {
 
         tmdetVO.neighbors = NeighborSearch(tmdetVO.gemmi.models[0], tmdetVO.gemmi.cell, 9);
         tmdetVO.neighbors.populate();
-
     }
 
     bool TmdetStruct::compareResidues(const gemmi::Residue& res1, const gemmi::Residue& res2) {
@@ -177,16 +164,26 @@ namespace Tmdet::DTOS {
             }
 
             std::vector<string> chainResidues;
+            const std::vector<int> gapOpening;// = { 10 };
             for( auto& residue: chain.residues) {
                 chainResidues.emplace_back(residue.name);
             }
 
-            const gemmi::AlignmentScoring* scoring = gemmi::AlignmentScoring::simple();
-            const std::vector<int> gapOpening;
-            auto alignmentResult = gemmi::align_string_sequences(sequence, chainResidues, gapOpening, scoring);
+            gemmi::AlignmentScoring scoring = *(gemmi::AlignmentScoring::simple());
+
+#ifdef __DBG
+            // scoring.good_gapo = 10;
+            std::cout << "Good GAPO: " << scoring.good_gapo << std::endl;
+#endif
+            auto alignmentResult = gemmi::align_string_sequences(sequence, chainResidues, gapOpening, &scoring);
 
             auto withGaps = alignmentResult.add_gaps(gemmi::one_letter_code(chainResidues) , 2);
             string cigar = alignmentResult.cigar_str();
+#ifdef __DBG
+            std::cout << chain.name << ": " << cigar << std::endl;
+            std::cout << tmdetVO.code << "[" << chain.name << "]: " << gemmi::one_letter_code(chainResidues) << std::endl;
+            std::cout << tmdetVO.code << "[" << chain.name << "]: " << withGaps << std::endl;
+#endif
             std::vector<gemmi::Residue>  newChainResidues;
             int labelSeqNum = 1;
             for (auto& oneLetterSeq : withGaps) {
