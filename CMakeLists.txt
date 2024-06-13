@@ -62,6 +62,9 @@
 # gemmi support
 find_package(gemmi 0.6.4 CONFIG REQUIRED)
 
+# Eigen3
+find_package(Eigen3 3.4 CONFIG REQUIRED)
+
 # Include files (system)
   INCLUDE_DIRECTORIES( AFTER SYSTEM 
     "${PROJECT_SOURCE_DIR}/src/"
