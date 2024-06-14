@@ -55,9 +55,10 @@ namespace Tmdet::Utils {
 #endif
             int nall1 = ch1->residues.size();
             std::vector<double> w1;
-            w1.reserve(nall1);
+            w1.resize(nall1);
             std::vector<gemmi::Vec3> koord1;
-            koord1.reserve(nall1);
+            koord1.resize(nall1);
+
             seq1 = (char *)calloc((nall1 + 1), sizeof(char));
 
             int nca1 = 0;
@@ -75,6 +76,7 @@ namespace Tmdet::Utils {
             }
             seq1[nca1] = '\0';
             if (nca1 < 4) {
+                free(seq1);
                 continue;
             }
 
@@ -88,9 +90,9 @@ namespace Tmdet::Utils {
 #endif
                 int nall2 = ch2->residues.size();
                 std::vector<double> w2;
-                w2.reserve(nall2);
+                w2.resize(nall2);
                 std::vector<gemmi::Vec3> koord2;
-                koord2.reserve(nall2);
+                koord2.resize(nall2);
                 seq2 = (char *)calloc((nall2+1), sizeof(char));
 
                 int nca2 = 0;
@@ -108,6 +110,7 @@ namespace Tmdet::Utils {
                 }
                 seq2[nca2] = '\0';
                 if (nca2 < 4) {
+                    free(seq2);
                     continue;
                 }
                 {
@@ -131,7 +134,7 @@ namespace Tmdet::Utils {
                 }
                 int nall = std::min(nca1 - pos1, nca2 - pos2);
                 std::vector<double> weight;
-                weight.reserve(nall);
+                weight.resize(nall);
                 for (int k=0;k<nall;k++) {
                     if ((w1[k+pos1]!=0) && (w2[k+pos2]!=0))
                         weight[k]=1;
@@ -151,8 +154,19 @@ namespace Tmdet::Utils {
                 Get_Sim_Op( R, t1, t2, sim[i][j]);
                 double distance = (t2 - t1).norm();
 
-                if (distance > 2.0 && rmsd < 3)
+#ifdef __SYM_DBG
+                std::cout << "\tdistance: " << distance << ";    RMSD: " << rmsd << std::endl;
+#endif
+
+                if (distance > 2.0 && rmsd < 3) {
                     sim[i][j].id = sim[j][i].id = 1;
+#ifdef __SYM_DBG
+                    gemmi::Vec3 axis = sim[i][j].axis;
+                    std::cout << "SIM_OP [" << i << ", " << j << "]: "
+                        << Eigen::Vector3d(axis.x, axis.y, axis.z).transpose()
+                        << " angle: " << sim[i][j].rotAngle << std::endl;
+#endif
+                }
 
                 if (distance < 2.0 && R(0, 0) > 0.98 && R(1, 1) > 0.98 && R(2, 2) > 0.98) {
                     fprintf(stderr,"Chain %5d and %5d are on top of each other \n", i, j);
