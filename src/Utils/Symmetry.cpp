@@ -10,6 +10,7 @@
 #include <cstdio>
 #include <cmath>
 #include <eigen3/Eigen/Dense>
+#include <span>
 
 using namespace std;
 
@@ -18,16 +19,15 @@ using namespace std;
 #define MAX(a,b) ((a)>(b)?(a):(b))
 #define MIN(a,b) ((a)<(b)?(a):(b))
 #define	ABS(x) ((x) < 0 ? -(x) : (x))
-typedef struct {
-    double el[4][4];
-} matrix4;
+#define RAD2DEG   57.29576
 
 namespace Tmdet::Utils {
 
     static int Match_Sequence(char *seq1,char *seq2,int *pos1,int *pos2);
     static void CM_Translate(int nr, std::vector<gemmi::Vec3> &koord, std::vector<double> &mass, gemmi::Vec3 &CM);
-    static bool Lsq_fit(int nr_atoms, std::vector<gemmi::Vec3> &r1, std::vector<gemmi::Vec3> &r2, std::vector<double> &weigth, double &rmsd, matrix4 *Rot);
+    static bool Lsq_fit(int nr_atoms, std::span<gemmi::Vec3> &r1, std::span<gemmi::Vec3> &r2, std::vector<double> &weigth, double &rmsd, Eigen::Matrix4d& Rot);
     static void eigen(double *a, double *r__, int *n, int *mv);
+    static Eigen::Matrix4d Rotate_Z(Eigen::Vector3d T);
 
     std::vector<std::vector<_symmetryData>> Symmetry::CheckSymmetry(Tmdet::ValueObjects::TmdetStruct &tmdetVO) {
         char *seq1, *seq2;
@@ -142,8 +142,10 @@ namespace Tmdet::Utils {
                 CM_Translate(pos1, koord1, weight, t1);
                 CM_Translate(pos2, koord2, weight, t2);
                 double rmsd;
-                matrix4 R;
-                //Lsq_fit(nall,&koord1[pos1],&koord2[pos2], weight, &rmsd, &R);
+                Eigen::Matrix4d R;
+                std::span<gemmi::Vec3> koord1Slice(koord1.begin()+pos1, nall);
+                std::span<gemmi::Vec3> koord2Slice(koord2.begin()+pos2, nall);
+                Lsq_fit(nall, koord1Slice, koord2Slice, weight, rmsd, R);
             //     Get_Sim_Op( R, t1, t2, &sim[i][j]);
             //     dist = vec_diff_2(t1,t2);
 
@@ -218,7 +220,7 @@ namespace Tmdet::Utils {
         }
     }
 
-    bool Lsq_fit(int nr_atoms, std::vector<gemmi::Vec3> &r1, std::vector<gemmi::Vec3> &r2, std::vector<double> &weigth, double &rmsd, matrix4 *Rot) {
+    bool Lsq_fit(int nr_atoms, std::span<gemmi::Vec3> &r1, std::span<gemmi::Vec3> &r2, std::vector<double> &weigth, double &rmsd, Eigen::Matrix4d &Rot) {
         /*
             Least square fit routine to superimpose coordinates r1 onto
             coordinates r2.
@@ -230,9 +232,10 @@ namespace Tmdet::Utils {
 
         int    i, j, ii, jj, n;
         double  U[3][3], det_U, sign_detU, sigma, dr_sqrlength;
-        double  H[3][3], K[3][3], R[3][3];
+        double  H[3][3], K[3][3];
         double  omega[21], eve_omega[36], eva_omega[6];
         gemmi::Vec3  dr;
+        Eigen::Matrix3d R;
 
 
         /* ----- CALCULATE THE MATRIX U AND ITS DETERMINANT ----- */
@@ -336,25 +339,20 @@ namespace Tmdet::Utils {
         /* --------- DETERMINE R AND ROTATE X ----------- */
         for (i = 0; i < 3; i++)
             for (j = 0; j < 3; j++)
-                R[j][i] = K[j][0]*H[i][0] + K[j][1]*H[i][1] +
+                R(j, i) = K[j][0]*H[i][0] + K[j][1]*H[i][1] +
                         sign_detU * K[j][2]*H[i][2];
 
 
     #ifdef __SYM_DBG
-        fprintf(stdout, "Rotation matrix:\n");
-        for (j = 0; j < 3; j++) {
-            for (i = 0; i < 3; i++)
-                fprintf(stdout, "%10.4f", R[i][j]);
-            fprintf(stdout, "\n");
-        }
+        std::cout << "Rotation matrix:" << std::endl << R << std::endl;
     #endif
 
 
         for (n = 0; n < nr_atoms; n++) if (weigth[n]!=0) 
         {
-            dr.x = R[0][0]*r1[n].x + R[0][1]*r1[n].y + R[0][2]*r1[n].z;
-            dr.y = R[1][0]*r1[n].x + R[1][1]*r1[n].y + R[1][2]*r1[n].z;
-            dr.z = R[2][0]*r1[n].x + R[2][1]*r1[n].y + R[2][2]*r1[n].z;
+            dr.x = R(0, 0)*r1[n].x + R(0, 1)*r1[n].y + R(0, 2)*r1[n].z;
+            dr.y = R(1, 0)*r1[n].x + R(1, 1)*r1[n].y + R(1, 2)*r1[n].z;
+            dr.z = R(2, 0)*r1[n].x + R(2, 1)*r1[n].y + R(2, 2)*r1[n].z;
             r1[n].x = dr.x;
             r1[n].y = dr.y;
             r1[n].z = dr.z;
@@ -378,12 +376,15 @@ namespace Tmdet::Utils {
         rmsd /= nr_atoms;
         rmsd = sqrt(rmsd);
 
-
-        Rot->el[0][0]=R[0][0];Rot->el[0][1]=R[0][1];Rot->el[0][2]=R[0][2];
-        Rot->el[1][0]=R[1][0];Rot->el[1][1]=R[1][1];Rot->el[1][2]=R[1][2];
-        Rot->el[2][0]=R[2][0];Rot->el[2][1]=R[2][1];Rot->el[2][2]=R[2][2];
-        Rot->el[3][0]=0;Rot->el[3][1]=0;Rot->el[3][2]=0;Rot->el[3][3]=1.0;
-        Rot->el[0][3]=0;Rot->el[1][3]=0;Rot->el[2][3]=0;
+        //Rot = R;
+        Rot.block<3,3>(0,0) = R.block<3,3>(0,0);
+        Rot(3,0) = 0;
+        Rot(3,1) = 0;
+        Rot(3,2) = 0;
+        Rot(3,3) = 1.0;
+        Rot(0,3) = 0;
+        Rot(1,3) = 0;
+        Rot(2,3) = 0;
 
         return true;
     }
@@ -586,7 +587,80 @@ namespace Tmdet::Utils {
 
     } /* eigen */
 
-    bool Lsq_fit_Eigen_version(int nr_atoms, std::vector<Eigen::Vector3d> &r1, std::vector<Eigen::Vector3d> &r2, std::vector<double> &weight, double &rmsd, matrix4 *Rot) {
+    void Get_Sim_Op(Eigen::Matrix4d& R, Eigen::Vector3d& t1, Eigen::Vector3d& t2, _symmetryData& simij)
+    {
+        Eigen::Matrix4d LR, Rot;
+        Eigen::Vector3d av, ori, axis;
+        double tg;
+
+        /*Show_Matrix(R,"Rotori");*/
+
+        //   Rinv= inverseMat(R);
+
+
+        if ((R(0, 0)<0.999)&&(R(1, 1)<0.999) /*&&(R(0, 0)>-0.999)*/)
+        {
+            /* Find vector which is invariant of the rotation
+            lets fix its size by setting z to 1.0
+            */
+            axis.z() = 1.0;
+            axis.y() = 
+            ((1.0-R(0, 0))*R(1, 2)+R(1, 0)*R(0, 2))/
+            ((1.0-R(1, 1))*(1.0-R(0, 0))-R(0, 1)*R(1, 0));
+            if (R(0, 0)<1.0)
+                axis.x() = (R(0, 1)*axis.y() + R(0, 2))/
+                (1.0-R(0, 0));
+            else axis.x() = 0;
+        }
+        else
+        {
+            if (R(0, 0)>0.999)
+                axis.x() = 1;axis.y() = 0;axis.z() = 0;
+            if (R(1, 1)>0.999)
+                axis.x() = 0;axis.y() = 1;axis.z() = 0;
+
+        }
+        axis = axis / axis.norm();
+        LR=Rotate_Z(axis);
+
+        /*Show_Matrix(LR,"LR"); */
+
+        Rot= LR.inverse() * (R * LR);
+
+        /*Show_Matrix(Rot,"Rot"); */
+
+
+        if (Rot(0, 0)>1) Rot(0, 0)=1.0;
+        if (Rot(0, 0)<-1) Rot(0, 0)=-1.0;
+
+        if (Rot(0, 0)!=1.0)
+            tg=Rot(0, 1)/(1-Rot(0, 0));
+            else tg=1.0;
+
+        Eigen::Vector3d midpoint = (t1 + t2) * 0.5;
+        av = midpoint - t1;
+        ori = av.cross(axis);
+        if (tg!=0) ori = ori * tg;
+
+        ori += midpoint;
+        simij.origo = gemmi::Vec3(ori.x(), ori.y(), ori.z());
+
+        simij.rotAngle = RAD2DEG*acos(Rot(0, 0));
+        simij.axis = gemmi::Vec3(axis.x(), axis.y(), axis.z());
+
+
+        /*write_point(simij.ori,"ori");
+        printf("%6.2f %6.2f %6.2f    ",
+            simij.axis.x,simij.axis.y,simij.axis.z);
+        printf("by %10.f %10.f%10.f%10.f    degree\n",
+        RAD2DEG*acos(Rot(0, 0)),RAD2DEG*acos(Rot(1, 1)),
+        RAD2DEG*asin(Rot(0, 1)),RAD2DEG*asin(-Rot(1, 0)));
+        */
+
+    }
+
+
+    bool Lsq_fit_Eigen_version(int nr_atoms, std::vector<Eigen::Vector3d>& r1, std::vector<Eigen::Vector3d>& r2, std::vector<double>& weight, double& rmsd, Eigen::Matrix4d& Rot) {
         Eigen::Matrix3d U = Eigen::Matrix3d::Zero();
         double total_weight = 0.0;
 
@@ -663,18 +737,49 @@ namespace Tmdet::Utils {
         rmsd = std::sqrt(rmsd);
 
         // Set rotation matrix
+        Rot.block<3,3>(0,0) = R;
+        Rot(3, 3) = 1.0;
         for (int i = 0; i < 3; i++) {
-            for (int j = 0; j < 3; j++) {
-                Rot->el[i][j] = R(i, j);
-            }
-        }
-        Rot->el[3][3] = 1.0;
-        for (int i = 0; i < 3; i++) {
-            Rot->el[i][3] = 0.0;
-            Rot->el[3][i] = 0.0;
+            Rot(i, 3) = 0.0;
+            Rot(3, i) = 0.0;
         }
 
         return true;
+    }
+
+    Eigen::Matrix4d Rotate_Z(Eigen::Vector3d T) {
+        float  a, b, c, d, cosa, sina;
+        Eigen::Matrix4d R1, R2, R;
+        Eigen::Vector3d normalized;
+
+        normalized = T / T.norm();
+
+        a = normalized.x(); b = normalized.y(); c = normalized.z();
+
+        d=sqrt( b*b + c*c);
+        if (d!=0) {
+            sina=c/d; cosa=b/d;
+            
+            R1(0, 0)=1;   R1(0, 1)=0;    R1(0, 2)=0;	  R1(0, 3)=0;
+            R1(1, 0)=0;   R1(1, 1)=sina; R1(1, 2)=cosa;   R1(1, 3)=0;
+            R1(2, 0)=0;   R1(2, 1)=-cosa;R1(2, 2)=sina;   R1(2, 3)=0;
+            R1(3, 0)=0;   R1(3, 1)=0;    R1(3, 2)=0;	  R1(3, 3)=1;
+            
+                    
+            R2(0, 0)=d;   R2(0, 1)=0;    R2(0, 2)=a;      R2(0, 3)=0;
+            R2(1, 0)=0;   R2(1, 1)=1;    R2(1, 2)=0;	  R2(1, 3)=0;
+            R2(2, 0)=-a;  R2(2, 1)=0;    R2(2, 2)=d;	  R2(2, 3)=0;
+            R2(3, 0)=0;   R2(3, 1)=0;    R2(3, 2)=0;	  R2(3, 3)=1;
+
+            R = R1 * R2;
+        } else {
+            R(0, 0)=0;R(0, 1)=1;R(0, 2)=0;R(0, 3)=0;
+            R(1, 0)=0;R(1, 1)=0;R(1, 2)=1;R(1, 3)=0;
+            R(2, 0)=1;R(2, 1)=0;R(2, 2)=0;R(2, 3)=0;
+            R(3, 0)=0;R(3, 1)=0;R(3, 2)=0;R(3, 3)=1;
+        }
+                
+        return R;
     }
 
 }
