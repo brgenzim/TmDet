@@ -24,10 +24,12 @@ using namespace std;
 namespace Tmdet::Utils {
 
     static int Match_Sequence(char *seq1,char *seq2,int *pos1,int *pos2);
-    static void CM_Translate(int nr, std::vector<gemmi::Vec3> &koord, std::vector<double> &mass, gemmi::Vec3 &CM);
+    static void CM_Translate(int position, std::vector<gemmi::Vec3> &koord, std::vector<double> &mass, Eigen::Vector3d &CM);
     static bool Lsq_fit(int nr_atoms, std::span<gemmi::Vec3> &r1, std::span<gemmi::Vec3> &r2, std::vector<double> &weigth, double &rmsd, Eigen::Matrix4d& Rot);
+    static void Get_Sim_Op(Eigen::Matrix4d& R, Eigen::Vector3d& t1, Eigen::Vector3d& t2, _symmetryData& simij);
     static void eigen(double *a, double *r__, int *n, int *mv);
     static Eigen::Matrix4d Rotate_Z(Eigen::Vector3d T);
+    static double cosineAngleOfVectors(Eigen::Vector3d u, gemmi::Vec3 v);
 
     std::vector<std::vector<_symmetryData>> Symmetry::CheckSymmetry(Tmdet::ValueObjects::TmdetStruct &tmdetVO) {
         char *seq1, *seq2;
@@ -137,29 +139,29 @@ namespace Tmdet::Utils {
                         weight[k]=0;
                 }
 
-                gemmi::Vec3 t1, t2;
+                Eigen::Vector3d t1, t2;
 
                 CM_Translate(pos1, koord1, weight, t1);
                 CM_Translate(pos2, koord2, weight, t2);
                 double rmsd;
-                Eigen::Matrix4d R;
+                Eigen::Matrix4d R; // rotation matrix
                 std::span<gemmi::Vec3> koord1Slice(koord1.begin()+pos1, nall);
                 std::span<gemmi::Vec3> koord2Slice(koord2.begin()+pos2, nall);
                 Lsq_fit(nall, koord1Slice, koord2Slice, weight, rmsd, R);
-            //     Get_Sim_Op( R, t1, t2, &sim[i][j]);
-            //     dist = vec_diff_2(t1,t2);
+                Get_Sim_Op( R, t1, t2, sim[i][j]);
+                double distance = (t2 - t1).norm();
 
-            //     if ((dist>2.0) && (rmsd <3))
-            //         sim[i][j].id=sim[j][i].id=1;
+                if (distance > 2.0 && rmsd < 3)
+                    sim[i][j].id = sim[j][i].id = 1;
 
-            //     if ((dist<2.0)&&((R.el[0][0]>0.98)&&(R.el[1][1]>0.98)&&(R.el[2][2]>0.98))) {
-            //         fprintf(stderr,"Chain %5d and %5d are on top of each other \n",i,j);
-            //         sim[i][j].id=sim[j][i].id=-1;
-            //     }
-            //     else if (fabs(vec_cos(vec_sub(t1,t2),sim[i][j].norm))>0.15) {
-            //         fprintf(stdout,"Chain %5d and %5d are not simply rotated\n",i,j);
-            //         sim[i][j].id=sim[j][i].id=-1;
-            //     }
+                if (distance < 2.0 && R(0, 0) > 0.98 && R(1, 1) > 0.98 && R(2, 2) > 0.98) {
+                    fprintf(stderr,"Chain %5d and %5d are on top of each other \n", i, j);
+                    sim[i][j].id = sim[j][i].id = -1;
+                }
+                else if (fabs(cosineAngleOfVectors((t1 - t2), sim[i][j].axis)) > 0.15) {
+                    fprintf(stdout,"Chain %5d and %5d are not simply rotated\n", i, j);
+                    sim[i][j].id = sim[j][i].id = -1;
+                }
             }
         }
 #ifdef __SYM_DBG
@@ -192,31 +194,29 @@ namespace Tmdet::Utils {
         return 0;
     }
 
-    void CM_Translate(int position, std::vector<gemmi::Vec3> &koord, std::vector<double> &mass, gemmi::Vec3 &CM) {
+    void CM_Translate(int position, std::vector<gemmi::Vec3> &koord, std::vector<double> &mass, Eigen::Vector3d &CM) {
         /*
          * translates the coordinates of the molecules such
          * that the center of mass is in the origin.
          */
-        CM.x = 0.0;
-        CM.y = 0.0;
-        CM.z = 0.0;
+        CM.x() = 0.0;
+        CM.y() = 0.0;
+        CM.z() = 0.0;
         double total_mass = 0.0;
         int length = mass.size();
         for (int i = 0; i < length; i++) if (mass[i]!=0) {
             total_mass += mass[i];
-            CM.x += mass[i] * koord[position + i].x;
-            CM.y += mass[i] * koord[position + i].y;
-            CM.z += mass[i] * koord[position + i].z;
+            CM.x() += mass[i] * koord[position + i].x;
+            CM.y() += mass[i] * koord[position + i].y;
+            CM.z() += mass[i] * koord[position + i].z;
         }
-        CM.x /= total_mass;
-        CM.y /= total_mass;
-        CM.z /= total_mass;
+        CM /= total_mass;
 
         /* ---- translating CM coordinates to origin  -------- */
         for (int i = 0; i < length; i++) if (mass[i]!=0) {
-            koord[position + i].x -= CM.x;
-            koord[position + i].y -= CM.y;
-            koord[position + i].z -= CM.z;
+            koord[position + i].x -= CM.x();
+            koord[position + i].y -= CM.y();
+            koord[position + i].z -= CM.z();
         }
     }
 
@@ -756,30 +756,35 @@ namespace Tmdet::Utils {
 
         a = normalized.x(); b = normalized.y(); c = normalized.z();
 
-        d=sqrt( b*b + c*c);
-        if (d!=0) {
-            sina=c/d; cosa=b/d;
-            
-            R1(0, 0)=1;   R1(0, 1)=0;    R1(0, 2)=0;	  R1(0, 3)=0;
-            R1(1, 0)=0;   R1(1, 1)=sina; R1(1, 2)=cosa;   R1(1, 3)=0;
-            R1(2, 0)=0;   R1(2, 1)=-cosa;R1(2, 2)=sina;   R1(2, 3)=0;
-            R1(3, 0)=0;   R1(3, 1)=0;    R1(3, 2)=0;	  R1(3, 3)=1;
-            
-                    
-            R2(0, 0)=d;   R2(0, 1)=0;    R2(0, 2)=a;      R2(0, 3)=0;
-            R2(1, 0)=0;   R2(1, 1)=1;    R2(1, 2)=0;	  R2(1, 3)=0;
-            R2(2, 0)=-a;  R2(2, 1)=0;    R2(2, 2)=d;	  R2(2, 3)=0;
-            R2(3, 0)=0;   R2(3, 1)=0;    R2(3, 2)=0;	  R2(3, 3)=1;
+        d = sqrt(b*b + c*c);
+        if (d != 0) {
+            sina = c/d; cosa = b/d;
+
+            R1(0, 0) = 1;   R1(0, 1) = 0;     R1(0, 2) = 0;    R1(0, 3) = 0;
+            R1(1, 0) = 0;   R1(1, 1) = sina;  R1(1, 2) = cosa; R1(1, 3) = 0;
+            R1(2, 0) = 0;   R1(2, 1) = -cosa; R1(2, 2) = sina; R1(2, 3) = 0;
+            R1(3, 0) = 0;   R1(3, 1) = 0;     R1(3, 2) = 0;    R1(3, 3) = 1;
+
+
+            R2(0, 0) = d;   R2(0, 1) = 0;     R2(0, 2) = a;    R2(0, 3) = 0;
+            R2(1, 0) = 0;   R2(1, 1) = 1;     R2(1, 2) = 0;    R2(1, 3) = 0;
+            R2(2, 0) = -a;  R2(2, 1) = 0;     R2(2, 2) = d;    R2(2, 3) = 0;
+            R2(3, 0) = 0;   R2(3, 1) = 0;     R2(3, 2) = 0;    R2(3, 3) = 1;
 
             R = R1 * R2;
         } else {
-            R(0, 0)=0;R(0, 1)=1;R(0, 2)=0;R(0, 3)=0;
-            R(1, 0)=0;R(1, 1)=0;R(1, 2)=1;R(1, 3)=0;
-            R(2, 0)=1;R(2, 1)=0;R(2, 2)=0;R(2, 3)=0;
-            R(3, 0)=0;R(3, 1)=0;R(3, 2)=0;R(3, 3)=1;
+            R(0, 0) = 0; R(0, 1) = 1; R(0, 2) = 0; R(0, 3) = 0;
+            R(1, 0) = 0; R(1, 1) = 0; R(1, 2) = 1; R(1, 3) = 0;
+            R(2, 0) = 1; R(2, 1) = 0; R(2, 2) = 0; R(2, 3) = 0;
+            R(3, 0) = 0; R(3, 1) = 0; R(3, 2) = 0; R(3, 3) = 1;
         }
-                
+
         return R;
     }
 
+    double cosineAngleOfVectors(Eigen::Vector3d u, gemmi::Vec3 v) {
+        Eigen::Vector3d v_(v.x, v.y, v.z);
+        double dotProduct = u.dot(v_);
+        return dotProduct / (u.norm() * v_.norm());
+    }
 }
