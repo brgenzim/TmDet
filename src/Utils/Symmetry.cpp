@@ -113,18 +113,14 @@ namespace Tmdet::Utils {
                     free(seq2);
                     continue;
                 }
-                {
-                    // TODO: unneeded duplication? removable?
-                    // nca1=0;
-                    // for (r1=ch1->fres; r1!=NULL; r1=r1->next) {
-                    //     a1=pdb_findAtomInRes(r1,"CA");
-                    //     if (a1!=NULL) {
-                    //         koord1[nca1].x=x(a1->coord);
-                    //         koord1[nca1].y=y(a1->coord);
-                    //         koord1[nca1].z=z(a1->coord);
-                    //     }
-                    //     nca1++;
-                    // }
+                nca1 = 0;
+                r1 = ch1->residues.begin();
+                for (; r1 != ch1->residues.end(); r1++) {
+                    auto a1 = r1->gemmi.get_ca();
+                    if (a1 != NULL) {
+                        koord1[nca1] = a1->pos;
+                        nca1++;
+                    }
                 }
 
                 int pos1, pos2;
@@ -146,6 +142,12 @@ namespace Tmdet::Utils {
 
                 CM_Translate(pos1, koord1, weight, t1);
                 CM_Translate(pos2, koord2, weight, t2);
+#ifdef __SYM_DBG
+                // std::cout << ch1->gemmi.name << "-" << ch2->gemmi.name << ":"
+                //     << " t1: " << t1.x() << " " << t1.y() << " " << t1.z()
+                //     << " t2: " << t2.x() << " " << t2.y() << " " << t2.z()
+                //     << std::endl;
+#endif
                 double rmsd;
                 Eigen::Matrix4d R; // rotation matrix
                 std::span<gemmi::Vec3> koord1Slice(koord1.begin()+pos1, nall);
@@ -155,16 +157,19 @@ namespace Tmdet::Utils {
                 double distance = (t2 - t1).norm();
 
 #ifdef __SYM_DBG
-                std::cout << "\tdistance: " << distance << ";    RMSD: " << rmsd << std::endl;
+                std::cout << ch1->gemmi.name << "-" << ch2->gemmi.name << ":"
+                    << " Distance: " << distance << ";    RMSD: " << rmsd << std::endl;
+                std::cout << R << std::endl;
+
 #endif
 
                 if (distance > 2.0 && rmsd < 3) {
                     sim[i][j].id = sim[j][i].id = 1;
 #ifdef __SYM_DBG
-                    gemmi::Vec3 axis = sim[i][j].axis;
-                    std::cout << "SIM_OP [" << i << ", " << j << "]: "
-                        << Eigen::Vector3d(axis.x, axis.y, axis.z).transpose()
-                        << " angle: " << sim[i][j].rotAngle << std::endl;
+                    // gemmi::Vec3 axis = sim[i][j].axis;
+                    // std::cout << "SIM_OP [" << i << ", " << j << "]: "
+                    //     << Eigen::Vector3d(axis.x, axis.y, axis.z).transpose()
+                    //     << " angle: " << sim[i][j].rotAngle << std::endl;
 #endif
                 }
 
@@ -180,6 +185,17 @@ namespace Tmdet::Utils {
         }
 #ifdef __SYM_DBG
         std::cout << "End of check symmetry" << std::endl;
+
+        for (int i = 0; i < nc; i++) {
+            for (int j = 0; j < nc; j++) {
+                gemmi::Vec3 axis = sim[i][j].axis;
+                gemmi::Vec3 origo = sim[i][j].origo;
+                std::cout << "sim[" << i << "][" << j << "]:"
+                    << " Origo: " << origo.x << " " << origo.y << " " << origo.z
+                    << " Normal: " << axis.x << " " << axis.y << " " << axis.z
+                    << " Angle: " << sim[i][j].rotAngle << std::endl;
+            }
+        }
 #endif
         return sim;
     }
@@ -353,7 +369,11 @@ namespace Tmdet::Utils {
         /* --------- DETERMINE R AND ROTATE X ----------- */
         for (i = 0; i < 3; i++)
             for (j = 0; j < 3; j++)
-                R(j, i) = K[j][0]*H[i][0] + K[j][1]*H[i][1] +
+                // NOTE: in legacy code this is: R[j][i]...
+                //       But in the C++ code it resulted transposed R.
+                //       So R(i,j) must be written instead of R(j,i)
+                //       to keep the same result.
+                R(i, j) = K[j][0]*H[i][0] + K[j][1]*H[i][1] +
                         sign_detU * K[j][2]*H[i][2];
 
 
