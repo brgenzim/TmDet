@@ -24,17 +24,16 @@ using namespace std;
 namespace Tmdet::Utils {
 
     static int Match_Sequence(char *seq1,char *seq2,int *pos1,int *pos2);
-    static void CM_Translate(int position, std::vector<gemmi::Vec3> &koord, std::vector<double> &mass, Eigen::Vector3d &CM);
-    static bool Lsq_fit(int nr_atoms, std::span<gemmi::Vec3> &r1, std::span<gemmi::Vec3> &r2, std::vector<double> &weigth, double &rmsd, Eigen::Matrix4d& Rot);
+    static void CM_Translate(int position, std::vector<Eigen::Vector3d> &koord, std::vector<double> &mass, Eigen::Vector3d &CM);
+    static bool Lsq_fit(int nr_atoms, std::span<Eigen::Vector3d>& r1, std::span<Eigen::Vector3d>& r2, std::vector<double>& weight, double& rmsd, Eigen::Matrix4d& Rot);
     static void Get_Sim_Op(Eigen::Matrix4d& R, Eigen::Vector3d& t1, Eigen::Vector3d& t2, _symmetryData& simij);
-    static void eigen(double *a, double *r__, int *n, int *mv);
     static Eigen::Matrix4d Rotate_Z(Eigen::Vector3d T);
     static double cosineAngleOfVectors(Eigen::Vector3d u, gemmi::Vec3 v);
 
     std::vector<std::vector<_symmetryData>> Symmetry::CheckSymmetry(Tmdet::ValueObjects::TmdetStruct &tmdetVO) {
+
         char *seq1, *seq2;
         std::vector<std::vector<_symmetryData>> sim;
-
 
         int nc = tmdetVO.chains.size();
         sim.resize(nc);
@@ -56,7 +55,7 @@ namespace Tmdet::Utils {
             int nall1 = ch1->residues.size();
             std::vector<double> w1;
             w1.resize(nall1);
-            std::vector<gemmi::Vec3> koord1;
+            std::vector<Eigen::Vector3d> koord1;
             koord1.resize(nall1);
 
             seq1 = (char *)calloc((nall1 + 1), sizeof(char));
@@ -66,7 +65,7 @@ namespace Tmdet::Utils {
             for (; r1 != ch1->residues.end(); r1++) {
                 auto a1 = r1->gemmi.get_ca();
                 if (a1 != NULL) {
-                    koord1[nca1] = a1->pos;
+                    koord1[nca1] = Eigen::Vector3d(a1->pos.x, a1->pos.y, a1->pos.z);
                     w1[nca1] = 1;
                 }
                 else
@@ -91,7 +90,7 @@ namespace Tmdet::Utils {
                 int nall2 = ch2->residues.size();
                 std::vector<double> w2;
                 w2.resize(nall2);
-                std::vector<gemmi::Vec3> koord2;
+                std::vector<Eigen::Vector3d> koord2;
                 koord2.resize(nall2);
                 seq2 = (char *)calloc((nall2+1), sizeof(char));
 
@@ -100,7 +99,7 @@ namespace Tmdet::Utils {
                 for (; r2 != ch2->residues.end(); r2++) {
                     auto a2 = r2->gemmi.get_ca();
                     if (a2 != NULL) {
-                        koord2[nca2] = a2->pos;
+                        koord2[nca2] = Eigen::Vector3d(a2->pos.x, a2->pos.y, a2->pos.z);
                         w2[nca2]=1;
                     }
                     else
@@ -118,7 +117,7 @@ namespace Tmdet::Utils {
                 for (; r1 != ch1->residues.end(); r1++) {
                     auto a1 = r1->gemmi.get_ca();
                     if (a1 != NULL) {
-                        koord1[nca1] = a1->pos;
+                        koord1[nca1] = Eigen::Vector3d(a1->pos.x, a1->pos.y, a1->pos.z);
                         nca1++;
                     }
                 }
@@ -139,19 +138,13 @@ namespace Tmdet::Utils {
                 }
 
                 Eigen::Vector3d t1, t2;
-
                 CM_Translate(pos1, koord1, weight, t1);
                 CM_Translate(pos2, koord2, weight, t2);
-#ifdef __SYM_DBG
-                // std::cout << ch1->gemmi.name << "-" << ch2->gemmi.name << ":"
-                //     << " t1: " << t1.x() << " " << t1.y() << " " << t1.z()
-                //     << " t2: " << t2.x() << " " << t2.y() << " " << t2.z()
-                //     << std::endl;
-#endif
+
                 double rmsd;
                 Eigen::Matrix4d R; // rotation matrix
-                std::span<gemmi::Vec3> koord1Slice(koord1.begin()+pos1, nall);
-                std::span<gemmi::Vec3> koord2Slice(koord2.begin()+pos2, nall);
+                std::span<Eigen::Vector3d> koord1Slice(koord1.begin()+pos1, nall);
+                std::span<Eigen::Vector3d> koord2Slice(koord2.begin()+pos2, nall);
                 Lsq_fit(nall, koord1Slice, koord2Slice, weight, rmsd, R);
                 Get_Sim_Op( R, t1, t2, sim[i][j]);
                 double distance = (t2 - t1).norm();
@@ -160,17 +153,10 @@ namespace Tmdet::Utils {
                 std::cout << ch1->gemmi.name << "-" << ch2->gemmi.name << ":"
                     << " Distance: " << distance << ";    RMSD: " << rmsd << std::endl;
                 std::cout << R << std::endl;
-
 #endif
 
                 if (distance > 2.0 && rmsd < 3) {
                     sim[i][j].id = sim[j][i].id = 1;
-#ifdef __SYM_DBG
-                    // gemmi::Vec3 axis = sim[i][j].axis;
-                    // std::cout << "SIM_OP [" << i << ", " << j << "]: "
-                    //     << Eigen::Vector3d(axis.x, axis.y, axis.z).transpose()
-                    //     << " angle: " << sim[i][j].rotAngle << std::endl;
-#endif
                 }
 
                 if (distance < 2.0 && R(0, 0) > 0.98 && R(1, 1) > 0.98 && R(2, 2) > 0.98) {
@@ -224,402 +210,25 @@ namespace Tmdet::Utils {
         return 0;
     }
 
-    void CM_Translate(int position, std::vector<gemmi::Vec3> &koord, std::vector<double> &mass, Eigen::Vector3d &CM) {
+    void CM_Translate(int position, std::vector<Eigen::Vector3d> &koord, std::vector<double> &mass, Eigen::Vector3d &CM) {
         /*
          * translates the coordinates of the molecules such
          * that the center of mass is in the origin.
          */
-        CM.x() = 0.0;
-        CM.y() = 0.0;
-        CM.z() = 0.0;
+        CM = Eigen::Vector3d::Zero();
         double total_mass = 0.0;
         int length = mass.size();
         for (int i = 0; i < length; i++) if (mass[i]!=0) {
             total_mass += mass[i];
-            CM.x() += mass[i] * koord[position + i].x;
-            CM.y() += mass[i] * koord[position + i].y;
-            CM.z() += mass[i] * koord[position + i].z;
+            CM += mass[i] * koord[position + i];
         }
         CM /= total_mass;
 
         /* ---- translating CM coordinates to origin  -------- */
         for (int i = 0; i < length; i++) if (mass[i]!=0) {
-            koord[position + i].x -= CM.x();
-            koord[position + i].y -= CM.y();
-            koord[position + i].z -= CM.z();
+            koord[position + i] -= CM;
         }
     }
-
-    bool Lsq_fit(int nr_atoms, std::span<gemmi::Vec3> &r1, std::span<gemmi::Vec3> &r2, std::vector<double> &weigth, double &rmsd, Eigen::Matrix4d &Rot) {
-        /*
-            Least square fit routine to superimpose coordinates r1 onto
-            coordinates r2.
-
-            omega is a symmetric matrix in symmetric storage mode:
-            The element [i][j] is stored at position [i*(i+1)/2+j] with i>j
-
-        */
-
-        int    i, j, ii, jj, n;
-        double  U[3][3], det_U, sign_detU, sigma, dr_sqrlength;
-        double  H[3][3], K[3][3];
-        double  omega[21], eve_omega[36], eva_omega[6];
-        gemmi::Vec3  dr;
-        Eigen::Matrix3d R;
-
-
-        /* ----- CALCULATE THE MATRIX U AND ITS DETERMINANT ----- */
-        for (i = 0; i < 3; i++)
-            for (j = 0; j < 3; j++)
-                U[i][j] = 0.0;
-
-        for (n = 0; n < nr_atoms; n++)  if (weigth[n]>0)   
-        {
-            U[0][0] +=  weigth[n] * r1[n].x * r2[n].x;
-            U[0][1] +=  weigth[n] * r1[n].x * r2[n].y;
-            U[0][2] +=  weigth[n] * r1[n].x * r2[n].z;
-            U[1][0] +=  weigth[n] * r1[n].y * r2[n].x;
-            U[1][1] +=  weigth[n] * r1[n].y * r2[n].y;
-            U[1][2] +=  weigth[n] * r1[n].y * r2[n].z;
-            U[2][0] +=  weigth[n] * r1[n].z * r2[n].x;
-            U[2][1] +=  weigth[n] * r1[n].z * r2[n].y;
-            U[2][2] +=  weigth[n] * r1[n].z * r2[n].z;
-        }
-
-        det_U = U[0][0]*U[1][1]*U[2][2] + U[0][2]*U[1][0]*U[2][1] +
-                U[0][1]*U[1][2]*U[2][0] - U[2][0]*U[1][1]*U[0][2] -
-                U[2][2]*U[1][0]*U[0][1] - U[2][1]*U[1][2]*U[0][0];
-
-        if (ABS(det_U) < TINY) {
-            fprintf(stderr, "determinant of U equals to zero\n");
-            return false;
-        }
-
-        sign_detU = det_U / ABS(det_U);  /* sign !!! */
-
-
-    /* ----- CONSTRUCT OMEGA, DIAGONALIZE IT AND DETERMINE H AND K --- */
-
-        for (i = 0; i < 6; i++)
-            for (j = i; j < 6; j++)
-                omega[(j*(j+1)/2)+i] = 0.0;
-        for (j = 3; j < 6; j++) {
-            jj = j*(j+1)/2;
-            for (i = 0; i < 3; i++) {
-                ii = jj + i;
-                omega[ii] = U[i][j-3];
-            }
-        }
-
-    #ifdef __SYM_DBG
-        fprintf(stdout, "omega matrix:\n");
-        for (i = 0; i < 21; i++)
-            fprintf(stdout, "%7.2f ", omega[i]);
-        fprintf(stdout, "\n");
-    #endif
-
-        i = 6;  /* dimension of omega matrix */
-        j = 0;  /* both, eigenvalues and eigenvectors are calculated */
-        eigen(omega, eve_omega, &i, &j);
-
-        for (i = 0; i < 6; i++)
-            eva_omega[i] = omega[i*(i+1)/2+i];
-
-    #ifdef __SYM_DBG
-        fprintf(stdout, "Eigenvalues:\n");
-        for (i = 0; i < 6; i++)
-            fprintf(stdout, "%7.2f ", eva_omega[i]);
-        fprintf(stdout, "\n");
-
-        ii = 0;
-        fprintf(stdout, "Eigenvectors:\n");
-        for (j = 0; j < 6; j++) {     /* ----- elements of eigenvector i ------ */
-            for (i = 0; i < 6; i++)   /* ----  loop for eigenvectors !!! ----- */
-                fprintf(stdout, "%7.2f ", eve_omega[ii++]);
-            fprintf(stdout, "\n");
-        }
-
-    #endif
-
-
-        if (det_U < 0.0){
-            if (ABS(eva_omega[1] - eva_omega[2]) < SMALL) {
-                fprintf(stderr, "determinant of U < 0 && degenerated eigenvalues");
-                return false;
-            }
-        }
-
-        for (i = 0; i < 3; i++)
-            for (j = 0; j < 3; j++) {
-                H[i][j] = M_SQRT2 * eve_omega[j*6+i];
-                K[i][j] = M_SQRT2 * eve_omega[j*6+i+3];
-            }
-
-        sigma = (H[1][0]*H[2][1] - H[2][0]*H[1][1]) * H[0][2] +
-                (H[2][0]*H[0][1] - H[0][0]*H[2][1]) * H[1][2] +
-                (H[0][0]*H[1][1] - H[1][0]*H[0][1]) * H[2][2];
-
-        if (sigma <= 0.0) {
-            for (i = 0; i < 3; i++) {
-                H[i][2] = -H[i][2];
-                K[i][2] = -K[i][2];
-            }
-        }
-
-        /* --------- DETERMINE R AND ROTATE X ----------- */
-        for (i = 0; i < 3; i++)
-            for (j = 0; j < 3; j++)
-                // NOTE: in legacy code this is: R[j][i]...
-                //       But in the C++ code it resulted transposed R.
-                //       So R(i,j) must be written instead of R(j,i)
-                //       to keep the same result.
-                R(i, j) = K[j][0]*H[i][0] + K[j][1]*H[i][1] +
-                        sign_detU * K[j][2]*H[i][2];
-
-
-    #ifdef __SYM_DBG
-        std::cout << "Rotation matrix:" << std::endl << R << std::endl;
-    #endif
-
-
-        for (n = 0; n < nr_atoms; n++) if (weigth[n]!=0) 
-        {
-            dr.x = R(0, 0)*r1[n].x + R(0, 1)*r1[n].y + R(0, 2)*r1[n].z;
-            dr.y = R(1, 0)*r1[n].x + R(1, 1)*r1[n].y + R(1, 2)*r1[n].z;
-            dr.z = R(2, 0)*r1[n].x + R(2, 1)*r1[n].y + R(2, 2)*r1[n].z;
-            r1[n].x = dr.x;
-            r1[n].y = dr.y;
-            r1[n].z = dr.z;
-        }
-
-
-        /* ----- calculate RMSD when required -------- */
-
-        rmsd = 0.0;
-        for (n = 0; n < nr_atoms; n++) if (weigth[n]!=0) {
-        /*printf("%10.4f%10.4f", r1[n].x , r2[n].x);
-        printf("%10.4f%10.4f", r1[n].y , r2[n].y);
-        printf("%10.4f%10.4f\n", r1[n].z , r2[n].z);*/
-            dr.x = r1[n].x - r2[n].x;
-            dr.y = r1[n].y - r2[n].y;
-            dr.z = r1[n].z - r2[n].z;
-            dr_sqrlength = dr.x*dr.x + dr.y*dr.y + dr.z*dr.z;
-
-            rmsd +=  dr_sqrlength;
-        }
-        rmsd /= nr_atoms;
-        rmsd = sqrt(rmsd);
-
-        //Rot = R;
-        Rot.block<3,3>(0,0) = R.block<3,3>(0,0);
-        Rot(3,0) = 0;
-        Rot(3,1) = 0;
-        Rot(3,2) = 0;
-        Rot(3,3) = 1.0;
-        Rot(0,3) = 0;
-        Rot(1,3) = 0;
-        Rot(2,3) = 0;
-
-        return true;
-    }
-
-    void eigen(double *a, double *r__, int *n, int *mv) {
-        int    i__1, i__2, i__3;
-        double  d__1;
-
-        double  cosx, sinx, cosx2, sinx2;
-        int    i__, j, k, l, m;
-        double  x, y, range, anorm, sincs, anrmx;
-        int    ia, ij, il, im, ll, lm, iq, mm, jq, lq, mq, ind, ilq, imq, ilr, imr;
-        double  thr;
-
-
-    /* CCCCC W.F. VAN GUNSTEREN, CAMBRIDGE, JUNE 1979 CCCCCCCCCCCCCCCCCCCCCCCC
-                                                                        C 
-        SUBROUTINE EIGEN (A,R,N,MV)                                      C 
-                                                                        C 
-            EIGEN COMPUTES EIGENVALUES AND EIGENVECTORS OF THE REAL      C
-        SYMMETRIC N*N MATRIX A, USING THE DIAGONALIZATION METHOD         C 
-        DESCRIBED IN "MATHEMATICAL METHODS FOR DIGITAL COMPUTERS", EDS.  C 
-        A.RALSTON AND H.S.WILF, WILEY, NEW YORK, 1962, CHAPTER 7.        C 
-        IT HAS BEEN COPIED FROM THE IBM SCIENTIFIC SUBROUTINE PACKAGE.   C 
-                                                                        C 
-        A(1..N*(N+1)/2) = MATRIX TO BE DIAGONALIZED, STORED IN SYMMETRIC C 
-                        STORAGE MODE, VIZ. THE I,J-TH ELEMENT (I.GE.J) C 
-                        IS STORED AT THE LOCATION K=I*(I-1)/2+J IN A;  C 
-                        THE EIGENVALUES ARE DELIVERED IN DESCENDING    C 
-                        ORDER ON THE DIAGONAL, VIZ. AT THE LOCATIONS   C 
-                        K=I*(I+1)/2                                    C 
-        R(1..N,1..N) = DELIVERED WITH THE CORRESPONDING EIGENVECTORS     C 
-                        STORED COLUMNWISE                                 C 
-        N = ORDER OF MATRICES A AND R                                    C 
-        MV = 0 : EIGENVALUES AND EIGENVECTORS ARE COMPUTED               C 
-            = 1 : ONLY EIGENVALUES ARE COMPUTED                           C 
-                                                                        C 
-    CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-    */
-
-        /* Parameter adjustments */
-        --r__;
-        --a;
-
-
-
-        range = 1e-12;
-        if (*mv != 1) {
-            iq = -(*n);
-            i__1 = *n;
-            for (j = 1; j <= i__1; ++j) {
-                iq += *n;
-                i__2 = *n;
-                for (i__ = 1; i__ <= i__2; ++i__) {
-                    ij = iq + i__;
-                    r__[ij] = 0.;
-                    if (i__ - j == 0)
-                        r__[ij] = 1.;
-                }
-            }
-        }
-
-    /* *****COMPUTE INITIAL AND FINAL NORMS (ANORM AND ANRMX) */
-        anorm = 0.0;
-        i__2 = *n;
-        for (i__ = 1; i__ <= i__2; ++i__) {
-        i__1 = *n;
-        for (j = i__; j <= i__1; ++j) {
-            if (i__ - j != 0) {
-                    ia = i__ + (j * j - j) / 2;
-                    anorm += a[ia] * a[ia];
-                }
-        }
-        }
-        if (anorm > 0.0) {
-            anorm = sqrt(anorm) * 1.414;
-            anrmx = anorm * range / (double) (*n);
-
-    /* *****INITIALIZE INDICATORS AND COMPUTE THRESHOLD, THR */
-            thr = anorm;
-
-            do {  /* ----- while (thr - anrmx > 0.0) ------ */
-                thr /= (double) (*n);
-
-                ind = true;
-                while (ind) {
-                    ind = false;
-
-                    l = 1;
-                    for (l = 1; l <= *n-1; l++) {
-                        for (m = l+1; m <= *n; m++) {
-
-    /* *****COMPUT SIN AND COS */
-
-                            mq = (m * m - m) / 2;
-                            lq = (l * l - l) / 2;
-                            lm = l + mq;
-                            d__1 = a[lm];
-                            if (ABS(d__1) - thr >= 0.0) {
-                                ind = true;
-                                ll = l + lq;
-                                mm = m + mq;
-                                x = (a[ll] - a[mm]) * .5;
-                                y = -a[lm] / sqrt(a[lm] * a[lm] + x * x);
-                                if (x < 0.0)
-                                    y = -y;
-                                sinx = y / sqrt((sqrt(1.0 - y * y) + 1.0) * 2.0);
-                                sinx2 = sinx * sinx;
-                                cosx = sqrt(1.0 - sinx2);
-                                cosx2 = cosx * cosx;
-                                sincs = sinx * cosx;
-
-    /* *****ROTATE L AND M COLUMNS */
-                                ilq = *n * (l - 1);
-                                imq = *n * (m - 1);
-                                i__1 = *n;
-                                for (i__ = 1; i__ <= i__1; ++i__) {
-                                    iq = (i__ * i__ - i__) / 2;
-                                    if (i__ - l != 0) {
-
-                                        i__2 = i__ - m;
-                                        if (i__2 != 0) {
-                                            if (i__2 < 0)
-                                                im = i__ + mq;
-                                            else
-                                                im = m + iq;
-
-                                            if (i__ - l >= 0)
-                                                il = l + iq;
-                                            else
-                                                il = i__ + lq;
-                                            x = a[il] * cosx - a[im] * sinx;
-                                            a[im] = a[il] * sinx + a[im] * cosx;
-                                            a[il] = x;
-                                        } /* ---- (i__2 != 0) ---- */
-                                    } /* ------ if (i__ - l != 0) ---- */
-
-                                    if (*mv != 1) {
-                                        ilr = ilq + i__;
-                                        imr = imq + i__;
-                                        x = r__[ilr] * cosx - r__[imr] * sinx;
-                                        r__[imr] = r__[ilr] * sinx + r__[imr] * cosx;
-                                        r__[ilr] = x;
-                                    }
-                                }
-                                x = a[lm] * 2. * sincs;
-                                y = a[ll] * cosx2 + a[mm] * sinx2 - x;
-                                x = a[ll] * sinx2 + a[mm] * cosx2 + x;
-                                a[lm] = (a[ll] - a[mm]) * sincs + a[lm] * (cosx2 - sinx2);
-                                a[ll] = y;
-                                a[mm] = x;
-
-                            } /* --- if ((d__1 = a[lm], ABS(d__1)) - thr >= 0.0) -----
-    */
-    /* *****TESTS FOR COMPLETION */
-
-    /* *****TEST FOR M = LAST COLUMN */
-                        } /* ---- for (m = l+1; m <= *n; m++)  ---- */
-
-    /* *****TEST FOR L = SECOND FROM LAST COLUMN */
-                    } /* ----- for (l = 1; l < *n-1; l++) ------ */
-
-                } /* --- while (ind) --- */
-    /* *****COMPARE THRESHOLD WITH FINAL NORM */
-
-            } while (thr > anrmx);
-
-
-        } /* ---- if (anorm > 0) ------ */
-
-    /* *****SORT EIGENVALUES AND EIGENVECTORS */
-
-        iq = -(*n);
-        i__1 = *n;
-        for (i__ = 1; i__ <= i__1; ++i__) {
-        iq += *n;
-        ll = i__ + (i__ * i__ - i__) / 2;
-        jq = *n * (i__ - 2);
-        i__2 = *n;
-        for (j = i__; j <= i__2; ++j) {
-            jq += *n;
-            mm = j + (j * j - j) / 2;
-            if (a[ll] - a[mm] < 0.0) {
-                    x = a[ll];
-                    a[ll] = a[mm];
-                    a[mm] = x;
-                    if (*mv != 1) {
-                        i__3 = *n;
-                        for (k = 1; k <= i__3; ++k) {
-                            ilr = iq + k;
-                            imr = jq + k;
-                            x = r__[ilr];
-                            r__[ilr] = r__[imr];
-                            r__[imr] = x;
-                        }
-                    }
-                } /* ---- if (a[ll] - a[mm] < 0.0) ---- */
-        }
-        }
-
-    } /* eigen */
 
     void Get_Sim_Op(Eigen::Matrix4d& R, Eigen::Vector3d& t1, Eigen::Vector3d& t2, _symmetryData& simij)
     {
@@ -639,19 +248,25 @@ namespace Tmdet::Utils {
             */
             axis.z() = 1.0;
             axis.y() = 
-            ((1.0-R(0, 0))*R(1, 2)+R(1, 0)*R(0, 2))/
-            ((1.0-R(1, 1))*(1.0-R(0, 0))-R(0, 1)*R(1, 0));
-            if (R(0, 0)<1.0)
+                ((1.0-R(0, 0))*R(1, 2)+R(1, 0)*R(0, 2))/
+                ((1.0-R(1, 1))*(1.0-R(0, 0))-R(0, 1)*R(1, 0));
+            if (R(0, 0)<1.0) {
                 axis.x() = (R(0, 1)*axis.y() + R(0, 2))/
-                (1.0-R(0, 0));
-            else axis.x() = 0;
-        }
-        else
-        {
-            if (R(0, 0)>0.999)
-                axis.x() = 1;axis.y() = 0;axis.z() = 0;
-            if (R(1, 1)>0.999)
-                axis.x() = 0;axis.y() = 1;axis.z() = 0;
+                    (1.0-R(0, 0));
+            } else {
+                axis.x() = 0;
+            }
+        } else {
+            if (R(0, 0)>0.999) {
+                axis.x() = 1;
+            }
+            axis.y() = 0;
+            axis.z() = 0;
+            if (R(1, 1)>0.999) {
+                axis.x() = 0;
+            }
+            axis.y() = 1;
+            axis.z() = 0;
 
         }
         axis = axis / axis.norm();
@@ -693,16 +308,13 @@ namespace Tmdet::Utils {
 
     }
 
-
-    bool Lsq_fit_Eigen_version(int nr_atoms, std::vector<Eigen::Vector3d>& r1, std::vector<Eigen::Vector3d>& r2, std::vector<double>& weight, double& rmsd, Eigen::Matrix4d& Rot) {
+    bool Lsq_fit(int nr_atoms, std::span<Eigen::Vector3d>& r1, std::span<Eigen::Vector3d>& r2, std::vector<double>& weight, double& rmsd, Eigen::Matrix4d& Rot) {
         Eigen::Matrix3d U = Eigen::Matrix3d::Zero();
-        double total_weight = 0.0;
 
         // Calculate matrix U
         for (int n = 0; n < nr_atoms; n++) {
             if (weight[n] > 0) {
                 U += weight[n] * r1[n] * r2[n].transpose();
-                total_weight += weight[n];
             }
         }
 
@@ -720,7 +332,6 @@ namespace Tmdet::Utils {
         omega.block<3, 3>(0, 3) = U;
         omega.block<3, 3>(3, 0) = U.transpose();
 
-        // Diagonalize omega
         Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> eigensolver(omega);
         if (eigensolver.info() != Eigen::Success) {
             std::cerr << "Eigen decomposition failed" << std::endl;
@@ -751,6 +362,9 @@ namespace Tmdet::Utils {
 
         Eigen::Matrix3d R = K * H.transpose();
         R *= sign_detU;
+        // correction: something differs from the old function in the above code.
+        R.transposeInPlace();
+        R *= -1;
 
         // Rotate r1
         for (int n = 0; n < nr_atoms; n++) {
@@ -764,10 +378,10 @@ namespace Tmdet::Utils {
         for (int n = 0; n < nr_atoms; n++) {
             if (weight[n] > 0) {
                 Eigen::Vector3d dr = r1[n] - r2[n];
-                rmsd += weight[n] * dr.squaredNorm();
+                rmsd += dr.squaredNorm();
             }
         }
-        rmsd /= total_weight;
+        rmsd /= nr_atoms;
         rmsd = std::sqrt(rmsd);
 
         // Set rotation matrix
