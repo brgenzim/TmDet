@@ -15,10 +15,6 @@
 using namespace std;
 
 #define TINY   1.0e-10
-#define SMALL  1.0e-5
-#define MAX(a,b) ((a)>(b)?(a):(b))
-#define MIN(a,b) ((a)<(b)?(a):(b))
-#define	ABS(x) ((x) < 0 ? -(x) : (x))
 #define RAD2DEG   57.29576
 
 namespace Tmdet::Utils {
@@ -191,21 +187,22 @@ namespace Tmdet::Utils {
         char s1[6], s2[6];
         char *mp;
 
-        sprintf(s1,"%.5s",seq1);s1[5]='\0';
-        sprintf(s2,"%.5s",seq2);s2[5]='\0';
+        sprintf(s1, "%.5s", seq1); s1[5] = '\0';
+        sprintf(s2, "%.5s", seq2); s2[5] = '\0';
 
-        mp=strstr(seq1,s2);
-        if (mp!=NULL) *pos1=mp-seq1,*pos2=0;
-        else
-        {
-            mp=strstr(seq2,s1);
-            if (mp!=NULL) *pos1=0,*pos2=mp-seq2;
+        mp = strstr(seq1, s2);
+        if (mp != NULL) {
+            *pos1 = mp-seq1;
+            *pos2 = 0;
+        } else {
+            mp = strstr(seq2, s1);
+            if (mp != NULL) {
+                *pos1 = 0;
+                *pos2 = mp-seq2;
+            }
         }
-        if (mp!=NULL)
-        {
-            /*printf(" %5d %5d\n",*pos1,*pos2);*/
-        return 1;
-
+        if (mp != NULL) {
+            return 1;
         }
         return 0;
     }
@@ -235,11 +232,6 @@ namespace Tmdet::Utils {
         Eigen::Matrix4d LR, Rot;
         Eigen::Vector3d av, ori, axis;
         double tg;
-
-        /*Show_Matrix(R,"Rotori");*/
-
-        //   Rinv= inverseMat(R);
-
 
         if ((R(0, 0)<0.999)&&(R(1, 1)<0.999) /*&&(R(0, 0)>-0.999)*/)
         {
@@ -272,12 +264,7 @@ namespace Tmdet::Utils {
         axis = axis / axis.norm();
         LR=Rotate_Z(axis);
 
-        /*Show_Matrix(LR,"LR"); */
-
         Rot= LR.inverse() * (R * LR);
-
-        /*Show_Matrix(Rot,"Rot"); */
-
 
         if (Rot(0, 0)>1) Rot(0, 0)=1.0;
         if (Rot(0, 0)<-1) Rot(0, 0)=-1.0;
@@ -296,16 +283,6 @@ namespace Tmdet::Utils {
 
         simij.rotAngle = RAD2DEG*acos(Rot(0, 0));
         simij.axis = gemmi::Vec3(axis.x(), axis.y(), axis.z());
-
-
-        /*write_point(simij.ori,"ori");
-        printf("%6.2f %6.2f %6.2f    ",
-            simij.axis.x,simij.axis.y,simij.axis.z);
-        printf("by %10.f %10.f%10.f%10.f    degree\n",
-        RAD2DEG*acos(Rot(0, 0)),RAD2DEG*acos(Rot(1, 1)),
-        RAD2DEG*asin(Rot(0, 1)),RAD2DEG*asin(-Rot(1, 0)));
-        */
-
     }
 
     bool Lsq_fit(int nr_atoms, std::span<Eigen::Vector3d>& r1, std::span<Eigen::Vector3d>& r2, std::vector<double>& weight, double& rmsd, Eigen::Matrix4d& Rot) {
@@ -319,7 +296,7 @@ namespace Tmdet::Utils {
         }
 
         double det_U = U.determinant();
-        if (std::abs(det_U) < 1e-10) {
+        if (std::abs(det_U) < TINY) {
             std::cerr << "determinant of U equals to zero" << std::endl;
             return false;
         }
@@ -342,7 +319,7 @@ namespace Tmdet::Utils {
         Eigen::MatrixXd eve_omega = eigensolver.eigenvectors();
 
         if (det_U < 0.0) {
-            if (std::abs(eva_omega(1) - eva_omega(2)) < 1e-10) {
+            if (std::abs(eva_omega(1) - eva_omega(2)) < TINY) {
                 std::cerr << "determinant of U < 0 && degenerated eigenvalues" << std::endl;
                 return false;
             }
@@ -396,7 +373,7 @@ namespace Tmdet::Utils {
     }
 
     Eigen::Matrix4d Rotate_Z(Eigen::Vector3d T) {
-        float  a, b, c, d, cosa, sina;
+        double a, b, c, d, cosa, sina;
         Eigen::Matrix4d R1, R2, R;
         Eigen::Vector3d normalized;
 
@@ -408,23 +385,22 @@ namespace Tmdet::Utils {
         if (d != 0) {
             sina = c/d; cosa = b/d;
 
-            R1(0, 0) = 1;   R1(0, 1) = 0;     R1(0, 2) = 0;    R1(0, 3) = 0;
-            R1(1, 0) = 0;   R1(1, 1) = sina;  R1(1, 2) = cosa; R1(1, 3) = 0;
-            R1(2, 0) = 0;   R1(2, 1) = -cosa; R1(2, 2) = sina; R1(2, 3) = 0;
-            R1(3, 0) = 0;   R1(3, 1) = 0;     R1(3, 2) = 0;    R1(3, 3) = 1;
+            R1 <<  1,      0,     0,  0,
+                   0,   sina,  cosa,  0,
+                   0,  -cosa,  sina,  0,
+                   0,      0,     0,  1;
 
-
-            R2(0, 0) = d;   R2(0, 1) = 0;     R2(0, 2) = a;    R2(0, 3) = 0;
-            R2(1, 0) = 0;   R2(1, 1) = 1;     R2(1, 2) = 0;    R2(1, 3) = 0;
-            R2(2, 0) = -a;  R2(2, 1) = 0;     R2(2, 2) = d;    R2(2, 3) = 0;
-            R2(3, 0) = 0;   R2(3, 1) = 0;     R2(3, 2) = 0;    R2(3, 3) = 1;
+            R2 <<  d,      0,     a,  0,
+                   0,      1,     0,  0,
+                  -a,      0,     d,  0,
+                   0,      0,     0,  1;
 
             R = R1 * R2;
         } else {
-            R(0, 0) = 0; R(0, 1) = 1; R(0, 2) = 0; R(0, 3) = 0;
-            R(1, 0) = 0; R(1, 1) = 0; R(1, 2) = 1; R(1, 3) = 0;
-            R(2, 0) = 1; R(2, 1) = 0; R(2, 2) = 0; R(2, 3) = 0;
-            R(3, 0) = 0; R(3, 1) = 0; R(3, 2) = 0; R(3, 3) = 1;
+            R <<  0,  1,  0,  0,
+                  0,  0,  1,  0,
+                  1,  0,  0,  0,
+                  0,  0,  0,  1;
         }
 
         return R;
