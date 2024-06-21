@@ -12,21 +12,31 @@ using namespace std;
 namespace Tmdet::Utils {
 
     struct _chains {
-        int id;
+        string id;
         int n;
         vector<string> chids;
     };
 
     struct Oligomer {
-        
-        static vector<_chains> getNumberOfChains(gemmi::cif::Document doc) {
+
+        static vector<_chains> getNumberOfChains(gemmi::Structure structure) {
             vector<_chains> ret;
-            for (auto row : doc.sole_block().find("_entity.",{"id", "type", "pdbx_number_of_molecules"})) {
-                if (row[1] == "polymer") {
-                    ret.emplace_back(_chains({stoi(row[0]),stoi(row[2]),{}}));
+            for (const auto& entity : structure.entities) {
+                if (entity.entity_type == gemmi::EntityType::Polymer) {
+                    ret.emplace_back(_chains(entity.name, entity.subchains.size(), entity.subchains));
                 }
             }
+
             return ret;
+        }
+
+        static vector<vector<string>> getHomoOligomerChains(gemmi::Structure structure) {
+            auto entities = getNumberOfChains(structure);
+            vector<vector<string>> result;
+            for (auto& chains : entities) {
+                result.emplace_back(chains.chids);
+            }
+            return result;
         }
 
         static bool isMonomer(vector<_chains>& chains) {
@@ -61,9 +71,9 @@ namespace Tmdet::Utils {
             return (max > 1);
         }
 
-        static Tmdet::Types::Oligomer getOligomerType(gemmi::cif::Document doc) {
+        static Tmdet::Types::Oligomer getOligomerType(gemmi::Structure structure) {
             Tmdet::Types::Oligomer ret = Tmdet::Types::OligomerType::HETERO_OLIGOMER;
-            vector<_chains> chains = getNumberOfChains(doc);
+            vector<_chains> chains = getNumberOfChains(structure);
             if (isMonomer(chains)) {
                 ret = Tmdet::Types::OligomerType::MONOMER;
             }

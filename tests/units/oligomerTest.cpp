@@ -21,7 +21,8 @@ using namespace std;
 Tmdet::Types::Oligomer getType(string code) {
     string path = PDB_CIF_PATH + code.substr(1,2) + "/" + code + "_updated.cif.gz";
     gemmi::cif::Document doc = gemmi::cif::read(gemmi::MaybeGzipped(path));
-    return Tmdet::Utils::Oligomer::getOligomerType(doc);
+    gemmi::Structure structure = gemmi::make_structure(std::move(doc));
+    return Tmdet::Utils::Oligomer::getOligomerType(structure);
 }
 
 void checkMonomer() {

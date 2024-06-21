@@ -4,6 +4,7 @@
 #include <Types/Residue.hpp>
 #include <ValueObjects/TmdetStruct.hpp>
 #include <Utils/Symmetry.hpp>
+#include <Utils/Oligomer.hpp>
 
 #include <iostream>
 #include <cstring>
@@ -27,6 +28,8 @@ namespace Tmdet::Utils {
     static double cosineAngleOfVectors(Eigen::Vector3d u, gemmi::Vec3 v);
 
     std::vector<std::vector<_symmetryData>> Symmetry::CheckSymmetry(Tmdet::ValueObjects::TmdetStruct &tmdetVO) {
+
+        auto oligomers = Oligomer::getHomoOligomerChains(tmdetVO.gemmi);
 
         char *seq1, *seq2;
         std::vector<std::vector<_symmetryData>> sim;
@@ -164,6 +167,7 @@ namespace Tmdet::Utils {
                     sim[i][j].id = sim[j][i].id = -1;
                 }
             }
+            free(seq1);
         }
 #ifdef __SYM_DBG
         std::cout << "End of check symmetry" << std::endl;
