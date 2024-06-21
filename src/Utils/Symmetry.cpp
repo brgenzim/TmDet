@@ -27,12 +27,12 @@ namespace Tmdet::Utils {
     static Eigen::Matrix4d Rotate_Z(Eigen::Vector3d T);
     static double cosineAngleOfVectors(Eigen::Vector3d u, gemmi::Vec3 v);
 
-    std::vector<std::vector<_symmetryData>> Symmetry::CheckSymmetry(Tmdet::ValueObjects::TmdetStruct &tmdetVO) {
 
-        auto oligomers = Oligomer::getHomoOligomerChains(tmdetVO.gemmi);
+    std::vector<std::vector<_symmetryData>> Symmetry::CheckSymmetry(Tmdet::ValueObjects::TmdetStruct &tmdetVO) {
 
         char *seq1, *seq2;
         std::vector<std::vector<_symmetryData>> sim;
+        auto entities = Oligomer::getNumberOfChains(tmdetVO.gemmi);
 
         int nc = tmdetVO.chains.size();
         sim.resize(nc);
@@ -45,7 +45,7 @@ namespace Tmdet::Utils {
 
         auto ch1 = tmdetVO.chains.begin();
         for (int i = 0; ch1 != tmdetVO.chains.end(); ch1++, i++) {
-            if (!ch1->selected) {
+            if (!ch1->selected || !Oligomer::isEntityOligomerized(ch1->entityId, entities)) {
                 continue;
             }
 #ifdef __SYM_DBG
@@ -80,7 +80,7 @@ namespace Tmdet::Utils {
 
             auto ch2 = tmdetVO.chains.begin();
             for (int j = 0; j < i; ch2++, j++) {
-                if (!ch2->selected) {
+                if (!ch2->selected || ch1->entityId != ch2->entityId) {
                     continue;
                 }
 #ifdef __SYM_DBG

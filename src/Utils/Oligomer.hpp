@@ -12,7 +12,7 @@ using namespace std;
 namespace Tmdet::Utils {
 
     struct _chains {
-        string id;
+        string id; // entity id from _entity category
         int n;
         vector<string> chids;
     };
@@ -23,6 +23,7 @@ namespace Tmdet::Utils {
             vector<_chains> ret;
             for (const auto& entity : structure.entities) {
                 if (entity.entity_type == gemmi::EntityType::Polymer) {
+                    // WARNING: entity.subchains contains label asym ids!
                     ret.emplace_back(_chains(entity.name, entity.subchains.size(), entity.subchains));
                 }
             }
@@ -30,11 +31,26 @@ namespace Tmdet::Utils {
             return ret;
         }
 
-        static vector<vector<string>> getHomoOligomerChains(gemmi::Structure structure) {
-            auto entities = getNumberOfChains(structure);
-            vector<vector<string>> result;
-            for (auto& chains : entities) {
-                result.emplace_back(chains.chids);
+        // TODO: maybe it is unneccessary
+        // static vector<vector<string>> getHomoOligomerChains(gemmi::Structure structure) {
+        //     auto entities = getNumberOfChains(structure);
+        //     vector<vector<string>> result;
+        //     for (auto& chains : entities) {
+        //         if (chains.chids.size() > 1) {
+        //             result.emplace_back(chains.chids);
+        //         }
+        //     }
+        //     return result;
+        // }
+
+        static bool isEntityOligomerized(string entityId, vector<_chains>& chains) {
+            bool result = false;
+            auto ch = chains.begin();
+            for (; ch != chains.end(); ch++) {
+                if (ch->id == entityId) {
+                    result = ch->n > 1;
+                    break;
+                }
             }
             return result;
         }
