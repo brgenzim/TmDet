@@ -17,7 +17,7 @@ pdbRes res;
 SIM_OP **sim;
 double q;
 
-	sim = gt_Check_Symmetry(p);
+    sim = gt_Check_Symmetry(p);
 	ch_clust = gt_Cluster_Chain(p,sim);
 	nr_stAA=calloc(p->nc,sizeof(int));
 	for (i=0; i<p->nc; i++) nr_stAA[i]=0;
@@ -114,19 +114,17 @@ int stop ;
 
     ch_cont=gt_Chain_Contact(p);
 
-    for (i=0;i<nc;i++)
-    {
-
-        ch_cont[i][i]=1;
-				head[i]=1;
-	for (j=0;j<i;j++)
-	{ if (sim[i][j].id==-1)
-		head[i]=0;
-	     id_clust[i][j]=id_clust[j][i]=sim[i][j].id;
-	     sim[i][j].cont=sim[j][i].cont=ch_cont[i][j];
-
-        }
-	member[i]=i;
+    for (i=0;i<nc;i++) {
+		ch_cont[i][i] = 1;
+		head[i] = 1;
+		for (j=0;j<i;j++) {
+			if (sim[i][j].id == -1) {
+				head[i]=0;
+			}
+			id_clust[i][j] = id_clust[j][i] = sim[i][j].id;
+			sim[i][j].cont = sim[j][i].cont = ch_cont[i][j];
+		}
+		member[i]=i;
     }
 
 
@@ -188,6 +186,102 @@ int stop ;
 
 }
 
+// Some comments ChatGPT-generated
+int **gt_Cluster_Chain(pdbProtein p, SIM_OP **sim)
+{
+    int i, j;
+    int nc;
+    int **ch_cont, **id_clust, *member, *head;
+    int max, p1, p2;
+    int stop;
+
+    nc = p->nc; // A láncok száma
+
+    id_clust = IMatrix(nc, nc); // Integer mátrix létrehozása
+    member = malloc(nc * sizeof(int)); // Memória foglalás
+    head = malloc(nc * sizeof(int)); // Memória foglalás
+    for (i = 0; i < nc; i++) head[i] = member[i] = 0; // Inicializálás
+
+    ch_cont = gt_Chain_Contact(p); // Kontakt mátrix létrehozása
+
+    for (i = 0; i < nc; i++) {
+        ch_cont[i][i] = 1; // Átló elemek beállítása 1-re
+        head[i] = 1; // Fej beállítása - na jó, de mi az a fej?
+        for (j = 0; j < i; j++) {
+            // ha a sim.id -1, akkor nincs elfogadható transzformáció
+            // a két láncra
+            if (sim[i][j].id == -1) {
+                head[i] = 0;
+            }
+            id_clust[i][j] = id_clust[j][i] = sim[i][j].id;
+            // kontaktusok száma két lánc között
+            sim[i][j].cont = sim[j][i].cont = ch_cont[i][j];
+        }
+        member[i] = i; // Láncok inicializálása
+    }
+
+    stop = 0;
+    while (stop == 0) {
+        max = 0; p1 = p2 = 0;
+
+        // Maximum kontaktok keresése, azokra a lánc-párokra, ahol
+        // van egymásba transzformálhatóság symop által.
+        for (i = 0; i < nc; i++)
+            if (head[i] > 0)
+                for (j = 0; j < nc; j++)
+                    if ((head[j] > 0) && (i != j)) {
+                        if ((max < ch_cont[i][j]) && (sim[i][j].id != -1)) {
+                            max = ch_cont[i][j];
+                            p1 = i; p2 = j;
+                        }
+                    }
+
+        // Stop feltétel ellenőrzése
+        if (((max < CH_CONT) && ((id_clust[p1][p2]) == 1)) || (max < 10)) {
+            stop = 1;
+            break;
+        }
+
+        // Kontaktusok frissítése
+        for (i = 0; i < nc; i++)
+            if (head[i] > 0) {
+                ch_cont[p1][i] += ch_cont[p2][i];
+                ch_cont[p2][i] = 0;
+                ch_cont[i][p1] += ch_cont[i][p2];
+                ch_cont[i][p2] = 0;
+            }
+        ch_cont[p1][p2] = ch_cont[p2][p1] = 0;
+        head[p1] += head[p2];
+        head[p2] = 0;
+        for (i = 0; i < nc; i++) {
+            if (member[i] == p2) {
+                member[i] = p1;
+            }
+        }
+    }
+
+    // Klaszterek beállítása a kontakt mátrixban
+    for (i = 0; i < nc; i++) {
+        for (j = 0; j < i; j++) {
+            if (member[i] == member[j]) {
+                ch_cont[i][j] = ch_cont[j][i] = member[j];
+            } else {
+                ch_cont[i][j] = ch_cont[j][i] = -1;
+            }
+        }
+    }
+    for (i = 0; i < nc; i++) {
+        for (j = 0; j < nc; j++) {
+            // ha tagja az i. lánchoz tartozó cluster-nek
+            if (member[j] == i)
+                // akkor beállítjuk, melyik lánchoz tartozik
+                sim[j][i].cl = sim[i][j].cl = i;
+        }
+        sim[i][i].cl = head[i];
+    }
+
+    return (ch_cont);
+}
 
 
 
