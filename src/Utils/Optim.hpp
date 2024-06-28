@@ -16,10 +16,15 @@ namespace Tmdet::Utils {
 
     class Optim {
         private:
+            bool run;
+            float min,max;
             Membrane membraneVO;
             TmdetStruct &tmdetVO;
 
+            void init();
+            void end();
             void setDistances();
+            void setBoundaries();
 
         public:
             Optim(TmdetStruct& tmdetVO) : tmdetVO(tmdetVO) {}

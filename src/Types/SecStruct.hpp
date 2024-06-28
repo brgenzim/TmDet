@@ -20,6 +20,14 @@ namespace Tmdet::Types {
         bool operator != (const SecStruct &other) {
             return (code != other.code);
         }
+
+        bool isAlpha() {
+            return (code == 'H' || code == 'G' || code == 'I');
+        }
+
+        bool isBeta() {
+            return (code == 'E');
+        }
     };
 
     namespace SecStructType {
