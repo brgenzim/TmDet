@@ -47,7 +47,7 @@ namespace Tmdet::Services::ConfigurationService {
         //         << std::endl;
         // }
         // Config[Keys::RCSBROOT_DIRECTORY] = value;
-
+        Config[Keys::PDB_DIRECTORY] = "/zfs/databases/UniTmp/PDB/data/structures/divided/updated_mmcif/";
     }
 
     bool hasKey(std::string& key) {

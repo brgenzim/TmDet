@@ -24,7 +24,7 @@ namespace Tmdet::Utils {
     }
 
     bool SecStrVec::ifCross(_secStrVec& vec, Tmdet::ValueObjects::Membrane& membraneVO) {
-
+        // más az implementáció PLANE és CURVE esetén
     }
 
     bool SecStrVec::getNextRegion(Tmdet::ValueObjects::Chain& chain, int& begin, int& end) {
@@ -32,15 +32,15 @@ namespace Tmdet::Utils {
     }
 
     bool SecStrVec::getNextNotUnkown(Tmdet::ValueObjects::Chain& chain, int& begin) {
-        while(begin<chain.residues.size() && chain.residues[begin].ss != Tmdet::Types::SecStructType::U) {
+        while(begin < (int)chain.residues.size() && chain.residues[begin].ss != Tmdet::Types::SecStructType::U) {
             begin++;
         }
-        return (begin==chain.residues.size());
+        return (begin == (int)chain.residues.size());
     }
 
     bool SecStrVec::getNextSame(Tmdet::ValueObjects::Chain& chain, int& begin, int& end) {
         end = begin;
-        while(end<chain.residues.size() && chain.residues[begin].ss == chain.residues[end].ss) {
+        while(end < (int)chain.residues.size() && chain.residues[begin].ss == chain.residues[end].ss) {
             end++;
         }
         return true;
@@ -57,6 +57,8 @@ namespace Tmdet::Utils {
         vec.begin = getMeanPosition(chain,begin);
         vec.end = getMeanPosition(chain,end-3);
         vec.type = Tmdet::Types::SecStructType::H;
+
+        return vec;
     }
 
     gemmi::Vec3 SecStrVec::getMeanPosition(Tmdet::ValueObjects::Chain& chain, int pos) {
@@ -73,6 +75,11 @@ namespace Tmdet::Utils {
     }
 
     _secStrVec SecStrVec::getBetaVector(Tmdet::ValueObjects::Chain& chain, int& begin, int& end) {
-        // Csak legelső és legutolsó CA-k kellenek
+        _secStrVec vec;
+        vec.begin = chain.residues[begin].gemmi.get_ca()->pos;
+        vec.end = chain.residues[end].gemmi.get_ca()->pos;
+        vec.type = Tmdet::Types::SecStructType::E;
+
+        return vec;
     }
 }

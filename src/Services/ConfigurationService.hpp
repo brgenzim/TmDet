@@ -15,6 +15,8 @@ namespace Tmdet::Services::ConfigurationService {
         const std::string CHEMICAL_COMPONENT_FILE = "CHEMICAL_COMPONENT_FILE";
         const std::string CHEMICAL_COMPONENT_DOWNLOAD_SCRIPT = "CHEMICAL_COMPONENT_DOWNLOAD_SCRIPT";
         const std::string RCSBROOT_DIRECTORY = "RCSBROOT";
+        const std::string PDB_DIRECTORY = "PDB_DIRECTORY";
+
     }
 
     extern std::string AppName;
