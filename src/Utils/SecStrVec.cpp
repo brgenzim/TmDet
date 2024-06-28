@@ -6,8 +6,8 @@
 #include <gemmi/model.hpp>
 #include <gemmi/neighbor.hpp>
 #include <Types/Residue.hpp>
-#include <ValueObjects/TmdetStruct.hpp>
 #include <Utils/Surface.hpp>
+#include <Utils/SecStrVec.hpp>
 
 using namespace std;
 
@@ -27,7 +27,7 @@ namespace Tmdet::Utils {
 
     }
 
-    bool SecStrVev::getNextRegion(Tmdet::ValueObjects::Chain& chain, int& begin, int& end) {
+    bool SecStrVec::getNextRegion(Tmdet::ValueObjects::Chain& chain, int& begin, int& end) {
         return (getNextNotUnkown(chain, begin) && getNextSame(chain, begin, end));
     }
 
@@ -56,23 +56,23 @@ namespace Tmdet::Utils {
         _secStrVec vec;
         vec.begin = getMeanPosition(chain,begin);
         vec.end = getMeanPosition(chain,end-3);
-        vec.type = Tmdet::Types::SecStruct::H;
+        vec.type = Tmdet::Types::SecStructType::H;
     }
 
     gemmi::Vec3 SecStrVec::getMeanPosition(Tmdet::ValueObjects::Chain& chain, int pos) {
-        gemmi::Vec3 vec = 0;
-        for (int i=0, int c=0; i<3; i++) {
+        gemmi::Vec3 vec;
+        int i = 0;
+        for (; i<3; i++) {
             if (auto CA = chain.residues[pos+i].gemmi.get_ca()) {
-                vec.begin += CA.pos;
-                j++;
+                vec += CA->pos;
+                i++;
             }
         }
-        vec /= j;
+        vec /= i;
         return vec;
     }
-    
+
     _secStrVec SecStrVec::getBetaVector(Tmdet::ValueObjects::Chain& chain, int& begin, int& end) {
-        
+        // Csak legelső és legutolsó CA-k kellenek
     }
 }
- 
