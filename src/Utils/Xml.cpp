@@ -179,11 +179,11 @@ namespace Tmdet::Utils {
         for (pugi::xml_node m_node = _root.child(XML_NODE_MEMBRANE); m_node; m_node = m_node.next_sibling(XML_NODE_MEMBRANE)) {
             pugi::xml_node tnode = m_node.child(XML_NODE_TMATRIX);
             Tmdet::ValueObjects::Membrane m = {
-                getTMatrix(tnode),
-                m_node.child(XML_NODE_NORMAL).attribute(XML_ATTR_Z).as_double(),
-                0.0,
-                0.0,
-                Tmdet::Types::Membranes.at("Plain")
+                .tmatrix = getTMatrix(tnode),
+                .h = m_node.child(XML_NODE_NORMAL).attribute(XML_ATTR_Z).as_double(),
+                .curver = 0.0,
+                .sizer = 0.0,
+                .type = Tmdet::Types::Membranes.at("Plain")
             };
             membranes.emplace_back(m);
         }
