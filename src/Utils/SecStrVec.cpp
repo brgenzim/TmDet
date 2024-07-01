@@ -14,6 +14,7 @@ using namespace std;
 
 namespace Tmdet::Utils {
     static void dumpVectorsForPyMOL(vector<_secStrVec> &vectors);
+    static bool isVectorCrossingPlane(gemmi::Vec3 &vector, gemmi::Vec3 &planePoint, gemmi::Vec3 &planeNormal);
 
     void SecStrVec::define(Tmdet::ValueObjects::TmdetStruct& tmdetVO) {
         vectors.clear();
@@ -31,8 +32,42 @@ namespace Tmdet::Utils {
     }
 
     bool SecStrVec::ifCross(_secStrVec& vec, Tmdet::ValueObjects::Membrane& membraneVO) {
+        bool result = false;
         // más az implementáció PLANE és CURVE esetén
+        if (membraneVO.type.name == Tmdet::Types::MembraneType::PLAIN.name) {
+            // ATTENTION: membraneVO.normal must be normalized
+            auto normal = membraneVO.normal;
+            auto membranePoint = membraneVO.origo + normal * membraneVO.h;
+            auto direction = vec.end - vec.begin;
+
+            result = isVectorCrossingPlane(direction, membranePoint, normal);
+            if (!result) {
+                membranePoint = membraneVO.origo - normal * membraneVO.h;
+                result = isVectorCrossingPlane(direction, membranePoint, normal);
+            }
+        } else {
+            // TODO: CURVE
+        }
+        return result;
     }
+
+    bool isVectorCrossingPlane(gemmi::Vec3 &vector, gemmi::Vec3 &planePoint, gemmi::Vec3 &planeNormal) {
+        auto numerator = planeNormal.x * (vector.x - planePoint.x)
+            + planeNormal.y * (vector.y - planePoint.y)
+            + planeNormal.z * (vector.z - planePoint.z);
+        numerator *= -1;
+        auto denominator = planeNormal.x * vector.x + planeNormal.y * vector.y
+            + planeNormal.z * vector.z;
+        // TODO: round 2 tizedesre?
+        if (numerator != 0 && denominator == 0) {
+            return false; // parallel
+        } else if (numerator == 0 && denominator == 0) {
+            return true; // vector lies in the plane
+        } else { // denominator != 0
+            return true; // crosses the plane
+        }
+    }
+
 
     bool SecStrVec::getNextRegion(Tmdet::ValueObjects::Chain& chain, int& begin, int& end) {
         return (getNextNotUnkown(chain, begin) && getNextSame(chain, begin, end));
