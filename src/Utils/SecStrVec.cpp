@@ -3,6 +3,7 @@
 #include <math.h>
 #include <algorithm>
 #include <numeric>
+#include <iostream>
 #include <gemmi/model.hpp>
 #include <gemmi/neighbor.hpp>
 #include <Types/Residue.hpp>
@@ -12,15 +13,18 @@
 using namespace std;
 
 namespace Tmdet::Utils {
+    static void dumpVectorsForPyMOL(vector<_secStrVec> &vectors);
 
     void SecStrVec::define(Tmdet::ValueObjects::TmdetStruct& tmdetVO) {
         vectors.clear();
         for(auto& chain: tmdetVO.chains) {
             int begin, end;
+            begin = end = 0;
             while(getNextRegion(chain, begin, end)) {
                 vectors.push_back(getVector(chain, begin, end));
             }
         }
+        dumpVectorsForPyMOL(vectors);
     }
 
     bool SecStrVec::ifCross(_secStrVec& vec, Tmdet::ValueObjects::Membrane& membraneVO) {
@@ -28,14 +32,15 @@ namespace Tmdet::Utils {
     }
 
     bool SecStrVec::getNextRegion(Tmdet::ValueObjects::Chain& chain, int& begin, int& end) {
+        begin = end + 1;
         return (getNextNotUnkown(chain, begin) && getNextSame(chain, begin, end));
     }
 
     bool SecStrVec::getNextNotUnkown(Tmdet::ValueObjects::Chain& chain, int& begin) {
-        while(begin < (int)chain.residues.size() && chain.residues[begin].ss != Tmdet::Types::SecStructType::U) {
+        while(begin < (int)chain.residues.size() && chain.residues[begin].ss == Tmdet::Types::SecStructType::U) {
             begin++;
         }
-        return (begin == (int)chain.residues.size());
+        return (begin < (int)chain.residues.size());
     }
 
     bool SecStrVec::getNextSame(Tmdet::ValueObjects::Chain& chain, int& begin, int& end) {
@@ -81,5 +86,14 @@ namespace Tmdet::Utils {
         vec.type = Tmdet::Types::SecStructType::E;
 
         return vec;
+    }
+
+    void dumpVectorsForPyMOL(vector<_secStrVec> &vectors) {
+        int counter = 1;
+        for (auto& vector : vectors) {
+            std::cout << "cgo_arrow [ " << vector.begin.x << ", " << vector.begin.y << ", " << vector.begin.z << " ], "
+                << "[ " << vector.end.x << ", " << vector.end.y << ", " << vector.end.z << " ], "
+                << "name=" << vector.type.name << counter++ << ", color=yellow" << std::endl;
+        }
     }
 }

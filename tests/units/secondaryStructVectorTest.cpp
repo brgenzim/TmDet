@@ -8,6 +8,8 @@
 #include <Services/ConfigurationService.hpp>
 #include <ValueObjects/TmdetStruct.hpp>
 #include <DTOs/TmdetStruct.hpp>
+#include <Utils/Dssp.hpp>
+#include <Utils/SecStrVec.hpp>
 
 int main() {
     gemmi::Structure pdb;
@@ -22,6 +24,13 @@ int main() {
     Tmdet::ValueObjects::TmdetStruct tmdetVO = Tmdet::ValueObjects::TmdetStruct(pdb, document);
     tmdetVO.inputPath = inputPath;
     Tmdet::DTOS::TmdetStruct::parse(tmdetVO);
+
+    Tmdet::Utils::Dssp dssp = Tmdet::Utils::Dssp(tmdetVO);
+    dssp.calcDsspOnStructure();
+    dssp.writeDsspOnStructure();
+
+    Tmdet::Utils::SecStrVec secStructVectors;
+    secStructVectors.define(tmdetVO);
 
     return 0;
 }
