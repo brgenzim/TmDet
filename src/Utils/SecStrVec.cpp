@@ -21,7 +21,10 @@ namespace Tmdet::Utils {
             int begin, end;
             begin = end = 0;
             while(getNextRegion(chain, begin, end)) {
-                vectors.push_back(getVector(chain, begin, end));
+                if (end - begin > 1) {
+                    vectors.push_back(getVector(chain, begin, end - 1));
+                }
+                begin = end;
             }
         }
         dumpVectorsForPyMOL(vectors);
@@ -32,7 +35,6 @@ namespace Tmdet::Utils {
     }
 
     bool SecStrVec::getNextRegion(Tmdet::ValueObjects::Chain& chain, int& begin, int& end) {
-        begin = end + 1;
         return (getNextNotUnkown(chain, begin) && getNextSame(chain, begin, end));
     }
 
@@ -51,13 +53,13 @@ namespace Tmdet::Utils {
         return true;
     }
 
-    _secStrVec SecStrVec::getVector(Tmdet::ValueObjects::Chain& chain, int& begin, int& end) {
+    _secStrVec SecStrVec::getVector(Tmdet::ValueObjects::Chain& chain, int begin, int end) {
         return (chain.residues[begin].ss.isAlpha()?
                     getAlphaVector(chain, begin, end):
                     getBetaVector(chain,begin,end));
     }
 
-    _secStrVec SecStrVec::getAlphaVector(Tmdet::ValueObjects::Chain& chain, int& begin, int& end) {
+    _secStrVec SecStrVec::getAlphaVector(Tmdet::ValueObjects::Chain& chain, int begin, int end) {
         _secStrVec vec;
         vec.begin = getMeanPosition(chain,begin);
         vec.end = getMeanPosition(chain,end-3);
@@ -70,16 +72,14 @@ namespace Tmdet::Utils {
         gemmi::Vec3 vec;
         int i = 0;
         for (; i<3; i++) {
-            if (auto CA = chain.residues[pos+i].gemmi.get_ca()) {
-                vec += CA->pos;
-                i++;
-            }
+            auto CA = chain.residues[pos+i].gemmi.get_ca();
+            vec += CA->pos;
         }
         vec /= i;
         return vec;
     }
 
-    _secStrVec SecStrVec::getBetaVector(Tmdet::ValueObjects::Chain& chain, int& begin, int& end) {
+    _secStrVec SecStrVec::getBetaVector(Tmdet::ValueObjects::Chain& chain, int begin, int end) {
         _secStrVec vec;
         vec.begin = chain.residues[begin].gemmi.get_ca()->pos;
         vec.end = chain.residues[end].gemmi.get_ca()->pos;
