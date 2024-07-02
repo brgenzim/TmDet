@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <numeric>
 #include <iostream>
+#include <sstream>
 #include <gemmi/model.hpp>
 #include <gemmi/neighbor.hpp>
 #include <Types/Residue.hpp>
@@ -13,8 +14,13 @@
 using namespace std;
 
 namespace Tmdet::Utils {
+    static bool isVectorCrossingPlane(_secStrVec &vector, gemmi::Vec3 &planePoint, gemmi::Vec3 &planeNormal);
+
+#ifdef __SECSTRVEC_DBG
+    static string vec3ToString(gemmi::Vec3 &vector);
     static void dumpVectorsForPyMOL(vector<_secStrVec> &vectors);
-    static bool isVectorCrossingPlane(gemmi::Vec3 &vector, gemmi::Vec3 &planePoint, gemmi::Vec3 &planeNormal);
+    static void printPlaneScript(string name, gemmi::Vec3 &normal, gemmi::Vec3 &planePoint);
+#endif
 
     void SecStrVec::define(Tmdet::ValueObjects::TmdetStruct& tmdetVO) {
         vectors.clear();
@@ -28,8 +34,19 @@ namespace Tmdet::Utils {
                 begin = end;
             }
         }
+#ifdef __SECSTRVEC_DBG
         dumpVectorsForPyMOL(vectors);
+#endif
     }
+
+    void SecStrVec::numCross(Tmdet::ValueObjects::Membrane& membraneVO, int &numBoth, int &numUp, int &numDown) {
+        // TODO: debug code
+        gemmi::Vec3 planePoint = membraneVO.normal * membraneVO.h;
+        printPlaneScript("plane1", membraneVO.normal, planePoint);
+        auto result = ifCross(vectors[1], membraneVO);
+        cout << "Crossing: " << result << endl;
+    }
+
 
     bool SecStrVec::ifCross(_secStrVec& vec, Tmdet::ValueObjects::Membrane& membraneVO) {
         bool result = false;
@@ -38,12 +55,11 @@ namespace Tmdet::Utils {
             // ATTENTION: membraneVO.normal must be normalized
             auto normal = membraneVO.normal;
             auto membranePoint = membraneVO.origo + normal * membraneVO.h;
-            auto direction = vec.end - vec.begin;
 
-            result = isVectorCrossingPlane(direction, membranePoint, normal);
+            result = isVectorCrossingPlane(vec, membranePoint, normal);
             if (!result) {
                 membranePoint = membraneVO.origo - normal * membraneVO.h;
-                result = isVectorCrossingPlane(direction, membranePoint, normal);
+                result = isVectorCrossingPlane(vec, membranePoint, normal);
             }
         } else {
             // TODO: CURVE
@@ -51,20 +67,33 @@ namespace Tmdet::Utils {
         return result;
     }
 
-    bool isVectorCrossingPlane(gemmi::Vec3 &vector, gemmi::Vec3 &planePoint, gemmi::Vec3 &planeNormal) {
-        auto numerator = planeNormal.x * (vector.x - planePoint.x)
-            + planeNormal.y * (vector.y - planePoint.y)
-            + planeNormal.z * (vector.z - planePoint.z);
+    bool isVectorCrossingPlane(_secStrVec &vector, gemmi::Vec3 &planePoint, gemmi::Vec3 &planeNormal) {
+        auto direction = vector.end - vector.begin;
+#ifdef __SECSTRVEC_DBG
+        cout << endl << "Directon vector: " << vec3ToString(direction) << endl;
+#endif
+        auto numerator = planeNormal.dot(direction - planePoint);
         numerator *= -1;
-        auto denominator = planeNormal.x * vector.x + planeNormal.y * vector.y
-            + planeNormal.z * vector.z;
+        auto denominator = planeNormal.dot(direction);
         // TODO: round 2 tizedesre?
         if (numerator != 0 && denominator == 0) {
             return false; // parallel
         } else if (numerator == 0 && denominator == 0) {
             return true; // vector lies in the plane
         } else { // denominator != 0
-            return true; // crosses the plane
+#ifdef __SECSTRVEC_DBG
+            // intersection point - based on vector equation
+            // R(t) = R(0) + t*d
+            // where:
+            //   R(0) is the vector initial point;
+            //   t = numerator / denominator
+            //   d is the direction vector
+            auto intersectionPoint =
+                vector.begin // R(0)
+                + direction * (numerator / denominator); // d * t
+            cout << endl << "Intersection Point: " << vec3ToString(intersectionPoint) << endl;
+#endif
+            return true; // intersects the plane
         }
     }
 
@@ -123,6 +152,19 @@ namespace Tmdet::Utils {
         return vec;
     }
 
+
+    //
+    // Util/Debug functions
+    //
+
+#ifdef __SECSTRVEC_DBG
+
+    string vec3ToString(gemmi::Vec3 &vector) {
+        std::stringstream stream;
+        stream << "[ " << vector.x << ", " << vector.y << ", " << vector.z << " ]";
+        return stream.str();
+    }
+
     void dumpVectorsForPyMOL(vector<_secStrVec> &vectors) {
         int counter = 1;
         for (auto& vector : vectors) {
@@ -131,4 +173,35 @@ namespace Tmdet::Utils {
                 << "name=" << vector.type.name << counter++ << ", color=yellow" << std::endl;
         }
     }
+
+    vector<gemmi::Vec3> calculatePlanePoints(gemmi::Vec3 &normal, gemmi::Vec3 &planePoint) {
+        auto normalZ = normal.z;
+        if (normalZ == 0) {
+            // TODO: maybe we can choose a very tiny value for z in this case,
+            //       to approximate plane points in 3D
+            //throw runtime_error("Division by zero is not allowed");
+            normalZ = 0.01;
+        }
+        // plane equation: ax+by+cz = d
+        double d = normal.dot(planePoint);
+        vector<gemmi::Vec3> points = {
+            gemmi::Vec3(0, 0, d / normalZ),
+            gemmi::Vec3(1, 0, (d - normal.x*planePoint.x) / normalZ),
+            gemmi::Vec3(0, 1, (d - normal.y*planePoint.y) / normalZ),
+        };
+        return points;
+    }
+
+    void printPlaneScript(string name, gemmi::Vec3 &normal, gemmi::Vec3 &planePoint) {
+        cout << "dict = {'ALPHA':0.4, 'COLOR':[0.55, 0.25, 0.60], 'INVERT':True}" << endl;
+        cout << "plane.make_plane_points(name='" << name << "', ";
+        int index = 1;
+        for (auto& point : calculatePlanePoints(normal, planePoint)) {
+            cout << "l" << index++ << "=" << vec3ToString(point) << ", ";
+        }
+        cout << "center=False, makepseudo=False, settings=dict)";
+    }
+
+#endif
+
 }

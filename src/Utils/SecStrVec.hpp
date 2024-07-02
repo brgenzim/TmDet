@@ -11,6 +11,8 @@
 
 using namespace std;
 
+#define __SECSTRVEC_DBG 1
+
 namespace Tmdet::Utils {
 
     struct _secStrVec {
