@@ -40,28 +40,37 @@ namespace Tmdet::Utils {
 
     void SecStrVec::numCross(Tmdet::ValueObjects::Membrane& membraneVO, int &numBoth, int &numUp, int &numDown) {
         // TODO: debug code
-        auto result = ifCross(vectors[1], membraneVO);
+        auto result = ifCross(vectors[1], membraneVO, numBoth, numUp, numDown);
+        // TODO: mi van akkor, ha nincs metszés, de a két sík közé esik?
         cout << "Crossing: " << result << endl;
     }
 
 
-    bool SecStrVec::ifCross(_secStrVec& vec, Tmdet::ValueObjects::Membrane& membraneVO) {
-        bool result = false;
+    bool SecStrVec::ifCross(_secStrVec& vec, Tmdet::ValueObjects::Membrane& membraneVO, int& numBoth, int& numUp, int& numDown) {
+        bool resultUp = false;
+        bool resultDown = false;
         // más az implementáció PLANE és CURVE esetén
         if (membraneVO.type.name == Tmdet::Types::MembraneType::PLAIN.name) {
-            // ATTENTION: membraneVO.normal must be normalized
             auto normal = membraneVO.normal;
+            // UP case
             auto membranePoint = membraneVO.origo + normal * membraneVO.h;
-
-            result = isVectorCrossingPlane(vec, membranePoint, normal);
-            if (!result) {
-                membranePoint = membraneVO.origo - normal * membraneVO.h;
-                result = isVectorCrossingPlane(vec, membranePoint, normal);
-            }
+            resultUp = isVectorCrossingPlane(vec, membranePoint, normal);
+            // DOWN case
+            membranePoint = membraneVO.origo - normal * membraneVO.h;
+            resultDown = isVectorCrossingPlane(vec, membranePoint, normal);
         } else {
-            // TODO: CURVE
+            // TODO: CURVE CASE
         }
-        return result;
+
+        if (resultUp && resultDown) {
+            numBoth++;
+        } else if (resultUp) {
+            numUp++;
+        } else if (resultDown) {
+            numDown++;
+        }
+
+        return resultUp || resultDown;
     }
 
     bool isVectorCrossingPlane(_secStrVec &vector, gemmi::Vec3 &planePoint, gemmi::Vec3 &planeNormal) {
@@ -69,26 +78,35 @@ namespace Tmdet::Utils {
         // plane points: (p - p0)*n = 0 (n is normal vector of plane)
         // line points:  p = l0 + l*d (l is unit vector)
         // ergo: d = ((p0 - l0)*n)/(l*n)
+        bool result = false;
 
         auto l0 = vector.begin;
-        auto l = (vector.end - vector.begin).normalized();
+        auto vectorDiff = vector.end - vector.begin;
+        auto l = vectorDiff.normalized();
         auto n = planeNormal;
         auto p0 = planePoint;
         auto numerator = (p0 - l0).dot(n);
         auto denominator = l.dot(n);
         if (numerator != 0 && denominator == 0) {
-            return false; // parallel
+            result = false; // parallel
         } else if (numerator == 0 && denominator == 0) {
-            return true; // vector lies in the plane
+            result = true; // vector lies in the plane
         } else { // denominator != 0
-#ifdef __SECSTRVEC_DBG
             // intersection point - based on vector equation:
             // l0 + l*d
             auto intersectionPoint = l0 + l * (numerator / denominator);
-            cout << endl << "Intersection Point: " << vec3ToString(intersectionPoint) << endl;
+            // if same direction and between begin-end (length less than vector length)
+            if ((intersectionPoint - vector.begin).dot(vectorDiff) > 0
+                && (intersectionPoint - vector.begin).length_sq() < vectorDiff.length_sq()) {
+
+                result = true; // intersects the plane and between BEGIN and END
+#ifdef __SECSTRVEC_DBG
+                cout << endl << "Intersection Point: " << vec3ToString(intersectionPoint) << endl;
 #endif
-            return true; // intersects the plane
+            }
         }
+
+        return result;
     }
 
 

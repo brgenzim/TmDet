@@ -25,7 +25,7 @@ namespace Tmdet::Utils {
         private:
             vector<_secStrVec> vectors;
 
-            bool ifCross(_secStrVec& vec, Tmdet::ValueObjects::Membrane& membraneVO);
+            bool ifCross(_secStrVec& vec, Tmdet::ValueObjects::Membrane& membraneVO, int& numBoth, int& numUp, int& numDown);
             bool getNextRegion(Tmdet::ValueObjects::Chain& chain, int& begin, int& end);
             bool getNextNotUnkown(Tmdet::ValueObjects::Chain& chain, int& begin);
             bool getNextSame(Tmdet::ValueObjects::Chain& chain, int& begin, int& end);

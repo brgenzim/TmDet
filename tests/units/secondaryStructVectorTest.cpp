@@ -36,12 +36,16 @@ int main() {
     int numBoth = 0;
     int numDown = 0;
     int numUp = 0;
+
     Tmdet::ValueObjects::Membrane membrane;
     membrane.origo = gemmi::Vec3(0, 0, 0);
     membrane.normal = gemmi::Vec3(1, 0, 0);
     membrane.h = 7;
     membrane.type = Tmdet::Types::MembraneType::PLAIN;
     secStructVectors.numCross(membrane, numBoth, numUp, numDown);
+    std::cout << "numBoth: " << numBoth << " numUp: " << numUp << " numDown: " << std::endl;
+
+    numBoth = numDown = numUp = 0;
 
     return 0;
 }
