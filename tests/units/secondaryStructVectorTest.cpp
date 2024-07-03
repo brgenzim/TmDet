@@ -37,9 +37,9 @@ int main() {
     int numDown = 0;
     int numUp = 0;
     Tmdet::ValueObjects::Membrane membrane;
-    membrane.origo = gemmi::Vec3(0, 20, 20);
+    membrane.origo = gemmi::Vec3(0, 0, 0);
     membrane.normal = gemmi::Vec3(1, 0, 0);
-    membrane.h = 0;
+    membrane.h = 7;
     membrane.type = Tmdet::Types::MembraneType::PLAIN;
     secStructVectors.numCross(membrane, numBoth, numUp, numDown);
 

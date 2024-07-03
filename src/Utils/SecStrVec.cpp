@@ -19,7 +19,6 @@ namespace Tmdet::Utils {
 #ifdef __SECSTRVEC_DBG
     static string vec3ToString(gemmi::Vec3 &vector);
     static void dumpVectorsForPyMOL(vector<_secStrVec> &vectors);
-    static void printPlaneScript(string name, gemmi::Vec3 &normal, gemmi::Vec3 &planePoint);
 #endif
 
     void SecStrVec::define(Tmdet::ValueObjects::TmdetStruct& tmdetVO) {
@@ -41,8 +40,6 @@ namespace Tmdet::Utils {
 
     void SecStrVec::numCross(Tmdet::ValueObjects::Membrane& membraneVO, int &numBoth, int &numUp, int &numDown) {
         // TODO: debug code
-        gemmi::Vec3 planePoint = membraneVO.normal * membraneVO.h;
-        printPlaneScript("plane1", membraneVO.normal, planePoint);
         auto result = ifCross(vectors[1], membraneVO);
         cout << "Crossing: " << result << endl;
     }
@@ -68,29 +65,26 @@ namespace Tmdet::Utils {
     }
 
     bool isVectorCrossingPlane(_secStrVec &vector, gemmi::Vec3 &planePoint, gemmi::Vec3 &planeNormal) {
-        auto direction = vector.end - vector.begin;
-#ifdef __SECSTRVEC_DBG
-        cout << endl << "Directon vector: " << vec3ToString(direction) << endl;
-#endif
-        auto numerator = planeNormal.dot(direction - planePoint);
-        numerator *= -1;
-        auto denominator = planeNormal.dot(direction);
-        // TODO: round 2 tizedesre?
+        // https://en.wikipedia.org/wiki/Line%E2%80%93plane_intersection#Algebraic_form
+        // plane points: (p - p0)*n = 0 (n is normal vector of plane)
+        // line points:  p = l0 + l*d (l is unit vector)
+        // ergo: d = ((p0 - l0)*n)/(l*n)
+
+        auto l0 = vector.begin;
+        auto l = (vector.end - vector.begin).normalized();
+        auto n = planeNormal;
+        auto p0 = planePoint;
+        auto numerator = (p0 - l0).dot(n);
+        auto denominator = l.dot(n);
         if (numerator != 0 && denominator == 0) {
             return false; // parallel
         } else if (numerator == 0 && denominator == 0) {
             return true; // vector lies in the plane
         } else { // denominator != 0
 #ifdef __SECSTRVEC_DBG
-            // intersection point - based on vector equation
-            // R(t) = R(0) + t*d
-            // where:
-            //   R(0) is the vector initial point;
-            //   t = numerator / denominator
-            //   d is the direction vector
-            auto intersectionPoint =
-                vector.begin // R(0)
-                + direction * (numerator / denominator); // d * t
+            // intersection point - based on vector equation:
+            // l0 + l*d
+            auto intersectionPoint = l0 + l * (numerator / denominator);
             cout << endl << "Intersection Point: " << vec3ToString(intersectionPoint) << endl;
 #endif
             return true; // intersects the plane
@@ -172,34 +166,6 @@ namespace Tmdet::Utils {
                 << "[ " << vector.end.x << ", " << vector.end.y << ", " << vector.end.z << " ], "
                 << "name=" << vector.type.name << counter++ << ", color=yellow" << std::endl;
         }
-    }
-
-    vector<gemmi::Vec3> calculatePlanePoints(gemmi::Vec3 &normal, gemmi::Vec3 &planePoint) {
-        auto normalZ = normal.z;
-        if (normalZ == 0) {
-            // TODO: maybe we can choose a very tiny value for z in this case,
-            //       to approximate plane points in 3D
-            //throw runtime_error("Division by zero is not allowed");
-            normalZ = 0.01;
-        }
-        // plane equation: ax+by+cz = d
-        double d = normal.dot(planePoint);
-        vector<gemmi::Vec3> points = {
-            gemmi::Vec3(0, 0, d / normalZ),
-            gemmi::Vec3(1, 0, (d - normal.x*planePoint.x) / normalZ),
-            gemmi::Vec3(0, 1, (d - normal.y*planePoint.y) / normalZ),
-        };
-        return points;
-    }
-
-    void printPlaneScript(string name, gemmi::Vec3 &normal, gemmi::Vec3 &planePoint) {
-        cout << "dict = {'ALPHA':0.4, 'COLOR':[0.55, 0.25, 0.60], 'INVERT':True}" << endl;
-        cout << "plane.make_plane_points(name='" << name << "', ";
-        int index = 1;
-        for (auto& point : calculatePlanePoints(normal, planePoint)) {
-            cout << "l" << index++ << "=" << vec3ToString(point) << ", ";
-        }
-        cout << "center=False, makepseudo=False, settings=dict)";
     }
 
 #endif
