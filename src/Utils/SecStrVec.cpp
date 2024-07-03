@@ -39,10 +39,10 @@ namespace Tmdet::Utils {
     }
 
     void SecStrVec::numCross(Tmdet::ValueObjects::Membrane& membraneVO, int &numBoth, int &numUp, int &numDown) {
-        // TODO: debug code
-        auto result = ifCross(vectors[1], membraneVO, numBoth, numUp, numDown);
+        for (auto& vector : vectors) {
+            ifCross(vector, membraneVO, numBoth, numUp, numDown);
+        }
         // TODO: mi van akkor, ha nincs metszés, de a két sík közé esik?
-        cout << "Crossing: " << result << endl;
     }
 
 

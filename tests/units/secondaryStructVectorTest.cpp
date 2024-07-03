@@ -11,6 +11,8 @@
 #include <Utils/Dssp.hpp>
 #include <Utils/SecStrVec.hpp>
 
+void assertTrue(std::string caseName, bool condition);
+
 int main() {
     gemmi::Structure pdb;
     Tmdet::Services::ConfigurationService::init();
@@ -38,22 +40,44 @@ int main() {
     int numUp = 0;
 
     Tmdet::ValueObjects::Membrane membrane;
-    membrane.origo = gemmi::Vec3(0, 0, 0);
-    membrane.normal = gemmi::Vec3(1, 0, 0);
-    membrane.h = 7;
-    membrane.type = Tmdet::Types::MembraneType::PLAIN;
-    secStructVectors.numCross(membrane, numBoth, numUp, numDown);
-    std::cout << "numBoth: " << numBoth << " numUp: " << numUp << " numDown: " << std::endl;
+
+    // Test case 1
+    {
+        membrane.origo = gemmi::Vec3(0, 0, 0);
+        membrane.normal = gemmi::Vec3(1, 0, 0);
+        membrane.h = 7;
+        membrane.type = Tmdet::Types::MembraneType::PLAIN;
+        secStructVectors.numCross(membrane, numBoth, numUp, numDown);
+        assertTrue("Case1: numBoth == 2", numBoth == 2 && numUp == 0 && numDown == 0);
+    }
 
     numBoth = numDown = numUp = 0;
+
+    // Test case 2
+    {
+        membrane.origo = gemmi::Vec3(0, 0, 0);
+        membrane.normal = gemmi::Vec3(1, 0, 0);
+        membrane.h = 20; // between two planes
+        membrane.type = Tmdet::Types::MembraneType::PLAIN;
+        secStructVectors.numCross(membrane, numBoth, numUp, numDown);
+        assertTrue("Case2: numBoth == 0", numBoth == 0 && numUp == 0 && numDown == 0);
+    }
+
+    // Test case 3
+    {
+        // membrane planes are under helicies
+        membrane.origo = gemmi::Vec3(-21, 0, 0);
+        membrane.normal = gemmi::Vec3(1, 0, 0);
+        membrane.h = 5;
+        membrane.type = Tmdet::Types::MembraneType::PLAIN;
+        secStructVectors.numCross(membrane, numBoth, numUp, numDown);
+        assertTrue("Case3: numBoth == 0", numBoth == 0 && numUp == 0 && numDown == 0);
+    }
 
     return 0;
 }
 
-std::string vec2string(gemmi::Vec3 vector) {
-    std::stringstream result;
-    result << "[ " << vector.x << ", "
-        << vector.y << ", "
-        << vector.z << " ]";
-    return result.str();
+void assertTrue(std::string caseName, bool condition) {
+    std::cout << caseName << ": "
+        << (condition ? "SUCCESS" : "FAIL") << std::endl;
 }
