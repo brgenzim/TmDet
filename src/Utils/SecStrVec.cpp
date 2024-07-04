@@ -15,6 +15,8 @@ using namespace std;
 
 namespace Tmdet::Utils {
     static bool isVectorCrossingPlane(_secStrVec &vector, gemmi::Vec3 &planePoint, gemmi::Vec3 &planeNormal);
+    static bool isVectorCrossingSphere(_secStrVec &vector, gemmi::Vec3 &spherePoint, gemmi::Vec3 &origo);
+    static bool inline isPointOnVector(gemmi::Vec3 &vector, gemmi::Vec3 &vectorBegin, gemmi::Vec3 &point);
 
 #ifdef __SECSTRVEC_DBG
     static string vec3ToString(gemmi::Vec3 &vector);
@@ -39,10 +41,14 @@ namespace Tmdet::Utils {
     }
 
     void SecStrVec::numCross(Tmdet::ValueObjects::Membrane& membraneVO, int &numBoth, int &numUp, int &numDown) {
+        numBoth = numUp = numDown = 0;
         for (auto& vector : vectors) {
             ifCross(vector, membraneVO, numBoth, numUp, numDown);
         }
         // TODO: mi van akkor, ha nincs metszés, de a két sík közé esik?
+        // TODO: mi van akkor, ha CURVED membrán esetén 3-4 metszéspont jön ki?
+        //       Mi lesz a numBoth-al? Vagy, ha pl. az UP réteget 2x metszi,
+        //       akkor is egynek számítjuk?
     }
 
 
@@ -58,8 +64,16 @@ namespace Tmdet::Utils {
             // DOWN case
             membranePoint = membraneVO.origo - normal * membraneVO.h;
             resultDown = isVectorCrossingPlane(vec, membranePoint, normal);
+        } else if (membraneVO.type.name == Tmdet::Types::MembraneType::CURVED.name) {
+            auto normal = membraneVO.normal;
+            // UP case
+            auto membranePoint = membraneVO.origo + normal * (membraneVO.curver + membraneVO.h);
+            resultUp = isVectorCrossingSphere(vec, membranePoint, membraneVO.origo);
+            // DOWN case
+            membranePoint = membraneVO.origo + normal * (membraneVO.curver - membraneVO.h);
+            resultDown = isVectorCrossingSphere(vec, membranePoint, membraneVO.origo);
         } else {
-            // TODO: CURVE CASE
+            throw runtime_error("Unexpected membrane type: " + membraneVO.type.name);
         }
 
         if (resultUp && resultDown) {
@@ -95,9 +109,7 @@ namespace Tmdet::Utils {
             // intersection point - based on vector equation:
             // l0 + l*d
             auto intersectionPoint = l0 + l * (numerator / denominator);
-            // if same direction and between begin-end (length less than vector length)
-            if ((intersectionPoint - vector.begin).dot(vectorDiff) > 0
-                && (intersectionPoint - vector.begin).length_sq() < vectorDiff.length_sq()) {
+            if (isPointOnVector(vectorDiff, vector.begin, intersectionPoint)) {
 
                 result = true; // intersects the plane and between BEGIN and END
 #ifdef __SECSTRVEC_DBG
@@ -109,6 +121,69 @@ namespace Tmdet::Utils {
         return result;
     }
 
+    bool isVectorCrossingSphere(_secStrVec &vector, gemmi::Vec3 &spherePoint, gemmi::Vec3 &origo) {
+        // sphere points: |p-a| = r (a is origo, r is radii)
+        // line points:  p = l0 + l*d (l is unit vector, l0 is a fix point of the line)
+        // ergo: |l0 + l*d - a| = r
+        // ... after some arragements:
+        // d = (-B +/- SQRT(B^2 - 4AC)) / 2A,
+        //
+        // where:
+        //
+        //     m = l0-a
+        //     A = l*l
+        //     B = 2*m*l
+        //     C = m*m - r^2
+
+        bool result = false;
+
+        auto l0 = vector.begin;
+        auto vectorDiff = vector.end - vector.begin;
+        auto l = vectorDiff.normalized();
+        auto a = origo;
+        auto r2 = (spherePoint - origo).length_sq();
+        auto m = l0 - a;
+        auto A = l.dot(l);
+        auto B = 2 * m.dot(l);
+        auto C = m.dot(m) - r2;
+        auto discriminant = B*B - 4*A*C;
+
+        // one intersection point
+        if (discriminant == 0) {
+            auto d = -B / 2*A;
+            // intersection point - based on vector equation:
+            // l0 + l*d
+            auto intersectionPoint = l0 + l * d;
+            // if same direction and between begin-end (length less than vector length)
+            if (isPointOnVector(vectorDiff, vector.begin, intersectionPoint)) {
+                result = true; // intersects the plane and between BEGIN and END
+#ifdef __SECSTRVEC_DBG
+                cout << endl << "Intersection Point: " << vec3ToString(intersectionPoint) << endl;
+#endif
+            }
+        } else if (discriminant > 0) {
+            // line and sphere have two intersection points
+            auto sqrtDiscriminant = sqrt(discriminant);
+            auto d1 = (-B + sqrtDiscriminant) / 2*A;
+            auto d2 = (-B - sqrtDiscriminant) / 2*A;
+            auto intersectionPoint1 = l0 + l * d1;
+            auto intersectionPoint2 = l0 + l * d2;
+            if (isPointOnVector(vectorDiff, vector.begin, intersectionPoint1)) {
+                result = true;
+#ifdef __SECSTRVEC_DBG
+                cout << endl << "Intersection Point1: " << vec3ToString(intersectionPoint1) << endl;
+#endif
+            }
+            if (isPointOnVector(vectorDiff, vector.begin, intersectionPoint2)) {
+                result = true;
+#ifdef __SECSTRVEC_DBG
+                cout << endl << "Intersection Point2: " << vec3ToString(intersectionPoint2) << endl;
+#endif
+            }
+        }
+
+        return result;
+    }
 
     bool SecStrVec::getNextRegion(Tmdet::ValueObjects::Chain& chain, int& begin, int& end) {
         return (getNextNotUnkown(chain, begin) && getNextSame(chain, begin, end));
@@ -168,6 +243,12 @@ namespace Tmdet::Utils {
     //
     // Util/Debug functions
     //
+
+    bool inline isPointOnVector(gemmi::Vec3 &vector, gemmi::Vec3 &vectorBegin, gemmi::Vec3 &point) {
+        // if same direction and between begin-end (length less than vector length)
+        return ((point - vectorBegin).dot(vector) > 0
+                && (point - vectorBegin).length_sq() < vector.length_sq());
+    }
 
 #ifdef __SECSTRVEC_DBG
 

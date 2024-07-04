@@ -51,8 +51,6 @@ int main() {
         assertTrue("Case1: numBoth == 2", numBoth == 2 && numUp == 0 && numDown == 0);
     }
 
-    numBoth = numDown = numUp = 0;
-
     // Test case 2
     {
         membrane.origo = gemmi::Vec3(0, 0, 0);
@@ -72,6 +70,19 @@ int main() {
         membrane.type = Tmdet::Types::MembraneType::PLAIN;
         secStructVectors.numCross(membrane, numBoth, numUp, numDown);
         assertTrue("Case3: numBoth == 0", numBoth == 0 && numUp == 0 && numDown == 0);
+    }
+
+    // Test case 4
+    {
+        // curved membrane
+        membrane.origo = gemmi::Vec3(0, 0, 0);
+        membrane.normal = gemmi::Vec3(1, 0, 0);
+        membrane.h = 2;
+        membrane.curver = 5;
+        membrane.type = Tmdet::Types::MembraneType::CURVED;
+        secStructVectors.numCross(membrane, numBoth, numUp, numDown);
+        // no intersection with inner sphere
+        assertTrue("Case3: numUp == 2", numBoth == 0 && numUp == 2 && numDown == 0);
     }
 
     return 0;
