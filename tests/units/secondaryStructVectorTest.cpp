@@ -58,7 +58,7 @@ int main() {
         membrane.h = 20; // between two planes
         membrane.type = Tmdet::Types::MembraneType::PLAIN;
         secStructVectors.numCross(membrane, numBoth, numUp, numDown);
-        assertTrue("Case2: numBoth == 0", numBoth == 0 && numUp == 0 && numDown == 0);
+        assertTrue("Case2: no intersections", numBoth == 0 && numUp == 0 && numDown == 0);
     }
 
     // Test case 3
@@ -69,7 +69,7 @@ int main() {
         membrane.h = 5;
         membrane.type = Tmdet::Types::MembraneType::PLAIN;
         secStructVectors.numCross(membrane, numBoth, numUp, numDown);
-        assertTrue("Case3: numBoth == 0", numBoth == 0 && numUp == 0 && numDown == 0);
+        assertTrue("Case3: no intersections", numBoth == 0 && numUp == 0 && numDown == 0);
     }
 
     // Test case 4
@@ -82,7 +82,33 @@ int main() {
         membrane.type = Tmdet::Types::MembraneType::CURVED;
         secStructVectors.numCross(membrane, numBoth, numUp, numDown);
         // no intersection with inner sphere
-        assertTrue("Case3: numUp == 2", numBoth == 0 && numUp == 2 && numDown == 0);
+        assertTrue("Case4: numUp == 2", numBoth == 0 && numUp == 2 && numDown == 0);
+    }
+
+    // Test case 5
+    {
+        // curved membrane with no intersections
+        membrane.origo = gemmi::Vec3(-20.196, -3.826, -1.197);
+        membrane.normal = gemmi::Vec3(1, 0, 0);
+        membrane.h = 2;
+        membrane.curver = 3;
+        membrane.type = Tmdet::Types::MembraneType::CURVED;
+        secStructVectors.numCross(membrane, numBoth, numUp, numDown);
+        // no intersection with inner sphere
+        assertTrue("Case5: no intersections", numBoth == 0 && numUp == 0 && numDown == 0);
+    }
+
+    // Test case 6
+    {
+        // curved membrane with UP intersection
+        membrane.origo = gemmi::Vec3(-20.196, -3.826, -1.197);
+        membrane.normal = gemmi::Vec3(1, 0, 0);
+        membrane.h = 2;
+        membrane.curver = 3.4;
+        membrane.type = Tmdet::Types::MembraneType::CURVED;
+        secStructVectors.numCross(membrane, numBoth, numUp, numDown);
+        // no intersection with inner sphere
+        assertTrue("Case6: numUp == 1", numBoth == 0 && numUp == 1 && numDown == 0);
     }
 
     return 0;

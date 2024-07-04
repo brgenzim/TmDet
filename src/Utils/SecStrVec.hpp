@@ -11,7 +11,7 @@
 
 using namespace std;
 
-#define __SECSTRVEC_DBG 1
+//#define __SECSTRVEC_DBG 1
 
 namespace Tmdet::Utils {
 

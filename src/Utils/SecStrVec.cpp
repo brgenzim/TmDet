@@ -55,7 +55,7 @@ namespace Tmdet::Utils {
     bool SecStrVec::ifCross(_secStrVec& vec, Tmdet::ValueObjects::Membrane& membraneVO, int& numBoth, int& numUp, int& numDown) {
         bool resultUp = false;
         bool resultDown = false;
-        // más az implementáció PLANE és CURVE esetén
+
         if (membraneVO.type.name == Tmdet::Types::MembraneType::PLAIN.name) {
             auto normal = membraneVO.normal;
             // UP case
@@ -113,7 +113,7 @@ namespace Tmdet::Utils {
 
                 result = true; // intersects the plane and between BEGIN and END
 #ifdef __SECSTRVEC_DBG
-                cout << endl << "Intersection Point: " << vec3ToString(intersectionPoint) << endl;
+                cout << "Intersection Point: " << vec3ToString(intersectionPoint) << endl;
 #endif
             }
         }
@@ -158,7 +158,7 @@ namespace Tmdet::Utils {
             if (isPointOnVector(vectorDiff, vector.begin, intersectionPoint)) {
                 result = true; // intersects the plane and between BEGIN and END
 #ifdef __SECSTRVEC_DBG
-                cout << endl << "Intersection Point: " << vec3ToString(intersectionPoint) << endl;
+                cout << "Intersection Point: " << vec3ToString(intersectionPoint) << endl;
 #endif
             }
         } else if (discriminant > 0) {
@@ -171,13 +171,13 @@ namespace Tmdet::Utils {
             if (isPointOnVector(vectorDiff, vector.begin, intersectionPoint1)) {
                 result = true;
 #ifdef __SECSTRVEC_DBG
-                cout << endl << "Intersection Point1: " << vec3ToString(intersectionPoint1) << endl;
+                cout << "Intersection Point1: " << vec3ToString(intersectionPoint1) << endl;
 #endif
             }
             if (isPointOnVector(vectorDiff, vector.begin, intersectionPoint2)) {
                 result = true;
 #ifdef __SECSTRVEC_DBG
-                cout << endl << "Intersection Point2: " << vec3ToString(intersectionPoint2) << endl;
+                cout << "Intersection Point2: " << vec3ToString(intersectionPoint2) << endl;
 #endif
             }
         }
