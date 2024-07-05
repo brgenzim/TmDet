@@ -46,9 +46,6 @@ namespace Tmdet::Utils {
             ifCross(vector, membraneVO, numBoth, numUp, numDown);
         }
         // TODO: mi van akkor, ha nincs metszés, de a két sík közé esik?
-        // TODO: mi van akkor, ha CURVED membrán esetén 3-4 metszéspont jön ki?
-        //       Mi lesz a numBoth-al? Vagy, ha pl. az UP réteget 2x metszi,
-        //       akkor is egynek számítjuk?
     }
 
 
