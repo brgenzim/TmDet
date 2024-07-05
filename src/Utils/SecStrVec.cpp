@@ -45,7 +45,6 @@ namespace Tmdet::Utils {
         for (auto& vector : vectors) {
             ifCross(vector, membraneVO, numBoth, numUp, numDown);
         }
-        // TODO: mi van akkor, ha nincs metszés, de a két sík közé esik?
     }
 
 
