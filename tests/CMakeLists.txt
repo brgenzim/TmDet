@@ -19,3 +19,10 @@ ADD_EXECUTABLE( oligomerTest units/oligomerTest.cpp)
 TARGET_LINK_LIBRARIES( oligomerTest PRIVATE TmdetLib z gemmi::gemmi_cpp)
 INSTALL( TARGETS oligomerTest RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX_BIN} )
 
+ADD_EXECUTABLE( secondaryStructVectorTest units/secondaryStructVectorTest.cpp)
+TARGET_LINK_LIBRARIES( secondaryStructVectorTest PRIVATE TmdetLib z gemmi::gemmi_cpp)
+INSTALL( TARGETS secondaryStructVectorTest RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX_BIN} )
+
+ADD_EXECUTABLE( alignmentTest units/alignmentTest.cpp)
+TARGET_LINK_LIBRARIES( alignmentTest PRIVATE TmdetLib z gemmi::gemmi_cpp)
+INSTALL( TARGETS alignmentTest RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX_BIN} )

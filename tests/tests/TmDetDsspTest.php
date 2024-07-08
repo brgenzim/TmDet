@@ -256,6 +256,16 @@ class TmDetDsspTest extends TestCase {
         ];
     }
 
+    public static function cifPathsForAlignmentDebug(): array {
+        return [
+            '1afo.cif.gz' => [ static::PDB_ZFS_DIR . '/af/1afo.cif.gz' ],
+            '5eit.cif.gz' => [ static::PDB_ZFS_DIR . '/ei/5eit.cif.gz' ],
+            '8f14.cif.gz' => [ static::PDB_ZFS_DIR . '/f1/8f14.cif.gz' ],
+            '3et1.cif.gz' => [ static::PDB_ZFS_DIR . '/et/3et1.cif.gz' ],
+            '7f7g.cif.gz' => [ static::PDB_ZFS_DIR . '/f7/7f7g.cif.gz' ],
+        ];
+    }
+
     public static function cifPathsForDsspLengthErrorDebug(): array {
 
         return [

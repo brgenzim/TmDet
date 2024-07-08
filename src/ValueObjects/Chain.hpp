@@ -14,6 +14,7 @@ namespace Tmdet::ValueObjects {
 
     struct Chain {
         string id;
+        string entityId;
         bool selected;
         int numtm;
         string seq;
@@ -25,6 +26,12 @@ namespace Tmdet::ValueObjects {
         int length;
         Chain(gemmi::Chain& _gemmi) : gemmi(_gemmi) {
             this->id = gemmi.name;
+            for (auto residue : gemmi.residues) {
+                if (residue.atoms.size() > 0) {
+                    this->entityId = residue.entity_id;
+                    break;
+                }
+            }
         }
         ~Chain() {}
     };

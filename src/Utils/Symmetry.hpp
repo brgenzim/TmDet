@@ -1,11 +1,13 @@
 #ifndef __TMDET_UTILS_SYMMETRY__
 #define __TMDET_UTILS_SYMMETRY__
 
-#include <array>
+#include <vector>
 #include <string>
 #include <any>
 #include <gemmi/model.hpp>
 #include <ValueObjects/TmdetStruct.hpp>
+
+#define __SYM_DBG 1
 
 using namespace std;
 
@@ -21,7 +23,8 @@ namespace Tmdet::Utils {
     };
 
     class Symmetry {
-        
+        public:
+        std::vector<std::vector<_symmetryData>> CheckSymmetry(Tmdet::ValueObjects::TmdetStruct &tmdetVO);
     };
 }
 

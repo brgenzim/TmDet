@@ -5,6 +5,7 @@
 #include <Utils/Args.hpp>
 #include <Utils/Dssp.hpp>
 #include <Utils/Surface.hpp>
+#include <Utils/Symmetry.hpp>
 #include <ValueObjects/TmdetStruct.hpp>
 #include <DTOs/TmdetStruct.hpp>
 #include <gemmi/cif.hpp>
@@ -35,6 +36,14 @@ int main(int argc, char *argv[]) {
     Tmdet::ValueObjects::TmdetStruct tmdetVO = Tmdet::ValueObjects::TmdetStruct(pdb, document);
     tmdetVO.inputPath = inputPath;
     Tmdet::DTOS::TmdetStruct::parse(tmdetVO);
+
+
+    for (auto& chain : tmdetVO.chains) {
+        chain.selected = true;
+    }
+    Tmdet::Utils::Symmetry symmetry;
+    auto result = symmetry.CheckSymmetry(tmdetVO);
+
     Tmdet::Utils::Dssp dssp = Tmdet::Utils::Dssp(tmdetVO);
     dssp.calcDsspOnStructure();
     dssp.writeDsspOnStructure();
