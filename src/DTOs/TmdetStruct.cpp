@@ -14,6 +14,7 @@
 #include <gemmi/to_cif.hpp>
 #include <gemmi/to_mmcif.hpp>
 #include <DTOs/TmdetStruct.hpp>
+#include <Utils/Alignment.hpp>
 #include <Utils/Xml.hpp>
 #include <Types/Protein.hpp>
 #include <Types/Residue.hpp>
@@ -72,7 +73,7 @@ namespace Tmdet::DTOS {
         tmdetVO.gemmi.models.resize(1);
 
         // Fill residue gaps in chains where there is usable entity sequence data
-        alignResidues(tmdetVO);
+        Tmdet::Utils::Alignment::alignResidues(tmdetVO);
         int chainIdx = 0;
         for(auto& chain: tmdetVO.gemmi.models[0].chains) {
             Tmdet::ValueObjects::Chain chainVO = Tmdet::ValueObjects::Chain(chain);
@@ -100,10 +101,6 @@ namespace Tmdet::DTOS {
 
         tmdetVO.neighbors = NeighborSearch(tmdetVO.gemmi.models[0], tmdetVO.gemmi.cell, 9);
         tmdetVO.neighbors.populate();
-    }
-
-    bool TmdetStruct::compareResidues(const gemmi::Residue& res1, const gemmi::Residue& res2) {
-        return res1.label_seq.value < res2.label_seq.value;
     }
 
     void TmdetStruct::out(Tmdet::ValueObjects::TmdetStruct& tmdetVO) {
@@ -140,66 +137,6 @@ namespace Tmdet::DTOS {
             }
         }
         return sequence;
-    }
-
-    gemmi::Residue* TmdetStruct::createResidue(int seqNum, int labelSeqNum, string name, string chainName) {
-        auto residue = new gemmi::Residue();
-        residue->seqid.num.value = seqNum;
-        residue->label_seq.value = labelSeqNum;
-        residue->name = name;
-        residue->subchain = chainName;
-        return residue;
-    }
-
-    void TmdetStruct::alignResidues(const Tmdet::ValueObjects::TmdetStruct& tmdetVO) {
-
-        for(auto& chain: tmdetVO.gemmi.models[0].chains) {
-
-            auto sequence = getChainSequence(tmdetVO, chain);
-
-            if (sequence.empty() || chain.residues.empty()) {
-                // no supporting information to do gap fix
-                // or there is no residues for the iteration
-                continue;
-            }
-
-            std::vector<string> chainResidues;
-            const std::vector<int> gapOpening;// = { 10 };
-            for( auto& residue: chain.residues) {
-                chainResidues.emplace_back(residue.name);
-            }
-
-            gemmi::AlignmentScoring scoring = *(gemmi::AlignmentScoring::simple());
-
-#ifdef __DBG
-            // scoring.good_gapo = 10;
-            std::cout << "Good GAPO: " << scoring.good_gapo << std::endl;
-#endif
-            auto alignmentResult = gemmi::align_string_sequences(sequence, chainResidues, gapOpening, &scoring);
-
-            auto withGaps = alignmentResult.add_gaps(gemmi::one_letter_code(chainResidues) , 2);
-            string cigar = alignmentResult.cigar_str();
-#ifdef __DBG
-            std::cout << chain.name << ": " << cigar << std::endl;
-            std::cout << tmdetVO.code << "[" << chain.name << "]: " << gemmi::one_letter_code(chainResidues) << std::endl;
-            std::cout << tmdetVO.code << "[" << chain.name << "]: " << withGaps << std::endl;
-#endif
-            std::vector<gemmi::Residue>  newChainResidues;
-            int labelSeqNum = 1;
-            for (auto& oneLetterSeq : withGaps) {
-
-                if (oneLetterSeq != '-') {
-                    labelSeqNum++;
-                    continue;
-                }
-
-                gemmi::Residue* newResidue = createResidue(0, labelSeqNum, sequence[labelSeqNum - 1], chain.name);
-                newChainResidues.emplace_back(*newResidue);
-                labelSeqNum++;
-            }
-            chain.append_residues(newChainResidues);
-            std::sort(chain.residues.begin(), chain.residues.end(), compareResidues);
-        }
     }
 
 }

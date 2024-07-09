@@ -1,9 +1,17 @@
 #include <iostream>
 #include <string>
 #include <filesystem>
-#include <Utils/Alignment.hpp>
+#include <gemmi/cif.hpp>
+#include <gemmi/gz.hpp>
+#include <gemmi/mmcif.hpp>
+#include <gemmi/model.hpp>
+#include <Services/ConfigurationService.hpp>
+#include <ValueObjects/TmdetStruct.hpp>
+#include <DTOs/TmdetStruct.hpp>
 
+Tmdet::ValueObjects::TmdetStruct createTmdetStruct(std::string pdbCode);
 void assertTrue(std::string testDescription, bool condition, int lineNumber);
+
 std::string fileName;
 
 int main() {
@@ -11,9 +19,7 @@ int main() {
 
     // Test case 1
     {
-        vector<string> query = { "MET", "ALA", "ARG", "GLY" };
-        vector<string> target = { "ILE", "MET", "ALA", "ARG", "GLY" };
-        Tmdet::Utils::Alignment::alignSequences(query, target);
+        auto tmdetVO = createTmdetStruct("1afo");
     }
 
     return 0;
@@ -25,4 +31,20 @@ void assertTrue(std::string testDescription, bool condition, int lineNumber) {
         std::cout << " (at line " << fileName << ":" << lineNumber << ")";
     }
     std::cout << std::endl;
+}
+
+Tmdet::ValueObjects::TmdetStruct createTmdetStruct(std::string pdbCode) {
+    gemmi::Structure pdb;
+    Tmdet::Services::ConfigurationService::init();
+    auto basePath = Tmdet::Services::ConfigurationService::getValue(Tmdet::Services::ConfigurationService::Keys::PDB_DIRECTORY);
+    auto inputPath(basePath);
+    inputPath += (string("/") + pdbCode[1] + pdbCode[2]) + "/" + pdbCode + "_updated.cif.gz";
+
+    gemmi::cif::Document document = gemmi::cif::read(gemmi::MaybeGzipped(inputPath));
+    pdb = gemmi::make_structure(std::move(document));
+    Tmdet::ValueObjects::TmdetStruct tmdetVO = Tmdet::ValueObjects::TmdetStruct(pdb, document);
+    tmdetVO.inputPath = inputPath;
+    Tmdet::DTOS::TmdetStruct::parse(tmdetVO);
+
+    return tmdetVO;
 }

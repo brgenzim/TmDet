@@ -3,12 +3,17 @@
 
 #include <string>
 #include <vector>
+#include <gemmi/model.hpp>
+#include <ValueObjects/TmdetStruct.hpp>
+
+#define __ALIGNMENT_DBG 1 // debug flag for verbose outputs
+
 
 using namespace std;
 
 namespace Tmdet::Utils::Alignment {
 
-    extern vector<string> alignSequences(vector<string> &query, vector<string> &target);
+    extern void alignResidues(const Tmdet::ValueObjects::TmdetStruct& tmdetVO);
 
 }
 
