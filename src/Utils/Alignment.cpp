@@ -16,36 +16,48 @@ namespace Tmdet::Utils::Alignment {
     static bool compareResidues(const gemmi::Residue& res1, const gemmi::Residue& res2);
     static void initGaps(gemmi::Chain &chain, vector<int> &gaps);
 
-    void alignSequences(gemmi::Chain &query, vector<string> &target) {
+#ifdef __ALIGNMENT_DBG
+    void printMatrix(Eigen::MatrixXd& matrix);
+#endif
+
+    void alignSequences(gemmi::Chain &chain, vector<string> sequence) {
+
+        vector<gemmi::Residue*> seqResidues;
+        int seqNum = 1;
+        for (auto &residueName : sequence) {
+            auto residue = createResidue(seqNum, seqNum, residueName, chain.name);
+            seqResidues.emplace_back(residue);
+            seqNum++;
+        }
 
         int alignmentStripe = 200; // formerly "alisav"
         int maxgap = 300;
         // number of residues based on atom lines:
-        int queryLength = query.residues.size();
+        int chainLength = chain.residues.size();
         // number of residues based on SEQRES/entity_poly info:
-        int targetLength = target.size();
+        int seqResiduesLength = seqResidues.size();
 
-        Eigen::MatrixXd scores(targetLength, queryLength);
-        Eigen::MatrixXd iPath(targetLength, queryLength);
-        Eigen::MatrixXd jPath(targetLength, queryLength);
+        Eigen::MatrixXd scores(seqResiduesLength, chainLength);
+        Eigen::MatrixXd iPath(seqResiduesLength, chainLength);
+        Eigen::MatrixXd jPath(seqResiduesLength, chainLength);
 
-        if (abs(queryLength - targetLength) > 200) {
-            alignmentStripe = abs(queryLength - targetLength) + 200;
+        if (abs(chainLength - seqResiduesLength) > 200) {
+            alignmentStripe = abs(chainLength - seqResiduesLength) + 200;
         }
-        if (abs(queryLength - targetLength) > 100) {
+        if (abs(chainLength - seqResiduesLength) > 100) {
             maxgap = 1000;
         }
         vector<int> gaps;
-        gaps.resize(queryLength);
+        gaps.resize(chainLength);
         // gaps init
-        initGaps(query, gaps);
+        initGaps(chain, gaps);
 
         // Calculating scores, iPath and jPath
         const int GAPOPEN = 2;
         int maxScore, i, j;
-        for (i = 0; i < targetLength; i++) {
+        for (i = 0; i < seqResiduesLength; i++) {
             for (j = (i-alignmentStripe < 0 ? 0 : i-alignmentStripe);
-                (j < queryLength && j < i+alignmentStripe); j++) {
+                (j < chainLength && j < i+alignmentStripe); j++) {
 
                 iPath(i, j) = i-1;
                 jPath(i, j) = j-1;
@@ -62,8 +74,8 @@ namespace Tmdet::Utils::Alignment {
                         }
                     }
                 }
-                if (j>0) {
-                    for (int k = i-2; (k>=0 && k> i-maxgap); k--) {
+                if (j > 0) {
+                    for (int k = i-2; (k >= 0 && k > i-maxgap); k--) {
                         int gap = gaps[j-1] * (i-k) + GAPOPEN;
                         if (scores(k, j-1) - gap >= maxScore) {
                             maxScore = scores(k, j-1) - gap;
@@ -71,32 +83,45 @@ namespace Tmdet::Utils::Alignment {
                         }
                     }
                 }
-                scores(i, j) = (target[i] == query.residues[j].name ? 10 : 0) + maxScore;
+                scores(i, j) = (seqResidues[i]->name == chain.residues[j].name ? 10 : 0) + maxScore;
             }
         }
-        maxScore = scores(targetLength-1, queryLength-1);
-        list<string> targetList(target.begin(), target.end());
-        list<gemmi::Residue> queryList(query.residues.begin(), query.residues.end());
+#ifdef __ALIGNMENT_DBG
+        if (chain.name == "C") {
+            cout << "scores:" << endl; printMatrix(scores);
+            cout << "iPath:" << endl; printMatrix(iPath);
+            cout << "jPath:" << endl; printMatrix(jPath);
+        }
+#endif
+
+        maxScore = scores(seqResiduesLength-1, chainLength-1);
+        list<gemmi::Residue*> seqResiduesList(seqResidues.begin(), seqResidues.end());
+        list<gemmi::Residue*> chainList;
+        for (auto it = chain.residues.begin(); it < chain.residues.end(); it++) {
+            chainList.push_back(&*it);
+        }
 
         // trace back paths?
-        int nuti = targetLength - 1;
+        int nuti = seqResiduesLength - 1;
         for (int i = nuti; i >= 0; i--) {
-            if (maxScore <= scores(i, queryLength - 1)) {
-                maxScore = scores(i, queryLength - 1);
+            if (maxScore <= scores(i, chainLength - 1)) {
+                maxScore = scores(i, chainLength - 1);
                 nuti = i;
             }
         }
-        int nutj = queryLength - 1;
+        int nutj = chainLength - 1;
         for (int j = nutj; j >= 0; j--) {
-            if (maxScore <= scores(targetLength - 1, j)) {
-                maxScore = scores(targetLength - 1, j);
+            if (maxScore <= scores(seqResiduesLength - 1, j)) {
+                maxScore = scores(seqResiduesLength - 1, j);
                 nutj = j;
             }
         }
 
-        // update target sequence
-        for (int j = nutj+1; j < queryLength; j++) {
-            targetList.emplace_back(query.residues[j].name);
+        // update seqResidues sequence
+        for (int j = nutj+1; j < chainLength; j++) {
+            auto residueFromAtomLine = chain.residues[j].empty_copy();
+            residueFromAtomLine.atoms = chain.residues[j].atoms;
+            seqResiduesList.push_back(&residueFromAtomLine);
         }
 
         // inserts
@@ -104,19 +129,27 @@ namespace Tmdet::Utils::Alignment {
         int UTJ = nutj;
 
         while (UTI >= 0 && UTJ >= 0) {
-            auto currentResidue = query.residues[UTJ];
-            if (target[UTI] != currentResidue.name) {
+            auto currentResidue = chain.residues[UTJ];
+            if (seqResidues[UTI]->name != currentResidue.name) {
                 cerr << "Conflict in residue name: chain "
-                    << query.name << " at position " << currentResidue.label_seq.value
-                    << target[UTI] << " vs " << currentResidue.name << endl;
-                target[UTI] = currentResidue.name;
+                    << chain.name << " at position " << currentResidue.label_seq.value
+                    << seqResidues[UTI]->name << " vs " << currentResidue.name << endl;
+                seqResidues[UTI]->name = currentResidue.name;
             }
             nuti = iPath(UTI, UTJ);
             nutj = jPath(UTI, UTJ);
+            seqResidues[UTI]->seqid = chain.residues[UTJ].seqid;
+            seqResidues[UTI]->label_seq = chain.residues[UTJ].label_seq;
             for (int j = UTJ-1; j > nutj; j--) {
-                // insert before
-                // TODO !!!!!!!!!!!!!!!!!!!!!
+                auto residueFromAtomLine = chain.residues[j].empty_copy();
+                residueFromAtomLine.atoms = chain.residues[j].atoms;
+                auto equals = [&seqResidues, &UTI](gemmi::Residue *item) { return item == seqResidues[UTI]; };
+                auto pos = find_if(seqResiduesList.begin(), seqResiduesList.end(), equals);
+                // insert pointer before position
+                seqResiduesList.insert(pos, &residueFromAtomLine);
             }
+            UTI = nuti;
+            UTJ = nutj;
         }
 
 
@@ -134,7 +167,7 @@ namespace Tmdet::Utils::Alignment {
         //     labelSeqNum++;
         // }
         // chain.append_residues(newChainResidues);
-        // std::sort(chain.residues.begin(), chain.residues.end(), compareResidues);
+        std::sort(chain.residues.begin(), chain.residues.end(), compareResidues);
     }
 
     gemmi::Residue* createResidue(int seqNum, int labelSeqNum, string name, string chainName) {
@@ -176,8 +209,8 @@ namespace Tmdet::Utils::Alignment {
             if (CA != NULL && currentCA != NULL) {
                 atomDistance = CA->pos.dist(currentCA->pos);
             }
-            int residueDistance = current->label_seq.value - previous->label_seq.value;
-            if (residueDistance > 1 && residueDistance < 500) {
+            int seqDistance = current->label_seq.value - previous->label_seq.value;
+            if (seqDistance > 1 && seqDistance < 500) {
                 atomDistance = 20;
             }
             if (atomDistance > 18.3) {
@@ -186,7 +219,7 @@ namespace Tmdet::Utils::Alignment {
                 } else {
                     gaps[index-1] = 0;
                 }
-                if (index >= gaps.size() - GAP) {
+                if (index >= (int)gaps.size() - GAP) {
                     gaps[index-1] = 2;
                 }
             } else {
@@ -198,5 +231,29 @@ namespace Tmdet::Utils::Alignment {
     bool compareResidues(const gemmi::Residue& res1, const gemmi::Residue& res2) {
         return res1.label_seq.value < res2.label_seq.value;
     }
+
+#ifdef __ALIGNMENT_DBG
+    template <typename Iterator>
+    void _printResiduesImpl(const Iterator &start, const Iterator &end);
+
+    void printResidues(const vector<gemmi::Residue*> &residues) {
+        _printResiduesImpl(residues.begin(), residues.end());
+    }
+
+    void printResidues(const list<gemmi::Residue*> &residues) {
+        _printResiduesImpl(residues.begin(), residues.end());
+    }
+
+    template <typename Iterator>
+    void _printResiduesImpl(const Iterator &start, const Iterator &end) {
+        for_each(start, end,
+            [](gemmi::Residue* item) { cout << item->name << " "; });
+        cout << endl;
+    }
+
+    void printMatrix(Eigen::MatrixXd& matrix) {
+        cout << matrix << endl;
+    }
+#endif
 
 }

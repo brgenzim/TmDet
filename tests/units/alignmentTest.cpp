@@ -19,7 +19,12 @@ int main() {
 
     // Test case 1
     {
-        auto tmdetVO = createTmdetStruct("1afo");
+        //auto tmdetVO = createTmdetStruct("1bxw");
+        auto tmdetVO = createTmdetStruct("5eit");
+    }
+    // Test case 2
+    {
+        auto tmdetVO = createTmdetStruct("6f9w"); // B chain is short enough
     }
 
     return 0;
