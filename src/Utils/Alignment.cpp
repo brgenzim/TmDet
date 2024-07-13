@@ -17,7 +17,67 @@ namespace Tmdet::Utils::Alignment {
     static void initGaps(gemmi::Chain &chain, vector<int> &gaps);
 
 #ifdef __ALIGNMENT_DBG
-    void printMatrix(Eigen::MatrixXd& matrix);
+    void printMatrix(Eigen::MatrixXi& matrix);
+
+#define MATRIX_DIR "/tmp/pdb_map"
+
+struct alignState {
+
+    Eigen::MatrixXi* scores;
+    Eigen::MatrixXi* UTI;
+    Eigen::MatrixXi* UTJ;
+    int seqResNum; // num of residues from SEQRES/entity lines
+    int atomResNum; // num of residues from atom lines
+    int stateId; // a counter to help unique file name generation
+    char fileName[200];
+    string code;
+    char chain;
+};
+
+void writeMatrix(FILE* file, Eigen::MatrixXi *mx, int rows, int cols) {
+    for (int i = 0; i < rows; i++) {
+        // write data
+        for (int j = 0; j < cols; j++) {
+            fprintf(file, "%5d", (*mx)(i, j));
+            if (j+1 < cols) { fputc(' ', file); }
+        }
+        fputs("\n", file);
+    }
+}
+
+void writeDebugState(alignState* state) {
+
+    if (state->chain != 'C') {
+        return;
+    }
+
+
+    char path[400];
+
+    sprintf(state->fileName, "%s-align-matricies-%05d.txt",
+        state->code.c_str(), state->stateId++);
+    sprintf(path, "%s/%s", MATRIX_DIR, state->fileName);
+
+
+    FILE* output = fopen(path, "w");
+    if (!output) {
+        perror("File opening failed");
+        fprintf(stderr, "File name: %s\n", path);
+        exit(1);
+    }
+
+    fprintf(output, "%s\n", path);
+    fprintf(output, "scores:\n");
+    writeMatrix(output, state->scores, state->seqResNum, state->atomResNum);
+
+    fprintf(output, "UTI:\n");
+    writeMatrix(output, state->UTI, state->seqResNum, state->atomResNum);
+    fprintf(output, "UTJ:\n");
+    writeMatrix(output, state->UTI, state->seqResNum, state->atomResNum);
+
+    fclose(output);
+}
+
 #endif
 
     void alignSequences(gemmi::Chain &chain, vector<string> sequence) {
@@ -37,9 +97,12 @@ namespace Tmdet::Utils::Alignment {
         // number of residues based on SEQRES/entity_poly info:
         int seqResiduesLength = seqResidues.size();
 
-        Eigen::MatrixXd scores(seqResiduesLength, chainLength);
-        Eigen::MatrixXd iPath(seqResiduesLength, chainLength);
-        Eigen::MatrixXd jPath(seqResiduesLength, chainLength);
+        Eigen::MatrixXi scores(seqResiduesLength, chainLength);
+        Eigen::MatrixXi iPath(seqResiduesLength, chainLength);
+        Eigen::MatrixXi jPath(seqResiduesLength, chainLength);
+        scores.setZero();
+        iPath.setZero();
+        jPath.setZero();
 
         if (abs(chainLength - seqResiduesLength) > 200) {
             alignmentStripe = abs(chainLength - seqResiduesLength) + 200;
@@ -51,6 +114,21 @@ namespace Tmdet::Utils::Alignment {
         gaps.resize(chainLength);
         // gaps init
         initGaps(chain, gaps);
+
+#ifdef __ALIGNMENT_DBG
+        string code("5eit");
+        alignState state;
+        state.code = code;
+        state.seqResNum = seqResiduesLength;
+        state.atomResNum = chainLength;
+        state.scores = &scores;
+        state.UTI = &iPath;
+        state.UTJ = &jPath;
+        state.chain = chain.name[0];
+        state.stateId = 0;
+        writeDebugState(&state);
+#endif
+
 
         // Calculating scores, iPath and jPath
         const int GAPOPEN = 2;
@@ -84,6 +162,9 @@ namespace Tmdet::Utils::Alignment {
                     }
                 }
                 scores(i, j) = (seqResidues[i]->name == chain.residues[j].name ? 10 : 0) + maxScore;
+#ifdef __ALIGNMENT_DBG
+                writeDebugState(&state);
+#endif
             }
         }
 #ifdef __ALIGNMENT_DBG
@@ -251,7 +332,7 @@ namespace Tmdet::Utils::Alignment {
         cout << endl;
     }
 
-    void printMatrix(Eigen::MatrixXd& matrix) {
+    void printMatrix(Eigen::MatrixXi& matrix) {
         cout << matrix << endl;
     }
 #endif
