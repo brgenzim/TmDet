@@ -137,6 +137,12 @@ void writeDebugState(alignState* state) {
             for (j = (i-alignmentStripe < 0 ? 0 : i-alignmentStripe);
                 (j < chainLength && j < i+alignmentStripe); j++) {
 
+// #ifdef __ALIGNMENT_DBG
+//                 if (chain.name[0] == 'C') {
+//                     cout << "i: " << i << " j: " << j << endl;
+//                 }
+// #endif
+
                 iPath(i, j) = i-1;
                 jPath(i, j) = j-1;
                 if (i == 0) { iPath(0, j) = -1; jPath(0, j) = j-1; }
@@ -167,13 +173,13 @@ void writeDebugState(alignState* state) {
 #endif
             }
         }
-#ifdef __ALIGNMENT_DBG
-        if (chain.name == "C") {
-            cout << "scores:" << endl; printMatrix(scores);
-            cout << "iPath:" << endl; printMatrix(iPath);
-            cout << "jPath:" << endl; printMatrix(jPath);
-        }
-#endif
+// #ifdef __ALIGNMENT_DBG
+//         if (chain.name == "C") {
+//             cout << "scores:" << endl; printMatrix(scores);
+//             cout << "iPath:" << endl; printMatrix(iPath);
+//             cout << "jPath:" << endl; printMatrix(jPath);
+//         }
+// #endif
 
         maxScore = scores(seqResiduesLength-1, chainLength-1);
         list<gemmi::Residue*> seqResiduesList(seqResidues.begin(), seqResidues.end());
@@ -232,6 +238,11 @@ void writeDebugState(alignState* state) {
             UTI = nuti;
             UTJ = nutj;
         }
+
+#ifdef __ALIGNMENT_DBG
+        printf("Chain %s: UTI: %d, UTJ: %d, nuti: %d, nutj: %d\n",
+            chain.name.c_str(), UTI, UTJ, nuti, nutj);
+#endif
 
 
         // std::vector<gemmi::Residue>  newChainResidues;
