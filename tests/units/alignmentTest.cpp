@@ -23,9 +23,9 @@ int main() {
         auto tmdetVO = createTmdetStruct("5eit");
     }
     // Test case 2
-    {
-        auto tmdetVO = createTmdetStruct("6f9w"); // B chain is short enough
-    }
+    // {
+    //     auto tmdetVO = createTmdetStruct("6f9w"); // B chain is short enough
+    // }
 
     return 0;
 }

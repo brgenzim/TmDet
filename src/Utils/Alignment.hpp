@@ -6,7 +6,7 @@
 #include <gemmi/model.hpp>
 #include <ValueObjects/TmdetStruct.hpp>
 
-#define __ALIGNMENT_DBG 1 // debug flag for verbose outputs
+// #define __ALIGNMENT_DBG 1 // debug flag for util functions and verbose outputs
 
 
 using namespace std;

@@ -13,71 +13,29 @@ using namespace std;
 namespace Tmdet::Utils::Alignment {
 
     static gemmi::Residue* createResidue(int seqNum, int labelSeqNum, string name, string chainName);
-    static bool compareResidues(const gemmi::Residue& res1, const gemmi::Residue& res2);
     static void initGaps(gemmi::Chain &chain, vector<int> &gaps);
 
 #ifdef __ALIGNMENT_DBG
-    void printMatrix(Eigen::MatrixXi& matrix);
+    struct alignState {
 
-#define MATRIX_DIR "/tmp/pdb_map"
+        Eigen::MatrixXi* scores;
+        Eigen::MatrixXi* UTI;
+        Eigen::MatrixXi* UTJ;
+        int seqResNum; // num of residues from SEQRES/entity lines
+        int atomResNum; // num of residues from atom lines
+        int stateId; // a counter to help unique file name generation
+        char fileName[200];
+        string code;
+        char chain;
+    };
 
-struct alignState {
+    static void printMatrix(Eigen::MatrixXi& matrix);
+    static void writeMatrix(FILE* file, Eigen::MatrixXi *mx, int rows, int cols);
+    static void writeDebugState(alignState* state);
+    static void printResidues(const vector<gemmi::Residue*> &residues);
+    static void printResidues(const list<gemmi::Residue*> &residues);
 
-    Eigen::MatrixXi* scores;
-    Eigen::MatrixXi* UTI;
-    Eigen::MatrixXi* UTJ;
-    int seqResNum; // num of residues from SEQRES/entity lines
-    int atomResNum; // num of residues from atom lines
-    int stateId; // a counter to help unique file name generation
-    char fileName[200];
-    string code;
-    char chain;
-};
-
-void writeMatrix(FILE* file, Eigen::MatrixXi *mx, int rows, int cols) {
-    for (int i = 0; i < rows; i++) {
-        // write data
-        for (int j = 0; j < cols; j++) {
-            fprintf(file, "%5d", (*mx)(i, j));
-            if (j+1 < cols) { fputc(' ', file); }
-        }
-        fputs("\n", file);
-    }
-}
-
-void writeDebugState(alignState* state) {
-
-    if (state->chain != 'C') {
-        return;
-    }
-
-
-    char path[400];
-
-    sprintf(state->fileName, "%s-align-matricies-%05d.txt",
-        state->code.c_str(), state->stateId++);
-    sprintf(path, "%s/%s", MATRIX_DIR, state->fileName);
-
-
-    FILE* output = fopen(path, "w");
-    if (!output) {
-        perror("File opening failed");
-        fprintf(stderr, "File name: %s\n", path);
-        exit(1);
-    }
-
-    fprintf(output, "%s\n", path);
-    fprintf(output, "scores:\n");
-    writeMatrix(output, state->scores, state->seqResNum, state->atomResNum);
-
-    fprintf(output, "UTI:\n");
-    writeMatrix(output, state->UTI, state->seqResNum, state->atomResNum);
-    fprintf(output, "UTJ:\n");
-    writeMatrix(output, state->UTI, state->seqResNum, state->atomResNum);
-
-    fclose(output);
-}
-
+    #define MATRIX_DIR "/tmp/pdb_map"
 #endif
 
     void alignSequences(gemmi::Chain &chain, vector<string> sequence) {
@@ -116,6 +74,8 @@ void writeDebugState(alignState* state) {
         initGaps(chain, gaps);
 
 #ifdef __ALIGNMENT_DBG
+        // TODO: remove later
+        // This entry code is hardwired since the function does not have any extra parameter for it.
         string code("5eit");
         alignState state;
         state.code = code;
@@ -136,12 +96,6 @@ void writeDebugState(alignState* state) {
         for (i = 0; i < seqResiduesLength; i++) {
             for (j = (i-alignmentStripe < 0 ? 0 : i-alignmentStripe);
                 (j < chainLength && j < i+alignmentStripe); j++) {
-
-// #ifdef __ALIGNMENT_DBG
-//                 if (chain.name[0] == 'C') {
-//                     cout << "i: " << i << " j: " << j << endl;
-//                 }
-// #endif
 
                 iPath(i, j) = i-1;
                 jPath(i, j) = j-1;
@@ -173,18 +127,13 @@ void writeDebugState(alignState* state) {
 #endif
             }
         }
-// #ifdef __ALIGNMENT_DBG
-//         if (chain.name == "C") {
-//             cout << "scores:" << endl; printMatrix(scores);
-//             cout << "iPath:" << endl; printMatrix(iPath);
-//             cout << "jPath:" << endl; printMatrix(jPath);
-//         }
-// #endif
 
         maxScore = scores(seqResiduesLength-1, chainLength-1);
+        // Create list
         list<gemmi::Residue*> seqResiduesList(seqResidues.begin(), seqResidues.end());
         list<gemmi::Residue*> chainList;
         for (auto it = chain.residues.begin(); it < chain.residues.end(); it++) {
+            // extract pointers, then we can identifies residues by their addresses
             chainList.push_back(&*it);
         }
 
@@ -230,6 +179,7 @@ void writeDebugState(alignState* state) {
             for (int j = UTJ-1; j > nutj; j--) {
                 auto residueFromAtomLine = chain.residues[j].empty_copy();
                 residueFromAtomLine.atoms = chain.residues[j].atoms;
+                // lambda expression for find_if call
                 auto equals = [&seqResidues, &UTI](gemmi::Residue *item) { return item == seqResidues[UTI]; };
                 auto pos = find_if(seqResiduesList.begin(), seqResiduesList.end(), equals);
                 // insert pointer before position
@@ -242,24 +192,48 @@ void writeDebugState(alignState* state) {
 #ifdef __ALIGNMENT_DBG
         printf("Chain %s: UTI: %d, UTJ: %d, nuti: %d, nutj: %d\n",
             chain.name.c_str(), UTI, UTJ, nuti, nutj);
+
+        cout << "Chain " << chain.name << ": seqResiduesList: ";
+        printResidues(seqResiduesList);
+        cout << "Chain " << chain.name << ": atom residues: ";
+        printResidues(chainList);
+
 #endif
 
+        // Filling gaps in residue list from atom lines
 
-        // std::vector<gemmi::Residue>  newChainResidues;
-        // int labelSeqNum = 1;
-        // for (auto& oneLetterSeq : withGaps) {
+        auto seqResidue = seqResiduesList.begin();
+        auto chainResidue = chainList.begin();
+        while (seqResidue != seqResiduesList.end()) {
 
-        //     if (oneLetterSeq != '-') {
-        //         labelSeqNum++;
-        //         continue;
-        //     }
+            if (chainResidue == chainList.end()) {
+                chainList.emplace_back(*seqResidue);
+                ++seqResidue;
+                continue;
+            }
 
-        //     gemmi::Residue* newResidue = createResidue(0, labelSeqNum, sequence[labelSeqNum - 1], chain.name);
-        //     newChainResidues.emplace_back(*newResidue);
-        //     labelSeqNum++;
-        // }
-        // chain.append_residues(newChainResidues);
-        std::sort(chain.residues.begin(), chain.residues.end(), compareResidues);
+            auto seqLabelValue = (*seqResidue)->label_seq.value;
+            auto chainLabelValue = (*chainResidue)->label_seq.value;
+
+            if (seqLabelValue < chainLabelValue) {
+                // insert does not invalidate iterators
+                chainList.insert(chainResidue, *seqResidue);
+                ++seqResidue;
+            } else if (seqLabelValue == chainLabelValue) {
+                ++seqResidue;
+                ++chainResidue;
+            } else { // chain label < seq label
+                ++chainResidue;
+                chainList.insert(chainResidue, *seqResidue);
+                --chainResidue;
+            }
+        }
+
+        // update residues of chain
+        chain.residues.clear();
+        for (auto residue : chainList) {
+            chain.residues.emplace_back(*residue);
+        }
     }
 
     gemmi::Residue* createResidue(int seqNum, int labelSeqNum, string name, string chainName) {
@@ -320,10 +294,6 @@ void writeDebugState(alignState* state) {
         }
     }
 
-    bool compareResidues(const gemmi::Residue& res1, const gemmi::Residue& res2) {
-        return res1.label_seq.value < res2.label_seq.value;
-    }
-
 #ifdef __ALIGNMENT_DBG
     template <typename Iterator>
     void _printResiduesImpl(const Iterator &start, const Iterator &end);
@@ -338,14 +308,60 @@ void writeDebugState(alignState* state) {
 
     template <typename Iterator>
     void _printResiduesImpl(const Iterator &start, const Iterator &end) {
-        for_each(start, end,
-            [](gemmi::Residue* item) { cout << item->name << " "; });
+        auto printer = [](gemmi::Residue* item) {
+            cout << item->name << "[" << item->label_seq.value << "] " ;
+        };
+        for_each(start, end, printer);
         cout << endl;
     }
 
     void printMatrix(Eigen::MatrixXi& matrix) {
         cout << matrix << endl;
     }
+
+    void writeMatrix(FILE* file, Eigen::MatrixXi *mx, int rows, int cols) {
+        for (int i = 0; i < rows; i++) {
+            // write data
+            for (int j = 0; j < cols; j++) {
+                fprintf(file, "%5d", (*mx)(i, j));
+                if (j+1 < cols) { fputc(' ', file); }
+            }
+            fputs("\n", file);
+        }
+    }
+
+    void writeDebugState(alignState* state) {
+
+        if (state->chain != 'C') {
+            return;
+        }
+
+        char path[400];
+
+        sprintf(state->fileName, "%s-align-matricies-%05d.txt",
+            state->code.c_str(), state->stateId++);
+        sprintf(path, "%s/%s", MATRIX_DIR, state->fileName);
+
+
+        FILE* output = fopen(path, "w");
+        if (!output) {
+            perror("File opening failed");
+            fprintf(stderr, "File name: %s\n", path);
+            exit(1);
+        }
+
+        fprintf(output, "%s\n", path);
+        fprintf(output, "scores:\n");
+        writeMatrix(output, state->scores, state->seqResNum, state->atomResNum);
+
+        fprintf(output, "UTI:\n");
+        writeMatrix(output, state->UTI, state->seqResNum, state->atomResNum);
+        fprintf(output, "UTJ:\n");
+        writeMatrix(output, state->UTI, state->seqResNum, state->atomResNum);
+
+        fclose(output);
+    }
+
 #endif
 
 }
