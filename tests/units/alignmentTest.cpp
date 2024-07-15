@@ -9,25 +9,56 @@
 #include <ValueObjects/TmdetStruct.hpp>
 #include <DTOs/TmdetStruct.hpp>
 
-Tmdet::ValueObjects::TmdetStruct createTmdetStruct(std::string pdbCode);
-void assertTrue(std::string testDescription, bool condition, int lineNumber);
+using namespace std;
 
-std::string fileName;
+Tmdet::ValueObjects::TmdetStruct createTmdetStruct(string pdbCode);
+void assertTrue(string testDescription, bool condition, int lineNumber);
+vector<string> getResidueNames(gemmi::Chain& chain);
+
+string fileName;
 
 int main() {
-    fileName = std::filesystem::path(__FILE__).filename();
+    fileName = filesystem::path(__FILE__).filename();
 
     // Test case 1
     {
         //auto tmdetVO = createTmdetStruct("1bxw");
         auto tmdetVO = createTmdetStruct("5eit");
+        vector<string> expected = {
+            "LYS",
+            "HIS",
+            "LYS",
+            "ILE",
+            "LEU",
+            "HIS",
+            "ARG",
+            "LEU",
+            "LEU",
+            "GLN",
+            "ASP",
+            "SER",
+            "SER",
+            "SER",
+        };
+        auto actual = getResidueNames(tmdetVO.chains[2].gemmi);
+        assertTrue("Verifying 'C' chain of 5eit", expected == actual, __LINE__);
     }
+
     // Test case 2
     // {
     //     auto tmdetVO = createTmdetStruct("6f9w"); // B chain is short enough
     // }
 
     return 0;
+}
+
+vector<string> getResidueNames(gemmi::Chain& chain) {
+    vector<string> result;
+
+    auto appendAction = [&result](gemmi::Residue residue) { result.emplace_back(residue.name); };
+    for_each(chain.residues.begin(), chain.residues.end(), appendAction);
+
+    return result;
 }
 
 void assertTrue(std::string testDescription, bool condition, int lineNumber) {
