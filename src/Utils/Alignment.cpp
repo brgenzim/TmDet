@@ -12,7 +12,7 @@ using namespace std;
 
 namespace Tmdet::Utils::Alignment {
 
-    static gemmi::Residue* createResidue(int seqNum, int labelSeqNum, string name, string chainName);
+    static gemmi::Residue createResidue(int seqNum, int labelSeqNum, string name, string chainName);
     static void initGaps(gemmi::Chain &chain, vector<int> &gaps);
 
 #ifdef __ALIGNMENT_DBG
@@ -32,15 +32,15 @@ namespace Tmdet::Utils::Alignment {
     static void printMatrix(Eigen::MatrixXi& matrix);
     static void writeMatrix(FILE* file, Eigen::MatrixXi *mx, int rows, int cols);
     static void writeDebugState(alignState* state);
-    static void printResidues(const vector<gemmi::Residue*> &residues);
-    static void printResidues(const list<gemmi::Residue*> &residues);
+    static void printResidues(const vector<gemmi::Residue> &residues);
+    static void printResidues(const list<gemmi::Residue> &residues);
 
     #define MATRIX_DIR "/tmp/pdb_map"
 #endif
 
     void alignSequences(gemmi::Chain &chain, vector<string> sequence) {
 
-        vector<gemmi::Residue*> seqResidues;
+        vector<gemmi::Residue> seqResidues;
         int seqNum = 1;
         for (auto &residueName : sequence) {
             auto residue = createResidue(seqNum, seqNum, residueName, chain.name);
@@ -121,7 +121,7 @@ namespace Tmdet::Utils::Alignment {
                         }
                     }
                 }
-                scores(i, j) = (seqResidues[i]->name == chain.residues[j].name ? 10 : 0) + maxScore;
+                scores(i, j) = (seqResidues[i].name == chain.residues[j].name ? 10 : 0) + maxScore;
 #ifdef __ALIGNMENT_DBG
                 writeDebugState(&state);
 #endif
@@ -130,11 +130,12 @@ namespace Tmdet::Utils::Alignment {
 
         maxScore = scores(seqResiduesLength-1, chainLength-1);
         // Create list
-        list<gemmi::Residue*> seqResiduesList(seqResidues.begin(), seqResidues.end());
-        list<gemmi::Residue*> chainList;
+        list<gemmi::Residue> seqResiduesList(seqResidues.begin(), seqResidues.end());
+        list<gemmi::Residue> chainList;
         for (auto it = chain.residues.begin(); it < chain.residues.end(); it++) {
-            // extract pointers, then we can identifies residues by their addresses
-            chainList.push_back(&*it);
+            auto copy = it->empty_copy();
+            copy.atoms = it->atoms;
+            chainList.push_back(copy);
         }
 
         // trace back paths?
@@ -157,7 +158,7 @@ namespace Tmdet::Utils::Alignment {
         for (int j = nutj+1; j < chainLength; j++) {
             auto residueFromAtomLine = chain.residues[j].empty_copy();
             residueFromAtomLine.atoms = chain.residues[j].atoms;
-            seqResiduesList.push_back(&residueFromAtomLine);
+            seqResiduesList.push_back(residueFromAtomLine);
         }
 
         // inserts
@@ -166,24 +167,26 @@ namespace Tmdet::Utils::Alignment {
 
         while (UTI >= 0 && UTJ >= 0) {
             auto currentResidue = chain.residues[UTJ];
-            if (seqResidues[UTI]->name != currentResidue.name) {
+            if (seqResidues[UTI].name != currentResidue.name) {
                 cerr << "Conflict in residue name: chain "
                     << chain.name << " at position " << currentResidue.label_seq.value
-                    << seqResidues[UTI]->name << " vs " << currentResidue.name << endl;
-                seqResidues[UTI]->name = currentResidue.name;
+                    << seqResidues[UTI].name << " vs " << currentResidue.name << endl;
+                seqResidues[UTI].name = currentResidue.name;
             }
             nuti = iPath(UTI, UTJ);
             nutj = jPath(UTI, UTJ);
-            seqResidues[UTI]->seqid = chain.residues[UTJ].seqid;
-            seqResidues[UTI]->label_seq = chain.residues[UTJ].label_seq;
+            seqResidues[UTI].seqid = chain.residues[UTJ].seqid;
+            seqResidues[UTI].label_seq = chain.residues[UTJ].label_seq;
             for (int j = UTJ-1; j > nutj; j--) {
                 auto residueFromAtomLine = chain.residues[j].empty_copy();
                 residueFromAtomLine.atoms = chain.residues[j].atoms;
                 // lambda expression for find_if call
-                auto equals = [&seqResidues, &UTI](gemmi::Residue *item) { return item == seqResidues[UTI]; };
+                auto equals = [&seqResidues, &UTI](gemmi::Residue &item) {
+                    return item.label_seq == seqResidues[UTI].label_seq;
+                };
                 auto pos = find_if(seqResiduesList.begin(), seqResiduesList.end(), equals);
                 // insert pointer before position
-                seqResiduesList.insert(pos, &residueFromAtomLine);
+                seqResiduesList.insert(pos, residueFromAtomLine);
             }
             UTI = nuti;
             UTJ = nutj;
@@ -212,8 +215,8 @@ namespace Tmdet::Utils::Alignment {
                 continue;
             }
 
-            auto seqLabelValue = (*seqResidue)->label_seq.value;
-            auto chainLabelValue = (*chainResidue)->label_seq.value;
+            auto seqLabelValue = seqResidue->label_seq.value;
+            auto chainLabelValue = chainResidue->label_seq.value;
 
             if (seqLabelValue < chainLabelValue) {
                 // insert does not invalidate iterators
@@ -229,19 +232,24 @@ namespace Tmdet::Utils::Alignment {
             }
         }
 
-        // update residues of chain
+        // Update residues of chain:
+        // rescue data from chainList pointers - since most of its items
+        // still reference items in chain.residues and that will be cleared
         chain.residues.clear();
         for (auto residue : chainList) {
-            chain.residues.emplace_back(*residue);
+            auto copy = residue.empty_copy();
+            copy.atoms = residue.atoms;
+            chain.residues.emplace_back(copy);
         }
     }
 
-    gemmi::Residue* createResidue(int seqNum, int labelSeqNum, string name, string chainName) {
-        auto residue = new gemmi::Residue();
-        residue->seqid.num.value = seqNum;
-        residue->label_seq.value = labelSeqNum;
-        residue->name = name;
-        residue->subchain = chainName;
+    gemmi::Residue createResidue(int seqNum, int labelSeqNum, string name, string chainName) {
+        gemmi::Residue residue;
+        //auto residue = new gemmi::Residue();
+        residue.seqid.num.value = seqNum;
+        residue.label_seq.value = labelSeqNum;
+        residue.name = name;
+        residue.subchain = chainName;
         return residue;
     }
 
@@ -298,18 +306,18 @@ namespace Tmdet::Utils::Alignment {
     template <typename Iterator>
     void _printResiduesImpl(const Iterator &start, const Iterator &end);
 
-    void printResidues(const vector<gemmi::Residue*> &residues) {
+    void printResidues(const vector<gemmi::Residue> &residues) {
         _printResiduesImpl(residues.begin(), residues.end());
     }
 
-    void printResidues(const list<gemmi::Residue*> &residues) {
+    void printResidues(const list<gemmi::Residue> &residues) {
         _printResiduesImpl(residues.begin(), residues.end());
     }
 
     template <typename Iterator>
     void _printResiduesImpl(const Iterator &start, const Iterator &end) {
-        auto printer = [](gemmi::Residue* item) {
-            cout << item->name << "[" << item->label_seq.value << "] " ;
+        auto printer = [](gemmi::Residue item) {
+            cout << item.name << "[" << item.label_seq.value << "] " ;
         };
         for_each(start, end, printer);
         cout << endl;
