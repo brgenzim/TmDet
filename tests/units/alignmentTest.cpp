@@ -113,11 +113,8 @@ int main() {
 vector<string> getResidueNames(gemmi::Chain& chain) {
     vector<string> result;
 
-    auto appendAction = [&result](gemmi::Residue residue) { result.emplace_back(residue.name); };
-    //for_each(chain.residues.begin(), chain.residues.end(), appendAction);
-    for (auto residue : chain.residues) {
-        appendAction(residue);
-    }
+    auto appendAction = [&result](gemmi::Residue& residue) { result.emplace_back(residue.name); };
+    for_each(chain.residues.begin(), chain.residues.end(), appendAction);
 
     return result;
 }
