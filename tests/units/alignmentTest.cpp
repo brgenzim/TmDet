@@ -67,9 +67,17 @@ int main() {
     }
 
     // Test case 2
-    // {
-    //     auto tmdetVO = createTmdetStruct("6f9w"); // B chain is short enough
-    // }
+    {
+        auto tmdetVO = createTmdetStruct("6f9w"); // B chain is short enough
+        vector<string> expected = {
+            "GLY", "PRO", "LEU", "GLY", "SER", "GLY", "LEU", "ALA", "LYS", "TRP",
+            "PHE", "GLY", "SER", "ASP", "MSE", "LEU", "GLN", "GLN", "PRO", "LEU",
+            "PRO", "SER", "MSE", "PRO", "ALA", "LYS", "VAL", "ILE", "SER", "VAL",
+            "ASP", "GLU", "LEU", "GLU", "TYR", "ARG", "GLN",
+        };
+        auto actual = getResidueNames(tmdetVO.chains[1].gemmi);
+        assertTrue("Verifying 'B' chain of 6f9w", expected == actual, __LINE__);
+    }
 
     return 0;
 }
