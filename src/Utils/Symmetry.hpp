@@ -7,7 +7,7 @@
 #include <gemmi/model.hpp>
 #include <ValueObjects/TmdetStruct.hpp>
 
-#define __SYM_DBG 1
+// #define __SYM_DBG 1 // to enable debug messages of this feature
 
 using namespace std;
 

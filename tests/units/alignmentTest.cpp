@@ -79,6 +79,33 @@ int main() {
         assertTrue("Verifying 'B' chain of 6f9w", expected == actual, __LINE__);
     }
 
+    // Test 3
+    {
+        auto tmdetVO = createTmdetStruct("7f7g"); // D chain is short
+        vector<string> expected = {
+            "ACE", "ARG", "ILE", "ARG", "ARG", "ASP", "GLU", "TYR", "LEU", "LYZ",
+            "ALA", "ILE", "GLN", "NH2",
+        };
+        auto actual = getResidueNames(tmdetVO.chains[1].gemmi);
+        assertTrue("Verifying 'D' chain of 7f7g", expected == actual, __LINE__);
+    }
+
+    // Test 4
+    {
+        auto tmdetVO = createTmdetStruct("7ec3"); // G chain
+        vector<string> expected = {
+            "SER", "ASP", "SER", "ASP", "SER", "ASP", "SER", "ASP",
+        };
+        auto& chain = tmdetVO.chains[3].gemmi;
+        auto actual = getResidueNames(chain);
+        assertTrue("Verifying 'G' chain of 7ec3", expected == actual, __LINE__);
+        auto size = chain.residues.size();
+        // these residues do not have atom lines
+        auto predicate = chain.residues[size - 2].atoms.size() == 0
+            && chain.residues[size - 1].atoms.size() == 0;
+        assertTrue("Verifying last two residues of 'G' chain have no atoms", predicate, __LINE__);
+    }
+
     return 0;
 }
 

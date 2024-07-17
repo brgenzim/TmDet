@@ -191,7 +191,6 @@ class TmDetDsspTest extends TestCase {
             '4e98.cif.gz' => [ static::PDB_ZFS_DIR . '/e9/4e98.cif.gz' ],
             '6ebc.cif.gz' => [ static::PDB_ZFS_DIR . '/eb/6ebc.cif.gz' ],
             '8e74.cif.gz' => [ static::PDB_ZFS_DIR . '/e7/8e74.cif.gz' ],
-           
         ];
     }
 
