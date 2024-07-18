@@ -19,8 +19,18 @@ namespace Tmdet::ValueObjects {
         int residueIdx;
         unordered_map<string,any> temp;
 
-        Atom(gemmi::Atom& _gemmi) : 
+        Atom(gemmi::Atom& _gemmi) :
             gemmi(_gemmi) {}
+
+        // Copy constructor
+        Atom(const Atom& other) :
+            gemmi(other.gemmi),
+            surface(other.surface),
+            idx(other.idx),
+            chainIdx(other.chainIdx),
+            residueIdx(other.residueIdx),
+            temp(other.temp) {}
+
         ~Atom() {}
     };
 }

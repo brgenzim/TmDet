@@ -33,8 +33,8 @@ namespace Tmdet::ValueObjects {
         gemmi::cif::Document& document;
         gemmi::NeighborSearch neighbors;
 
-        TmdetStruct(TmdetStruct&& other) noexcept :
-            code(other.code),
+        TmdetStruct(const TmdetStruct& other)
+            : code(other.code),
             inputPath(other.inputPath),
             tmp(other.tmp),
             date(other.date),
@@ -48,16 +48,7 @@ namespace Tmdet::ValueObjects {
             chains(other.chains),
             gemmi(other.gemmi),
             document(other.document),
-            neighbors(other.neighbors)
-        {
-            auto& otherChains = other.gemmi.models[0].chains;
-            for (int chain = 0;  chain < otherChains.size(); ++chain) {
-                auto& residues = otherChains[chain].residues;
-                for (int residue = 0; residue < residues.size(); ++residue) {
-                    gemmi.models[0].chains[chain].residues[residue].atoms = vector<gemmi::Atom>(residues[residue].atoms);
-                }
-            }
-        }
+            neighbors(other.neighbors) {}
 
         TmdetStruct(gemmi::Structure& _gemmi, gemmi::cif::Document& _document) : gemmi(_gemmi), document(_document) {
         }

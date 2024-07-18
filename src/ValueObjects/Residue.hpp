@@ -24,7 +24,21 @@ namespace Tmdet::ValueObjects {
         int idx;
         int chainIdx;
         unordered_map<string,any> temp;
+
         Residue(gemmi::Residue& _gemmi) : gemmi(_gemmi) {}
+
+        // copy constructor
+        Residue(const Residue& other) :
+            gemmi(other.gemmi),
+            atoms(other.atoms),
+            surface(other.surface),
+            ss(other.ss),
+            hbond1(other.hbond1),
+            hbond2(other.hbond2),
+            idx(other.idx),
+            chainIdx(other.chainIdx),
+            temp(other.temp) {}
+
         ~Residue() {}
         int resn() {
             return (int)gemmi.seqid.num;
