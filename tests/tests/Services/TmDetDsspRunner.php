@@ -29,7 +29,7 @@ class TmDetDsspRunner extends AbstractProcessRunner {
             }
         }
 
-        $selectedLines = preg_grep('/^\s*$/', $selectedLines, PREG_GREP_INVERT);
+        $selectedLines = preg_grep('/^(\s*|.+at position.+)$/', $selectedLines, PREG_GREP_INVERT);
         if (count($this->chains) != count($selectedLines)) {
             printf("Command: %s\n", $this->commandLine);
             var_dump($this->chains);

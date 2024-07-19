@@ -46,8 +46,9 @@ class TmDetDsspTest extends TestCase {
     }
 
     #[Group('dssp')]
+    #[DataProvider('cifPathsForSignificantDsspErrorTests')]
     //#[DataProvider('cifPathsWithErrorProvider')]
-    #[DataProvider('cifPathsForLenvenshteinFailuresDebug')]
+    // #[DataProvider('cifPathsForLenvenshteinFailuresDebug')]
     public function test_specific_dssp(string $cifPath) {
         // Pre-check
         $filter = new StructurePreFilter($cifPath);
@@ -320,4 +321,45 @@ class TmDetDsspTest extends TestCase {
         ];
     }
 
+    public static function cifPathsForSignificantDsspErrorTests(): array {
+        return [
+            '8el5.cif.gz' => [ static::PDB_ZFS_DIR . '/el/8el5.cif.gz' ],
+            '5ef5.cif.gz' => [ static::PDB_ZFS_DIR . '/ef/5ef5.cif.gz' ],
+            '5eqq.cif.gz' => [ static::PDB_ZFS_DIR . '/eq/5eqq.cif.gz' ],
+            '4exw.cif.gz' => [ static::PDB_ZFS_DIR . '/ex/4exw.cif.gz' ],
+            '8el4.cif.gz' => [ static::PDB_ZFS_DIR . '/el/8el4.cif.gz' ],
+            '8f0l.cif.gz' => [ static::PDB_ZFS_DIR . '/f0/8f0l.cif.gz' ],
+            '5f1w.cif.gz' => [ static::PDB_ZFS_DIR . '/f1/5f1w.cif.gz' ],
+            '6f1x.cif.gz' => [ static::PDB_ZFS_DIR . '/f1/6f1x.cif.gz' ],
+            '8f17.cif.gz' => [ static::PDB_ZFS_DIR . '/f1/8f17.cif.gz' ],
+            '4egy.cif.gz' => [ static::PDB_ZFS_DIR . '/eg/4egy.cif.gz' ],
+            '5eg2.cif.gz' => [ static::PDB_ZFS_DIR . '/eg/5eg2.cif.gz' ],
+            '2efg.cif.gz' => [ static::PDB_ZFS_DIR . '/ef/2efg.cif.gz' ],
+            '7ec3.cif.gz' => [ static::PDB_ZFS_DIR . '/ec/7ec3.cif.gz' ],
+            '3ee0.cif.gz' => [ static::PDB_ZFS_DIR . '/ee/3ee0.cif.gz' ],
+            '6een.cif.gz' => [ static::PDB_ZFS_DIR . '/ee/6een.cif.gz' ],
+            '8el6.cif.gz' => [ static::PDB_ZFS_DIR . '/el/8el6.cif.gz' ],
+            '3f5b.cif.gz' => [ static::PDB_ZFS_DIR . '/f5/3f5b.cif.gz' ],
+            '6f5j.cif.gz' => [ static::PDB_ZFS_DIR . '/f5/6f5j.cif.gz' ],
+            '8el3.cif.gz' => [ static::PDB_ZFS_DIR . '/el/8el3.cif.gz' ],
+            '8f15.cif.gz' => [ static::PDB_ZFS_DIR . '/f1/8f15.cif.gz' ],
+            '8f12.cif.gz' => [ static::PDB_ZFS_DIR . '/f1/8f12.cif.gz' ],
+            '8f14.cif.gz' => [ static::PDB_ZFS_DIR . '/f1/8f14.cif.gz' ],
+            '7f22.cif.gz' => [ static::PDB_ZFS_DIR . '/f2/7f22.cif.gz' ],
+            '3f43.cif.gz' => [ static::PDB_ZFS_DIR . '/f4/3f43.cif.gz' ],
+            '1ee7.cif.gz' => [ static::PDB_ZFS_DIR . '/ee/1ee7.cif.gz' ],
+            '6f5u.cif.gz' => [ static::PDB_ZFS_DIR . '/f5/6f5u.cif.gz' ],
+            '6f7w.cif.gz' => [ static::PDB_ZFS_DIR . '/f7/6f7w.cif.gz' ],
+            '7f7g.cif.gz' => [ static::PDB_ZFS_DIR . '/f7/7f7g.cif.gz' ],
+            '6ejl.cif.gz' => [ static::PDB_ZFS_DIR . '/ej/6ejl.cif.gz' ],
+            '8f0z.cif.gz' => [ static::PDB_ZFS_DIR . '/f0/8f0z.cif.gz' ],
+            '8f16.cif.gz' => [ static::PDB_ZFS_DIR . '/f1/8f16.cif.gz' ],
+            '6f2r.cif.gz' => [ static::PDB_ZFS_DIR . '/f2/6f2r.cif.gz' ],
+            '2f69.cif.gz' => [ static::PDB_ZFS_DIR . '/f6/2f69.cif.gz' ],
+            '8edo.cif.gz' => [ static::PDB_ZFS_DIR . '/ed/8edo.cif.gz' ],
+            '8f10.cif.gz' => [ static::PDB_ZFS_DIR . '/f1/8f10.cif.gz' ],
+            '8f13.cif.gz' => [ static::PDB_ZFS_DIR . '/f1/8f13.cif.gz' ],
+
+        ];
+    }
 }
