@@ -80,7 +80,7 @@ int main() {
             cout << "        dssp string: " << actual << endl;
         }
 
-        // assert of resiudes
+        // assert of resiudes (it's an alignment check)
         vector<string> expectedResidues{
             "PRO", "ALA", "ASN", "GLY", "PRO", "ALA", "VAL", "GLN", "PHE", "PHE",
             "LYS", "GLY", "LYS", "ASN", "GLY", "SER", "ALA", "ASP", "GLN", "VAL",
@@ -88,6 +88,29 @@ int main() {
         };
         auto actualResidues = getResidueNames(tmdetVO.chains[3].gemmi);
         assertTrue("Verifying residues of 'D' chain of 6e8r", expected == actual, __LINE__);
+    }
+
+    // Test case 3
+    {
+        // arrange
+        string pdbCode = "4egy";
+        string inputPath = getPath(pdbCode);
+
+        gemmi::cif::Document document = gemmi::cif::read(gemmi::MaybeGzipped(inputPath));
+        auto pdb = gemmi::make_structure(std::move(document));
+        auto tmdetVO = Tmdet::ValueObjects::TmdetStruct(pdb, document);
+        tmdetVO.inputPath = inputPath;
+        Tmdet::DTOS::TmdetStruct::parse(tmdetVO);
+
+        // action
+        calcDssp(tmdetVO);
+        // assert
+        string expected = "-------------STGGGGG---HHHHHHHHHHHHHHTTSS-TT-B---HHHHHHHHT--HHHHHHHHHHHHHHTSEEEETTTEEEE-";
+        auto actual = Tmdet::Utils::Dssp::getDsspOfChain(tmdetVO.chains[0]);
+        if (!assertTrue("Verifying 'A' chain of 4egy", expected == actual, __LINE__)) {
+            cout << "           expected: " << expected << endl;
+            cout << "        dssp string: " << actual << endl;
+        }
     }
     return 0;
 }
