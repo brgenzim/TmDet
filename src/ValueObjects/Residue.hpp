@@ -41,7 +41,7 @@ namespace Tmdet::ValueObjects {
 
         ~Residue() {}
         int resn() {
-            return (int)gemmi.seqid.num;
+            return gemmi.seqid.num.value;
         }
     };
 }

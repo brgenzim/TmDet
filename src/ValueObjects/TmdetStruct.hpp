@@ -50,7 +50,8 @@ namespace Tmdet::ValueObjects {
             document(other.document),
             neighbors(other.neighbors) {}
 
-        TmdetStruct(gemmi::Structure& _gemmi, gemmi::cif::Document& _document) : gemmi(_gemmi), document(_document) {
+        TmdetStruct(gemmi::Structure& _gemmi, gemmi::cif::Document& _document) :
+            gemmi(_gemmi), document(_document), code(_gemmi.name) {
         }
         ~TmdetStruct() {}
     };
