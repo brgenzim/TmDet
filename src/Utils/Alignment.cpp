@@ -14,6 +14,7 @@ namespace Tmdet::Utils::Alignment {
 
     static gemmi::Residue* createResidue(int seqNum, int labelSeqNum, string name, string chainName);
     static gemmi::Residue* copyResidue(const gemmi::Residue& other);
+    static void copyResidue(gemmi::Residue *destination, const gemmi::Residue& source);
     static void initGaps(gemmi::Chain &chain, vector<int> &gaps);
 
 #ifdef __ALIGNMENT_DBG
@@ -86,8 +87,6 @@ namespace Tmdet::Utils::Alignment {
         initGaps(chain, gaps);
 
 #ifdef __ALIGNMENT_DBG
-        // TODO: remove later
-        // This entry code is hardwired since the function does not have any extra parameter for it.
         alignState state;
         state.code = currentCode;
         state.seqResNum = seqResiduesLength;
@@ -201,8 +200,7 @@ namespace Tmdet::Utils::Alignment {
             }
             nuti = iPath(UTI, UTJ);
             nutj = jPath(UTI, UTJ);
-            seqResidues[UTI]->seqid = chain.residues[UTJ].seqid;
-            seqResidues[UTI]->label_seq = chain.residues[UTJ].label_seq;
+            copyResidue(seqResidues[UTI], chain.residues[UTJ]);
             for (int j = UTJ-1; j > nutj; j--) {
                 auto residueFromAtomLine = copyResidue(chain.residues[j]);
                 // lambda expression for find_if call
@@ -227,42 +225,78 @@ namespace Tmdet::Utils::Alignment {
         printResidues(chainList);
 #endif
 
-        // Filling gaps in residue list from atom lines
+        unsigned int r = 0;
+        seqResidues.resize(0);
+        seqResidues.insert(seqResidues.end(), seqResiduesList.begin(), seqResiduesList.end());
+        while (r < seqResidues.size()) {
+            if (seqResidues[r]->seqid.num != -9999) {
+                ++r;
+                continue;
+            }
+            unsigned int sectionLength = 0;
+            auto v = r;
+            for (; v != seqResidues.size() && seqResidues[v]->seqid.num == -9999; v++, sectionLength++);
 
-        // auto seqResidue = seqResiduesList.begin();
-        // auto chainResidue = chainList.begin();
-        // while (seqResidue != seqResiduesList.end()) {
+            // New section is at the beginning of the chain
+            if (r == 0) {
+                // ... then step back from the end of the section and
+                // update residue numbers
+                auto ri = v - 1;
+                auto seqid = seqResidues[v]->seqid;
+                for (; ri != r; --ri) {
+                    seqid.num.value--;
+                    seqResidues[ri]->seqid = seqid;
+                }
+                seqid.num.value--;
+                seqResidues[ri]->seqid = seqid;
+            } else {
+                // if you section delimited by old sections
+                // (not starting/ending section)
+                if (v < seqResidues.size()) {
+                    // if new section longer than the gap
+                    if (sectionLength > (v - r + 1)) {
+                        int i = 0;
+                        const string PDB_LETTERS("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+!=*-:.;$#@|~^˘");
+                        for (v = r; v < seqResidues.size() && seqResidues[v]->seqid.num == -9999; v++, i++) {
+                            // TODO:
+                            // az icode-ot nem értem, talán arra való,
+                            // hogy egy rsn-t több residue-hoz lehet így
+                            // hozzárendelni.
+                            // WARNING: Ha jól értem, a szakasz előtti residue-t
+                            //          ismételjük. Viszont, ha túl hosszú a
+                            //          szakasz, akkor az rsn,icode páros is
+                            //          duplikálódni fog. Vagy nem?
+                            seqResidues[v]->seqid = seqResidues[r]->seqid;
+                            seqResidues[v]->seqid.icode = PDB_LETTERS[i % 40];
+                        }
+                    } else {
+                        // if new section has same length than the gap
+                        for (v = r; v < seqResidues.size() && seqResidues[v]->seqid.num == -9999; v++) {
+                            seqResidues[v]->seqid = seqResidues[v-1]->seqid;
+                            seqResidues[v]->seqid.num.value++;
+                        }
+                    }
+                } else {
+                    // if new section is at the end of the chain
+                    for (v = r; v < seqResidues.size(); v++) {
+                        seqResidues[v]->seqid = seqResidues[v-1]->seqid;
+                        seqResidues[v]->seqid.num.value++;
+                    }
+                }
+            }
 
-        //     if (chainResidue == chainList.end()) {
-        //         chainList.emplace_back(*seqResidue);
-        //         ++seqResidue;
-        //         continue;
-        //     }
-
-        //     auto seqLabelValue = seqResidue->label_seq.value;
-        //     auto chainLabelValue = chainResidue->label_seq.value;
-
-        //     if (seqLabelValue < chainLabelValue) {
-        //         // insert does not invalidate iterators
-        //         chainList.insert(chainResidue, *seqResidue);
-        //         ++seqResidue;
-        //     } else if (seqLabelValue == chainLabelValue) {
-        //         ++seqResidue;
-        //         ++chainResidue;
-        //     } else { // chain label < seq label
-        //         ++chainResidue;
-        //         chainList.insert(chainResidue, *seqResidue);
-        //         --chainResidue;
-        //     }
-        // }
+            ++r;
+        }
 
         // Update residues of chain:
         // rescue data from chainList pointers - since most of its items
         // still reference items in chain.residues and that will be cleared
         chain.residues.clear();
-        for (auto residue : chainList) {
-            auto copy = residue.empty_copy();
-            copy.atoms = residue.atoms;
+        int labelSeq = 1;
+        for (auto residue : seqResidues) {
+            gemmi::Residue copy;
+            copyResidue(&copy, *residue);
+            copy.label_seq.value = labelSeq++;
             chain.residues.emplace_back(copy);
         }
         // clean ups
@@ -270,6 +304,7 @@ namespace Tmdet::Utils::Alignment {
         for_each(seqResiduesList.begin(), seqResiduesList.end(), free);
         seqResiduesList.resize(0);
         seqResidues.resize(0);
+        chainList.resize(0);
     }
 
     gemmi::Residue* createResidue(int seqNum, int labelSeqNum, string name, string chainName) {
@@ -283,6 +318,13 @@ namespace Tmdet::Utils::Alignment {
 
     gemmi::Residue* copyResidue(const gemmi::Residue& other) {
         auto residue = new gemmi::Residue();
+
+        copyResidue(residue, other);
+
+        return residue;
+    }
+
+    void copyResidue(gemmi::Residue *residue, const gemmi::Residue& other) {
         residue->seqid = other.seqid;
         residue->label_seq = other.label_seq;
         residue->name = other.name;
@@ -296,8 +338,6 @@ namespace Tmdet::Utils::Alignment {
         residue->het_flag = other.het_flag;
         residue->segment = other.segment;
         residue->sifts_unp = other.sifts_unp;
-
-        return residue;
     }
 
     void alignResidues(const Tmdet::ValueObjects::TmdetStruct& tmdetVO) {
