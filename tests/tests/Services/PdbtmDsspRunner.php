@@ -5,6 +5,7 @@ namespace Unitmp\TmdetTest\Services;
 class PdbtmDsspRunner extends AbstractProcessRunner {
 
     const EXEC = 'export PDB_CACHE_PATH=/tmp; /home/tusi/works/pdbtm_3.0/TmdetUtils/bin/dssp';
+    //const EXEC = 'export PDB_CACHE_PATH=/tmp; export LD_LIBRARY_PATH=/home/A/csongor/dev/PdbLib.C__stale/lib; /home/A/csongor/dev/TmdetUtils/bin/dssp';
     const DUMP_HEADER_LINE_PREFIX = 'ShowProt:';
     const CHAIN_COLUMN = 1;
     const STRUCTURE_COLUMN = 5;

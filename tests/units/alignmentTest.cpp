@@ -105,6 +105,25 @@ int main() {
         assertTrue("Verifying last two residues of 'G' chain have no atoms", predicate, __LINE__);
     }
 
+    // Test 5
+    {
+        auto tmdetVO = createTmdetStruct("4egy"); // A chain
+        vector<string> expected = {
+            "MET", "HIS", "HIS", "HIS", "HIS", "HIS", "HIS", "LEU", "GLU", "VAL",
+            "LEU", "PHE", "GLN", "GLY", "PRO", "LEU", "GLY", "SER", "GLU", "PHE",
+            "MET", "LEU", "PRO", "LYS", "TYR", "ALA", "GLN", "VAL", "LYS", "GLU",
+            "GLU", "ILE", "SER", "SER", "TRP", "ILE", "ASN", "GLN", "GLY", "LYS",
+            "ILE", "LEU", "PRO", "ASP", "GLN", "LYS", "ILE", "PRO", "THR", "GLU",
+            "ASN", "GLU", "LEU", "MET", "GLN", "GLN", "PHE", "GLY", "VAL", "SER",
+            "ARG", "HIS", "THR", "ILE", "ARG", "LYS", "ALA", "ILE", "GLY", "ASP",
+            "LEU", "VAL", "SER", "GLN", "GLY", "LEU", "LEU", "TYR", "SER", "VAL",
+            "GLN", "GLY", "GLY", "GLY", "THR", "PHE", "VAL", "ALA",
+        };
+        auto& chain = tmdetVO.chains[0].gemmi;
+        auto actual = getResidueNames(chain);
+        assertTrue("Verifying 'A' chain of 4egy", expected == actual, __LINE__);
+    }
+
     return 0;
 }
 
