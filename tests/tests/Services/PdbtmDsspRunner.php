@@ -6,7 +6,7 @@ use RuntimeException;
 
 class PdbtmDsspRunner extends AbstractProcessRunner {
 
-    const PDB_CACHE_PATH = '/tmp';
+    const PDB_CACHE_PATH = '/tmp/pdb-cache';
     const LD_LIBRARY_PATH = '/home/A/csongor/dev/PdbLib.C__stale/lib';
     const EXEC = 'export PDB_CACHE_PATH=' . PdbtmDsspRunner::PDB_CACHE_PATH
         . '; export LD_LIBRARY_PATH=' . PdbtmDsspRunner::LD_LIBRARY_PATH
@@ -26,13 +26,15 @@ class PdbtmDsspRunner extends AbstractProcessRunner {
         parent::__construct($execPath, $commandParams);
         $this->entFile = $entFile;
         $this->pdbCode = parent::getPdbCodeFromPath($entFile);
+        if (!file_exists(static::PDB_CACHE_PATH)) {
+            mkdir(static::PDB_CACHE_PATH);
+        }
     }
 
     protected function filterOutputLines(array $lines): array {
 
         $cacheDir = static::PDB_CACHE_PATH;
         $dsspFiles = explode("\n", trim(`ls -t $cacheDir/$this->pdbCode.*.dssp`));
-        var_dump($dsspFiles);
         if (!empty($dsspFiles) && file_exists($dsspFile = array_shift($dsspFiles))) {
             $this->dsspCacheFile = $dsspFile;
 
