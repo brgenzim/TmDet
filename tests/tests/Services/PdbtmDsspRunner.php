@@ -10,8 +10,8 @@ class PdbtmDsspRunner extends AbstractProcessRunner {
     const LD_LIBRARY_PATH = '/home/A/csongor/dev/PdbLib.C__stale/lib';
     const EXEC = 'export PDB_CACHE_PATH=' . PdbtmDsspRunner::PDB_CACHE_PATH
         . '; export LD_LIBRARY_PATH=' . PdbtmDsspRunner::LD_LIBRARY_PATH
-        // . '; /home/tusi/works/pdbtm_3.0/TmdetUtils/bin/dssp';
-        . '; /home/A/csongor/dev/TmdetUtils/bin/dssp';
+        . '; /home/tusi/works/pdbtm_3.0/TmdetUtils/bin/dssp';
+        // . '; /home/A/csongor/dev/TmdetUtils/bin/dssp';
     const DUMP_HEADER_LINE_PREFIX = 'ShowProt:';
     const CHAIN_COLUMN = 1;
     const STRUCTURE_COLUMN = 5;

@@ -124,6 +124,34 @@ int main() {
         assertTrue("Verifying 'A' chain of 4egy", expected == actual, __LINE__);
     }
 
+    // Test 6
+    {
+        auto tmdetVO = createTmdetStruct("4em2"); // A chain
+        vector<string> expected = {
+            "THR", "ALA", "ALA", "ALA", "LYS", "PHE", "GLU", "ARG", "GLN", "HIS",
+            "MET", "ASP", "SER", "PRO", "ASP", "LEU", "GLY", "THR", "ASP", "ASP",
+            "ASP", "ASP", "LYS", "ALA", "MET", "ALA", "ASP", "ILE", "GLY", "SER",
+            "ASP", "PHE", "MET", "LEU", "SER", "GLN", "GLU", "PHE", "PHE", "ASN",
+            "SER", "PHE", "ILE", "THR", "ILE", "TYR", "ARG", "PRO", "TYR", "LEU",
+            "LYS", "LEU", "THR", "GLU", "PRO", "ILE", "LEU", "GLU", "LYS", "HIS",
+            "ASN", "ILE", "TYR", "TYR", "GLY", "GLN", "TRP", "LEU", "ILE", "LEU",
+            "ARG", "ASP", "ILE", "ALA", "LYS", "HIS", "GLN", "PRO", "THR", "THR",
+            "LEU", "ILE", "GLU", "ILE", "SER", "HIS", "ARG", "ARG", "ALA", "ILE",
+            "GLU", "LYS", "PRO", "THR", "ALA", "ARG", "LYS", "THR", "LEU", "LYS",
+            "ALA", "LEU", "ILE", "GLU", "ASN", "ASP", "LEU", "ILE", "THR", "VAL",
+            "GLU", "ASN", "SER", "LEU", "GLU", "ASP", "LYS", "ARG", "GLN", "LYS",
+            "PHE", "LEU", "THR", "LEU", "THR", "PRO", "LYS", "GLY", "HIS", "GLU",
+            "LEU", "TYR", "GLU", "ILE", "VAL", "CYS", "LEU", "ASP", "VAL", "GLN",
+            "LYS", "LEU", "GLN", "GLN", "ALA", "VAL", "VAL", "ALA", "LYS", "THR",
+            "ASN", "ILE", "SER", "GLN", "ASP", "GLN", "MET", "GLN", "GLU", "THR",
+            "ILE", "ASN", "VAL", "MET", "ASN", "GLN", "ILE", "HIS", "GLU", "ILE",
+            "LEU", "LEU", "LYS", "GLU", "ALA", "HIS", "ASN", "ASP",
+        };
+        auto& chain = tmdetVO.chains[0].gemmi;
+        auto actual = getResidueNames(chain);
+        assertTrue("Verifying 'A' chain of 4em2", expected == actual, __LINE__);
+    }
+
     return 0;
 }
 

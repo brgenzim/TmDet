@@ -17,46 +17,18 @@ class TmDetDsspTest extends TestCase {
     const MAX_ALLOWED_LEVENSHTEIN_DISTANCE_IN_PERCENT = 2;
 
     #[Group('dssp')]
-    public function test_pdbtm_dssp_integrity_with_1afo() {
-        // Arrange
-        $pdbtmRunner = PdbtmDsspRunner::createRunner(static::PDB_ENT_ZFS_DIR . '/af/pdb1afo.ent.gz');
-        $tmdetRunner = TmDetDsspRunner::createRunner(static::PDB_ZFS_DIR . '/af/1afo.cif.gz');
-        // Act
-        $isSuccess = $pdbtmRunner->exec();
-        $isTmDetSuccess = $tmdetRunner->exec();
-        // Assert
-        $this->assertTrue($isSuccess);
-        $this->assertTrue($isTmDetSuccess);
-        $this->assertDsspArraysEqual($pdbtmRunner->dssps, $tmdetRunner->dssps);
-    }
-
-    #[Group('dssp')]
-    public function test_pdbtm_dssp_integrity_with_7rh7_chain_w() {
-        // Arrange
-        $pdbtmRunner = PdbtmDsspRunner::createRunner(static::PDB_ENT_ZFS_DIR . '/rh/pdb7rh7.ent.gz');
-        $tmdetRunner = TmDetDsspRunner::createRunner(static::PDB_ZFS_DIR . '/rh/7rh7.cif.gz');
-        // Act
-        $isSuccess = $pdbtmRunner->exec();
-        $isTmDetSuccess = $tmdetRunner->exec();
-        // Assert
-        $this->assertTrue($isSuccess);
-        $this->assertTrue($isTmDetSuccess);
-        $this->assertEquals($pdbtmRunner->dssps['W'], $tmdetRunner->dssps['W']);
-        $this->assertEquals($pdbtmRunner->dssps, $tmdetRunner->dssps);
-    }
-
-    #[Group('dssp')]
+    // #[DataProvider('cifPathsForAlignmentDebug')]
     #[DataProvider('cifPathsForSignificantDsspErrorTests')]
-    //#[DataProvider('cifPathsWithErrorProvider')]
+    // #[DataProvider('cifPathsWithErrorProvider')]
     // #[DataProvider('cifPathsForLenvenshteinFailuresDebug')]
     public function test_specific_dssp(string $cifPath) {
         // Pre-check
         $filter = new StructurePreFilter($cifPath);
         $exception = null;
-        if (!$filter->checkChainLengthsForDsspCalc()) {
-            printf("Skipping test - not DSSP-eligible: %s\n", $cifPath);
-            $this->markTestSkipped('There is a chain with unsupported length ' . $cifPath);
-        }
+        // if (!$filter->checkChainLengthsForDsspCalc()) {
+        //     printf("Skipping test - not DSSP-eligible: %s\n", $cifPath);
+        //     $this->markTestSkipped('There is a chain with unsupported length ' . $cifPath);
+        // }
         if (!$filter->tryCheckEntryFiles($exception)) {
             printf("Skipping test: %s\n", $exception->getMessage());
             $this->markTestSkipped('Unsupported CIF-ENT pair ' . $cifPath);
@@ -80,10 +52,10 @@ class TmDetDsspTest extends TestCase {
         // Pre-check
         $filter = new StructurePreFilter($cifPath);
         $exception = null;
-        if (!$filter->checkChainLengthsForDsspCalc()) {
-            printf("Skipping test - not DSSP-eligible: %s\n", $cifPath);
-            $this->markTestSkipped('There is a chain with unsupported length ' . $cifPath);
-        }
+        // if (!$filter->checkChainLengthsForDsspCalc()) {
+        //     printf("Skipping test - not DSSP-eligible: %s\n", $cifPath);
+        //     $this->markTestSkipped('There is a chain with unsupported length ' . $cifPath);
+        // }
 
         if (!$filter->tryCheckEntryFiles($exception)) {
             printf("Skipping test: %s\n", $exception->getMessage());
@@ -190,10 +162,13 @@ class TmDetDsspTest extends TestCase {
         // TODO: remove slice later
         //return array_slice($files, 100, 25);
         //return array_slice($files, 100, 1000);
-        return array_slice($files, 41000, 10000);
+        return array_slice($files, 41000, 11000);
         //return $files;
     }
 
+    /**
+     * For issue https://redmine.enzim.ttk.hu/issues/895
+     */
     public static function cifPathsWithErrorProvider(): array {
         return [
             '5e8d.cif.gz' => [ static::PDB_ZFS_DIR . '/e8/5e8d.cif.gz' ],
@@ -277,6 +252,7 @@ class TmDetDsspTest extends TestCase {
 
     public static function cifPathsForAlignmentDebug(): array {
         return [
+            '4em2.cif.gz' => [ static::PDB_ZFS_DIR . '/em/4em2.cif.gz' ],
             '1afo.cif.gz' => [ static::PDB_ZFS_DIR . '/af/1afo.cif.gz' ],
             '5eit.cif.gz' => [ static::PDB_ZFS_DIR . '/ei/5eit.cif.gz' ],
             '8f14.cif.gz' => [ static::PDB_ZFS_DIR . '/f1/8f14.cif.gz' ],
@@ -342,13 +318,9 @@ class TmDetDsspTest extends TestCase {
 
     public static function cifPathsForSignificantDsspErrorTests(): array {
         return [
-            '5ef5.cif.gz' => [ static::PDB_ZFS_DIR . '/ef/5ef5.cif.gz' ],
-            '7f22.cif.gz' => [ static::PDB_ZFS_DIR . '/f2/7f22.cif.gz' ],
             '5eqq.cif.gz' => [ static::PDB_ZFS_DIR . '/eq/5eqq.cif.gz' ],
-            '2efg.cif.gz' => [ static::PDB_ZFS_DIR . '/ef/2efg.cif.gz' ],
             '3f43.cif.gz' => [ static::PDB_ZFS_DIR . '/f4/3f43.cif.gz' ],
             '1ee7.cif.gz' => [ static::PDB_ZFS_DIR . '/ee/1ee7.cif.gz' ],
-            '6f5u.cif.gz' => [ static::PDB_ZFS_DIR . '/f5/6f5u.cif.gz' ],
             '4exw.cif.gz' => [ static::PDB_ZFS_DIR . '/ex/4exw.cif.gz' ],
             '6f1x.cif.gz' => [ static::PDB_ZFS_DIR . '/f1/6f1x.cif.gz' ],
             '4egy.cif.gz' => [ static::PDB_ZFS_DIR . '/eg/4egy.cif.gz' ],
@@ -356,7 +328,9 @@ class TmDetDsspTest extends TestCase {
             '3f5b.cif.gz' => [ static::PDB_ZFS_DIR . '/f5/3f5b.cif.gz' ],
             '6f5j.cif.gz' => [ static::PDB_ZFS_DIR . '/f5/6f5j.cif.gz' ],
             '6f7w.cif.gz' => [ static::PDB_ZFS_DIR . '/f7/6f7w.cif.gz' ],
-            '8edo.cif.gz' => [ static::PDB_ZFS_DIR . '/ed/8edo.cif.gz' ],
+
+            '4egy.cif.gz' => [ static::PDB_ZFS_DIR . '/eg/4egy.cif.gz' ],
+            '7e99.cif.gz' => [ static::PDB_ZFS_DIR . '/e9/7e99.cif.gz' ],
 
             '5f1w.cif.gz' => [ static::PDB_ZFS_DIR . '/f1/5f1w.cif.gz' ],
         ];

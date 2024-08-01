@@ -108,6 +108,9 @@ int main() {
         calcDssp(tmdetVO);
         // assert
         string expected = "-------------STGGGGG---HHHHHHHHHHHHHHTTSS-TT-B---HHHHHHHHT--HHHHHHHHHHHHHHTSEEEETTTEEEE-";
+               // recent pdbtm.dssp
+               // vs
+               // old pdbtm.dssp
                expected = "-------------S-TTSTT---HHHHHHHHHHHHHHTTSS-TT-B---HHHHHHHHT--HHHHHHHHHHHHHHTSEEEETTTEEEE-";
         //                '               TT TT   HHHHHHHHHHHHHHTT   TT     HHHHHHHHT  HHHHHHHHHHHHHHT     TTT     '
         // TODO: actual:   -------------S-TTSTT---HHHHHHHHHHHHHHTTSS-TT-B---HHHHHHHHT--HHHHHHHHHHHHHHTSEEEETTTEEEE-
