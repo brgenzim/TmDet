@@ -1,4 +1,5 @@
 #include <iostream>
+#include <sstream>
 #include <array>
 #include <math.h>
 #include <gemmi/model.hpp>
@@ -42,11 +43,15 @@ namespace Tmdet::Utils {
     }
 
     void Dssp::writeDsspOnChain(Tmdet::ValueObjects::Chain& chain) {
-        cout << chain.id << ": ";
+        cout << chain.id << ": " << getDsspOfChain(chain) << endl;
+    }
+
+    string Dssp::getDsspOfChain(Tmdet::ValueObjects::Chain& chain) {
+        stringstream result;
         for (Tmdet::ValueObjects::Residue& res : chain.residues) {
-            cout << res.ss.code;
+            result << res.ss.code;
         }
-        cout << endl;
+        return result.str();
     }
 
     void Dssp::createHydrogenBonds(Tmdet::ValueObjects::Chain& chain) {
@@ -109,7 +114,7 @@ namespace Tmdet::Utils {
 
     void Dssp::detectTurns(Tmdet::ValueObjects::Chain& chain, int d, string key) {
         for(auto& r: chain.residues) {
-            r.temp.insert({{key,any_cast<char>(' ')}});
+            r.temp.insert({key,any(' ')});
         }
         for(auto i=0; i<chain.length-d; i++) {
             if (checkHbond1(chain.residues[i],d) || checkHbond2(chain.residues[i],d)) {

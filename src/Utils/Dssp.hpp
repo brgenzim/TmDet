@@ -40,6 +40,7 @@ namespace Tmdet::Utils {
 
             void calcDsspOnStructure();
             void writeDsspOnStructure();
+            static string getDsspOfChain(Tmdet::ValueObjects::Chain& chain);
     };
 }
 #endif

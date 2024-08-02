@@ -12,6 +12,7 @@ use Unitmp\TmdetTest\Constants\FileSystem;
 class StructurePreFilter {
 
     const GEMMI_CMD = "gemmi residues -m '/1/*' '%s'";
+    const GEMMI_CHAINLIST_CMD = "gemmi residues --chains '%s'";
     public readonly array $commandParams;
     public array $outputLines = [];
     public string $pdbCode;
@@ -102,6 +103,36 @@ class StructurePreFilter {
         // $this->checkChains($chains);
 
         return $chains;
+    }
+
+    /**
+     * Old tmdet does not calculate secondary structure,
+     * if residue count less than 15.
+     */
+    public function checkChainLengthsForDsspCalc(): bool {
+        $lines = null;
+        $resultCode = null;
+
+        $command = sprintf(static::GEMMI_CHAINLIST_CMD, $this->cifFile);
+
+        exec($command, $lines, $resultCode);
+        if ($resultCode !== 0) {
+            fprintf(STDERR, "%s: failed: %s\n", $this->pdbCode, $command);
+            fprintf(STDERR, "%s: output:\n%s\n", $this->pdbCode, implode("\n", $lines));
+            throw new RuntimeException('Failed command: ' . $command);
+        }
+
+        $lines = preg_grep('/polymer \d+/', $lines);
+        $result = true;
+        foreach ($lines as $lines) {
+            if (preg_match('/polymer (\d+)/', $lines, $matches)) {
+                if (intval($matches[1]) < 15) {
+                    $result = false;
+                    break;
+                }
+            }
+        }
+        return $result;
     }
 
     protected function getChains(array $lines): array {

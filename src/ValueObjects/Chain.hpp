@@ -33,6 +33,21 @@ namespace Tmdet::ValueObjects {
                 }
             }
         }
+
+        // Copy constructor
+        Chain(const Chain& other) :
+            id(other.id),
+            entityId(other.entityId),
+            selected(other.selected),
+            numtm(other.numtm),
+            seq(other.seq),
+            regions(other.regions),
+            type(other.type),
+            gemmi(other.gemmi),
+            residues(other.residues),
+            idx(other.idx),
+            length(other.length) {}
+
         ~Chain() {}
     };
 }

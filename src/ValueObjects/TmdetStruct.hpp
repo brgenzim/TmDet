@@ -32,7 +32,26 @@ namespace Tmdet::ValueObjects {
         gemmi::Structure& gemmi;
         gemmi::cif::Document& document;
         gemmi::NeighborSearch neighbors;
-        TmdetStruct(gemmi::Structure& _gemmi, gemmi::cif::Document& _document) : gemmi(_gemmi), document(_document) {
+
+        TmdetStruct(const TmdetStruct& other)
+            : code(other.code),
+            inputPath(other.inputPath),
+            tmp(other.tmp),
+            date(other.date),
+            modifications(other.modifications),
+            qValue(other.qValue),
+            type(other.type),
+            spres(other.spres),
+            pdbkwres(other.pdbkwres),
+            bioMatrix(other.bioMatrix),
+            membranes(other.membranes),
+            chains(other.chains),
+            gemmi(other.gemmi),
+            document(other.document),
+            neighbors(other.neighbors) {}
+
+        TmdetStruct(gemmi::Structure& _gemmi, gemmi::cif::Document& _document) :
+            gemmi(_gemmi), document(_document), code(_gemmi.name) {
         }
         ~TmdetStruct() {}
     };
