@@ -114,6 +114,30 @@ int main() {
             cout << "        dssp string: " << actual << endl;
         }
     }
+
+    // Test case 4
+    {
+        // arrange
+        string pdbCode = "7e99";
+        string inputPath = getPath(pdbCode);
+
+        gemmi::cif::Document document = gemmi::cif::read(gemmi::MaybeGzipped(inputPath));
+        auto pdb = gemmi::make_structure(std::move(document));
+        auto tmdetVO = Tmdet::ValueObjects::TmdetStruct(pdb, document);
+        tmdetVO.inputPath = inputPath;
+        Tmdet::DTOS::TmdetStruct::parse(tmdetVO);
+
+        // action
+        calcDssp(tmdetVO);
+        // assert
+        string expected = "--S-HHHHHHHHHHHHHHS-TTS-HHHHHHHHHHHHTTTHHHH---GGGSGGGG------HHHHHHHHHHHHHHHHGGGG-HHHHHHHHHHHHHHSTT-TT--HHHHHHHHHHHHHHHHHHSTT--TTTHHHHHHHHHHHHTTT-";
+        auto actual = Tmdet::Utils::Dssp::getDsspOfChain(tmdetVO.chains[0]);
+        if (!assertTrue("Verifying 'D' chain of 7e99", expected == actual, __LINE__)) {
+            cout << "           expected: " << expected << endl;
+            cout << "        dssp string: " << actual << endl;
+        }
+    }
+
     return 0;
 }
 
@@ -169,14 +193,15 @@ void printTempsOfChain(Tmdet::ValueObjects::Chain& chain) {
     result << "t3: '" << getTempOfChain(chain, "t3") << "'" << endl;
     result << "t4: '" << getTempOfChain(chain, "t4") << "'" << endl;
     result << "t5: '" << getTempOfChain(chain, "t5") << "'" << endl;
-    result << "ss: '" << Tmdet::Utils::Dssp::getDsspOfChain(chain) << "'" << endl;
+    // result << "ss: '" << Tmdet::Utils::Dssp::getDsspOfChain(chain) << "'" << endl;
     cout << result.str();
 }
 
 string printHBondsOfChain(Tmdet::ValueObjects::Chain& chain) {
     stringstream result;
     for (Tmdet::ValueObjects::Residue& res : chain.residues) {
-        result << res.gemmi.name << "[" << res.hbond1.toResIdx << "] ";
+        result << res.gemmi.name << "." << res.resn()
+            << "[" << res.hbond1.toChainIdx << ":"  << res.hbond1.toResIdx << "] ";
     }
     result << endl;
     return result.str();
