@@ -107,20 +107,7 @@ int main() {
         // action
         calcDssp(tmdetVO);
         // assert
-        string expected = "-------------STGGGGG---HHHHHHHHHHHHHHTTSS-TT-B---HHHHHHHHT--HHHHHHHHHHHHHHTSEEEETTTEEEE-";
-               // recent pdbtm.dssp
-               // vs
-               // old pdbtm.dssp
-               expected = "-------------S-TTSTT---HHHHHHHHHHHHHHTTSS-TT-B---HHHHHHHHT--HHHHHHHHHHHHHHTSEEEETTTEEEE-";
-        //                '               TT TT   HHHHHHHHHHHHHHTT   TT     HHHHHHHHT  HHHHHHHHHHHHHHT     TTT     '
-        // TODO: actual:   -------------S-TTSTT---HHHHHHHHHHHHHHTTSS-TT-B---HHHHHHHHT--HHHHHHHHHHHHHHTSEEEETTTEEEE-
-        //                                ^- 15
-        // expected t3:   '              >**x**< >**<         >**<  >**<                          >**<    >**<     '
-        //   actual t3:   '              >**x**< >**<         >**<  >**<                          >**<    >**<     '
-        // expected t4:   '                      >>>>xxxxxxxx<<<<          >>>>xx<<<< >>>>xxxxxxxx<<<<    >***<    '
-        //   actual t4:   '                      >>>>xxxxxxxx<<<<          >>>>xx<<<< >>>>xxxxxxxx<<<<    >***<    '
-        // expected t5:   '                                  >****<             >****<           >****<            '
-        //   actual t5:   '                                  >****<             >****<           >****<            '
+        string expected = "-------------S-TTSTT---HHHHHHHHHHHHHHTTSS-TT-B---HHHHHHHHT--HHHHHHHHHHHHHHTSEEEETTTEEEE-";
         auto actual = Tmdet::Utils::Dssp::getDsspOfChain(tmdetVO.chains[0]);
         if (!assertTrue("Verifying 'A' chain of 4egy", expected == actual, __LINE__)) {
             cout << "           expected: " << expected << endl;
@@ -171,7 +158,8 @@ vector<string> getResidueNames(gemmi::Chain& chain) {
 string getTempOfChain(Tmdet::ValueObjects::Chain& chain, string key) {
     stringstream result;
     for (Tmdet::ValueObjects::Residue& res : chain.residues) {
-        result << any_cast<char>(res.temp[key]);
+        auto& temp = res.temp[key];
+        result << ((temp.has_value()) ? any_cast<char>(temp) : ' ');
     }
     return result.str();
 }
@@ -183,4 +171,13 @@ void printTempsOfChain(Tmdet::ValueObjects::Chain& chain) {
     result << "t5: '" << getTempOfChain(chain, "t5") << "'" << endl;
     result << "ss: '" << Tmdet::Utils::Dssp::getDsspOfChain(chain) << "'" << endl;
     cout << result.str();
+}
+
+string printHBondsOfChain(Tmdet::ValueObjects::Chain& chain) {
+    stringstream result;
+    for (Tmdet::ValueObjects::Residue& res : chain.residues) {
+        result << res.gemmi.name << "[" << res.hbond1.toResIdx << "] ";
+    }
+    result << endl;
+    return result.str();
 }
