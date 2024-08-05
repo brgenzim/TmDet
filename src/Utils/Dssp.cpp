@@ -87,6 +87,11 @@ namespace Tmdet::Utils {
                         double dno = N->pos.dist(O->pos);
                         double dnc = N->pos.dist(C->pos);
                         double energy;
+#ifdef __DSSP_DEBUG
+if (chain.id == "D" && chain.residues[r1].resn() == 32 && chain.residues[r2].resn() == 28) { // 7e99
+	fprintf(stderr, "r1: %d r2: %d; dho: %.2f, dhc: %.2f, dno: %.2f, dnc: %.2f\n", r1, r2, dho, dhc, dno, dnc);
+}
+#endif
                         if (dho<DSSP_PDB_DL||dhc<DSSP_PDB_DL||dno<DSSP_PDB_DL||dnc<DSSP_PDB_DL) {
                             setHydrogenBond(chain.residues[r2],chain.residues[r1],DSSP_HBLOW);
                         }
@@ -100,11 +105,16 @@ namespace Tmdet::Utils {
     }
 
     void Dssp::setHydrogenBond(Tmdet::ValueObjects::Residue& donor, Tmdet::ValueObjects::Residue& akceptor, double energy) {
+#ifdef __DSSP_DEBUG
+        if (akceptor.chainIdx == 3 && donor.resn() == 28 && akceptor.resn() == 32) { // 7e99 - D
+            fprintf(stderr, "donor: %d ackceptor: %d\n", donor.resn(), akceptor.resn());
+        }
+#endif
+
         if (energy<donor.hbond1.energy) {
             donor.hbond2.energy = donor.hbond1.energy;
             donor.hbond2.toChainIdx = donor.hbond1.toChainIdx;
             donor.hbond2.toResIdx = donor.hbond1.toResIdx;
-            // source of resIdx?
             donor.hbond1 = {energy, akceptor.chainIdx, akceptor.resn()};
         }
         else if (energy<donor.hbond2.energy) {

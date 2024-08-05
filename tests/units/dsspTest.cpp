@@ -130,8 +130,8 @@ int main() {
         // action
         calcDssp(tmdetVO);
         // assert
-        string expected = "--S-HHHHHHHHHHHHHHS-TTS-HHHHHHHHHHHHTTTHHHH---GGGSGGGG------HHHHHHHHHHHHHHHHGGGG-HHHHHHHHHHHHHHSTT-TT--HHHHHHHHHHHHHHHHHHSTT--TTTHHHHHHHHHHHHTTT-";
-        auto actual = Tmdet::Utils::Dssp::getDsspOfChain(tmdetVO.chains[0]);
+        string expected = "--S-HHHHHHHHHHHHHHS-TTS-HHHHHHHHHHHHHHHHHHH---GGGSGGGG-TT-HHHHHHHHHHHHHHHHHHGGGG-HHHHHHHHHHHHHHHHTSTT--HHHHHHHHHHHHHHHHHHSTT--HHHHHHHHHHHHHHHTTT-";
+        auto actual = Tmdet::Utils::Dssp::getDsspOfChain(tmdetVO.chains[3]);
         if (!assertTrue("Verifying 'D' chain of 7e99", expected == actual, __LINE__)) {
             cout << "           expected: " << expected << endl;
             cout << "        dssp string: " << actual << endl;
@@ -201,7 +201,7 @@ string printHBondsOfChain(Tmdet::ValueObjects::Chain& chain) {
     stringstream result;
     for (Tmdet::ValueObjects::Residue& res : chain.residues) {
         result << res.gemmi.name << "." << res.resn()
-            << "[" << res.hbond1.toChainIdx << ":"  << res.hbond1.toResIdx << "] ";
+            << "[" << res.hbond1.toResIdx << ":"  << res.hbond2.toResIdx << "] ";
     }
     result << endl;
     return result.str();

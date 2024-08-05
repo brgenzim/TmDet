@@ -9,6 +9,8 @@
 
 using namespace std;
 
+// #define __DSSP_DEBUG 1
+
 namespace Tmdet::Utils {
 
     class Dssp {
