@@ -166,6 +166,35 @@ int main() {
         assertTrue("Verifying 'A' chain of 3ee0", expected == actual, __LINE__);
     }
 
+    // Test 8
+    {
+        auto tmdetVO = createTmdetStruct("3f5b"); // A chain
+        vector<string> expected = {
+            "SER", "ASN", "ALA", "MSE", "MSE", "ILE", "LYS", "ALA", "SER", "THR",
+            "ASN", "GLU", "PHE", "ARG", "PHE", "CYS", "PHE", "LYS", "GLN", "MSE",
+            "ASN", "LYS", "SER", "GLN", "HIS", "GLU", "LEU", "VAL", "LEU", "GLY",
+            "TRP", "ILE", "HIS", "GLN", "PRO", "HIS", "ILE", "ASN", "GLU", "TRP",
+            "LEU", "HIS", "GLY", "ASP", "GLY", "LEU", "SER", "ASN", "THR", "ILE",
+            "LYS", "ASP", "LEU", "HIS", "GLU", "PHE", "LEU", "ASN", "ASP", "GLY",
+            "LYS", "PRO", "TRP", "ALA", "THR", "HIS", "TRP", "ILE", "ALA", "TYR",
+            "ASP", "ASN", "GLU", "ILE", "PRO", "PHE", "ALA", "TYR", "LEU", "ILE",
+            "THR", "SER", "GLU", "ILE", "GLU", "LYS", "SER", "GLU", "GLU", "TYR",
+            "PRO", "ASP", "GLY", "ALA", "VAL", "THR", "LEU", "ASP", "LEU", "PHE",
+            "ILE", "CYS", "ARG", "LEU", "ASP", "TYR", "ILE", "GLY", "LYS", "GLY",
+            "LEU", "SER", "VAL", "GLN", "MSE", "ILE", "HIS", "GLU", "PHE", "ILE",
+            "LEU", "SER", "GLN", "PHE", "SER", "ASP", "THR", "LYS", "ILE", "VAL",
+            "LEU", "ILE", "ASN", "PRO", "GLU", "ILE", "SER", "ASN", "GLU", "ARG",
+            "ALA", "VAL", "HIS", "VAL", "TYR", "LYS", "LYS", "ALA", "GLY", "PHE",
+            "GLU", "ILE", "ILE", "GLY", "GLU", "PHE", "ILE", "ALA", "SER", "TRP",
+            "HIS", "PRO", "VAL", "PRO", "HIS", "TYR", "LYS", "MSE", "LYS", "LEU",
+            "CYS", "ILE", "GLU", "ASP", "LEU", "LYS", "LYS", "GLN", "ARG", "LEU",
+            "SER", "ALA",
+        };
+        auto& chain = tmdetVO.chains[0].gemmi;
+        auto actual = getResidueNames(chain);
+        assertTrue("Verifying 'A' chain of 3f5b", expected == actual, __LINE__);
+    }
+
     return 0;
 }
 

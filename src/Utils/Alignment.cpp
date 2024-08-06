@@ -47,8 +47,8 @@ namespace Tmdet::Utils::Alignment {
     void alignSequences(gemmi::Chain &chain, vector<string> sequence) {
 
 #ifdef __ALIGNMENT_DBG
-        cout << "WARNING: only chain G will be aligned in DEBUG mode" << endl;
-        if (chain.name != "G") {
+        cout << "WARNING: only chain 3f5b-A will be aligned in DEBUG mode" << endl;
+        if (chain.name != "A" && currentCode != "3f5b") {
             return;
         }
 #endif
