@@ -87,11 +87,6 @@ namespace Tmdet::Utils {
                         double dno = N->pos.dist(O->pos);
                         double dnc = N->pos.dist(C->pos);
                         double energy;
-#ifdef __DSSP_DEBUG
-if (chain.id == "D" && chain.residues[r1].resn() == 32 && chain.residues[r2].resn() == 28) { // 7e99
-	fprintf(stderr, "r1: %d r2: %d; dho: %.2f, dhc: %.2f, dno: %.2f, dnc: %.2f\n", r1, r2, dho, dhc, dno, dnc);
-}
-#endif
                         if (dho<DSSP_PDB_DL||dhc<DSSP_PDB_DL||dno<DSSP_PDB_DL||dnc<DSSP_PDB_DL) {
                             setHydrogenBond(chain.residues[r2],chain.residues[r1],DSSP_HBLOW);
                         }
@@ -105,20 +100,15 @@ if (chain.id == "D" && chain.residues[r1].resn() == 32 && chain.residues[r2].res
     }
 
     void Dssp::setHydrogenBond(Tmdet::ValueObjects::Residue& donor, Tmdet::ValueObjects::Residue& akceptor, double energy) {
-#ifdef __DSSP_DEBUG
-        if (akceptor.chainIdx == 3 && donor.resn() == 28 && akceptor.resn() == 32) { // 7e99 - D
-            fprintf(stderr, "donor: %d ackceptor: %d\n", donor.resn(), akceptor.resn());
-        }
-#endif
 
         if (energy<donor.hbond1.energy) {
             donor.hbond2.energy = donor.hbond1.energy;
             donor.hbond2.toChainIdx = donor.hbond1.toChainIdx;
             donor.hbond2.toResIdx = donor.hbond1.toResIdx;
-            donor.hbond1 = {energy, akceptor.chainIdx, akceptor.resn()};
+            donor.hbond1 = {energy, akceptor.chainIdx, akceptor.idx};
         }
         else if (energy<donor.hbond2.energy) {
-            donor.hbond2 = {energy, akceptor.chainIdx, akceptor.resn()};
+            donor.hbond2 = {energy, akceptor.chainIdx, akceptor.idx};
         }
     }
 
@@ -153,12 +143,12 @@ if (chain.id == "D" && chain.residues[r1].resn() == 32 && chain.residues[r2].res
 
     bool Dssp::checkHbond1(Tmdet::ValueObjects::Residue& res, int d) {
         return (res.chainIdx == res.hbond1.toChainIdx && 
-            res.hbond1.toResIdx - d == res.resn());
+            res.hbond1.toResIdx - d == res.idx);
     }
 
     bool Dssp::checkHbond2(Tmdet::ValueObjects::Residue& res, int d) {
         return (res.chainIdx == res.hbond2.toChainIdx && 
-            res.hbond2.toResIdx - d == res.resn());
+            res.hbond2.toResIdx - d == res.idx);
     }
 
     void Dssp::initPbs(Tmdet::ValueObjects::Chain& chain) {
@@ -171,10 +161,10 @@ if (chain.id == "D" && chain.residues[r1].resn() == 32 && chain.residues[r2].res
             for(int j=1; j<n-1; j++) {
                 if (abs(i-j) > 2) {
                     if (checkPb(chain,i,j)) {
-                        chain.residues[i].temp["pb"] = chain.residues[j].resn();
+                        chain.residues[i].temp["pb"] = chain.residues[j].idx;
                     }
                     if (checkApb(chain,i,j)) {
-                        chain.residues[i].temp["apb"] = chain.residues[j].resn();
+                        chain.residues[i].temp["apb"] = chain.residues[j].idx;
                     }
                 }
             }
@@ -182,25 +172,25 @@ if (chain.id == "D" && chain.residues[r1].resn() == 32 && chain.residues[r2].res
     }
 
     bool Dssp::checkPb(Tmdet::ValueObjects::Chain& chain, int i, int j) {
-        return (((chain.residues[i-1].hbond1.toResIdx == chain.residues[j].resn() ||
-                chain.residues[i-1].hbond2.toResIdx == chain.residues[j].resn()) &&
-                (chain.residues[j].hbond1.toResIdx == chain.residues[i+1].resn() ||
-                chain.residues[j].hbond2.toResIdx == chain.residues[i+1].resn())) ||
-                ((chain.residues[j-1].hbond1.toResIdx == chain.residues[i].resn() || 
-                chain.residues[j-1].hbond2.toResIdx == chain.residues[i].resn()) &&
-                (chain.residues[i].hbond1.toResIdx == chain.residues[j+1].resn() ||
-                chain.residues[i].hbond2.toResIdx == chain.residues[j+1].resn())));
+        return (((chain.residues[i-1].hbond1.toResIdx == chain.residues[j].idx ||
+                chain.residues[i-1].hbond2.toResIdx == chain.residues[j].idx) &&
+                (chain.residues[j].hbond1.toResIdx == chain.residues[i+1].idx ||
+                chain.residues[j].hbond2.toResIdx == chain.residues[i+1].idx)) ||
+                ((chain.residues[j-1].hbond1.toResIdx == chain.residues[i].idx || 
+                chain.residues[j-1].hbond2.toResIdx == chain.residues[i].idx) &&
+                (chain.residues[i].hbond1.toResIdx == chain.residues[j+1].idx ||
+                chain.residues[i].hbond2.toResIdx == chain.residues[j+1].idx)));
     }
 
     bool Dssp::checkApb(Tmdet::ValueObjects::Chain& chain, int i, int j) {
-        return  (((chain.residues[i].hbond1.toResIdx == chain.residues[j].resn() ||
-                    chain.residues[i].hbond2.toResIdx == chain.residues[j].resn()) &&
-                    (chain.residues[j].hbond1.toResIdx == chain.residues[i].resn() ||
-                    chain.residues[j].hbond2.toResIdx == chain.residues[i].resn())) ||
-                    ((chain.residues[i-1].hbond1.toResIdx == chain.residues[j+1].resn() ||
-                    chain.residues[i-1].hbond2.toResIdx == chain.residues[j+1].resn()) &&
-                    (chain.residues[j-1].hbond1.toResIdx == chain.residues[i+1].resn() ||
-                    chain.residues[j-1].hbond2.toResIdx == chain.residues[i+1].resn())));
+        return  (((chain.residues[i].hbond1.toResIdx == chain.residues[j].idx ||
+                    chain.residues[i].hbond2.toResIdx == chain.residues[j].idx) &&
+                    (chain.residues[j].hbond1.toResIdx == chain.residues[i].idx ||
+                    chain.residues[j].hbond2.toResIdx == chain.residues[i].idx)) ||
+                    ((chain.residues[i-1].hbond1.toResIdx == chain.residues[j+1].idx ||
+                    chain.residues[i-1].hbond2.toResIdx == chain.residues[j+1].idx) &&
+                    (chain.residues[j-1].hbond1.toResIdx == chain.residues[i+1].idx ||
+                    chain.residues[j-1].hbond2.toResIdx == chain.residues[i+1].idx)));
     }
 
     void Dssp::detectSecStructH(Tmdet::ValueObjects::Chain& chain,string key) {

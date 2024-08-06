@@ -138,6 +138,29 @@ int main() {
         }
     }
 
+    // Test case 5
+    {
+        // arrange
+        string pdbCode = "3ee0";
+        string inputPath = getPath(pdbCode);
+
+        gemmi::cif::Document document = gemmi::cif::read(gemmi::MaybeGzipped(inputPath));
+        auto pdb = gemmi::make_structure(std::move(document));
+        auto tmdetVO = Tmdet::ValueObjects::TmdetStruct(pdb, document);
+        tmdetVO.inputPath = inputPath;
+        Tmdet::DTOS::TmdetStruct::parse(tmdetVO);
+
+        // action
+        calcDssp(tmdetVO);
+        // assert
+        string expected = "-------STT--TTTGGGT---TTHHHHHHHHH---";
+        auto actual = Tmdet::Utils::Dssp::getDsspOfChain(tmdetVO.chains[0]);
+        if (!assertTrue("Verifying 'A' chain of 3ee0", expected == actual, __LINE__)) {
+            cout << "           expected: " << expected << endl;
+            cout << "        dssp string: " << actual << endl;
+        }
+    }
+
     return 0;
 }
 
@@ -200,7 +223,7 @@ void printTempsOfChain(Tmdet::ValueObjects::Chain& chain) {
 string printHBondsOfChain(Tmdet::ValueObjects::Chain& chain) {
     stringstream result;
     for (Tmdet::ValueObjects::Residue& res : chain.residues) {
-        result << res.gemmi.name << "." << res.resn()
+        result << res.gemmi.name << "." << res.idx
             << "[" << res.hbond1.toResIdx << ":"  << res.hbond2.toResIdx << "] ";
     }
     result << endl;

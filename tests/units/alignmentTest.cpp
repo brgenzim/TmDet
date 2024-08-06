@@ -152,6 +152,20 @@ int main() {
         assertTrue("Verifying 'A' chain of 4em2", expected == actual, __LINE__);
     }
 
+    // Test 7
+    {
+        auto tmdetVO = createTmdetStruct("3ee0"); // A chain
+        vector<string> expected = {
+            "THR", "PHE", "GLY", "SER", "GLY", "GLU", "ALA", "ASP", "CYS", "GLY",
+            "LEU", "ARG", "PRO", "LEU", "PHE", "GLU", "LYS", "LYS", "SER", "LEU",
+            "GLU", "ASP", "LYS", "THR", "GLU", "ARG", "GLU", "LEU", "LEU", "GLU",
+            "SER", "TYR", "ILE", "ASP", "GLY", "ARG",
+        };
+        auto& chain = tmdetVO.chains[0].gemmi;
+        auto actual = getResidueNames(chain);
+        assertTrue("Verifying 'A' chain of 3ee0", expected == actual, __LINE__);
+    }
+
     return 0;
 }
 

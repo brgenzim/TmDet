@@ -21,6 +21,8 @@ namespace Tmdet::ValueObjects {
         Tmdet::Types::SecStruct ss = Tmdet::Types::SecStructs.at('-');
         HBond hbond1;
         HBond hbond2;
+        // Represents order of residues after alignment.
+        // Use this to measure residues distance in the sequence.
         int idx;
         int chainIdx;
         unordered_map<string,any> temp;
