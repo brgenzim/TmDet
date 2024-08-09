@@ -57,7 +57,7 @@
   ENDIF()
 
 # json support
-#find_package(nlohmann_json 3.2.0 REQUIRED)
+find_package(nlohmann_json 3.2.0 REQUIRED)
 
 # gemmi support
 find_package(gemmi 0.6.4 CONFIG REQUIRED)
