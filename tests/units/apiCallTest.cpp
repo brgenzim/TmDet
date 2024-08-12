@@ -4,6 +4,8 @@
 #include <filesystem>
 
 #include <Services/CurlWrapperService.hpp>
+#include <Services/UniTmpService.hpp>
+#include <Types/Region.hpp>
 
 void assertTrue(std::string testDescription, bool condition, int lineNumber);
 
@@ -43,6 +45,26 @@ int main() {
         testDescription = "response returns HTTP error status";
         auto isFailed = (status == Tmdet::Services::CurlWrapperService::Status::Error);
         assertTrue(testDescription, isFailed, __LINE__);
+    }
+
+    // Test case 4
+    {
+        // Call through api client
+        std::string code = "CCG2_MOUSE";
+        testDescription = "8th region's type is membrane";
+        auto result = Tmdet::Services::UniTmpService::getCctopPredictionResult(code, status);
+        auto isSuccess = result[7].type == Tmdet::Types::RegionType::MEMB;
+        assertTrue(testDescription, isSuccess, __LINE__);
+    }
+
+    // Test case 5
+    {
+        // Call through api client
+        std::string code = "KCSA_STRCO";
+        testDescription = "4th region's type is re-entrant loop";
+        auto result = Tmdet::Services::UniTmpService::getCctopPredictionResult(code, status);
+        auto isSuccess = result[3].type == Tmdet::Types::RegionType::LOOP;
+        assertTrue(testDescription, isSuccess, __LINE__);
     }
 
     return 0;
