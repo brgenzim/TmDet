@@ -43,11 +43,7 @@ int main() {
         string pdbCode = "7ec3";
         string inputPath = getPath(pdbCode);
 
-        gemmi::cif::Document document = gemmi::cif::read(gemmi::MaybeGzipped(inputPath));
-        auto pdb = gemmi::make_structure(std::move(document));
-        auto tmdetVO = Tmdet::ValueObjects::TmdetStruct(pdb, document);
-        tmdetVO.inputPath = inputPath;
-        Tmdet::DTOS::TmdetStruct::parse(tmdetVO);
+        Tmdet::ValueObjects::TmdetStruct tmdetVO = Tmdet::ValueObjects::get(inputPath);
 
         // action
         calcDssp(tmdetVO);
@@ -66,11 +62,7 @@ int main() {
         string pdbCode = "6e8r";
         string inputPath = getPath(pdbCode);
 
-        gemmi::cif::Document document = gemmi::cif::read(gemmi::MaybeGzipped(inputPath));
-        auto pdb = gemmi::make_structure(std::move(document));
-        auto tmdetVO = Tmdet::ValueObjects::TmdetStruct(pdb, document);
-        tmdetVO.inputPath = inputPath;
-        Tmdet::DTOS::TmdetStruct::parse(tmdetVO);
+        Tmdet::ValueObjects::TmdetStruct tmdetVO = Tmdet::ValueObjects::get(inputPath);
 
         // action
         calcDssp(tmdetVO);
@@ -98,11 +90,7 @@ int main() {
         string pdbCode = "4egy";
         string inputPath = getPath(pdbCode);
 
-        gemmi::cif::Document document = gemmi::cif::read(gemmi::MaybeGzipped(inputPath));
-        auto pdb = gemmi::make_structure(std::move(document));
-        auto tmdetVO = Tmdet::ValueObjects::TmdetStruct(pdb, document);
-        tmdetVO.inputPath = inputPath;
-        Tmdet::DTOS::TmdetStruct::parse(tmdetVO);
+        Tmdet::ValueObjects::TmdetStruct tmdetVO = Tmdet::ValueObjects::get(inputPath);
 
         // action
         calcDssp(tmdetVO);
@@ -121,11 +109,7 @@ int main() {
         string pdbCode = "7e99";
         string inputPath = getPath(pdbCode);
 
-        gemmi::cif::Document document = gemmi::cif::read(gemmi::MaybeGzipped(inputPath));
-        auto pdb = gemmi::make_structure(std::move(document));
-        auto tmdetVO = Tmdet::ValueObjects::TmdetStruct(pdb, document);
-        tmdetVO.inputPath = inputPath;
-        Tmdet::DTOS::TmdetStruct::parse(tmdetVO);
+        Tmdet::ValueObjects::TmdetStruct tmdetVO = Tmdet::ValueObjects::get(inputPath);
 
         // action
         calcDssp(tmdetVO);
@@ -144,11 +128,7 @@ int main() {
         string pdbCode = "3ee0";
         string inputPath = getPath(pdbCode);
 
-        gemmi::cif::Document document = gemmi::cif::read(gemmi::MaybeGzipped(inputPath));
-        auto pdb = gemmi::make_structure(std::move(document));
-        auto tmdetVO = Tmdet::ValueObjects::TmdetStruct(pdb, document);
-        tmdetVO.inputPath = inputPath;
-        Tmdet::DTOS::TmdetStruct::parse(tmdetVO);
+        Tmdet::ValueObjects::TmdetStruct tmdetVO = Tmdet::ValueObjects::get(inputPath);
 
         // action
         calcDssp(tmdetVO);

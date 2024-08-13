@@ -222,11 +222,7 @@ Tmdet::ValueObjects::TmdetStruct createTmdetStruct(std::string pdbCode) {
     auto inputPath(basePath);
     inputPath += (string("/") + pdbCode[1] + pdbCode[2]) + "/" + pdbCode + "_updated.cif.gz";
 
-    gemmi::cif::Document document = gemmi::cif::read(gemmi::MaybeGzipped(inputPath));
-    pdb = gemmi::make_structure(std::move(document));
-    auto tmdetVO = Tmdet::ValueObjects::TmdetStruct(pdb, document);
-    tmdetVO.inputPath = inputPath;
-    Tmdet::DTOS::TmdetStruct::parse(tmdetVO);
+    Tmdet::ValueObjects::TmdetStruct tmdetVO = Tmdet::ValueObjects::get(inputPath);
 
     return tmdetVO;
 }

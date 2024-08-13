@@ -6,8 +6,6 @@
 #include <gemmi/model.hpp>
 #include <ValueObjects/TmdetStruct.hpp>
 
-using namespace std;
-
 namespace Tmdet::DTOS {
 
     struct TmdetStruct {

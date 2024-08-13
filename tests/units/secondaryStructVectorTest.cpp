@@ -126,11 +126,7 @@ void setup(Tmdet::Utils::SecStrVec &secStructVectors) {
     auto inputPath(basePath);
     inputPath += "/af/1afo_updated.cif.gz";
 
-    gemmi::cif::Document document = gemmi::cif::read(gemmi::MaybeGzipped(inputPath));
-    pdb = gemmi::make_structure(std::move(document));
-    Tmdet::ValueObjects::TmdetStruct tmdetVO = Tmdet::ValueObjects::TmdetStruct(pdb, document);
-    tmdetVO.inputPath = inputPath;
-    Tmdet::DTOS::TmdetStruct::parse(tmdetVO);
+    Tmdet::ValueObjects::TmdetStruct tmdetVO = Tmdet::ValueObjects::get(inputPath);
 
     Tmdet::Utils::Dssp dssp = Tmdet::Utils::Dssp(tmdetVO);
     dssp.calcDsspOnStructure();

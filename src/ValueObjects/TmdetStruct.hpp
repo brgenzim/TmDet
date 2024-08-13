@@ -3,58 +3,45 @@
 
 #include <string>
 #include <vector>
+#include <gemmi/cifdoc.hpp>
+#include <gemmi/gz.hpp>
+#include <gemmi/cif.hpp>
+#include <gemmi/mmcif.hpp>
+#include <gemmi/model.hpp>
+#include <gemmi/neighbor.hpp>
 #include <ValueObjects/Modification.hpp>
 #include <ValueObjects/BioMatrix.hpp>
 #include <ValueObjects/Membrane.hpp>
 #include <ValueObjects/Chain.hpp>
 #include <Types/Protein.hpp>
-#include <gemmi/cifdoc.hpp>
-#include <gemmi/model.hpp>
-#include <gemmi/neighbor.hpp>
-
-using namespace std;
 
 namespace Tmdet::ValueObjects {
 
     struct TmdetStruct {
-        string code;
-        string inputPath;
+        std::string code;
         bool tmp;
-        string date;
-        vector<Modification> modifications;
+        std::string date;
+        std::vector<Modification> modifications;
         double qValue;
         Tmdet::Types::Protein type;
-        string spres;
-        string pdbkwres;
+        std::string spres;
+        std::string pdbkwres;
         BioMatrix bioMatrix;
-        vector<Membrane> membranes;
-        vector<Chain> chains;
+        std::vector<Membrane> membranes;
+        std::vector<Chain> chains;
         gemmi::Structure& gemmi;
         gemmi::cif::Document& document;
         gemmi::NeighborSearch neighbors;
 
-        TmdetStruct(const TmdetStruct& other)
-            : code(other.code),
-            inputPath(other.inputPath),
-            tmp(other.tmp),
-            date(other.date),
-            modifications(other.modifications),
-            qValue(other.qValue),
-            type(other.type),
-            spres(other.spres),
-            pdbkwres(other.pdbkwres),
-            bioMatrix(other.bioMatrix),
-            membranes(other.membranes),
-            chains(other.chains),
-            gemmi(other.gemmi),
-            document(other.document),
-            neighbors(other.neighbors) {}
-
         TmdetStruct(gemmi::Structure& _gemmi, gemmi::cif::Document& _document) :
-            gemmi(_gemmi), document(_document), code(_gemmi.name) {
+            gemmi(_gemmi), document(_document) {
+                code = gemmi.name;
         }
-        ~TmdetStruct() {}
+        ~TmdetStruct()=default;
     };
+
+    TmdetStruct get(const std::string &inputPath);
+
 }
 
 #endif
