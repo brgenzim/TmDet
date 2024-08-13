@@ -11,6 +11,7 @@ using Tmdet::ValueObjects::Region;
 
 namespace Tmdet::Services::UniTmpService {
 
+    // TODO: get values from configuration service
     // const std::string UNITMP_SCHEMA = "https://";
     // const std::string UNITMP_DOMAIN = "unitmp.org";
     const std::string UNITMP_SCHEMA = "http://";
@@ -23,7 +24,9 @@ namespace Tmdet::Services::UniTmpService {
         url += "cctop." + UNITMP_DOMAIN + "/api/v1/prediction/Cctop/" + code + ".json";
 
         std::string response = CurlWrapperService::apiCall(url, resultCode);
-        // TODO: check result code
+        if (resultCode == Tmdet::Services::CurlWrapperService::Status::Error) {
+            throw runtime_error("HTTP request to '" + url + "' failed");
+        }
 
         auto json = nlohmann::json::parse(response);
 
