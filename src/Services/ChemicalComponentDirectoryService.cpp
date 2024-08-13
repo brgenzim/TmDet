@@ -10,6 +10,7 @@
 
 #include <Services/ConfigurationService.hpp>
 #include <Services/ChemicalComponentDirectoryService.hpp>
+#include <Services/CurlWrapperService.hpp>
 #include <Types/Atom.hpp>
 #include <Types/Residue.hpp>
 
@@ -32,18 +33,22 @@ namespace Tmdet::Services::ChemicalComponentDirectoryService {
     }
 
     void download() {
-        std::string cmd("bash ");
-        cmd += ConfigurationService::ChemicalComponentDownloadScript
-            + " " + ConfigurationService::ChemicalComponentDirectory;
-        int exitCode = std::system(cmd.c_str());
-        if (exitCode != 0) {
-            std::string message(ConfigurationService::AppName);
-            message += ": command failed: '" + cmd + "'";
+        auto url = ConfigurationService::ChemicalComponentDirectoryUrl;
+        auto destination = ConfigurationService::ChemicalComponentFile;
+        std::cout << "Downloading " << url << "..." << std::endl;
+        auto status = CurlWrapperService::download(url, destination);
+        if (status != CurlWrapperService::Status::Ok) {
+            std::string message("Downloading '");
+            message += url + "' to '" + destination
+                + "' failed. Please validate the url and the destination directory.";
             throw std::runtime_error(message);
         }
+        std::cout << "Download completed." << std::endl;
     }
 
     void split() {
+        std::cout << "Splitting " << ConfigurationService::ChemicalComponentFile << "..." << std::endl;
+
         std::string cmd(ConfigurationService::FragmentCifExec);
         cmd += " -i " + ConfigurationService::ChemicalComponentFile
             + " -d " + ConfigurationService::ChemicalComponentDirectory
@@ -54,6 +59,8 @@ namespace Tmdet::Services::ChemicalComponentDirectoryService {
             message += ": command failed: '" + cmd + "'";
             throw std::runtime_error(message);
         }
+
+        std::cout << "Splitting done." << std::endl;
     }
 
     Tmdet::Types::Residue getComponentAsResidue(const string& threeLetterCode) {

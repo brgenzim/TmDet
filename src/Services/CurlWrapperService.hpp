@@ -11,6 +11,7 @@ namespace Tmdet::Services::CurlWrapperService {
     };
 
     std::string apiCall(std::string url, Status& resultCode);
+    Status download(std::string url, std::string destination);
 }
 
 #endif

@@ -10,8 +10,8 @@ namespace Tmdet::Services::ConfigurationService {
     extern std::string TmdetDirectory;
     extern std::string ChemicalComponentDirectory;
     extern std::string ChemicalComponentFile;
-    // TODO: This should be replaced by a CurlWrapperService function
-    extern std::string ChemicalComponentDownloadScript;
+    extern std::string ChemicalComponentDirectoryUrl;
+
     extern std::string FragmentCifExec;
     extern std::string PdbDataDirectory;
 

@@ -15,6 +15,7 @@ namespace Tmdet::Services::ConfigurationService {
     std::string ChemicalComponentDirectory{TmdetDirectory + "/data/ccd"};
     std::string ChemicalComponentFile{ChemicalComponentDirectory + "/components.cif.gz"};
     std::string ChemicalComponentDownloadScript{TmdetDirectory + "/scripts/get-chemical-component-directory.sh"};
+    std::string ChemicalComponentDirectoryUrl{"https://files.wwpdb.org/pub/pdb/data/monomers/components.cif.gz"};
     std::string FragmentCifExec{TmdetDirectory + "/fragment_cif"};
     std::string PdbDataDirectory{"/zfs/databases/UniTmp/PDB/data/structures/divided/updated_mmcif/"};
 
@@ -23,10 +24,11 @@ namespace Tmdet::Services::ConfigurationService {
 
 
     namespace impl::Keys {
-        const std::string FRAGMENT_CIF_EXEC = "TMDET_FRAGMENT_CIF_EXEC";
         const std::string TMDET_DIRECTORY = "TMDET_DIRECTORY";
+        const std::string FRAGMENT_CIF_EXEC = "TMDET_FRAGMENT_CIF_EXEC";
         const std::string CHEMICAL_COMPONENT_DIRECTORY = "TMDET_CHEMICAL_COMPONENT_DIRECTORY";
         const std::string CHEMICAL_COMPONENT_DOWNLOAD_SCRIPT = "TMDET_CHEMICAL_COMPONENT_DOWNLOAD_SCRIPT";
+        // used in test integration tests
         const std::string PDB_DATA_DIRECTORY = "TMDET_PDB_DATA_DIRECTORY";
     }
 
