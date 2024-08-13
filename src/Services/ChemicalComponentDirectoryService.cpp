@@ -26,16 +26,15 @@ namespace Tmdet::Services::ChemicalComponentDirectoryService {
     }
 
     bool isBuilt() {
-        std::string lastFile(ConfigurationService::getValue(ConfigurationService::Keys::CHEMICAL_COMPONENT_DIRECTORY)
-            + "/Z/Z/ZZZ.cif");
+        std::string lastFile(ConfigurationService::ChemicalComponentDirectory + "/Z/Z/ZZZ.cif");
 
         return fs::exists(fs::path(lastFile));
     }
 
     void download() {
         std::string cmd("bash ");
-        cmd += ConfigurationService::getValue(ConfigurationService::Keys::CHEMICAL_COMPONENT_DOWNLOAD_SCRIPT)
-            + " " + ConfigurationService::getValue(ConfigurationService::Keys::CHEMICAL_COMPONENT_DIRECTORY);
+        cmd += ConfigurationService::ChemicalComponentDownloadScript
+            + " " + ConfigurationService::ChemicalComponentDirectory;
         int exitCode = std::system(cmd.c_str());
         if (exitCode != 0) {
             std::string message(ConfigurationService::AppName);
@@ -45,9 +44,9 @@ namespace Tmdet::Services::ChemicalComponentDirectoryService {
     }
 
     void split() {
-        std::string cmd(ConfigurationService::getValue(ConfigurationService::Keys::FRAGMENT_CIF_EXEC));
-        cmd += " -i " + ConfigurationService::getValue(ConfigurationService::Keys::CHEMICAL_COMPONENT_FILE)
-            + " -d " + ConfigurationService::getValue(ConfigurationService::Keys::CHEMICAL_COMPONENT_DIRECTORY)
+        std::string cmd(ConfigurationService::FragmentCifExec);
+        cmd += " -i " + ConfigurationService::ChemicalComponentFile
+            + " -d " + ConfigurationService::ChemicalComponentDirectory
             + " -s > /dev/null 2>&1";
         int exitCode = std::system(cmd.c_str());
         if (exitCode != 0) {
@@ -61,8 +60,7 @@ namespace Tmdet::Services::ChemicalComponentDirectoryService {
         if (!isBuilt()) {
             build();
         }
-        string chemCompDirectory = string(ConfigurationService::getValue(ConfigurationService::Keys::CHEMICAL_COMPONENT_DIRECTORY));
-        chemCompDirectory += "/" + std::string(1, threeLetterCode[0]);
+        string chemCompDirectory = ConfigurationService::ChemicalComponentDirectory + "/" + std::string(1, threeLetterCode[0]);
         if (threeLetterCode.size() >= 2) {
             chemCompDirectory += "/" + std::string(1, threeLetterCode[1]);
         }

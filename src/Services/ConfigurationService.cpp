@@ -10,8 +10,25 @@
 
 namespace Tmdet::Services::ConfigurationService {
 
-    std::map<std::string, std::string> Config;
-    std::string AppName = "";
+    // These are default values and can be overwrite shell environment variables
+    std::string TmdetDirectory{"/usr/local/share/tmdet"};
+    std::string ChemicalComponentDirectory{TmdetDirectory + "/data/ccd"};
+    std::string ChemicalComponentFile{ChemicalComponentDirectory + "/components.cif.gz"};
+    std::string ChemicalComponentDownloadScript{TmdetDirectory + "/scripts/get-chemical-component-directory.sh"};
+    std::string FragmentCifExec{TmdetDirectory + "/fragment_cif"};
+    std::string PdbDataDirectory{"/zfs/databases/UniTmp/PDB/data/structures/divided/updated_mmcif/"};
+
+    // set by init() call
+    std::string AppName("not-set");
+
+
+    namespace impl::Keys {
+        const std::string FRAGMENT_CIF_EXEC = "TMDET_FRAGMENT_CIF_EXEC";
+        const std::string TMDET_DIRECTORY = "TMDET_DIRECTORY";
+        const std::string CHEMICAL_COMPONENT_DIRECTORY = "TMDET_CHEMICAL_COMPONENT_DIRECTORY";
+        const std::string CHEMICAL_COMPONENT_DOWNLOAD_SCRIPT = "TMDET_CHEMICAL_COMPONENT_DOWNLOAD_SCRIPT";
+        const std::string PDB_DATA_DIRECTORY = "TMDET_PDB_DATA_DIRECTORY";
+    }
 
     void init() {
 
@@ -23,58 +40,59 @@ namespace Tmdet::Services::ConfigurationService {
         }
         std::string appExec = std::string(path, size);
         std::filesystem::path fsAppExecPath(appExec);
-        AppName = Config[Keys::APP_NAME] = fsAppExecPath.filename();
-        Config[Keys::APP_EXEC] = appExec;
-        Config[Keys::FRAGMENT_CIF_EXEC] = fsAppExecPath.replace_filename("fragment_cif");
+        AppName = fsAppExecPath.filename();
 
-        // get base directory
-        std::string baseDir = fsAppExecPath.parent_path().string();
-        if (baseDir.ends_with("build/src")) {
-            baseDir += "/../..";
+        // Update default values if there is explicit value in environment variable
+        std::string value;
+        if ((value = getEnv(impl::Keys::TMDET_DIRECTORY)) != "") {
+            TmdetDirectory = value;
+            ChemicalComponentDirectory = TmdetDirectory + "/data/ccd";
+            ChemicalComponentFile = ChemicalComponentDirectory + "/components.cif.gz";
+            ChemicalComponentDownloadScript = TmdetDirectory + "/scripts/get-chemical-component-directory.sh";
         }
-        // set CCD and TMDET directories
-        Config[Keys::TMDET_DIRECTORY] = baseDir;
-        Config[Keys::CHEMICAL_COMPONENT_DIRECTORY] = baseDir + "/data/ccd";
-        Config[Keys::CHEMICAL_COMPONENT_FILE] = Config[Keys::CHEMICAL_COMPONENT_DIRECTORY] + "/components.cif.gz";
-        Config[Keys::CHEMICAL_COMPONENT_DOWNLOAD_SCRIPT] = Config[Keys::TMDET_DIRECTORY]
-            + "/scripts/get-chemical-component-directory.sh";
-
-        // set RCSBROOT
-        // std::string value = getEnv("RCSBROOT");
-        // if (value == "") {
-        //     std::cerr << AppName << ": WARNING: RCSBROOT environment variable not set."
-        //         << " Maxit-related PromotifService will fail"
-        //         << std::endl;
-        // }
-        // Config[Keys::RCSBROOT_DIRECTORY] = value;
-        Config[Keys::PDB_DIRECTORY] = "/zfs/databases/UniTmp/PDB/data/structures/divided/updated_mmcif/";
-    }
-
-    bool hasKey(std::string& key) {
-        return Config.count(key) > 0;
-    }
-
-    std::string getValue(std::string key) {
-        if (Config.count(key) == 0) {
-            std::string app = Config[Keys::APP_NAME];
-            throw std::runtime_error(app + ": key '" + key + "' not found in configuration");
+        if ((value = getEnv(impl::Keys::CHEMICAL_COMPONENT_DIRECTORY)) != "") {
+            ChemicalComponentDirectory = value;
+            ChemicalComponentFile = ChemicalComponentDirectory + "/components.cif.gz";
         }
-        return Config[key];
+        if ((value = getEnv(impl::Keys::FRAGMENT_CIF_EXEC)) != "") {
+            FragmentCifExec = value;
+        }
+        if ((value = getEnv(impl::Keys::PDB_DATA_DIRECTORY)) != "") {
+            PdbDataDirectory = value;
+        }
+
+        // Check required directories/files
+        {
+            std::filesystem::path path(TmdetDirectory);
+            if (!std::filesystem::exists(path)) {
+                std::cerr << TmdetDirectory << " does not exist. Update your "
+                    << impl::Keys::TMDET_DIRECTORY << " variable." << std::endl;
+                std::exit(1);
+            }
+
+            path = FragmentCifExec;
+            if (!std::filesystem::exists(path)) {
+                std::cerr << FragmentCifExec << " does not exist. Update your "
+                    << impl::Keys::TMDET_DIRECTORY << " variable." << std::endl;
+                std::exit(1);
+            }
+
+            path = PdbDataDirectory;
+            if (!std::filesystem::exists(path) && AppName != "tmdet") {
+                std::cerr << PdbDataDirectory << " does not exist. Update your "
+                    << impl::Keys::PDB_DATA_DIRECTORY << " variable." << std::endl;
+                std::exit(1);
+            }
+
+        }
     }
 
     std::string getEnv(std::string key) {
         char* value = getenv(key.c_str());
-        std::string result;
         if (value == nullptr) {
-            return result;
+            return "";
         }
-        result = std::string(value);
-        return result;
+        return std::string(value);
     }
 
-    void dump() {
-        for (auto& [key, value] : Config) {
-            std::cout << key << ": " << value << std::endl;
-        }
-    }
 }

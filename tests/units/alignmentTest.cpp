@@ -218,8 +218,7 @@ void assertTrue(std::string testDescription, bool condition, int lineNumber) {
 Tmdet::ValueObjects::TmdetStruct createTmdetStruct(std::string pdbCode) {
     gemmi::Structure pdb;
     Tmdet::Services::ConfigurationService::init();
-    auto basePath = Tmdet::Services::ConfigurationService::getValue(Tmdet::Services::ConfigurationService::Keys::PDB_DIRECTORY);
-    auto inputPath(basePath);
+    auto inputPath = Tmdet::Services::ConfigurationService::PdbDataDirectory;
     inputPath += (string("/") + pdbCode[1] + pdbCode[2]) + "/" + pdbCode + "_updated.cif.gz";
 
     gemmi::cif::Document document = gemmi::cif::read(gemmi::MaybeGzipped(inputPath));
