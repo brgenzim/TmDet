@@ -6,9 +6,6 @@
 #include <gemmi/unitcell.hpp>
 #include <gemmi/math.hpp>
 
-using namespace std;
-using namespace gemmi;
-
 namespace Tmdet::ValueObjects {
 
     struct TMatrix {

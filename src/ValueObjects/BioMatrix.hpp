@@ -5,13 +5,11 @@
 #include <vector>
 #include <ValueObjects/Matrix.hpp>
 
-using namespace std;
-
 namespace Tmdet::ValueObjects {
 
     struct BioMatrix {
-        vector<Matrix> matrices;
-        vector<string> deletedChainIds;
+        std::vector<Matrix> matrices;
+        std::vector<std::string> deletedChainIds;
     };
 }
 

@@ -10,13 +10,11 @@
 #include <ValueObjects/HBond.hpp>
 #include <gemmi/model.hpp>
 
-using namespace std;
-
 namespace Tmdet::ValueObjects {
 
     struct Residue {
         gemmi::Residue& gemmi;
-        vector<Atom> atoms;
+        std::vector<Atom> atoms;
         double surface;
         Tmdet::Types::SecStruct ss = Tmdet::Types::SecStructs.at('-');
         HBond hbond1;
@@ -25,24 +23,13 @@ namespace Tmdet::ValueObjects {
         // Use this to measure residues distance in the sequence.
         int idx;
         int chainIdx;
-        unordered_map<string,any> temp;
+        std::unordered_map<std::string,std::any> temp;
 
-        Residue(gemmi::Residue& _gemmi) : gemmi(_gemmi) {}
+        explicit Residue(gemmi::Residue& _gemmi) : gemmi(_gemmi) {}
 
-        // copy constructor
-        Residue(const Residue& other) :
-            gemmi(other.gemmi),
-            atoms(other.atoms),
-            surface(other.surface),
-            ss(other.ss),
-            hbond1(other.hbond1),
-            hbond2(other.hbond2),
-            idx(other.idx),
-            chainIdx(other.chainIdx),
-            temp(other.temp) {}
+        ~Residue()=default;
 
-        ~Residue() {}
-        int resn() {
+        int resn() const {
             return gemmi.seqid.num.value;
         }
     };
