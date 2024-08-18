@@ -65,11 +65,16 @@ find_package(gemmi 0.6.4 CONFIG REQUIRED)
 # Eigen3
 find_package(Eigen3 3.4 CONFIG REQUIRED)
 
+#MLPack, Armadillo
+find_package(MLPACK REQUIRED)
+find_package(Armadillo REQUIRED)
+
 # Include files (system)
-  INCLUDE_DIRECTORIES( AFTER SYSTEM 
-    "${PROJECT_SOURCE_DIR}/src/"
-    "${PROJECT_SOURCE_DIR}/../contrib/pugixml/src/"
-  )
+  INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/src/)
+  INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/../contrib/pugixml/src/)
+  INCLUDE_DIRECTORIES(${MLPACK_INCLUDE_DIRS})
+  INCLUDE_DIRECTORIES(${ARMADILLO_INCLUDE_DIRS})
+  INCLUDE_DIRECTORIES(${GEMMI_INCLUDE_DIRS})
 
 link_directories(${CMAKE_INSTALL_PREFIX_LIB})
 
