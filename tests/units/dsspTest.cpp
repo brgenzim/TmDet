@@ -43,7 +43,9 @@ int main() {
         string pdbCode = "7ec3";
         string inputPath = getPath(pdbCode);
 
-        Tmdet::ValueObjects::TmdetStruct tmdetVO = Tmdet::ValueObjects::get(inputPath);
+        gemmi::Structure pdb; 
+        gemmi::cif::Document document;
+        auto tmdetVO = Tmdet::ValueObjects::get(inputPath, pdb, document);
 
         // action
         calcDssp(tmdetVO);
@@ -62,7 +64,9 @@ int main() {
         string pdbCode = "6e8r";
         string inputPath = getPath(pdbCode);
 
-        Tmdet::ValueObjects::TmdetStruct tmdetVO = Tmdet::ValueObjects::get(inputPath);
+        gemmi::Structure pdb; 
+        gemmi::cif::Document document;
+        auto tmdetVO = Tmdet::ValueObjects::get(inputPath, pdb, document);
 
         // action
         calcDssp(tmdetVO);
@@ -90,7 +94,9 @@ int main() {
         string pdbCode = "4egy";
         string inputPath = getPath(pdbCode);
 
-        Tmdet::ValueObjects::TmdetStruct tmdetVO = Tmdet::ValueObjects::get(inputPath);
+        gemmi::Structure pdb; 
+        gemmi::cif::Document document;
+        auto tmdetVO = Tmdet::ValueObjects::get(inputPath, pdb, document);
 
         // action
         calcDssp(tmdetVO);
@@ -109,7 +115,9 @@ int main() {
         string pdbCode = "7e99";
         string inputPath = getPath(pdbCode);
 
-        Tmdet::ValueObjects::TmdetStruct tmdetVO = Tmdet::ValueObjects::get(inputPath);
+        gemmi::Structure pdb; 
+        gemmi::cif::Document document;
+        auto tmdetVO = Tmdet::ValueObjects::get(inputPath, pdb, document);
 
         // action
         calcDssp(tmdetVO);
@@ -128,7 +136,9 @@ int main() {
         string pdbCode = "3ee0";
         string inputPath = getPath(pdbCode);
 
-        Tmdet::ValueObjects::TmdetStruct tmdetVO = Tmdet::ValueObjects::get(inputPath);
+        gemmi::Structure pdb; 
+        gemmi::cif::Document document;
+        auto tmdetVO = Tmdet::ValueObjects::get(inputPath, pdb, document);
 
         // action
         calcDssp(tmdetVO);

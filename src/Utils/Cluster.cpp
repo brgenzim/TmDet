@@ -61,7 +61,7 @@ namespace Tmdet::Utils {
             for (auto& residue : chain.residues) {
                 const gemmi::Atom* ca_atom = residue.gemmi.get_ca();
                 if (ca_atom) {
-                     residue.temp.insert({"cluster",any_cast<int>(assignments[i++])});
+                     residue.temp.insert({"cluster",std::any_cast<int>(assignments[i++])});
                 }
             }
         }

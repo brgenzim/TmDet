@@ -3,13 +3,12 @@
 
 #include <unordered_map>
 #include <string>
-
-using namespace std;
+#include <functional>
 
 namespace Tmdet::Types {
 
     struct Atom {
-        string name;
+        std::string name;
         double vdw;
     };
 
@@ -68,7 +67,7 @@ namespace Tmdet::Types {
         const Atom UNK = {"UNK", DEFAULT_VDW};
     };
 
-    const unordered_map<string, const Atom> Atoms = {
+    const std::unordered_map<std::string, const Atom> Atoms = {
         {"AG", AtomType::AG},
         {"AL", AtomType::AL},
         {"AR", AtomType::AR},

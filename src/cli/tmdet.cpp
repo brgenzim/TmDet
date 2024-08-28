@@ -27,18 +27,17 @@ int main(int argc, char *argv[]) {
     bool tm = args.getValueAsBool("tm");
 
     //input is mandatory, TmdetVO can not be created without gemmi structure and document
-    Tmdet::ValueObjects::TmdetStruct tmdetVO = Tmdet::ValueObjects::get(inputPath);
+    gemmi::Structure pdb; 
+    gemmi::cif::Document document;
+    auto tmdetVO = Tmdet::ValueObjects::get(inputPath, pdb, document);
     
     //change xml file to TMP="no" if the protein is not transmembrane
     if (n) {
         notTransmembrane(xmlPath, tmdetVO);
     }
 
-    for (auto& chain : tmdetVO.chains) {
-        chain.selected = true;
-    }
-    Tmdet::Utils::Symmetry symmetry;
-    auto result = symmetry.CheckSymmetry(tmdetVO);
+    //Tmdet::Utils::Symmetry symmetry;
+    //auto result = symmetry.CheckSymmetry(tmdetVO);
 
     Tmdet::Utils::Dssp dssp = Tmdet::Utils::Dssp(tmdetVO);
     dssp.calcDsspOnStructure();

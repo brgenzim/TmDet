@@ -4,13 +4,11 @@
 #include <unordered_map>
 #include <string>
 
-using namespace std;
-
 namespace Tmdet::Types {
 
     struct Chain {
-        string name;
-        string description;
+        std::string name;
+        std::string description;
     };
 
     namespace ChainType {
@@ -26,12 +24,17 @@ namespace Tmdet::Types {
             "non_tm",
             "Chain without any transmembrane region"
         };
+        const Chain UNK = {
+            "unknown",
+            "Chain type is not determined"
+        };
     }
 
-    const unordered_map<string, const Chain> Chains = {
+    const std::unordered_map<std::string, const Chain> Chains = {
         { "alpha", ChainType::ALPHA },
         { "beta", ChainType::BETA },
-        { "non_tm", ChainType::NONTM }
+        { "non_tm", ChainType::NONTM },
+        { "unknown", ChainType::UNK}
     };
 
 }

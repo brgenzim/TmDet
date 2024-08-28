@@ -33,14 +33,15 @@ namespace Tmdet::ValueObjects {
         gemmi::cif::Document& document;
         gemmi::NeighborSearch neighbors;
 
-        TmdetStruct(gemmi::Structure& _gemmi, gemmi::cif::Document& _document) :
-            gemmi(_gemmi), document(_document) {
-                code = gemmi.name;
+        explicit TmdetStruct(gemmi::Structure& _gemmi, gemmi::cif::Document& _document) :
+            code(_gemmi.name),
+            gemmi(_gemmi), 
+            document(_document) {
         }
         ~TmdetStruct()=default;
     };
 
-    TmdetStruct get(const std::string &inputPath);
+    TmdetStruct get(const std::string &inputPath, gemmi::Structure &pdb, gemmi::cif::Document &document);
 
 }
 

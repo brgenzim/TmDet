@@ -25,7 +25,9 @@ namespace Tmdet::ValueObjects {
         int chainIdx;
         std::unordered_map<std::string,std::any> temp;
 
-        explicit Residue(gemmi::Residue& _gemmi) : gemmi(_gemmi) {}
+        explicit Residue(gemmi::Residue& _gemmi) : 
+            gemmi(_gemmi) {
+        }
 
         ~Residue()=default;
 

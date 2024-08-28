@@ -11,14 +11,15 @@ namespace Tmdet::ValueObjects {
 
     struct Atom {
         gemmi::Atom& gemmi;
-        double surface;
+        double surface = 0.0;
         int idx;
         int chainIdx;
         int residueIdx;
         std::unordered_map<std::string, std::any> temp;
 
         explicit Atom(gemmi::Atom& _gemmi) :
-            gemmi(_gemmi) {}
+            gemmi(_gemmi) {
+            }
 
         ~Atom()=default;
     };

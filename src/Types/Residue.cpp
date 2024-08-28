@@ -1,22 +1,20 @@
 #include <fstream>
 #include <map>
+#include <functional>
 #include <Services/ConfigurationService.hpp>
 #include <Services/ChemicalComponentDirectoryService.hpp>
 #include <Types/Residue.hpp>
 
-using namespace std;
-
 namespace Tmdet::Types {
 
-
     namespace ResidueType {
-        map<string, Residue> ChemicalCompoundDictionary;
+        std::map<std::string, Residue, std::less<>> ChemicalCompoundDictionary;
 
-        Residue getResidue(const string& threeLetterCode) {
-            if (Residues.count(threeLetterCode) > 0) {
+        Residue getResidue(const std::string& threeLetterCode) {
+            if (Residues.contains(threeLetterCode)) {
                 return Residues.at(threeLetterCode);
             }
-            if (ChemicalCompoundDictionary.count(threeLetterCode) > 0) {
+            if (ChemicalCompoundDictionary.contains(threeLetterCode)) {
                 return ChemicalCompoundDictionary[threeLetterCode];
             }
 

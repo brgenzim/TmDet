@@ -4,13 +4,11 @@
 #include <unordered_map>
 #include <string>
 
-using namespace std;
-
 namespace Tmdet::Types {
 
     struct Protein {
-        string name;
-        string description;
+        std::string name;
+        std::string description;
         bool globular;
         bool membrane;
         bool alpha;
@@ -54,7 +52,7 @@ namespace Tmdet::Types {
         };
     }
     
-    const unordered_map<string, const Protein> Proteins = {
+    const std::unordered_map<std::string, const Protein> Proteins = {
         { "Tm_Alpha", ProteinType::TM_ALPHA },
         { "Tm_Beta", ProteinType::TM_BETA },
         { "Tm_Mixed", ProteinType::TM_MIXED},

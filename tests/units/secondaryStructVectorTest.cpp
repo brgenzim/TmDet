@@ -120,13 +120,14 @@ void assertTrue(std::string testDescription, bool condition, int lineNumber) {
 }
 
 void setup(Tmdet::Utils::SecStrVec &secStructVectors) {
-    gemmi::Structure pdb;
     Tmdet::Services::ConfigurationService::init();
     auto basePath = Tmdet::Services::ConfigurationService::getValue(Tmdet::Services::ConfigurationService::Keys::PDB_DIRECTORY);
     auto inputPath(basePath);
     inputPath += "/af/1afo_updated.cif.gz";
 
-    Tmdet::ValueObjects::TmdetStruct tmdetVO = Tmdet::ValueObjects::get(inputPath);
+    gemmi::Structure pdb; 
+    gemmi::cif::Document document;
+    auto tmdetVO = Tmdet::ValueObjects::get(inputPath, pdb, document);
 
     Tmdet::Utils::Dssp dssp = Tmdet::Utils::Dssp(tmdetVO);
     dssp.calcDsspOnStructure();

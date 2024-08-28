@@ -4,14 +4,12 @@
 #include <unordered_map>
 #include <string>
 
-using namespace std;
-
 namespace Tmdet::Types {
 
     struct Region {
-        string name;
+        std::string name;
         char code;
-        string description;
+        std::string description;
     };
 
     namespace RegionType {
@@ -72,7 +70,7 @@ namespace Tmdet::Types {
         };
     }
 
-    const unordered_map<char, const Region> Regions = {
+    const std::unordered_map<char, const Region> Regions = {
         { 'M', RegionType::MEMB },
         { 'H', RegionType::HELIX },
         { 'B', RegionType::BETA },
