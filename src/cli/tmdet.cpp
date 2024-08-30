@@ -6,6 +6,7 @@
 #include <Utils/Dssp.hpp>
 #include <Utils/Surface.hpp>
 #include <Utils/Symmetry.hpp>
+#include <Utils/Cluster.hpp>
 #include <ValueObjects/TmdetStruct.hpp>
 #include <DTOs/TmdetStruct.hpp>
 
@@ -31,10 +32,14 @@ int main(int argc, char *argv[]) {
     gemmi::cif::Document document;
     auto tmdetVO = Tmdet::ValueObjects::get(inputPath, pdb, document);
     
-    //change xml file to TMP="no" if the protein is not transmembrane
+    //change xml file to TMP="no" if the protein is not transmembrane and exit
     if (n) {
         notTransmembrane(xmlPath, tmdetVO);
     }
+
+    //do agglomerative clustering on the whole structure
+    auto clusterEngine = Tmdet::Utils::Cluster(tmdetVO);
+    clusterEngine.run();
 
     //Tmdet::Utils::Symmetry symmetry;
     //auto result = symmetry.CheckSymmetry(tmdetVO);
