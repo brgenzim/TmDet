@@ -54,26 +54,27 @@ namespace Tmdet::Utils {
     }
 
     int Cluster::calculateChainBrakes(const _cluster& c1, const _cluster& c2) {
-        int chainBrakes = 0;
-        for (int point1 : c1.points) {
-            for (int point2: c2.points) {
-                chainBrakes += (cas[point1]->pos.dist(cas[point2]->pos) > CA_DIST);
-            }
-        }
-        return chainBrakes;
+        int last = c1.points[c1.points.size()-1];
+        int first = c2.points[0];
+        return 10000*(cas[last]->pos.dist(cas[first]->pos) > CA_DIST);
     }
 
     void Cluster::run() {
         extractCAlphas();
-        int n = cas.size();
-        std::vector<_cluster> clusters(n);
-
-        for (auto i = 0; i < n; ++i) {
-            clusters[i].points.push_back(i);
-            clusters[i].centroid = cas[i]->pos;
-            clusters[i].variance = 0.0;
+        
+        std::vector<_cluster> clusters;
+        int j = 0;
+        
+        for (auto i = 0; i < cas.size(); i++, j++) {
+            _cluster c;
+            c.points.push_back(i++);
+            if (i < cas.size()) {
+                c.points.push_back(i);
+            }
+            calculateCentroid(c);
+            clusters.emplace_back(c);
         }
-
+        int step = 0;
         while (clusters.size() > 1) {
             double minDist = 1e30;
             double minwdist;
@@ -103,7 +104,7 @@ namespace Tmdet::Utils {
             clusters.erase(clusters.begin() + c1Idx);
             clusters.push_back(mergedCluster);
 
-            std::cout << "Merged clusters " << cas[c1Idx]->serial << " and " << cas[c2Idx]->serial << " with distance " << minDist << "(" << minwdist << "+" << mincdist << ")" << std::endl;
+            std::cout << step++ << " merged cluster distance " << minDist << "(" << minwdist << "+" << mincdist << ")" << std::endl;
             showData(mergedCluster);
         }
 
