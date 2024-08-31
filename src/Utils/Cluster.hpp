@@ -4,7 +4,7 @@
 #include <gemmi/model.hpp>
 #include <ValueObjects/TmdetStruct.hpp>
 
-#define CA_DIST 4.0
+#define CA_DIST 5.0
 
 namespace Tmdet::Utils {
 
@@ -17,8 +17,9 @@ namespace Tmdet::Utils {
     class Cluster {
         private:
             Tmdet::ValueObjects::TmdetStruct& tmdetVO;
-            std::vector<gemmi::Atom *> cas;
+            std::vector<const gemmi::Atom *> cas;
             
+            void showData(_cluster& cluster);
             void extractCAlphas();
             void calculateCentroid(_cluster& cluster);
             void calculateVariance(_cluster& cluster);
