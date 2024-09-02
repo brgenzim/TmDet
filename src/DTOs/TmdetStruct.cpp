@@ -109,8 +109,8 @@ namespace Tmdet::DTOS {
             for( auto& residue: chain.residues) {
                 cout << "\tRESIDUE " << residue.idx << ":" << residue.resn() << "(" << residue.gemmi.name << ") ";
                 cout << residue.surface << " " << residue.ss.code << endl;
-                if ( residue.temp.contains("cluster") > 0 ) {
-                    cout << "\t\tTEMP: cluster: " << any_cast<size_t>(residue.temp.at("cluster")) << endl;
+                if ( residue.temp.contains("fragment") ) {
+                    cout << "\t\tTEMP: fragment: " << any_cast<int>(residue.temp.at("fragment")) << endl;
                 }
                 for( auto& atom: residue.atoms) {
                     cout << "\t\tATOM " << atom.idx << ": " << atom.gemmi.name << " ";

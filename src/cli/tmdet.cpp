@@ -6,7 +6,7 @@
 #include <Utils/Dssp.hpp>
 #include <Utils/Surface.hpp>
 #include <Utils/Symmetry.hpp>
-#include <Utils/Cluster.hpp>
+#include <Utils/Fragment.hpp>
 #include <ValueObjects/TmdetStruct.hpp>
 #include <DTOs/TmdetStruct.hpp>
 
@@ -38,8 +38,8 @@ int main(int argc, char *argv[]) {
     }
 
     //do agglomerative clustering on the whole structure
-    auto clusterEngine = Tmdet::Utils::Cluster(tmdetVO);
-    clusterEngine.run();
+    auto fragmentEngine = Tmdet::Utils::Fragment(tmdetVO);
+    fragmentEngine.run();
 
     //Tmdet::Utils::Symmetry symmetry;
     //auto result = symmetry.CheckSymmetry(tmdetVO);
