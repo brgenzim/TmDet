@@ -2,15 +2,12 @@
 #define __TMDET_VALUE_OBJECTS_MODIFICATION__
 
 #include <string>
-#include <vector>
-
-using namespace std;
 
 namespace Tmdet::ValueObjects {
 
     struct Modification {
-        string date;
-        string descr;
+        std::string date;
+        std::string descr;
     };
 }
 

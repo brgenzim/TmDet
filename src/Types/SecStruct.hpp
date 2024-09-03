@@ -4,12 +4,10 @@
 #include <unordered_map>
 #include <string>
 
-using namespace std;
-
 namespace Tmdet::Types {
 
     struct SecStruct {
-        string name;
+        std::string name;
         char code;
         char group;
 
@@ -41,7 +39,7 @@ namespace Tmdet::Types {
         const SecStruct U = { "Unknown", '-', '-' };
     }
 
-    const unordered_map<char, const SecStruct> SecStructs = {
+    const std::unordered_map<char, const SecStruct> SecStructs = {
         { 'H', SecStructType::H },
         { 'G', SecStructType::G },
         { 'I', SecStructType::I },

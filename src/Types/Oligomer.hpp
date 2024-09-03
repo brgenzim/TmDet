@@ -4,13 +4,11 @@
 #include <unordered_map>
 #include <string>
 
-using namespace std;
-
 namespace Tmdet::Types {
 
     struct Oligomer {
-        string name;
-        string description;
+        std::string name;
+        std::string description;
     };
 
     namespace OligomerType {
@@ -36,7 +34,7 @@ namespace Tmdet::Types {
         };
     }
 
-    const unordered_map<string, const Oligomer> Oligomers = {
+    const std::unordered_map<std::string, const Oligomer> Oligomers = {
         { "Monomer", OligomerType::MONOMER },
         { "HomoOligomer", OligomerType::HOMO_OLIGOMER },
         { "HeteroOligomer", OligomerType::HETERO_OLIGOMER },

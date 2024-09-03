@@ -18,7 +18,7 @@ namespace Tmdet::Services::UniTmpService {
 
         std::string response = CurlWrapperService::apiCall(url, resultCode);
         if (resultCode == Tmdet::Services::CurlWrapperService::Status::Error) {
-            throw runtime_error("HTTP request to '" + url + "' failed");
+            throw std::runtime_error("HTTP request to '" + url + "' failed");
         }
 
         auto json = nlohmann::json::parse(response);

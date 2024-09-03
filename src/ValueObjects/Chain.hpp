@@ -8,47 +8,33 @@
 #include <ValueObjects/Residue.hpp>
 #include <gemmi/model.hpp>
 
-using namespace std;
-
 namespace Tmdet::ValueObjects {
 
     struct Chain {
-        string id;
-        string entityId;
-        bool selected;
-        int numtm;
-        string seq;
-        vector<Tmdet::ValueObjects::Region> regions;
-        Tmdet::Types::Chain type;
+        std::string id;
+        std::string entityId;
+        bool selected = true;
+        int numtm = 0;
+        std::string seq;
+        std::vector<Tmdet::ValueObjects::Region> regions;
+        Tmdet::Types::Chain type = Tmdet::Types::ChainType::UNK;
         gemmi::Chain& gemmi;
-        vector<Residue> residues;
-        int idx;
-        int length;
-        Chain(gemmi::Chain& _gemmi) : gemmi(_gemmi) {
-            this->id = gemmi.name;
-            for (auto residue : gemmi.residues) {
-                if (residue.atoms.size() > 0) {
-                    this->entityId = residue.entity_id;
-                    break;
+        std::vector<Residue> residues;
+        int idx = 0;
+        int length = 0;
+
+        explicit Chain(gemmi::Chain& _gemmi) : 
+            id(_gemmi.name), 
+            gemmi(_gemmi) {
+                for (const auto &residue : gemmi.residues) {
+                    if (!residue.atoms.empty()) {
+                        this->entityId = residue.entity_id;
+                        break;
+                    }
                 }
-            }
         }
 
-        // Copy constructor
-        Chain(const Chain& other) :
-            id(other.id),
-            entityId(other.entityId),
-            selected(other.selected),
-            numtm(other.numtm),
-            seq(other.seq),
-            regions(other.regions),
-            type(other.type),
-            gemmi(other.gemmi),
-            residues(other.residues),
-            idx(other.idx),
-            length(other.length) {}
-
-        ~Chain() {}
+        ~Chain()=default;
     };
 }
 

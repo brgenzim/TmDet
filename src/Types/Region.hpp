@@ -4,14 +4,12 @@
 #include <unordered_map>
 #include <string>
 
-using namespace std;
-
 namespace Tmdet::Types {
 
     struct Region {
-        string name;
+        std::string name;
         char code;
-        string description;
+        std::string description;
 
         bool operator==(Region other) {
             return code == other.code;
@@ -81,7 +79,7 @@ namespace Tmdet::Types {
         };
     }
 
-    const unordered_map<char, const Region> Regions = {
+    const std::unordered_map<char, const Region> Regions = {
         { 'M', RegionType::MEMB },
         { 'N', RegionType::MEMBINS },
         { 'H', RegionType::HELIX },
@@ -99,7 +97,7 @@ namespace Tmdet::Types {
     /**
      * Regions returned by CCTOP API call.
      */
-    const unordered_map<std::string, const Region> RegionsByName = {
+    const std::unordered_map<std::string, const Region> RegionsByName = {
         { "Membrane", RegionType::MEMB },
         { "Membins", RegionType::MEMBINS },
         { "Re-entrant loop", RegionType::LOOP },

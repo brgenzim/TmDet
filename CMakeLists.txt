@@ -45,7 +45,6 @@
   SET( CMAKE_INSTALL_PREFIX_BIN ${PROJECT_SOURCE_DIR}/bin )
   SET( CMAKE_INSTALL_PREFIX_INCLUDE ${PROJECT_SOURCE_DIR}/include )
 
-
   MESSAGE( "-- Binaries:  " ${CMAKE_INSTALL_PREFIX_BIN} )
   MESSAGE( "-- Libraries: " ${CMAKE_INSTALL_PREFIX_LIB} )
   MESSAGE( "-- Includes:  " ${CMAKE_INSTALL_PREFIX_INCLUDE} )
@@ -65,11 +64,16 @@ find_package(gemmi 0.6.4 CONFIG REQUIRED)
 # Eigen3
 find_package(Eigen3 3.4 CONFIG REQUIRED)
 
+#MLPack, Armadillo
+#find_package(MLPACK REQUIRED)
+#find_package(Armadillo REQUIRED)
+
 # Include files (system)
-  INCLUDE_DIRECTORIES( AFTER SYSTEM 
-    "${PROJECT_SOURCE_DIR}/src/"
-    "${PROJECT_SOURCE_DIR}/../contrib/pugixml/src/"
-  )
+  INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/src/)
+  INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/../contrib/pugixml/src/)
+#  INCLUDE_DIRECTORIES(${MLPACK_INCLUDE_DIRS})
+#  INCLUDE_DIRECTORIES(${ARMADILLO_INCLUDE_DIRS})
+  INCLUDE_DIRECTORIES(${GEMMI_INCLUDE_DIRS})
 
 link_directories(${CMAKE_INSTALL_PREFIX_LIB})
 
@@ -78,4 +82,4 @@ link_directories(${CMAKE_INSTALL_PREFIX_LIB})
 
 # Subdirectories
   ADD_SUBDIRECTORY ( src )
-  ADD_SUBDIRECTORY ( tests )
+#  ADD_SUBDIRECTORY ( tests )

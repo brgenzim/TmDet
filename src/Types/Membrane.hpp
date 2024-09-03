@@ -4,13 +4,11 @@
 #include <unordered_map>
 #include <string>
 
-using namespace std;
-
 namespace Tmdet::Types {
 
     struct Membrane {
-        string name;
-        string description;
+        std::string name;
+        std::string description;
     };
 
     namespace MembraneType {
@@ -24,7 +22,7 @@ namespace Tmdet::Types {
         };
     }
 
-    const unordered_map<string, const Membrane> Membranes = {
+    const std::unordered_map<std::string, const Membrane> Membranes = {
         { "Plain", MembraneType::PLAIN },
         { "Curved", MembraneType::CURVED }
     };

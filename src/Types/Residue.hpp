@@ -4,9 +4,8 @@
 #include <unordered_map>
 #include <map>
 #include <string>
+#include <functional>
 #include <Types/Atom.hpp>
-
-using namespace std;
 
 namespace Tmdet::Types {
 
@@ -21,9 +20,9 @@ namespace Tmdet::Types {
     };
 
     struct Residue {
-        string name;
+        std::string name;
         char a1;
-        unordered_map<string,AtomData> atoms;
+        std::unordered_map<std::string,AtomData> atoms;
     };
 
     namespace ResidueType {
@@ -314,12 +313,12 @@ namespace Tmdet::Types {
                 {"OXT", {AtomType::O, 0, 0}}
             }
         };
-        extern map<string, Residue> ChemicalCompoundDictionary;
+        extern std::map<std::string, Residue, std::less<>> ChemicalCompoundDictionary;
 
-        extern Residue getResidue(const string& threeLetterCode);
+        extern Residue getResidue(const std::string& threeLetterCode);
     };
 
-    const unordered_map<string, const Residue> Residues = {
+    const std::unordered_map<std::string, const Residue> Residues = {
         {"ALA", ResidueType::ALA},
         {"CYS", ResidueType::CYS},
         {"ASP", ResidueType::ASP},

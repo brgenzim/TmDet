@@ -8,6 +8,7 @@
 #include <Utils/Dssp.hpp>
 
 using namespace std;
+using namespace gemmi;
 
 namespace Tmdet::Utils {
 

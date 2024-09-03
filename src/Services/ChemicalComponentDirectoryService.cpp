@@ -63,11 +63,11 @@ namespace Tmdet::Services::ChemicalComponentDirectoryService {
         std::cout << "Splitting done." << std::endl;
     }
 
-    Tmdet::Types::Residue getComponentAsResidue(const string& threeLetterCode) {
+    Tmdet::Types::Residue getComponentAsResidue(const std::string& threeLetterCode) {
         if (!isBuilt()) {
             build();
         }
-        string chemCompDirectory = ConfigurationService::ChemicalComponentDirectory + "/" + std::string(1, threeLetterCode[0]);
+        std::string chemCompDirectory = ConfigurationService::ChemicalComponentDirectory + "/" + std::string(1, threeLetterCode[0]);
         if (threeLetterCode.size() >= 2) {
             chemCompDirectory += "/" + std::string(1, threeLetterCode[1]);
         }
@@ -76,7 +76,7 @@ namespace Tmdet::Services::ChemicalComponentDirectoryService {
         gemmi::cif::Block& block = document.blocks[0];
 
         if (!block.has_mmcif_category("_chem_comp_atom") || !block.has_mmcif_category("_chem_comp")) {
-            throw runtime_error("Expected _chem_comp_atom or _chem_comp category not found");
+            throw std::runtime_error("Expected _chem_comp_atom or _chem_comp category not found");
         }
         auto oneLetterCode = block.find_value("_chem_comp.one_letter_code");
 
@@ -104,7 +104,7 @@ namespace Tmdet::Services::ChemicalComponentDirectoryService {
             if (type == "C") {
                 const std::string& aromaticFlag = atomLoop.val(row, aromaticFlagCol);
                 if (aromaticFlag == "Y" || atomId == "C") {
-                    atom = atom = Tmdet::Types::Atoms.at("C_CAR");
+                    atom = Tmdet::Types::Atoms.at("C_CAR");
                 } else {
                     atom = Tmdet::Types::Atoms.at("C_ALI");
                 }

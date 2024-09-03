@@ -7,31 +7,21 @@
 #include <unordered_map>
 #include <gemmi/model.hpp>
 
-using namespace std;
-
 namespace Tmdet::ValueObjects {
 
     struct Atom {
         gemmi::Atom& gemmi;
-        double surface;
+        double surface = 0.0;
         int idx;
         int chainIdx;
         int residueIdx;
-        unordered_map<string,any> temp;
+        std::unordered_map<std::string, std::any> temp;
 
-        Atom(gemmi::Atom& _gemmi) :
-            gemmi(_gemmi) {}
+        explicit Atom(gemmi::Atom& _gemmi) :
+            gemmi(_gemmi) {
+            }
 
-        // Copy constructor
-        Atom(const Atom& other) :
-            gemmi(other.gemmi),
-            surface(other.surface),
-            idx(other.idx),
-            chainIdx(other.chainIdx),
-            residueIdx(other.residueIdx),
-            temp(other.temp) {}
-
-        ~Atom() {}
+        ~Atom()=default;
     };
 }
 

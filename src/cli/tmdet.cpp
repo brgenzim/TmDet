@@ -6,13 +6,9 @@
 #include <Utils/Dssp.hpp>
 #include <Utils/Surface.hpp>
 #include <Utils/Symmetry.hpp>
+#include <Utils/Fragment.hpp>
 #include <ValueObjects/TmdetStruct.hpp>
 #include <DTOs/TmdetStruct.hpp>
-#include <gemmi/cif.hpp>
-#include <gemmi/cifdoc.hpp>
-#include <gemmi/gz.hpp>
-#include <gemmi/mmcif.hpp>
-#include <gemmi/model.hpp>
 
 using namespace std;
 
@@ -20,8 +16,9 @@ Tmdet::Utils::Args setArguments(int argc, char *argv[]);
 void notTransmembrane(string x, Tmdet::ValueObjects::TmdetStruct& tmdetVO);
 
 int main(int argc, char *argv[]) {
-    gemmi::Structure pdb;
+    
     Tmdet::Utils::Args args = setArguments(argc,argv);
+
     Tmdet::Services::ConfigurationService::init();
     string inputPath = args.getValueAsString("i");
     string xmlPath = args.getValueAsString("x");
@@ -30,19 +27,22 @@ int main(int argc, char *argv[]) {
     bool nd = args.getValueAsBool("nd");
     bool tm = args.getValueAsBool("tm");
 
-    //input is mandatory
-    gemmi::cif::Document document = gemmi::cif::read(gemmi::MaybeGzipped(inputPath));
-    pdb = gemmi::make_structure(std::move(document));
-    Tmdet::ValueObjects::TmdetStruct tmdetVO = Tmdet::ValueObjects::TmdetStruct(pdb, document);
-    tmdetVO.inputPath = inputPath;
-    Tmdet::DTOS::TmdetStruct::parse(tmdetVO);
-
-
-    for (auto& chain : tmdetVO.chains) {
-        chain.selected = true;
+    //input is mandatory, TmdetVO can not be created without gemmi structure and document
+    gemmi::Structure pdb; 
+    gemmi::cif::Document document;
+    auto tmdetVO = Tmdet::ValueObjects::get(inputPath, pdb, document);
+    
+    //change xml file to TMP="no" if the protein is not transmembrane and exit
+    if (n) {
+        notTransmembrane(xmlPath, tmdetVO);
     }
-    Tmdet::Utils::Symmetry symmetry;
-    auto result = symmetry.CheckSymmetry(tmdetVO);
+
+    //do agglomerative clustering on the whole structure
+    auto fragmentEngine = Tmdet::Utils::Fragment(tmdetVO);
+    fragmentEngine.run();
+
+    //Tmdet::Utils::Symmetry symmetry;
+    //auto result = symmetry.CheckSymmetry(tmdetVO);
 
     Tmdet::Utils::Dssp dssp = Tmdet::Utils::Dssp(tmdetVO);
     dssp.calcDsspOnStructure();
@@ -51,15 +51,13 @@ int main(int argc, char *argv[]) {
     surf.main();
     surf.setOutsideSurface();
     Tmdet::DTOS::TmdetStruct::out(tmdetVO);
-    if (n) {
-        notTransmembrane(xmlPath, tmdetVO);
-    }
+    
 
 }
 
 Tmdet::Utils::Args setArguments(int argc, char *argv[]) {
     Tmdet::Utils::Args args;
-    args.define(true,"i","input","Input PDB file path (in cif format)","string","");
+    args.define(false,"i","input","Input PDB file path (in cif format)","string","");
     args.define(true,"x","xml","Input/output xml file path","string","");
     args.define(false,"p","pdb_out","Output pdb file path","string","");
     args.define(false,"n","not","Set transmembrane='not' in the xml file","bool","false");
