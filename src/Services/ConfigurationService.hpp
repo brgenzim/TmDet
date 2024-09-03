@@ -30,6 +30,8 @@ namespace Tmdet::Services::ConfigurationService {
 
     extern void init();
     extern std::string getEnv(std::string key);
+    extern void chemicalComponentDirectoryError();
+
 }
 
 #endif

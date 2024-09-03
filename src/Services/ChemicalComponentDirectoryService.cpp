@@ -65,7 +65,8 @@ namespace Tmdet::Services::ChemicalComponentDirectoryService {
 
     Tmdet::Types::Residue getComponentAsResidue(const std::string& threeLetterCode) {
         if (!isBuilt()) {
-            build();
+            // build();
+            ConfigurationService::chemicalComponentDirectoryError();
         }
         std::string chemCompDirectory = ConfigurationService::ChemicalComponentDirectory + "/" + std::string(1, threeLetterCode[0]);
         if (threeLetterCode.size() >= 2) {

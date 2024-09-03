@@ -6,6 +6,7 @@
 #include <cstdlib>
 #include <unistd.h>
 #include <limits.h>
+#include <Services/ChemicalComponentDirectoryService.hpp>
 #include <Services/ConfigurationService.hpp>
 
 namespace Tmdet::Services::ConfigurationService {
@@ -85,6 +86,11 @@ namespace Tmdet::Services::ConfigurationService {
                 std::exit(1);
             }
 
+            if (!ChemicalComponentDirectoryService::isBuilt()) {
+                chemicalComponentDirectoryError();
+            }
+
+
             path = FragmentCifExec;
             if (!std::filesystem::exists(path)) {
                 std::cerr << FragmentCifExec << " does not exist. Update your "
@@ -108,6 +114,15 @@ namespace Tmdet::Services::ConfigurationService {
             return "";
         }
         return std::string(value);
+    }
+
+    void chemicalComponentDirectoryError() {
+        std::cerr << std::endl << "ChemicalComponentDirectory (CCD) is not built or does not exist: '" << ChemicalComponentDirectory << "'" << std::endl
+            << "  * Build CCD by '" << ChemicalComponentDownloadScript << "'"  << std::endl
+            << "  * Or set your " << impl::Keys::TMDET_DIRECTORY << " variable." << std::endl
+            << "    '" << AppName << "' attempts to use '<" << impl::Keys::TMDET_DIRECTORY << ">/data/ccd'." << std::endl
+            << "    CCD path can be controlled by " << impl::Keys::CHEMICAL_COMPONENT_DIRECTORY << " environment variable too." << std::endl;
+        std::exit(1);
     }
 
 }
