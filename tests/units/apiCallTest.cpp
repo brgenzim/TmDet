@@ -3,6 +3,7 @@
 #include <string>
 #include <filesystem>
 
+#include <Services/ConfigurationService.hpp>
 #include <Services/CurlWrapperService.hpp>
 #include <Services/UniTmpService.hpp>
 #include <Types/Region.hpp>
@@ -12,6 +13,8 @@ void assertTrue(std::string testDescription, bool condition, int lineNumber);
 std::string fileName;
 
 int main() {
+
+    Tmdet::Services::ConfigurationService::init();
 
     fileName = std::filesystem::path(__FILE__).filename();
     std::string testDescription;

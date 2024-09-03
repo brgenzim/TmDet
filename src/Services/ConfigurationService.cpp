@@ -18,6 +18,9 @@ namespace Tmdet::Services::ConfigurationService {
     std::string ChemicalComponentDirectoryUrl{"https://files.wwpdb.org/pub/pdb/data/monomers/components.cif.gz"};
     std::string FragmentCifExec{TmdetDirectory + "/fragment_cif"};
     std::string PdbDataDirectory{"/zfs/databases/UniTmp/PDB/data/structures/divided/updated_mmcif/"};
+    std::string UniTmpSchema{"https://"};
+    std::string UniTmpDomain{"unitmp.org"};
+
 
     // set by init() call
     std::string AppName("not-set");
@@ -28,7 +31,10 @@ namespace Tmdet::Services::ConfigurationService {
         const std::string FRAGMENT_CIF_EXEC = "TMDET_FRAGMENT_CIF_EXEC";
         const std::string CHEMICAL_COMPONENT_DIRECTORY = "TMDET_CHEMICAL_COMPONENT_DIRECTORY";
         const std::string CHEMICAL_COMPONENT_DOWNLOAD_SCRIPT = "TMDET_CHEMICAL_COMPONENT_DOWNLOAD_SCRIPT";
-        // used in test integration tests
+        const std::string UNITMP_SCHEMA = "UNITMP_SCHEMA";
+        const std::string UNITMP_DOMAIN = "UNITMP_DOMAIN";
+
+        // used in integration tests
         const std::string PDB_DATA_DIRECTORY = "TMDET_PDB_DATA_DIRECTORY";
     }
 
@@ -62,6 +68,13 @@ namespace Tmdet::Services::ConfigurationService {
         if ((value = getEnv(impl::Keys::PDB_DATA_DIRECTORY)) != "") {
             PdbDataDirectory = value;
         }
+        if ((value = getEnv(impl::Keys::UNITMP_SCHEMA)) != "") {
+            UniTmpSchema = value;
+        }
+        if ((value = getEnv(impl::Keys::UNITMP_DOMAIN)) != "") {
+            UniTmpDomain = value;
+        }
+
 
         // Check required directories/files
         {
