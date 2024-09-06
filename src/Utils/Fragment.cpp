@@ -34,6 +34,7 @@ namespace Tmdet::Utils {
             if (std::any_cast<int>(tmdetVO.chains[n.chain_idx].residues[n.residue_idx].temp.at("fragment")) == -1) {
                 addToFragment(tmdetVO.chains[n.chain_idx].residues[n.residue_idx], fr);
             }
+        }
     }
 
     std::vector<_cr> Fragment::getNeighbors(Tmdet::ValueObjects::Residue& residueVO) {
@@ -57,5 +58,4 @@ namespace Tmdet::Utils {
         return (chain->name == tmdetVO.chains[chainIdx].id );
     }
 
-    
 }

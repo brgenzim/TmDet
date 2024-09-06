@@ -172,8 +172,7 @@ void calcDssp(Tmdet::ValueObjects::TmdetStruct& tmdetVO) {
 
 string getPath(std::string pdbCode) {
     Tmdet::Services::ConfigurationService::init();
-    auto basePath = Tmdet::Services::ConfigurationService::getValue(Tmdet::Services::ConfigurationService::Keys::PDB_DIRECTORY);
-    auto inputPath(basePath);
+    auto inputPath = Tmdet::Services::ConfigurationService::PdbDataDirectory;
     inputPath += (string("/") + pdbCode[1] + pdbCode[2]) + "/" + pdbCode + "_updated.cif.gz";
 
     return inputPath;

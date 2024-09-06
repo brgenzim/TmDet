@@ -30,7 +30,7 @@ INSTALL( TARGETS TmdetLib ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX_LIB} )
 
 ADD_EXECUTABLE( tmdet cli/tmdet.cpp)
 #TARGET_LINK_LIBRARIES(tmdet PRIVATE TmdetLib z Eigen3::Eigen gemmi::gemmi_cpp ${MLPACK_LIBRARIES} ${ARMADILLO_LIBRARIES})
-TARGET_LINK_LIBRARIES(tmdet PRIVATE TmdetLib z Eigen3::Eigen gemmi::gemmi_cpp)
+TARGET_LINK_LIBRARIES(tmdet PRIVATE TmdetLib z Eigen3::Eigen gemmi::gemmi_cpp curl)
 INSTALL( TARGETS tmdet RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX_BIN} )
 
 ADD_EXECUTABLE( fragment_cif cli/fragment_cif.cpp)

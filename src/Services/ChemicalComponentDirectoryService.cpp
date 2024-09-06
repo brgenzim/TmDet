@@ -10,6 +10,7 @@
 
 #include <Services/ConfigurationService.hpp>
 #include <Services/ChemicalComponentDirectoryService.hpp>
+#include <Services/CurlWrapperService.hpp>
 #include <Types/Atom.hpp>
 #include <Types/Residue.hpp>
 
@@ -26,28 +27,31 @@ namespace Tmdet::Services::ChemicalComponentDirectoryService {
     }
 
     bool isBuilt() {
-        std::string lastFile(ConfigurationService::getValue(ConfigurationService::Keys::CHEMICAL_COMPONENT_DIRECTORY)
-            + "/Z/Z/ZZZ.cif");
+        std::string lastFile(ConfigurationService::ChemicalComponentDirectory + "/Z/Z/ZZZ.cif");
 
         return fs::exists(fs::path(lastFile));
     }
 
     void download() {
-        std::string cmd("bash ");
-        cmd += ConfigurationService::getValue(ConfigurationService::Keys::CHEMICAL_COMPONENT_DOWNLOAD_SCRIPT)
-            + " " + ConfigurationService::getValue(ConfigurationService::Keys::CHEMICAL_COMPONENT_DIRECTORY);
-        int exitCode = std::system(cmd.c_str());
-        if (exitCode != 0) {
-            std::string message(ConfigurationService::AppName);
-            message += ": command failed: '" + cmd + "'";
+        auto url = ConfigurationService::ChemicalComponentDirectoryUrl;
+        auto destination = ConfigurationService::ChemicalComponentFile;
+        std::cout << "Downloading " << url << "..." << std::endl;
+        auto status = CurlWrapperService::download(url, destination);
+        if (status != CurlWrapperService::Status::Ok) {
+            std::string message("Downloading '");
+            message += url + "' to '" + destination
+                + "' failed. Please validate the url and the destination directory.";
             throw std::runtime_error(message);
         }
+        std::cout << "Download completed." << std::endl;
     }
 
     void split() {
-        std::string cmd(ConfigurationService::getValue(ConfigurationService::Keys::FRAGMENT_CIF_EXEC));
-        cmd += " -i " + ConfigurationService::getValue(ConfigurationService::Keys::CHEMICAL_COMPONENT_FILE)
-            + " -d " + ConfigurationService::getValue(ConfigurationService::Keys::CHEMICAL_COMPONENT_DIRECTORY)
+        std::cout << "Splitting " << ConfigurationService::ChemicalComponentFile << "..." << std::endl;
+
+        std::string cmd(ConfigurationService::FragmentCifExec);
+        cmd += " -i " + ConfigurationService::ChemicalComponentFile
+            + " -d " + ConfigurationService::ChemicalComponentDirectory
             + " -s > /dev/null 2>&1";
         int exitCode = std::system(cmd.c_str());
         if (exitCode != 0) {
@@ -55,14 +59,16 @@ namespace Tmdet::Services::ChemicalComponentDirectoryService {
             message += ": command failed: '" + cmd + "'";
             throw std::runtime_error(message);
         }
+
+        std::cout << "Splitting done." << std::endl;
     }
 
     Tmdet::Types::Residue getComponentAsResidue(const std::string& threeLetterCode) {
         if (!isBuilt()) {
-            build();
+            // build();
+            ConfigurationService::chemicalComponentDirectoryError();
         }
-        std::string chemCompDirectory = std::string(ConfigurationService::getValue(ConfigurationService::Keys::CHEMICAL_COMPONENT_DIRECTORY));
-        chemCompDirectory += "/" + std::string(1, threeLetterCode[0]);
+        std::string chemCompDirectory = ConfigurationService::ChemicalComponentDirectory + "/" + std::string(1, threeLetterCode[0]);
         if (threeLetterCode.size() >= 2) {
             chemCompDirectory += "/" + std::string(1, threeLetterCode[1]);
         }

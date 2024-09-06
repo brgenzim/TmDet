@@ -56,7 +56,7 @@
   ENDIF()
 
 # json support
-#find_package(nlohmann_json 3.2.0 REQUIRED)
+find_package(nlohmann_json 3.2.0 REQUIRED)
 
 # gemmi support
 find_package(gemmi 0.6.4 CONFIG REQUIRED)
@@ -82,4 +82,4 @@ link_directories(${CMAKE_INSTALL_PREFIX_LIB})
 
 # Subdirectories
   ADD_SUBDIRECTORY ( src )
-#  ADD_SUBDIRECTORY ( tests )
+  ADD_SUBDIRECTORY ( tests )
