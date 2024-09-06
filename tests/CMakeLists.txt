@@ -16,7 +16,7 @@ LIST (APPEND FULL_SRC
 )
 
 ADD_EXECUTABLE( apiCallTest units/apiCallTest.cpp )
-TARGET_LINK_LIBRARIES( apiCallTest PRIVATE TmdetLib curl )
+TARGET_LINK_LIBRARIES( apiCallTest PRIVATE TmdetLib TmdetLib z gemmi::gemmi_cpp curl )
 INSTALL( TARGETS apiCallTest RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX_BIN} )
 
 ADD_EXECUTABLE( oligomerTest units/oligomerTest.cpp )
