@@ -70,6 +70,20 @@ int main() {
         assertTrue(testDescription, isSuccess, __LINE__);
     }
 
+    // Test case 6
+    {
+        // Call through api client
+        std::string code = "3452_FAKE_CODE_6ed7ac9";
+        testDescription = "Attempt to get results of a non-existing entry";
+        auto expectedFailure = false;
+        try {
+            auto result = Tmdet::Services::UniTmpService::getCctopPredictionResult(code, status);
+        } catch (std::runtime_error& exception) {
+            expectedFailure = true;
+        }
+        assertTrue(testDescription, expectedFailure, __LINE__);
+    }
+
     return 0;
 }
 
