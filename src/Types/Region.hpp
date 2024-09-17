@@ -10,6 +10,10 @@ namespace Tmdet::Types {
         std::string name;
         char code;
         std::string description;
+
+        bool operator==(Region other) {
+            return code == other.code;
+        }
     };
 
     namespace RegionType {
@@ -48,30 +52,36 @@ namespace Tmdet::Types {
             'F',
             "Interfacial helix on membrane surface"
         };
-        const Region INSIDE = {
-            "inside",
-            'I',
-            "Beta barrel inside element"
-        };
-        const Region BEG = {
-            "chain begin",
+        const Region MEMBINS = {
+            "membins",
             'N',
-            "N-terminal chain segment"
-        };
-        const Region END = {
-            "chain end",
-            'C',
-            "C-terminal chain segment"
+            "Beta barrel inside element"
         };
         const Region UNK = {
             "unkown",
             'U',
-            "Unknow localization"
+            "Unknown localization"
+        };
+        const Region INSIDE = {
+            "inside",
+            'I',
+            "inside (i.e cytoplasmic) in TOPDB"
+        };
+        const Region OUTSIDE = {
+            "outside",
+            'O',
+            "outside (i.e extra-cytosolic) in TOPDB"
+        };
+        const Region PERIPLASM = {
+            "periplasm",
+            'E',
+            "Periplasmic"
         };
     }
 
     const std::unordered_map<char, const Region> Regions = {
         { 'M', RegionType::MEMB },
+        { 'N', RegionType::MEMBINS },
         { 'H', RegionType::HELIX },
         { 'B', RegionType::BETA },
         { '1', RegionType::SIDE1 },
@@ -79,9 +89,22 @@ namespace Tmdet::Types {
         { 'L', RegionType::LOOP },
         { 'F', RegionType::IFH },
         { 'I', RegionType::INSIDE },
-        { 'N', RegionType::BEG },
-        { 'C', RegionType::END },
+        { 'O', RegionType::OUTSIDE },
+        { 'E', RegionType::PERIPLASM },
         { 'U', RegionType::UNK }
+    };
+
+    /**
+     * Regions returned by CCTOP API call.
+     */
+    const std::unordered_map<std::string, const Region> RegionsByName = {
+        { "Membrane", RegionType::MEMB },
+        { "Membins", RegionType::MEMBINS },
+        { "Re-entrant loop", RegionType::LOOP },
+        { "Interfacial helix", RegionType::IFH },
+        { "Inside", RegionType::INSIDE },
+        { "Outside", RegionType::OUTSIDE },
+        { "Periplasm", RegionType::PERIPLASM },
     };
 }
 

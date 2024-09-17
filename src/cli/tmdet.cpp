@@ -31,15 +31,15 @@ int main(int argc, char *argv[]) {
     gemmi::Structure pdb; 
     gemmi::cif::Document document;
     auto tmdetVO = Tmdet::ValueObjects::get(inputPath, pdb, document);
-    
+
     //change xml file to TMP="no" if the protein is not transmembrane and exit
     if (n) {
         notTransmembrane(xmlPath, tmdetVO);
     }
 
     //do agglomerative clustering on the whole structure
-    auto fragmentEngine = Tmdet::Utils::Fragment(tmdetVO);
-    fragmentEngine.run();
+    // auto fragmentEngine = Tmdet::Utils::Fragment(tmdetVO);
+    // fragmentEngine.run();
     
     //Tmdet::Utils::Symmetry symmetry;
     //auto result = symmetry.CheckSymmetry(tmdetVO);

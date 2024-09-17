@@ -1,31 +1,37 @@
 #ifndef __TMDET_SERVICES_CONFIGURATION__
 #define __TMDET_SERVICES_CONFIGURATION__
 
-#include <map>
 #include <string>
 
 namespace Tmdet::Services::ConfigurationService {
 
-    namespace Keys {
-        const std::string APP_NAME = "APP_NAME";
-        const std::string APP_EXEC = "APP_EXEC";
-        const std::string FRAGMENT_CIF_EXEC = "FRAGMENT_CIF_EXEC";
-        const std::string TMDET_DIRECTORY = "TMDET_DIRECTORY";
-        const std::string CHEMICAL_COMPONENT_DIRECTORY = "CHEMICAL_COMPONENT_DIRECTORY";
-        const std::string CHEMICAL_COMPONENT_FILE = "CHEMICAL_COMPONENT_FILE";
-        const std::string CHEMICAL_COMPONENT_DOWNLOAD_SCRIPT = "CHEMICAL_COMPONENT_DOWNLOAD_SCRIPT";
-        const std::string RCSBROOT_DIRECTORY = "RCSBROOT";
-        const std::string PDB_DIRECTORY = "PDB_DIRECTORY";
+    // These are default values and can be overwrite shell environment variables.
+    // Default values are set in cpp file - see them in parantheses below.
+    // These can be overwritten by corresponding environment variables.
+    //  - TMDET_DIRECTORY               (/usr/local/share/tmdet)
+    //  - CHEMICAL_COMPONENT_DIRECTORY  (/usr/local/share/tmdet/data/ccd)
+    //  - FRAGMENT_CIF_EXEC             (/usr/local/share/tmdet/fragment_cif)
+    //  - PDB_DATA_DIRECTORY            (/zfs/databases/UniTmp/PDB/data/structures/divided/updated_mmcif)
+    //  - UNITMP_SCHEMA                 (https://)
+    //  - UNITMP_DOMAIN                 (unitmp.org)
 
-    }
+    extern std::string TmdetDirectory;
+    extern std::string ChemicalComponentDirectory;
+    extern std::string ChemicalComponentFile;
+    extern std::string ChemicalComponentDirectoryUrl;
+    extern std::string UniTmpSchema;
+    extern std::string UniTmpDomain;
 
+    extern std::string FragmentCifExec;
+    extern std::string PdbDataDirectory;
+
+    // set by init() call
     extern std::string AppName;
 
     extern void init();
-    extern std::string getValue(std::string key);
     extern std::string getEnv(std::string key);
-    extern bool hasKey(std::string& key);
-    extern void dump();
+    extern void chemicalComponentDirectoryError();
+
 }
 
 #endif

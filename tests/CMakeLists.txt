@@ -15,18 +15,22 @@ LIST (APPEND FULL_SRC
      ${FeaturesSources}
 )
 
-ADD_EXECUTABLE( oligomerTest units/oligomerTest.cpp)
+ADD_EXECUTABLE( apiCallTest units/apiCallTest.cpp )
+TARGET_LINK_LIBRARIES( apiCallTest PRIVATE TmdetLib TmdetLib z gemmi::gemmi_cpp curl )
+INSTALL( TARGETS apiCallTest RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX_BIN} )
+
+ADD_EXECUTABLE( oligomerTest units/oligomerTest.cpp )
 TARGET_LINK_LIBRARIES( oligomerTest PRIVATE TmdetLib z gemmi::gemmi_cpp)
 INSTALL( TARGETS oligomerTest RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX_BIN} )
 
-ADD_EXECUTABLE( secondaryStructVectorTest units/secondaryStructVectorTest.cpp)
-TARGET_LINK_LIBRARIES( secondaryStructVectorTest PRIVATE TmdetLib z gemmi::gemmi_cpp)
+ADD_EXECUTABLE( secondaryStructVectorTest units/secondaryStructVectorTest.cpp )
+TARGET_LINK_LIBRARIES( secondaryStructVectorTest PRIVATE TmdetLib z gemmi::gemmi_cpp curl )
 INSTALL( TARGETS secondaryStructVectorTest RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX_BIN} )
 
-ADD_EXECUTABLE( alignmentTest units/alignmentTest.cpp)
-TARGET_LINK_LIBRARIES( alignmentTest PRIVATE TmdetLib z gemmi::gemmi_cpp)
+ADD_EXECUTABLE( alignmentTest units/alignmentTest.cpp )
+TARGET_LINK_LIBRARIES( alignmentTest PRIVATE TmdetLib z gemmi::gemmi_cpp curl )
 INSTALL( TARGETS alignmentTest RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX_BIN} )
 
-ADD_EXECUTABLE( dsspTest units/dsspTest.cpp)
-TARGET_LINK_LIBRARIES( dsspTest PRIVATE TmdetLib z gemmi::gemmi_cpp)
+ADD_EXECUTABLE( dsspTest units/dsspTest.cpp )
+TARGET_LINK_LIBRARIES( dsspTest PRIVATE TmdetLib z gemmi::gemmi_cpp curl )
 INSTALL( TARGETS dsspTest RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX_BIN} )
