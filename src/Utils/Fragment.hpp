@@ -18,16 +18,19 @@ namespace Tmdet::Utils {
     class Fragment {
         private:
             Tmdet::ValueObjects::TmdetStruct& tmdetVO;
-
-            void addToFragment(Tmdet::ValueObjects::Residue& residueVO, int fr);
+            
             std::vector<_cr> getNeighbors(Tmdet::ValueObjects::Residue& residueVO);
-            bool sameChain(gemmi::Chain* chain, int chainIdx);
+            std::vector<_cr> getCAlphaNetwork();
+            std::vector<std::vector<int>> createFragments(int size);
+            void writeBackFragmentInfoToStructure(std::vector<std::vector<int>> clusters, std::vector<_cr> crs);
+            void freeTempValues();
 
         public:
             Fragment(Tmdet::ValueObjects::TmdetStruct& _tmdetVO) : tmdetVO(_tmdetVO) {} ;
             ~Fragment()=default;
 
             void run();
+            
     };
 }
 #endif

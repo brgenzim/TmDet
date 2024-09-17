@@ -40,17 +40,17 @@ int main(int argc, char *argv[]) {
     //do agglomerative clustering on the whole structure
     auto fragmentEngine = Tmdet::Utils::Fragment(tmdetVO);
     fragmentEngine.run();
-
+    
     //Tmdet::Utils::Symmetry symmetry;
     //auto result = symmetry.CheckSymmetry(tmdetVO);
 
-    Tmdet::Utils::Dssp dssp = Tmdet::Utils::Dssp(tmdetVO);
-    dssp.calcDsspOnStructure();
-    dssp.writeDsspOnStructure();
-    Tmdet::Utils::Surface surf = Tmdet::Utils::Surface(tmdetVO);
-    surf.main();
-    surf.setOutsideSurface();
-    Tmdet::DTOS::TmdetStruct::out(tmdetVO);
+    //Tmdet::Utils::Dssp dssp = Tmdet::Utils::Dssp(tmdetVO);
+    //dssp.calcDsspOnStructure();
+    //dssp.writeDsspOnStructure();
+    //Tmdet::Utils::Surface surf = Tmdet::Utils::Surface(tmdetVO);
+    //surf.main();
+    //surf.setOutsideSurface();
+    //Tmdet::DTOS::TmdetStruct::out(tmdetVO);
     
 
 }
