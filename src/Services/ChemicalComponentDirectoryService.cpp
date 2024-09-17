@@ -88,6 +88,7 @@ namespace Tmdet::Services::ChemicalComponentDirectoryService {
         auto atomLoop = block.find_loop_item("_chem_comp_atom.comp_id")->loop;
         int loopLength = atomLoop.length();
         int atomIdCol = atomLoop.find_tag("_chem_comp_atom.atom_id");
+        int altAtomIdCol = atomLoop.find_tag("_chem_comp_atom.alt_atom_id");
         int typeSymbolCol = atomLoop.find_tag("_chem_comp_atom.type_symbol");
         int aromaticFlagCol = atomLoop.find_tag("_chem_comp_atom.pdbx_aromatic_flag");
         for (int row = 0; row < loopLength; row++) {
@@ -97,6 +98,7 @@ namespace Tmdet::Services::ChemicalComponentDirectoryService {
                 continue;
             }
             std::string atomId = atomLoop.val(row, atomIdCol);
+            std::string altAtomId = atomLoop.val(row, altAtomIdCol);
             if (atomId[0] == '"') {
                 // strip off the quote marks
                 atomId = std::string(atomId.begin() + 1, atomId.end() - 1);
@@ -120,7 +122,22 @@ namespace Tmdet::Services::ChemicalComponentDirectoryService {
             // TODO: these values have to be corrected later (here or elsewhere)
             atomData.mean = 0;
             atomData.sds = 0;
-            residue.atoms[atomId] = atomData;
+            residue.atoms[altAtomId] = atomData;
+        }
+        // ugly bugfix/workaround of https://redmine.enzim.ttk.hu/issues/938
+        if (residue.name == "UNK") {
+            Types::AtomData atomData;
+            atomData.atom = Types::AtomType::C_ALI;
+            // TODO: these values have to be corrected later (here or elsewhere)
+            atomData.mean = 0;
+            atomData.sds = 0;
+            residue.atoms["CD"] = atomData;
+
+            atomData.atom = Types::AtomType::O; // TODO: vs O_CAR?
+            residue.atoms["OD1"] = atomData;
+
+            atomData.atom = Types::AtomType::N; // TODO: vs N_AMN, N_AMD or N_NUC
+            residue.atoms["ND2"] = atomData;
         }
         return residue;
     }

@@ -46,7 +46,8 @@ class TmDetDsspTest extends TestCase {
         $this->assertDsspArraysEqual($dsspRunner->dssps, $tmdetRunner->dssps);
     }
 
-    #[DataProvider('getCifPaths')]
+    //#[DataProvider('getCifPaths')]
+    #[DataProvider('getCifPathsOfTmps')]
     public function test_whole_archive(string $cifPath) {
 
         // Pre-check
@@ -56,6 +57,30 @@ class TmDetDsspTest extends TestCase {
         //     printf("Skipping test - not DSSP-eligible: %s\n", $cifPath);
         //     $this->markTestSkipped('There is a chain with unsupported length ' . $cifPath);
         // }
+
+        if (!$filter->tryCheckEntryFiles($exception)) {
+            printf("Skipping test: %s\n", $exception->getMessage());
+            $this->markTestSkipped('Unsupported CIF-ENT pair ' . $cifPath);
+        }
+
+        // Arrange
+        $tmdetRunner = TmDetDsspRunner::createRunner($cifPath);
+        $dsspRunner = PdbtmDsspRunner::createRunner($filter->entFile);
+        // Act
+        $dsspSuccess = $dsspRunner->exec();
+        $tmdetSuccess = $tmdetRunner->exec();
+        // Assert
+        $this->assertTrue($tmdetSuccess);
+        $this->assertTrue($dsspSuccess);
+        $this->assertDsspArraysEqual($dsspRunner->dssps, $tmdetRunner->dssps);
+    }
+
+    #[DataProvider('getCifPathsOfTmpsWithErrors')]
+    public function test_tmps_with_errors(string $cifPath) {
+
+        // Pre-check
+        $filter = new StructurePreFilter($cifPath);
+        $exception = null;
 
         if (!$filter->tryCheckEntryFiles($exception)) {
             printf("Skipping test: %s\n", $exception->getMessage());
@@ -164,6 +189,31 @@ class TmDetDsspTest extends TestCase {
         //return array_slice($files, 100, 1000);
         return array_slice($files, 41000, 11000);
         //return $files;
+    }
+
+    public static function getCifPathsOfTmps(): array {
+        $cifPaths = [];
+        foreach (explode("\n", trim(file_get_contents('../data/tm-codes.txt'))) as $code) {
+            $fileName = "$code.cif.gz";
+            $subDir = '/' . $code[1] . $code[2] . '/';
+            $cifPaths[$fileName] = [ static::PDB_ZFS_DIR . $subDir . $fileName  ];
+        }
+        return $cifPaths;
+    }
+
+    public static function getCifPathsOfTmpsWithErrors(): array {
+        return [
+            '1bcc.cif.gz' => [ static::PDB_ZFS_DIR . '/bc/1bcc.cif.gz' ],
+            '7a4p.cif.gz' => [ static::PDB_ZFS_DIR . '/a4/7a4p.cif.gz' ],
+            '7t6b.cif.gz' => [ static::PDB_ZFS_DIR . '/t6/7t6b.cif.gz' ],
+            '8e4o.cif.gz' => [ static::PDB_ZFS_DIR . '/e4/8e4o.cif.gz' ],
+            '3bcc.cif.gz' => [ static::PDB_ZFS_DIR . '/bc/3bcc.cif.gz' ],
+            '4msw.cif.gz' => [ static::PDB_ZFS_DIR . '/ms/4msw.cif.gz' ],
+            '6zxs.cif.gz' => [ static::PDB_ZFS_DIR . '/zx/6zxs.cif.gz' ],
+            '7a5v.cif.gz' => [ static::PDB_ZFS_DIR . '/a5/7a5v.cif.gz' ],
+            '2axt.cif.gz' => [ static::PDB_ZFS_DIR . '/ax/2axt.cif.gz' ],
+            '2bcc.cif.gz' => [ static::PDB_ZFS_DIR . '/bc/2bcc.cif.gz' ],
+        ];
     }
 
     /**
