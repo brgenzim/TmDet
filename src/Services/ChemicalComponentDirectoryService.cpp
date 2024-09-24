@@ -124,21 +124,6 @@ namespace Tmdet::Services::ChemicalComponentDirectoryService {
             atomData.sds = 0;
             residue.atoms[altAtomId] = atomData;
         }
-        // ugly bugfix/workaround of https://redmine.enzim.ttk.hu/issues/938
-        if (residue.name == "UNK") {
-            Types::AtomData atomData;
-            atomData.atom = Types::AtomType::C_ALI;
-            // TODO: these values have to be corrected later (here or elsewhere)
-            atomData.mean = 0;
-            atomData.sds = 0;
-            residue.atoms["CD"] = atomData;
-
-            atomData.atom = Types::AtomType::O; // TODO: vs O_CAR?
-            residue.atoms["OD1"] = atomData;
-
-            atomData.atom = Types::AtomType::N; // TODO: vs N_AMN, N_AMD or N_NUC
-            residue.atoms["ND2"] = atomData;
-        }
         return residue;
     }
 

@@ -24,7 +24,12 @@ namespace Tmdet::Utils {
             for(auto& residue: chain.residues) {
                 for(auto& atom: residue.atoms) {
                     Tmdet::Types::Residue residueType = Tmdet::Types::ResidueType::getResidue(residue.gemmi.name);
-                    double vdw = residueType.atoms.at(atom.gemmi.name).atom.vdw + SURF_PROBSIZE;
+                    double vdw = SURF_PROBSIZE;
+                    if (residueType.atoms.contains(atom.gemmi.name)) {
+                        vdw += residueType.atoms.at(atom.gemmi.name).atom.vdw;
+                    } else {
+                        vdw += Types::AtomType::DEFAULT_VDW;
+                    }
                     atom.temp.insert({"vdw",any_cast<double>(vdw)});
                 }
             }
