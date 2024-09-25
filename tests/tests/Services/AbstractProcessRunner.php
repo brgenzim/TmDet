@@ -56,10 +56,10 @@ abstract class AbstractProcessRunner {
 
     public static function getPdbCodeFromPath(string $pdbPath): string {
 
-        if (!str_ends_with($pdbPath, '.cif.gz') && !str_ends_with($pdbPath, '.ent.gz')) {
+        if (!str_ends_with($pdbPath, '.cif.gz') && !str_ends_with($pdbPath, '.ent.gz') && !str_ends_with($pdbPath, '.pdb.gz')) {
             throw new InvalidArgumentException("Unexpected file path: $pdbPath");
         }
-        if (!preg_match('/(pdb)?([^\/]*?)\.(cif|ent)\.gz$/', $pdbPath, $matches)) {
+        if (!preg_match('/(pdb)?([^\/]*?)\.(cif|ent|pdb)\.gz$/', $pdbPath, $matches)) {
             throw new InvalidArgumentException("Unexpected file path: $pdbPath");
         }
 
