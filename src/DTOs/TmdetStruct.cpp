@@ -116,7 +116,13 @@ namespace Tmdet::DTOS {
                     cout << "\t\tATOM " << atom.idx << ": " << atom.gemmi.name << " ";
                     cout << atom.gemmi.pos.x << " " << atom.gemmi.pos.y << " " << atom.gemmi.pos.z << " ";
                     Tmdet::Types::Residue residueType = Tmdet::Types::ResidueType::getResidue(residue.gemmi.name);
-                    cout << atom.surface << " " << residueType.atoms.at(atom.gemmi.name).atom.vdw;
+                    double vdw = 0.0;
+                    if (residueType.atoms.contains(atom.gemmi.name)) {
+                        vdw = residueType.atoms.at(atom.gemmi.name).atom.vdw;
+                    } else {
+                        vdw = Types::AtomType::DEFAULT_VDW;
+                    }
+                    cout << atom.surface << " " << vdw;
                     if (atom.temp.find("outside") != atom.temp.end()) {
                         cout << " out: " << any_cast<double>(atom.temp.at("outside"));
                     }
