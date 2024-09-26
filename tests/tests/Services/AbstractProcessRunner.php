@@ -9,6 +9,7 @@ abstract class AbstractProcessRunner {
     public readonly string $execPath;
     public readonly array $commandParams;
     public array $outputLines = [];
+    protected bool $disableOutputParsing = false;
     protected string $commandLine;
 
     public function __construct(string $execPath, array $commandParams) {
@@ -39,16 +40,19 @@ abstract class AbstractProcessRunner {
             fprintf(STDERR, "Failed: %s\n", $this->commandLine);
             fprintf(STDERR, "Output:\n%s\n", implode("\n", $lines));
         }
-        $lines = $this->filterOutputLines($lines);
-        foreach ($lines as $line) {
+
+        if (!$this->disableOutputParsing) {
+            $lines = $this->filterOutputLines($lines);
+            foreach ($lines as $line) {
                 // just collect error message lines and jump to next line
                 if ($resultCode !== 0) {
-                $this->outputLines[] = $line;
-                continue;
-            }
+                    $this->outputLines[] = $line;
+                    continue;
+                }
 
-            // collect output of successful run
-            $this->outputLines[] = $this->parseOutputLine($line);
+                // collect output of successful run
+                $this->outputLines[] = $this->parseOutputLine($line);
+            }
         }
 
         return $resultCode === 0;
