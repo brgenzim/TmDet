@@ -41,7 +41,10 @@ abstract class AbstractProcessRunner {
             fprintf(STDERR, "Output:\n%s\n", implode("\n", $lines));
         }
 
-        if (!$this->disableOutputParsing) {
+        if ($this->disableOutputParsing) {
+            // use the raw output (stdout+stderr) in this case
+            $this->outputLines = $lines;
+        } else {
             $lines = $this->filterOutputLines($lines);
             foreach ($lines as $line) {
                 // just collect error message lines and jump to next line

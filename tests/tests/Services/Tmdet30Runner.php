@@ -27,6 +27,7 @@ class Tmdet30Runner extends AbstractProcessRunner {
     public array $newData = [];
     public string $entFile = '';
     public string $pdbCode = '';
+    public string $tmdetLogFile = '';
 
     public function __construct(string $execPath, array $commandParams, string $entFile) {
         parent::__construct($execPath, $commandParams);
@@ -40,6 +41,7 @@ class Tmdet30Runner extends AbstractProcessRunner {
         $dbDir = static::TMDET_DB_PATH;
         $subDir = substr($this->pdbCode, 1, 2);
         $this->newTmdetFile = "$dbDir/$subDir/$this->pdbCode.xml";
+        $this->tmdetLogFile = "$dbDir/$subDir/$this->pdbCode.tmdet.log";
         $this->oldTmdetFile = FileSystem::PDBTM30_DATA_DIR . "/database/$subDir/{$this->pdbCode}.xml";
     }
 
@@ -50,6 +52,11 @@ class Tmdet30Runner extends AbstractProcessRunner {
         }
 
         $result = parent::exec();
+
+        // We do not filter and parse in this kind of runner,
+        // but save the output into logfile.
+        $output = implode(PHP_EOL, $this->outputLines);
+        file_put_contents($this->tmdetLogFile, $output);
 
         if (!file_exists($this->newTmdetFile)) {
             throw new RuntimeException("New Tmdet XML of {$this->pdbCode} not found '{$this->newTmdetFile}'");
@@ -69,9 +76,9 @@ class Tmdet30Runner extends AbstractProcessRunner {
         foreach ($pdbtmContent as $chainId => $chainItem) {
             $typeSequence = '';
             foreach ($chainItem['regions'] as $region) {
-                // $count = $region['seq_end'] - $region['seq_beg'] + 1;
-                // $typeSequence .= str_repeat($region['type'], $count);
-                $typeSequence .= $region['type'];
+                $count = $region['seq_end'] - $region['seq_beg'] + 1;
+                $typeSequence .= str_repeat($region['type'], $count);
+                // SHORT region strings: $typeSequence .= $region['type'];
             }
             $regions[$chainId] = $typeSequence;
         }
@@ -79,10 +86,12 @@ class Tmdet30Runner extends AbstractProcessRunner {
     }
 
     protected function filterOutputLines(array $lines): array {
+        // output will not be parsed
         return [];
     }
 
     protected function parseOutputLine(string $line): string {
+        // no operation
         return $line;
     }
 
