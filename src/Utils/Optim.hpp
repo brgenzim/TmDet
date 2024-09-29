@@ -3,32 +3,46 @@
 
 #include <array>
 #include <string>
-#include <any>
+#include <vector>
 #include <gemmi/model.hpp>
 #include <ValueObjects/TmdetStruct.hpp>
 #include <ValueObjects/Membrane.hpp>
 
-using namespace std;
-using namespace gemmi;
-using namespace Tmdet::ValueObjects;
-
 namespace Tmdet::Utils {
+
+    struct _slice {
+        int numStraight;
+        int numTurn;
+        int numCA;
+        double surf;
+        double voronota;
+    };
 
     class Optim {
         private:
             bool run;
-            float min,max;
-            Membrane membraneVO;
-            TmdetStruct &tmdetVO;
+            double min;
+            double max;
+            std::vector<_slice> slices;
+            Tmdet::ValueObjects::Membrane membraneVO;
+            Tmdet::ValueObjects::TmdetStruct& tmdetVO;
 
             void init();
             void end();
             void setDistances();
+            void setAtomDistances(Tmdet::ValueObjects::Residue& residue);
             void setBoundaries();
+            void sumupSlices();
+            void residueToSlice(Tmdet::ValueObjects::Residue& residue);
+            double getQValueForSlice(const _slice& s);
+            std::vector<double> getQValueForSlices();
+            double smoothQValues(std::vector<double> qs);
 
         public:
-            Optim(TmdetStruct& tmdetVO) : tmdetVO(tmdetVO) {}
-            ~Optim() {}
+            explicit Optim(Tmdet::ValueObjects::TmdetStruct& tmdetVO) : tmdetVO(tmdetVO) {}
+            ~Optim()=default;
+
+            double getQValue();
 
 
     };

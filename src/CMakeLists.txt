@@ -9,7 +9,9 @@
 AUX_SOURCE_DIRECTORY( . LibrarySources )
 AUX_SOURCE_DIRECTORY( cli CliSources )
 AUX_SOURCE_DIRECTORY( DTOs DtosSources )
+AUX_SOURCE_DIRECTORY( Exceptions ExceptionsSources )
 AUX_SOURCE_DIRECTORY( Services ServicesSources )
+AUX_SOURCE_DIRECTORY( System SystemSources )
 AUX_SOURCE_DIRECTORY( Types TypesSources )
 AUX_SOURCE_DIRECTORY( Utils UtilsSources )
 AUX_SOURCE_DIRECTORY( ValueObjects ValueObjectsSources )
@@ -18,7 +20,9 @@ AUX_SOURCE_DIRECTORY( "${PROJECT_SOURCE_DIR}/../contrib/pugixml/src/" PugiSource
 LIST (APPEND FULL_SRC
      ${LibrarySources}
      ${DtosSources}
+     ${ExceptionsSources}
      ${ServicesSources}
+     ${SystemSources}
      ${TypesSources}
      ${UtilsSources}
      ${ValueObjectsSources}
@@ -29,12 +33,5 @@ ADD_LIBRARY( TmdetLib STATIC ${FULL_SRC} )
 INSTALL( TARGETS TmdetLib ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX_LIB} )
 
 ADD_EXECUTABLE( tmdet cli/tmdet.cpp)
-#TARGET_LINK_LIBRARIES(tmdet PRIVATE TmdetLib z Eigen3::Eigen gemmi::gemmi_cpp ${MLPACK_LIBRARIES} ${ARMADILLO_LIBRARIES})
 TARGET_LINK_LIBRARIES(tmdet PRIVATE TmdetLib z Eigen3::Eigen gemmi::gemmi_cpp curl)
 INSTALL( TARGETS tmdet RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX_BIN} )
-
-ADD_EXECUTABLE( fragment_cif cli/fragment_cif.cpp)
-TARGET_LINK_LIBRARIES(fragment_cif TmdetLib z gemmi::gemmi_cpp)
-INSTALL( TARGETS fragment_cif RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX_BIN} )
-
-#INSTALL( FILES PdbLib.h DESTINATION include)

@@ -76,17 +76,17 @@ namespace Tmdet::DTOS {
         Tmdet::Utils::Alignment::alignResidues(tmdetVO);
         int chainIdx = 0;
         for(auto& chain: tmdetVO.gemmi.models[0].chains) {
-            Tmdet::ValueObjects::Chain chainVO = Tmdet::ValueObjects::Chain(chain);
+            auto chainVO = Tmdet::ValueObjects::Chain(chain);
             chainVO.idx = chainIdx++;
             int residueIdx = 0;
             for( auto& residue: chain.residues) {
-                Tmdet::ValueObjects::Residue residueVO = Tmdet::ValueObjects::Residue(residue);
+                auto residueVO = Tmdet::ValueObjects::Residue(residue);
                 residueVO.chainIdx = chainVO.idx;
                 residueVO.idx = residueIdx++;
                 residueVO.surface = 0.0;
                 int atomIdx = 0;
                 for( auto& atom: residue.atoms) {
-                    Tmdet::ValueObjects::Atom atomVO = Tmdet::ValueObjects::Atom(atom);
+                    auto atomVO = Tmdet::ValueObjects::Atom(atom);
                     atomVO.chainIdx = chainVO.idx;
                     atomVO.residueIdx = residueVO.idx;
                     atomVO.idx = atomIdx++;

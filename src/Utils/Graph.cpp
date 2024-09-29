@@ -9,20 +9,17 @@
 #include <utility>
 #include <Utils/Graph.hpp>
 
-using namespace std;
-
 namespace Tmdet::Utils {
 
     /**
-     * add an edge to the graph
-     * @param int u
-     * @param int v
+     * @brief add an edge to the graph
+     * @param unsigned int u
+     * @param unsigned int v
      * @return void
      */
-    void Graph::addEdge(int u, int v) {
-        if (u<0 || u>=V || v<0 || v>=V ) {
+    void Graph::addEdge(unsigned int u, unsigned int v) {
+        if (u>=V || v>=V ) {
             return;
-            //TODO: throw error
         }
         if (!edges[u][v]) {
             adj[u].push_back(v);
@@ -32,17 +29,17 @@ namespace Tmdet::Utils {
     }
 
     /**
-     * Calculate the value for a given cluster
-     * cutting in a given position
-     * @param int clIdx
-     * @param int cutPos
+     * @brief Calculate the value for a given cluster
+     *        cutting in a given position
+     * @param unsigned int clIdx
+     * @param unsigned int cutPos
      * @return double
      */
-    double Graph::graphValue(int clIdx, int cutPos) {
+    double Graph::graphValue(unsigned int clIdx, unsigned int cutPos) {
         double ret=0;
         int numLeft=0;
         int numRight=0;
-        for(int v=0; v<V; v++) {
+        for(unsigned long v=0; v<V; v++) {
             if (clusters[v] == clIdx) {
                 numLeft += (v<cutPos?1:0);
                 numRight += (v<cutPos?0:1);
@@ -61,18 +58,18 @@ namespace Tmdet::Utils {
     }
 
     /**
-     * Calculate the value for a given cluster
-     * using two cutting positions
-     * @param int clIdx
-     * @param int beg
-     * @param int end
+     * @brief Calculate the value for a given cluster
+     *        using two cutting positions
+     * @param unsigned int clIdx
+     * @param unsigned int beg
+     * @param unsigned int end
      * @return double
      */
-    double Graph::graphValue2(int clIdx, int beg, int end) {
+    double Graph::graphValue2(unsigned int clIdx, unsigned int beg, unsigned int end) {
         double ret=0;
-        int numLeft=0;
-        int numRight=0;
-        for(int v=0; v<V; v++) {
+        unsigned int numLeft=0;
+        unsigned int numRight=0;
+        for(unsigned int v=0; v<V; v++) {
             if (clusters[v] == clIdx) {
                 numLeft += (v>=beg&&v<end?1:0);
                 numRight += (v>=beg&&v<end?0:1);
@@ -95,17 +92,17 @@ namespace Tmdet::Utils {
     }
 
     /**
-     * Scanning through polypeptid backbone
-     * for determining best cutting point
-     * @param int clIdx
-     * @return std::vector<std::pair<double,int>>
+     * @brief Scanning through polypeptid backbone
+     *        for determining best cutting point
+     * @param unsigned int clIdx
+     * @return std::vector<std::pair<double,unsigned int>>
      */
-    std::vector<std::pair<double,int>> Graph::scan(int clIdx) {
-        std::vector<std::pair<double,int>> ret(V);
-        int j=0;
-        for(int i=0; i<V; i++) {
+    std::vector<std::pair<double,unsigned int>> Graph::scan(unsigned int clIdx) {
+        std::vector<std::pair<double,unsigned int>> ret(V);
+        unsigned int j=0;
+        for(unsigned int i=0; i<V; i++) {
             if (clusters[i] == clIdx) {
-                ret[j] = std::pair<double,int>({graphValue(clIdx,i),i});
+                ret[j] = std::pair<double,unsigned int>({graphValue(clIdx,i),i});
                 j++;
             }
         }
@@ -113,12 +110,12 @@ namespace Tmdet::Utils {
     }
 
     /**
-     * Smoothing scanned profile
-     * @param std::vector<std::pair<double,int>> in
-     * @return std::vector<std::pair<double,int>>
+     * @brief Smoothing scanned profile
+     * @param std::vector<std::pair<double,unsigned int>> in
+     * @return std::vector<std::pair<double,unsigned int>>
      */
-    std::vector<std::pair<double,int>> Graph::smooth(vector<pair<double,int>> in) {
-        std::vector<std::pair<double,int>> ret(V);
+    std::vector<std::pair<double,unsigned int>> Graph::smooth(std::vector<std::pair<double,unsigned int>> in) {
+        std::vector<std::pair<double,unsigned int>> ret(V);
         for(unsigned int i=0; i<in.size(); i++) {
             int k=0;
             double q=0;
@@ -129,18 +126,18 @@ namespace Tmdet::Utils {
                 }
             }
             q /= k;
-            ret[i] = pair<double,int>({q,in[i].second});
+            ret[i] = std::pair<double,unsigned int>({q,in[i].second});
         }
         return ret;
     }
 
     /**
-     * Determining local minimum points in the smoothed profile
-     * @param std::vector<std::pair<double,int>> in
-     * @return std::vector<int>
+     * @brief Determining local minimum points in the smoothed profile
+     * @param std::vector<std::pair<double,unsigned int>> in
+     * @return std::vector<unsigned int>
      */
-    vector<int> Graph::minPositions(vector<pair<double,int>> in) {
-        std::vector<int> ret;
+    std::vector<unsigned int> Graph::minPositions(std::vector<std::pair<double,unsigned int>> in) {
+        std::vector<unsigned int> ret;
         ret.push_back(in[0].second);
         for(unsigned int i=1; i<in.size()-1; i++) {
             if (in[i].first<in[i-1].first && in[i].first<in[i+1].first) {
@@ -152,18 +149,18 @@ namespace Tmdet::Utils {
     }
 
     /**
-     * Determining the best cuts for a given cluster
-     * @param int clIdx
+     * @brief Determining the best cuts for a given cluster
+     * @param unsigned int clIdx
      * @param double& minValue
-     * @param int& bestBeg
-     * @param int& bestEnd
-     * @param int& bestCluster
+     * @param unsigned int& bestBeg
+     * @param unsigned int& bestEnd
+     * @param unsigned int& bestCluster
      * @return void
      */
-    void Graph::cut(int clIdx, double& minValue, int& bestBeg, int& bestEnd, int& bestCluster) {
-        vector<pair<double,int>> p = scan(clIdx);
-        vector<pair<double,int>> sp = smooth(p);
-        vector<int> mps = minPositions(sp);
+    void Graph::cut(unsigned int clIdx, double& minValue, unsigned int& bestBeg, unsigned int& bestEnd, int& bestCluster) {
+        std::vector<std::pair<double,unsigned int>> p = scan(clIdx);
+        std::vector<std::pair<double,unsigned int>> sp = smooth(p);
+        std::vector<unsigned int> mps = minPositions(sp);
 
         for(unsigned int b=0; b<mps.size()-1; b++) {
             for(unsigned int e=b+1; e<mps.size(); e++) {
@@ -174,27 +171,29 @@ namespace Tmdet::Utils {
                     bestEnd = mps[e];
                     bestCluster = clIdx;
                 }
-                //std::cout << b << ":" << e << "=" << value << std::endl;
             }
         }
-        //std::cout << "Cut:" << clIdx << ":" << bestBeg << ":" << bestEnd << " = " << minValue << std::endl;
     }
 
-    vector<int> Graph::optim() {
+    /**
+     * @brief generates fragments
+     * 
+     * @return vector<unsigned int> 
+     */
+    std::vector<unsigned int> Graph::optim() {
         while(true) {
-            double minValue = MIN_DIFFERENT_LIMIT;
-            int bestBeg = -1;
-            int bestEnd = -1;
+            double minValue = ClusterCutLimit;
+            unsigned int bestBeg = 0;
+            unsigned int bestEnd = 0;
             int cl = -1;
-            for(int i=0; i<numClusters; i++) {
+            for(unsigned int i=0; i<numClusters; i++) {
                 cut(i,minValue,bestBeg,bestEnd,cl);
             }
-            //std::cout << cl << ":" << bestBeg << "-" << bestEnd << " =  "<< minValue << std::endl;
             if (cl == -1) {
                 break;
             }
-            if (minValue<MIN_DIFFERENT_LIMIT) {
-                for (int i=bestBeg; i<bestEnd; i++) {
+            if (minValue < ClusterCutLimit) {
+                for (unsigned int i=bestBeg; i<bestEnd; i++) {
                     if (clusters[i] == cl) {
                         clusters[i] = numClusters;
                     }

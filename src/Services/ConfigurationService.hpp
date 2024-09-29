@@ -14,7 +14,7 @@ namespace Tmdet::Services::ConfigurationService {
     //  - PDB_DATA_DIRECTORY            (/zfs/databases/UniTmp/PDB/data/structures/divided/updated_mmcif)
     //  - UNITMP_SCHEMA                 (https://)
     //  - UNITMP_DOMAIN                 (unitmp.org)
-
+/*
     extern std::string TmdetDirectory;
     extern std::string ChemicalComponentDirectory;
     extern std::string ChemicalComponentFile;
@@ -31,7 +31,7 @@ namespace Tmdet::Services::ConfigurationService {
     extern void init();
     extern std::string getEnv(std::string key);
     extern void chemicalComponentDirectoryError();
-
+*/
 }
 
 #endif

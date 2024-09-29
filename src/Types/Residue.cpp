@@ -1,7 +1,6 @@
 #include <fstream>
 #include <map>
 #include <functional>
-#include <Services/ConfigurationService.hpp>
 #include <Services/ChemicalComponentDirectoryService.hpp>
 #include <Types/Residue.hpp>
 

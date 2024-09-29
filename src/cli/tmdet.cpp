@@ -1,8 +1,9 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <Services/ConfigurationService.hpp>
-#include <Utils/Args.hpp>
+#include <Services/ChemicalComponentDirectoryService.hpp>
+#include <System/Arguments.hpp>
+#include <System/Environment.hpp>
 #include <Utils/Dssp.hpp>
 #include <Utils/Surface.hpp>
 #include <Utils/Symmetry.hpp>
@@ -12,14 +13,24 @@
 
 using namespace std;
 
-Tmdet::Utils::Args setArguments(int argc, char *argv[]);
+Tmdet::System::Arguments getArguments(int argc, char *argv[]);
 void notTransmembrane(string x, Tmdet::ValueObjects::TmdetStruct& tmdetVO);
+Tmdet::System::Environment environment;
 
-int main(int argc, char *argv[]) {
-    
-    Tmdet::Utils::Args args = setArguments(argc,argv);
+int main(int argc, char *argv[], char **envp) {
 
-    Tmdet::Services::ConfigurationService::init();
+    //get and check command line arguments
+    Tmdet::System::Arguments args = getArguments(argc,argv);
+
+    //get environment file content and shell environment variables
+    environment.init(envp,args.getValueAsString("e"));
+
+    //check ccd and fetch it if missing
+    if (!Tmdet::Services::ChemicalComponentDirectoryService::isBuilt()) {
+        std::cerr << "Chemical component directory is not set, please wait while installing it." << std::endl;
+        Tmdet::Services::ChemicalComponentDirectoryService::fetch();
+        Tmdet::Services::ChemicalComponentDirectoryService::build();
+    }
     string inputPath = args.getValueAsString("i");
     string xmlPath = args.getValueAsString("x");
     string outputPdbPath = args.getValueAsString("p");
@@ -37,9 +48,9 @@ int main(int argc, char *argv[]) {
         notTransmembrane(xmlPath, tmdetVO);
     }
 
-    //do agglomerative clustering on the whole structure
-    // auto fragmentEngine = Tmdet::Utils::Fragment(tmdetVO);
-    // fragmentEngine.run();
+    //do clustering on the whole structure
+    auto fragmentEngine = Tmdet::Utils::Fragment(tmdetVO);
+    fragmentEngine.run();
     
     //Tmdet::Utils::Symmetry symmetry;
     //auto result = symmetry.CheckSymmetry(tmdetVO);
@@ -55,8 +66,9 @@ int main(int argc, char *argv[]) {
 
 }
 
-Tmdet::Utils::Args setArguments(int argc, char *argv[]) {
-    Tmdet::Utils::Args args;
+Tmdet::System::Arguments getArguments(int argc, char *argv[]) {
+    Tmdet::System::Arguments args;
+    args.define(false,"e","env","Path for environment variable file","string",".env");
     args.define(false,"i","input","Input PDB file path (in cif format)","string","");
     args.define(true,"x","xml","Input/output xml file path","string","");
     args.define(false,"p","pdb_out","Output pdb file path","string","");

@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <filesystem>
 #include <stdexcept>
@@ -7,8 +8,13 @@
 #include <gemmi/cifdoc.hpp>
 #include <gemmi/cif.hpp>
 #include <gemmi/gz.hpp>
+#include <gemmi/to_cif.hpp>
 
-#include <Services/ConfigurationService.hpp>
+#include <config.hpp>
+#include <System/Environment.hpp>
+#include <System/Command.hpp>
+#include <System/ProgressBar.hpp>
+#include <Exceptions/MissingEnvironmentKeyException.hpp>
 #include <Services/ChemicalComponentDirectoryService.hpp>
 #include <Services/CurlWrapperService.hpp>
 #include <Types/Atom.hpp>
@@ -16,26 +22,27 @@
 
 namespace fs = std::filesystem;
 
-namespace Tmdet::Services::ChemicalComponentDirectoryService {
+namespace Tmdet::Services {
 
-    static void download();
-    static void split();
-
-    void build() {
-        download();
-        split();
+    bool ChemicalComponentDirectoryService::isBuilt() {
+        std::string basePath;
+        try {
+            basePath = environment.get("TMDET_CC_DIR",DEFAULT_TMDET_CC_DIR);
+            return std::filesystem::exists(std::filesystem::path(basePath + "/Z/Z/ZZZ.cif"));
+        }
+        catch( const Tmdet::Exceptions::MissingEnvironmentKeyException& exception) {
+            std::cout << exception.what() << std::endl;
+        }
+        return false;
     }
 
-    bool isBuilt() {
-        std::string lastFile(ConfigurationService::ChemicalComponentDirectory + "/Z/Z/ZZZ.cif");
-
-        return fs::exists(fs::path(lastFile));
-    }
-
-    void download() {
-        auto url = ConfigurationService::ChemicalComponentDirectoryUrl;
-        auto destination = ConfigurationService::ChemicalComponentFile;
-        std::cout << "Downloading " << url << "..." << std::endl;
+    void ChemicalComponentDirectoryService::fetch() {
+        auto url = environment.get("TMDET_CC_URL",DEFAULT_TMDET_CC_URL);
+        auto dir = environment.get("TMDET_CC_DIR",DEFAULT_TMDET_CC_DIR);
+        std::string cmd = (std::string)"mkdir -p " + dir;
+        Tmdet::System::Command::run(cmd);
+        auto destination = environment.get("TMDET_CC_FILE",DEFAULT_TMDET_CC_FILE);
+        std::cout << "Downloading " << url << " ... " << std::flush;
         auto status = CurlWrapperService::download(url, destination);
         if (status != CurlWrapperService::Status::Ok) {
             std::string message("Downloading '");
@@ -43,38 +50,19 @@ namespace Tmdet::Services::ChemicalComponentDirectoryService {
                 + "' failed. Please validate the url and the destination directory.";
             throw std::runtime_error(message);
         }
-        std::cout << "Download completed." << std::endl;
+        std::cout << "done." << std::endl;
     }
 
-    void split() {
-        std::cout << "Splitting " << ConfigurationService::ChemicalComponentFile << "..." << std::endl;
-
-        std::string cmd(ConfigurationService::FragmentCifExec);
-        cmd += " -i " + ConfigurationService::ChemicalComponentFile
-            + " -d " + ConfigurationService::ChemicalComponentDirectory
-            + " -s > /dev/null 2>&1";
-        int exitCode = std::system(cmd.c_str());
-        if (exitCode != 0) {
-            std::string message(ConfigurationService::AppName);
-            message += ": command failed: '" + cmd + "'";
-            throw std::runtime_error(message);
-        }
-
-        std::cout << "Splitting done." << std::endl;
-    }
-
-    Tmdet::Types::Residue getComponentAsResidue(const std::string& threeLetterCode) {
-        if (!isBuilt()) {
-            // build();
-            ConfigurationService::chemicalComponentDirectoryError();
-        }
-        std::string chemCompDirectory = ConfigurationService::ChemicalComponentDirectory + "/" + std::string(1, threeLetterCode[0]);
+    Tmdet::Types::Residue ChemicalComponentDirectoryService::getComponentAsResidue(const std::string& threeLetterCode) {
+        std::string chemCompDirectory = environment.get("TMDET_CC_DIR",DEFAULT_TMDET_CC_DIR)
+                         + "/"
+                         + std::string(1, threeLetterCode[0]);
         if (threeLetterCode.size() >= 2) {
             chemCompDirectory += "/" + std::string(1, threeLetterCode[1]);
         }
 
         gemmi::cif::Document document = gemmi::cif::read(gemmi::MaybeGzipped(chemCompDirectory + "/" + threeLetterCode + ".cif"));
-        gemmi::cif::Block& block = document.blocks[0];
+        const auto& block = document.blocks[0];
 
         if (!block.has_mmcif_category("_chem_comp_atom") || !block.has_mmcif_category("_chem_comp")) {
             throw std::runtime_error("Expected _chem_comp_atom or _chem_comp category not found");
@@ -111,7 +99,7 @@ namespace Tmdet::Services::ChemicalComponentDirectoryService {
                 } else {
                     atom = Tmdet::Types::Atoms.at("C_ALI");
                 }
-            } else if (Tmdet::Types::Atoms.count(type) > 0) {
+            } else if (Tmdet::Types::Atoms.contains(type)) {
                 atom = Tmdet::Types::Atoms.at(type);
             } else {
                 atom = Tmdet::Types::AtomType::UNK;
@@ -127,4 +115,43 @@ namespace Tmdet::Services::ChemicalComponentDirectoryService {
         return residue;
     }
 
+    void ChemicalComponentDirectoryService::build() {
+        std::string input = environment.get("TMDET_CC_FILE",DEFAULT_TMDET_CC_FILE);
+        std::string destDir = environment.get("TMDET_CC_DIR",DEFAULT_TMDET_CC_DIR);
+        std::cout << "Preparing to install Chemical Component Directory ... " << std::flush;
+        gemmi::cif::Document doc = gemmi::cif::read(gemmi::MaybeGzipped(input));
+        std::cout << "done." << std::endl;
+
+        Tmdet::System::ProgressBar pg;
+        pg.setTitle("Installing CCD files: ");
+        pg.setNumTicks(doc.blocks.size());
+        pg.displayPercentage();
+        pg.displayTasksDone();
+        
+        for (const auto& block : doc.blocks) {
+            std::string cifPath = createDir(destDir, block.name) + "/" + block.name + ".cif";
+            writeCif(cifPath.c_str(), block);
+            pg.tick();
+        }
+        pg.end();
+    }
+
+    std::string ChemicalComponentDirectoryService::createDir(const std::string& destDir, const std::string& cifName) {
+        std::string path(destDir);
+        path += "/" + std::string(1, cifName[0]);
+        if (cifName.size() >= 2) {
+            path += "/" + std::string(1, cifName[1]);
+        }
+        std::string cmd = std::string("mkdir -p ") + path;
+        Tmdet::System::Command::run(cmd);
+        return path;
+    }
+
+    void ChemicalComponentDirectoryService::writeCif(const char *cifPath, const gemmi::cif::Block& block) {
+        std::ofstream os;
+        gemmi::cif::WriteOptions wo;
+        os.open(cifPath);
+        write_cif_block_to_stream(os, block, wo);
+        os.close();
+    }
 }

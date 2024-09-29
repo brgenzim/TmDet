@@ -1,21 +1,16 @@
 #include <unordered_map>
 #include <iostream>
 #include <string.h>
-#include <Utils/Args.hpp>
+#include <System/Arguments.hpp>
 
-using namespace std;
+namespace Tmdet::System {
 
-namespace Tmdet::Utils {
-
-    /**
-     * Constuctor
-     */
-    Args::Args() {
+    Arguments::Arguments() {
         this->define(false,"h","help","Get list of arguments","bool","false");
     }
 
-    void Args::define(bool mandatory, string shortFlag, string longFlag,
-                string descr, string type, string defaultValue) {
+    void Arguments::define(bool mandatory, std::string shortFlag, std::string longFlag,
+                std::string descr, std::string type, std::string defaultValue) {
         this->_args.emplace(
             shortFlag.c_str(),
             _arg({mandatory, false, shortFlag, longFlag, descr, 
@@ -23,12 +18,12 @@ namespace Tmdet::Utils {
         );
     }
 
-    void Args::check() {
+    void Arguments::check() {
         bool err = false;
         if (this->_args[(char *)"h"].value == "false") {
             for (const auto& [name, arg] : this->_args){
                 if (arg.mandatory && !arg.has) {
-                    cerr << "Error: Mandatory argument is missing: " << name << endl;
+                    std::cerr << "Error: Mandatory argument is missing: " << name << std::endl;
                     err = true;
                 }
             }
@@ -39,25 +34,25 @@ namespace Tmdet::Utils {
         }
     }
 
-    void Args::list() {
+    void Arguments::list() {
         for (const auto& [name, arg] : this->_args){
-            cerr << "-" << arg.shortFlag << ", --" << arg.longFlag << (arg.type=="bool"?"":"=") << endl;
-            cerr << "\t\t" << arg.description;
-            cerr << " [type: '" << arg.type << "']";
+            std::cerr << "-" << arg.shortFlag << ", --" << arg.longFlag << (arg.type=="bool"?"":"=") << std::endl;
+            std::cerr << "\t\t" << arg.description;
+            std::cerr << " [type: '" << arg.type << "']";
             if (arg.mandatory) {
-                cerr << " (mandatory)"; 
+                std::cerr << " (mandatory)"; 
             }
             if (arg.defaultValue != "") {
-                cerr << " (default: " << arg.defaultValue << ")"; 
+                std::cerr << " (default: " << arg.defaultValue << ")"; 
             }
-            cerr << endl;
+            std::cerr << std::endl;
         }
     }
 
-    void Args::set(int argc, char *argv[]) {
+    void Arguments::set(int argc, char *argv[]) {
         char *c=(char *)nullptr;
         char flag[1024];
-        string name;
+        std::string name;
         for(int i=1; i<argc; i++) {
             if (!strncmp(argv[i],"--",2)) {
                 if ((c=strchr(argv[i],'=')) != (char*)nullptr) {
@@ -89,75 +84,75 @@ namespace Tmdet::Utils {
         }
     }
 
-    string Args::_setValueByLongFlag(char *flag) {
+    std::string Arguments::_setValueByLongFlag(char *flag) {
         for(auto [name, arg] : _args) {
-            if (arg.longFlag == (string)flag) {
+            if (arg.longFlag == (std::string)flag) {
                 return name;
             }
         }
-        return string();
+        return std::string();
     }
 
-    string Args::_setValueByShortFlag(char *flag) {
+    std::string Arguments::_setValueByShortFlag(char *flag) {
         for(auto [name, arg] : _args) {
-            if (arg.shortFlag == (string)flag) {
+            if (arg.shortFlag == (std::string)flag) {
                 return name;
             }
         }
-        return string();
+        return std::string();
     }
 
-    void Args::_setValue(string name, char *value) {
+    void Arguments::_setValue(std::string name, char *value) {
         if (value != (char *)nullptr) {
-            this->_args[name].value = (string)value;
+            this->_args[name].value = (std::string)value;
             this->_args[name].has = 1;
         }
         else {
-            cerr << "Syntas error in argument list" << endl;
+            std::cerr << "Syntas error in argument list" << std::endl;
             this->list();
             exit(EXIT_FAILURE);
         }
     }
 
-    bool Args::getValueAsBool(string name) {
+    bool Arguments::getValueAsBool(std::string name) {
         if (this->_args.contains(name)) {
             if (this->_args[name].type == "bool") {
                 return this->_args[name].value == "true"?true:false;
             }
             else {
-                cerr << "Argument type error: " << name << endl;
+                std::cerr << "Argument type error: " << name << std::endl;
                 exit(EXIT_FAILURE);
             }
         }
-        cerr << "Argument name error: " << name << endl;
+        std::cerr << "Argument name error: " << name << std::endl;
         exit(EXIT_FAILURE);
     }
 
-    int Args::getValueAsInt(string name) {
+    int Arguments::getValueAsInt(std::string name) {
         if (this->_args.contains(name)) {
             if (this->_args[name].type == "int") {
                 return atoi(this->_args[name].value.c_str());
             }
             else {
-                cerr << "Argument type error: " << name << endl;
+                std::cerr << "Argument type error: " << name << std::endl;
                 exit(EXIT_FAILURE);
             }
         }
-        cerr << "Argument name error: " << name << endl;
+        std::cerr << "Argument name error: " << name << std::endl;
         exit(EXIT_FAILURE);
     }
 
-    string Args::getValueAsString(string name) {
+    std::string Arguments::getValueAsString(std::string name) {
         if (this->_args.contains(name)) {
             if (this->_args[name].type == "string") {
                 return this->_args[name].value;
             }
             else {
-                cerr << "Argument type error: " << name << endl;
+                std::cerr << "Argument type error: " << name << std::endl;
                 exit(EXIT_FAILURE);
             }
         }
-        cerr << "Argument name error: " << name << endl;
+        std::cerr << "Argument name error: " << name << std::endl;
         exit(EXIT_FAILURE);
     }
 }

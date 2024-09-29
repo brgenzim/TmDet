@@ -3,7 +3,7 @@
 #include <string>
 #include <filesystem>
 
-#include <Services/ConfigurationService.hpp>
+#include <System/Environment.hpp>
 #include <Services/CurlWrapperService.hpp>
 #include <Services/UniTmpService.hpp>
 #include <Types/Region.hpp>
@@ -11,11 +11,11 @@
 void assertTrue(std::string testDescription, bool condition, int lineNumber);
 
 std::string fileName;
+Tmdet::System::Environment environment;
 
-int main() {
+int main(int argc, char *argv[], char **envp) {
 
-    Tmdet::Services::ConfigurationService::init();
-
+    environment.init(envp);
     fileName = std::filesystem::path(__FILE__).filename();
     std::string testDescription;
     Tmdet::Services::CurlWrapperService::Status status;

@@ -17,23 +17,7 @@ Quick install of Tmdet package:
 
 CONFIGURATION AND REQUIREMENTS
 
-Environment variables can overwrite default settings:
+Environment variables are deined in .env file, but can be set via shell environment variable:
 
-- TMDET_DIRECTORY               (/usr/local/share/tmdet)
-- CHEMICAL_COMPONENT_DIRECTORY  (/usr/local/share/tmdet/data/ccd)
-- FRAGMENT_CIF_EXEC             (/usr/local/share/tmdet/fragment_cif)
-- PDB_DATA_DIRECTORY            (/zfs/databases/UniTmp/PDB/data/structures/divided/updated_mmcif)
-- UNITMP_SCHEMA                 (https://)
-- UNITMP_DOMAIN                 (unitmp.org)
-
-Chemical component directory is important during parsing CIF files.
-This should be downloaded from WWPDB. There is a helper script to download it to a given directory:
-
-> export CHEMICAL_COMPONENT_DIRECTORY=/usr/local/share/tmdet/data/ccd
-> bash scripts/get-chemical-component-directory.sh $CHEMICAL_COMPONENT_DIRECTORY
-
-Note: This script creates the target directory if it does not exist.
-
-Another utility extracts and splits monomer CIFs from the downloaded components file:
-
-> build/src/fragment_cif -i $CHEMICAL_COMPONENT_DIRECTORY/components.cif.gz -d $CHEMICAL_COMPONENT_DIRECTORY -s &> fragmenting.log
+Chemical component directory is important during parsing CIF files. If it is missing, tmdet
+downloaded it from WWPDB and install it automatically.

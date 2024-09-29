@@ -1,10 +1,7 @@
-#ifndef __TMDET_SERVICES_UNITMP__
-#define __TMDET_SERVICES_UNIMTP__
-
 #include <string>
 #include <vector>
 #include <nlohmann/json.hpp>
-#include <Services/ConfigurationService.hpp>
+#include <config.hpp>
 #include <Services/CurlWrapperService.hpp>
 #include <ValueObjects/Region.hpp>
 
@@ -13,8 +10,12 @@ using Tmdet::ValueObjects::Region;
 namespace Tmdet::Services::UniTmpService {
 
     std::vector<Region> getCctopPredictionResult(std::string code, CurlWrapperService::Status& resultCode) {
-        std::string url(ConfigurationService::UniTmpSchema);
-        url += "cctop." + ConfigurationService::UniTmpDomain + "/api/v1/prediction/Cctop/" + code + ".json";
+        std::string url = environment.get("UNITMP_SCHEMA",DEFAULT_UNITMP_SCHEMA)
+                    + "cctop." 
+                    + environment.get("UNITMP_DOMAIN",DEFAULT_UNITMP_DOMAIN)
+                    + "/api/v1/prediction/Cctop/" 
+                    + code 
+                    + ".json";
 
         std::string response = CurlWrapperService::apiCall(url, resultCode);
         if (resultCode == Tmdet::Services::CurlWrapperService::Status::Error) {
@@ -37,5 +38,3 @@ namespace Tmdet::Services::UniTmpService {
         return result;
     }
 }
-
-#endif

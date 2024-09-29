@@ -26,6 +26,10 @@ namespace Tmdet::Types {
         bool isBeta() {
             return (code == 'E');
         }
+
+        bool isTurn() {
+            return (code == 'T' || code == 'B' || code == 'S');
+        }
     };
 
     namespace SecStructType {

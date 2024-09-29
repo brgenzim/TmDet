@@ -4,7 +4,9 @@
 #include <string>
 #include <vector>
 #include <any>
+#include <iostream>
 #include <unordered_map>
+#include <Types/Residue.hpp>
 #include <Types/SecStruct.hpp>
 #include <ValueObjects/Atom.hpp>
 #include <ValueObjects/HBond.hpp>
@@ -16,6 +18,7 @@ namespace Tmdet::ValueObjects {
         gemmi::Residue& gemmi;
         std::vector<Atom> atoms;
         double surface;
+        Tmdet::Types::Residue type;
         Tmdet::Types::SecStruct ss = Tmdet::Types::SecStructs.at('-');
         HBond hbond1;
         HBond hbond2;
@@ -27,6 +30,9 @@ namespace Tmdet::ValueObjects {
 
         explicit Residue(gemmi::Residue& _gemmi) : 
             gemmi(_gemmi) {
+                if (Tmdet::Types::Residues.contains(_gemmi.name)) {
+                    type = Tmdet::Types::Residues.at(_gemmi.name);
+                }
         }
 
         ~Residue()=default;
@@ -34,6 +40,7 @@ namespace Tmdet::ValueObjects {
         int resn() const {
             return gemmi.seqid.num.value;
         }
+        void setType();
     };
 }
 

@@ -8,7 +8,8 @@
 #include <gemmi/gz.hpp>
 #include <gemmi/mmcif.hpp>
 #include <gemmi/model.hpp>
-#include <Services/ConfigurationService.hpp>
+
+#include <System/Environment.hpp>
 #include <ValueObjects/TmdetStruct.hpp>
 #include <DTOs/TmdetStruct.hpp>
 #include <Utils/Dssp.hpp>
@@ -21,12 +22,13 @@ bool assertTrue(string testDescription, bool condition, int lineNumber);
 vector<string> getResidueNames(gemmi::Chain& chain);
 
 string fileName;
+Tmdet::System::Environment environment;
 
-int main() {
-    // generic init
+int main(int argc, char *argv[], char **envp) {
+    
+    environment.init(envp);
     fileName = filesystem::path(__FILE__).filename();
-    Tmdet::Services::ConfigurationService::init();
-
+    
     // Test case 1
     {
 
@@ -171,8 +173,8 @@ void calcDssp(Tmdet::ValueObjects::TmdetStruct& tmdetVO) {
 }
 
 string getPath(std::string pdbCode) {
-    Tmdet::Services::ConfigurationService::init();
-    auto inputPath = Tmdet::Services::ConfigurationService::PdbDataDirectory;
+    
+    auto inputPath = environment.get("PDB_DATA_DIR");
     inputPath += (string("/") + pdbCode[1] + pdbCode[2]) + "/" + pdbCode + "_updated.cif.gz";
 
     return inputPath;

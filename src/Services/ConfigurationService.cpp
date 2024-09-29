@@ -10,7 +10,7 @@
 #include <Services/ConfigurationService.hpp>
 
 namespace Tmdet::Services::ConfigurationService {
-
+/*
     // These are default values and can be overwrite shell environment variables
     std::string TmdetDirectory{"/usr/local/share/tmdet"};
     std::string ChemicalComponentDirectory{TmdetDirectory + "/data/ccd"};
@@ -124,5 +124,5 @@ namespace Tmdet::Services::ConfigurationService {
             << "    CCD path can be controlled by " << impl::Keys::CHEMICAL_COMPONENT_DIRECTORY << " environment variable too." << std::endl;
         std::exit(1);
     }
-
+*/
 }

@@ -6,7 +6,6 @@
 # *  All rights reserved.
 # */
 
-AUX_SOURCE_DIRECTORY( . LibrarySources )
 AUX_SOURCE_DIRECTORY( units UnitsSources )
 AUX_SOURCE_DIRECTORY( features FeaturesSources )
 
@@ -16,7 +15,7 @@ LIST (APPEND FULL_SRC
 )
 
 ADD_EXECUTABLE( apiCallTest units/apiCallTest.cpp )
-TARGET_LINK_LIBRARIES( apiCallTest PRIVATE TmdetLib TmdetLib z gemmi::gemmi_cpp curl )
+TARGET_LINK_LIBRARIES( apiCallTest PRIVATE TmdetLib z gemmi::gemmi_cpp curl )
 INSTALL( TARGETS apiCallTest RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX_BIN} )
 
 ADD_EXECUTABLE( oligomerTest units/oligomerTest.cpp )
