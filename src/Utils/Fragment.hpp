@@ -29,6 +29,8 @@ namespace Tmdet::Utils {
             std::vector<std::vector<int>> createFragments(const unsigned long size);
             void writeBackFragmentInfoToStructure(std::vector<std::vector<int>> clusters, std::vector<_cr> crs);
             void freeTempValues();
+            bool sameChain(gemmi::Chain* chain, int chainIdx);
+
 
         public:
             explicit Fragment(Tmdet::ValueObjects::TmdetStruct& _tmdetVO) : tmdetVO(_tmdetVO) {} ;

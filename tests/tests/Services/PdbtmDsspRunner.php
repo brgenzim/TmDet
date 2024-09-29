@@ -15,12 +15,37 @@ class PdbtmDsspRunner extends AbstractProcessRunner {
     const DUMP_HEADER_LINE_PREFIX = 'ShowProt:';
     const CHAIN_COLUMN = 1;
     const STRUCTURE_COLUMN = 5;
+    const RESIDUE_COLUMN = 2;
 
     public array $chains = [];
     public array $dssps = [];
+    public array $alignedSequences = [];
     public string $dsspCacheFile = '';
     public string $entFile = '';
     public string $pdbCode = '';
+
+    public static array $standardResidueToOneLetter = [
+        "ALA" => "A",
+        "CYS" => "C",
+        "ASP" => "D",
+        "GLU" => "E",
+        "PHE" => "F",
+        "GLY" => "G",
+        "HIS" => "H",
+        "ILE" => "I",
+        "LYS" => "K",
+        "LEU" => "L",
+        "MET" => "M",
+        "ASN" => "N",
+        "PRO" => "P",
+        "GLN" => "Q",
+        "ARG" => "R",
+        "SER" => "S",
+        "THR" => "T",
+        "VAL" => "V",
+        "TRP" => "W",
+        "TYR" => "Y"
+    ];
 
     public function __construct(string $execPath, array $commandParams, string $entFile) {
         parent::__construct($execPath, $commandParams);
@@ -61,16 +86,25 @@ class PdbtmDsspRunner extends AbstractProcessRunner {
                 $this->chains[] = $chain;
             }
         } elseif (count(($columns = explode(' ', $line))) == 7) {
-            $column = $columns[static::CHAIN_COLUMN - 1];
-            if (!array_key_exists($column, $this->dssps)) {
-                $this->dssps[$column] = '';
+            $chain = $columns[static::CHAIN_COLUMN - 1];
+            if (!array_key_exists($chain, $this->dssps)) {
+                $this->dssps[$chain] = '';
             }
             $secondaryStructure = $columns[static::STRUCTURE_COLUMN - 1];
             if ($secondaryStructure == ' ') {
                 $secondaryStructure = '-';
             }
-            $this->dssps[$column] = $this->dssps[$column]
+            $this->dssps[$chain] = $this->dssps[$chain]
                 . $secondaryStructure;
+            $residue = $columns[static::RESIDUE_COLUMN - 1];
+            if (array_key_exists($residue, static::$standardResidueToOneLetter)) {
+                $residue = static::$standardResidueToOneLetter[$residue];
+            } else {
+                // use 3 letters code in non-std cases
+                $residue = "($residue)";
+            }
+            $this->alignedSequences[$chain] = $this->alignedSequences[$chain]
+                . $residue;
         }
         return $line;
     }
