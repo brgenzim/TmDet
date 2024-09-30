@@ -3,4 +3,4 @@ build/
 lib/
 .vscode/
 data/ccd/
-
+.env
