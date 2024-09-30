@@ -7,7 +7,6 @@
 #include <gemmi/mmcif.hpp>
 #include <gemmi/model.hpp>
 #include <System/Environment.hpp>
-#include <Services/ConfigurationService.hpp>
 #include <ValueObjects/TmdetStruct.hpp>
 #include <DTOs/TmdetStruct.hpp>
 #include <Utils/Dssp.hpp>
@@ -20,8 +19,8 @@ std::string fileName;
 Tmdet::System::Environment environment;
 
 int main(int argc, char *argv[], char **envp) {
-    
-    environment.init(envp);
+
+    environment.init(envp, ".env");
     fileName = std::filesystem::path(__FILE__).filename();
 
     Tmdet::Utils::SecStrVec secStructVectors;
@@ -124,8 +123,8 @@ void assertTrue(std::string testDescription, bool condition, int lineNumber) {
 }
 
 void setup(Tmdet::Utils::SecStrVec &secStructVectors) {
-    auto inputPath = environment.get("PDB_DATA_DIR");
-    
+    auto inputPath = environment.get("PDB_CIF_DIR");
+
     inputPath += "/af/1afo_updated.cif.gz";
 
     gemmi::Structure pdb; 
