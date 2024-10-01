@@ -29,7 +29,9 @@ namespace Tmdet::ValueObjects {
         BioMatrix bioMatrix;
         std::vector<Membrane> membranes;
         std::vector<Chain> chains;
-        gemmi::Structure& gemmi;
+        // NOTE: gemmi::Structure& reference is short-term and can be invalid.
+        //       It may reference freed memory.
+        gemmi::Structure gemmi;
         gemmi::cif::Document& document;
         gemmi::NeighborSearch neighbors;
 

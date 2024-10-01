@@ -13,7 +13,7 @@ using namespace std;
 
 namespace Tmdet::Utils::Alignment {
 
-    extern void alignResidues(const Tmdet::ValueObjects::TmdetStruct& tmdetVO);
+    extern void alignResidues(Tmdet::ValueObjects::TmdetStruct& tmdetVO);
 
 }
 

@@ -11,8 +11,9 @@ namespace Tmdet::ValueObjects {
 
     TmdetStruct get(const std::string &inputPath, gemmi::Structure &pdb, gemmi::cif::Document &document) {
         document = gemmi::cif::read(gemmi::MaybeGzipped(inputPath));
-        pdb = gemmi::make_structure(std::move(document));
-        auto tmdetVO = Tmdet::ValueObjects::TmdetStruct(pdb, document);
+        auto pdb_ = gemmi::make_structure(std::move(document));
+        pdb = pdb_;
+        auto tmdetVO = Tmdet::ValueObjects::TmdetStruct(pdb_, document);
         Tmdet::DTOS::TmdetStruct::parse(tmdetVO);
         return tmdetVO;
     }
