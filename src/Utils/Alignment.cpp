@@ -340,7 +340,7 @@ namespace Tmdet::Utils::Alignment {
         residue->sifts_unp = other.sifts_unp;
     }
 
-    void alignResidues(const Tmdet::ValueObjects::TmdetStruct& tmdetVO) {
+    void alignResidues(Tmdet::ValueObjects::TmdetStruct& tmdetVO) {
 
         for(auto& chain: tmdetVO.gemmi.models[0].chains) {
 

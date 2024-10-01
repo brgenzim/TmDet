@@ -15,7 +15,7 @@ Tmdet::System::Environment environment;
 
 int main(int argc, char *argv[], char **envp) {
 
-    environment.init(envp);
+    environment.init(envp, ".env");
     fileName = std::filesystem::path(__FILE__).filename();
     std::string testDescription;
     Tmdet::Services::CurlWrapperService::Status status;

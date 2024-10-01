@@ -43,6 +43,10 @@ class Tmdet30Runner extends AbstractProcessRunner {
         $this->newTmdetFile = "$dbDir/$subDir/$this->pdbCode.xml";
         $this->tmdetLogFile = "$dbDir/$subDir/$this->pdbCode.tmdet.log";
         $this->oldTmdetFile = FileSystem::PDBTM30_DATA_DIR . "/database/$subDir/{$this->pdbCode}.xml";
+
+        // $oldData = static::readPdbtmXml($this->oldTmdetFile);
+        // $this->oldData = $this->processRegions($oldData);
+        $this->oldData = static::readPdbtmXml($this->oldTmdetFile);
     }
 
     public function exec(): bool {
@@ -62,28 +66,31 @@ class Tmdet30Runner extends AbstractProcessRunner {
             throw new RuntimeException("New Tmdet XML of {$this->pdbCode} not found '{$this->newTmdetFile}'");
         }
 
-        $oldData = static::readPdbtmXml($this->oldTmdetFile);
-        $this->oldData = $this->processRegions($oldData);
+        // $newData = static::readPdbtmXml($this->newTmdetFile);
+        // $this->newData = $this->processRegions($newData);
 
-        $newData = static::readPdbtmXml($this->newTmdetFile);
-        $this->newData = $this->processRegions($newData);
+        $this->newData = static::readPdbtmXml($this->newTmdetFile);
 
         return $result;
     }
 
-    protected function processRegions(array $pdbtmContent): array {
-        $regions = [];
-        foreach ($pdbtmContent as $chainId => $chainItem) {
-            $typeSequence = '';
-            foreach ($chainItem['regions'] as $region) {
-                $count = $region['seq_end'] - $region['seq_beg'] + 1;
-                $typeSequence .= str_repeat($region['type'], $count);
-                // SHORT region strings: $typeSequence .= $region['type'];
-            }
-            $regions[$chainId] = $typeSequence;
-        }
-        return $regions;
-    }
+    // protected function processRegions(array $pdbtmContent): array {
+    //     $regions = [];
+    //     foreach ($pdbtmContent['chains'] as $chainId => $chainItem) {
+    //         $typeSequence = '';
+    //         foreach ($chainItem['regions'] as $region) {
+    //             $count = $region['seq_end'] - $region['seq_beg'] + 1;
+    //             $typeSequence .= str_repeat($region['type'], $count);
+    //             // SHORT region strings: $typeSequence .= $region['type'];
+    //         }
+    //         $regions[$chainId] = $typeSequence;
+    //     }
+    //     return [
+    //         'tmType' => $pdbtmContent['tmType'],
+    //         'isTmp' => $pdbtmContent['isTmp'],
+    //         'chains' => $regions
+    //     ];
+    // }
 
     protected function filterOutputLines(array $lines): array {
         // output will not be parsed
@@ -116,7 +123,7 @@ class Tmdet30Runner extends AbstractProcessRunner {
 
         foreach ($xml->CHAIN as $chain) {
             $chainID = (string) $chain['CHAINID'];
-            $num_tm = (string) $chain['NUM_TM'];
+            $num_tm = (int) $chain['NUM_TM'];
             $type = (string) $chain['TYPE'];
             $regions = [];
             foreach ($chain->REGION as $region) {
@@ -135,6 +142,27 @@ class Tmdet30Runner extends AbstractProcessRunner {
                 'regions' => $regions
             ];
         }
-        return $chains;
+
+        return [
+            'code' => (string)$xml['ID'],
+            'chains' => $chains,
+            'isTmp' => ((string)$xml['TMP'] === 'yes') ? true : false,
+            'tmType' => (string)$xml->RAWRES->TMTYPE
+        ];
+    }
+
+    public static function getPdbtmCodes(string $xmlOfAllEntries): array {
+        $root = simplexml_load_file($xmlOfAllEntries);
+
+        $pdbtmProteins = [];
+        foreach ($root->pdbtm as $item) {
+            $code = (string)$item['ID'];
+            $pdbtmProteins[$code] = [
+                'code' => $code,
+                'isTmp' => ((string)$item['TMP'] === 'yes') ? true : false,
+                'tmType' => (string)$item->RAWRES->TMTYPE
+            ];
+        };
+        return $pdbtmProteins;
     }
 }
