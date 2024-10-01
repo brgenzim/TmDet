@@ -25,10 +25,10 @@ string fileName;
 Tmdet::System::Environment environment;
 
 int main(int argc, char *argv[], char **envp) {
-    
-    environment.init(envp);
+
+    environment.init(envp, ".env");
     fileName = filesystem::path(__FILE__).filename();
-    
+
     // Test case 1
     {
 
@@ -173,8 +173,8 @@ void calcDssp(Tmdet::ValueObjects::TmdetStruct& tmdetVO) {
 }
 
 string getPath(std::string pdbCode) {
-    
-    auto inputPath = environment.get("PDB_DATA_DIR");
+
+    auto inputPath = environment.get("PDB_CIF_DIR");
     inputPath += (string("/") + pdbCode[1] + pdbCode[2]) + "/" + pdbCode + "_updated.cif.gz";
 
     return inputPath;

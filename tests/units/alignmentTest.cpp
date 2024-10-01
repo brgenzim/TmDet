@@ -21,7 +21,7 @@ Tmdet::System::Environment environment;
 
 int main(int argc, char *argv[], char **envp) {
 
-    environment.init(envp);
+    environment.init(envp, ".env");
     fileName = filesystem::path(__FILE__).filename();
 
     // Test case 1
@@ -219,11 +219,11 @@ void assertTrue(std::string testDescription, bool condition, int lineNumber) {
 }
 
 Tmdet::ValueObjects::TmdetStruct createTmdetStruct(std::string pdbCode) {
-    
-    auto inputPath = environment.get("PDB_DATA_DIR");
+
+    auto inputPath = environment.get("PDB_CIF_DIR");
     inputPath += (string("/") + pdbCode[1] + pdbCode[2]) + "/" + pdbCode + "_updated.cif.gz";
 
-    gemmi::Structure pdb; 
+    gemmi::Structure pdb;
     gemmi::cif::Document document;
     auto tmdetVO = Tmdet::ValueObjects::get(inputPath, pdb, document);
 
