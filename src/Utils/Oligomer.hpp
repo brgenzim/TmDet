@@ -19,7 +19,7 @@ namespace Tmdet::Utils {
 
     struct Oligomer {
 
-        static vector<_chains> getNumberOfChains(gemmi::Structure structure) {
+        static vector<_chains> getNumberOfChains(const gemmi::Structure& structure) {
             vector<_chains> ret;
             for (const auto& entity : structure.entities) {
                 if (entity.entity_type == gemmi::EntityType::Polymer) {
@@ -31,17 +31,16 @@ namespace Tmdet::Utils {
             return ret;
         }
 
-        // TODO: maybe it is unneccessary
-        // static vector<vector<string>> getHomoOligomerChains(gemmi::Structure structure) {
-        //     auto entities = getNumberOfChains(structure);
-        //     vector<vector<string>> result;
-        //     for (auto& chains : entities) {
-        //         if (chains.chids.size() > 1) {
-        //             result.emplace_back(chains.chids);
-        //         }
-        //     }
-        //     return result;
-        // }
+        static vector<vector<string>> getHomoOligomerChains(const gemmi::Structure& structure) {
+            auto entities = getNumberOfChains(structure);
+            vector<vector<string>> result;
+            for (auto& chains : entities) {
+                if (chains.chids.size() > 1) {
+                    result.emplace_back(chains.chids);
+                }
+            }
+            return result;
+        }
 
         static bool isEntityOligomerized(string entityId, vector<_chains>& chains) {
             bool result = false;

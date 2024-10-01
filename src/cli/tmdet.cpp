@@ -10,6 +10,7 @@
 #include <Utils/Fragment.hpp>
 #include <ValueObjects/TmdetStruct.hpp>
 #include <DTOs/TmdetStruct.hpp>
+#include <Optim/Organizer.hpp>
 
 using namespace std;
 
@@ -31,12 +32,13 @@ int main(int argc, char *argv[], char **envp) {
         Tmdet::Services::ChemicalComponentDirectoryService::fetch();
         Tmdet::Services::ChemicalComponentDirectoryService::build();
     }
+
     string inputPath = args.getValueAsString("i");
     string xmlPath = args.getValueAsString("x");
     string outputPdbPath = args.getValueAsString("p");
     bool n = args.getValueAsBool("n");
-    bool nd = args.getValueAsBool("nd");
-    bool tm = args.getValueAsBool("tm");
+    //bool nd = args.getValueAsBool("nd");
+    //bool tm = args.getValueAsBool("tm");
 
     //input is mandatory, TmdetVO can not be created without gemmi structure and document
     gemmi::Structure pdb; 
@@ -48,22 +50,9 @@ int main(int argc, char *argv[], char **envp) {
         notTransmembrane(xmlPath, tmdetVO);
     }
 
-    //do clustering on the whole structure
-    auto fragmentEngine = Tmdet::Utils::Fragment(tmdetVO);
-    fragmentEngine.run();
-    
-    //Tmdet::Utils::Symmetry symmetry;
-    //auto result = symmetry.CheckSymmetry(tmdetVO);
-
-    //Tmdet::Utils::Dssp dssp = Tmdet::Utils::Dssp(tmdetVO);
-    //dssp.calcDsspOnStructure();
-    //dssp.writeDsspOnStructure();
-    //Tmdet::Utils::Surface surf = Tmdet::Utils::Surface(tmdetVO);
-    //surf.main();
-    //surf.setOutsideSurface();
-    //Tmdet::DTOS::TmdetStruct::out(tmdetVO);
-    
-
+    //do the membrane region determination and annotation
+    Tmdet::Optim::Organizer organizer = Tmdet::Optim::Organizer(tmdetVO);
+    organizer.main();
 }
 
 Tmdet::System::Arguments getArguments(int argc, char *argv[]) {
@@ -81,8 +70,8 @@ Tmdet::System::Arguments getArguments(int argc, char *argv[]) {
 }
 
 void notTransmembrane(string xmlPath, Tmdet::ValueObjects::TmdetStruct& tmdetVO) {
-    Tmdet::DTOS::TmdetStruct::readXml(tmdetVO, xmlPath);
+    Tmdet::DTOs::TmdetStruct::readXml(tmdetVO, xmlPath);
     tmdetVO.tmp = false;
-    Tmdet::DTOS::TmdetStruct::writeXml(tmdetVO, xmlPath);
+    Tmdet::DTOs::TmdetStruct::writeXml(tmdetVO, xmlPath);
     exit(EXIT_SUCCESS);
 }

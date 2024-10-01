@@ -1,5 +1,4 @@
-#ifndef __TMDET_SYSTEM_VERSION__
-#define __TMDET_SYSTEM_VERSION__
+#pragma once
 
 #include <string>
 #include <System/Command.hpp>
@@ -24,5 +23,3 @@ namespace Tmdet::System {
             }
     };
 }
-
-#endif

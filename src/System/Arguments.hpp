@@ -1,5 +1,4 @@
-#ifndef __TMDET_SYSTEM_ARGUMENTS__
-#define __TMDET_SYSTEM_ARGUMENTS__
+#pragma once
 
 #include <unordered_map>
 #include <string>
@@ -123,4 +122,3 @@ namespace Tmdet::System {
     };
     
 }
-#endif

@@ -5,7 +5,7 @@
 #include <map>
 #include <set>
 
-namespace Tmdet::Utils {
+namespace Tmdet::Optim {
 
     class Rotator {
         private:

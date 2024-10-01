@@ -10,6 +10,7 @@ AUX_SOURCE_DIRECTORY( . LibrarySources )
 AUX_SOURCE_DIRECTORY( cli CliSources )
 AUX_SOURCE_DIRECTORY( DTOs DtosSources )
 AUX_SOURCE_DIRECTORY( Exceptions ExceptionsSources )
+AUX_SOURCE_DIRECTORY( Optim OptimSources )
 AUX_SOURCE_DIRECTORY( Services ServicesSources )
 AUX_SOURCE_DIRECTORY( System SystemSources )
 AUX_SOURCE_DIRECTORY( Types TypesSources )
@@ -21,6 +22,7 @@ LIST (APPEND FULL_SRC
      ${LibrarySources}
      ${DtosSources}
      ${ExceptionsSources}
+     ${OptimSources}
      ${ServicesSources}
      ${SystemSources}
      ${TypesSources}

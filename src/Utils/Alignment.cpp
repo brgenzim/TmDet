@@ -344,7 +344,7 @@ namespace Tmdet::Utils::Alignment {
 
         for(auto& chain: tmdetVO.gemmi.models[0].chains) {
 
-            auto sequence = Tmdet::DTOS::TmdetStruct::getChainSequence(tmdetVO, chain);
+            auto sequence = Tmdet::DTOs::TmdetStruct::getChainSequence(tmdetVO, chain);
 
             if (sequence.empty() || chain.residues.empty()) {
                 // no supporting information to do gap fix

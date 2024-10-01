@@ -9,12 +9,17 @@
 #include <Types/Residue.hpp>
 #include <Types/SecStruct.hpp>
 #include <ValueObjects/Atom.hpp>
+#include <ValueObjects/Chain.hpp>
 #include <ValueObjects/HBond.hpp>
 #include <gemmi/model.hpp>
 
 namespace Tmdet::ValueObjects {
 
+    struct Chain;
+
     struct Residue {
+
+
         gemmi::Residue& gemmi;
         std::vector<Atom> atoms;
         double surface;
@@ -26,21 +31,21 @@ namespace Tmdet::ValueObjects {
         // Use this to measure residues distance in the sequence.
         int idx;
         int chainIdx;
+        Tmdet::ValueObjects::Chain& parentChain;
         std::unordered_map<std::string,std::any> temp;
 
-        explicit Residue(gemmi::Residue& _gemmi) : 
-            gemmi(_gemmi) {
+        explicit Residue(gemmi::Residue& _gemmi, Chain& chainVO) : 
+            gemmi(_gemmi),
+            parentChain(chainVO) {
                 if (Tmdet::Types::Residues.contains(_gemmi.name)) {
                     type = Tmdet::Types::Residues.at(_gemmi.name);
                 }
         }
-
-        ~Residue()=default;
-
-        int resn() const {
-            return gemmi.seqid.num.value;
-        }
+        int resn() const;
         void setType();
+
+        bool hasAllSideChainAtoms() const;
+        bool hasAllAtoms() const;
     };
 }
 

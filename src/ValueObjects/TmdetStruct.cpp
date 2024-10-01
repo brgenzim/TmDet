@@ -13,7 +13,7 @@ namespace Tmdet::ValueObjects {
         document = gemmi::cif::read(gemmi::MaybeGzipped(inputPath));
         pdb = gemmi::make_structure(std::move(document));
         auto tmdetVO = Tmdet::ValueObjects::TmdetStruct(pdb, document);
-        Tmdet::DTOS::TmdetStruct::parse(tmdetVO);
+        Tmdet::DTOs::TmdetStruct::parse(tmdetVO);
         return tmdetVO;
     }
 }

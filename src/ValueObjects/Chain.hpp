@@ -10,6 +10,8 @@
 
 namespace Tmdet::ValueObjects {
 
+    struct Residue;
+    
     struct Chain {
         std::string id;
         std::string entityId;
@@ -19,7 +21,7 @@ namespace Tmdet::ValueObjects {
         std::vector<Tmdet::ValueObjects::Region> regions;
         Tmdet::Types::Chain type = Tmdet::Types::ChainType::UNK;
         gemmi::Chain& gemmi;
-        std::vector<Residue> residues;
+        std::vector<Tmdet::ValueObjects::Residue> residues;
         int idx = 0;
         int length = 0;
 

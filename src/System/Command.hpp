@@ -1,5 +1,4 @@
-#ifndef __TMDET_SYSTEM_COMMAND__
-#define __TMDET_SYSTEM_COMMAND__
+#pragma once
 
 #include <iostream>
 #include <string>
@@ -37,5 +36,3 @@ namespace Tmdet::System {
             }
     };
 }
-
-#endif

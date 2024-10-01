@@ -8,7 +8,7 @@
 #include <ValueObjects/TmdetStruct.hpp>
 #include <ValueObjects/Membrane.hpp>
 
-namespace Tmdet::Utils {
+namespace Tmdet::Optim {
 
     struct _slice {
         int numStraight;

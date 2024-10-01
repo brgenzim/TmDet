@@ -13,11 +13,11 @@ using namespace gemmi;
 namespace Tmdet::Utils {
 
 #define DSSP_Q -27888
-#define DSSP_PDB_DL 0.5 /*0.5*/
+#define DSSP_PDB_DL 0.5
 #define DSSP_HBLOW -9900
-#define DSSP_HBHIGH -500 /*-500*/
+#define DSSP_HBHIGH -500
 
-    void Dssp::calcDsspOnStructure() {
+    void Dssp::exec() {
         for (Tmdet::ValueObjects::Chain& chain : tmdetVO.chains) {
             calcDsspOnChain(chain);
         }
@@ -37,17 +37,7 @@ namespace Tmdet::Utils {
         detectSecStructBE(chain);
     }
 
-    void Dssp::writeDsspOnStructure() {
-        for (Tmdet::ValueObjects::Chain& chain : tmdetVO.chains) {
-            writeDsspOnChain(chain);
-        }
-    }
-
-    void Dssp::writeDsspOnChain(Tmdet::ValueObjects::Chain& chain) {
-        cout << chain.id << ": " << getDsspOfChain(chain) << endl;
-    }
-
-    string Dssp::getDsspOfChain(Tmdet::ValueObjects::Chain& chain) {
+    string Dssp::getSecStructAsString(Tmdet::ValueObjects::Chain& chain) {
         stringstream result;
         for (Tmdet::ValueObjects::Residue& res : chain.residues) {
             result << res.ss.code;

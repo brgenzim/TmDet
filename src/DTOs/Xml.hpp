@@ -1,5 +1,5 @@
-#ifndef __TMDET_UTILS_XML__
-#define __TMDET_UTILS_XML__
+#ifndef __TMDET_DTOS_XML__
+#define __TMDET_DTOS_XML__
 
 #include <string>
 #include <vector>
@@ -10,19 +10,16 @@
 #include <ValueObjects/TMatrix.hpp>
 #include <ValueObjects/Chain.hpp>
 
-using namespace std;
-using namespace gemmi;
-
-namespace Tmdet::Utils {
+namespace Tmdet::DTOs {
 
     class Xml {
         private:
             pugi::xml_document _doc;
             pugi::xml_node _root;
-            Tmdet::ValueObjects::TMatrix getTMatrix(pugi::xml_node& node);
-            void setTMatrix(pugi::xml_node& node, Tmdet::ValueObjects::TMatrix& tmatrix);
+            Tmdet::ValueObjects::TMatrix getTMatrix(const pugi::xml_node& node) const;
+            void setTMatrix(const pugi::xml_node& node, Tmdet::ValueObjects::TMatrix& tmatrix) const;
 
-            const string _pdbtm_xml=R"(
+            const std::string _pdbtm_xml=R"(
 <pdbtm xmlns="https://pdbtm.unitmp.org" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://pdbtm.unitmp.org/data/pdbtm.xsd pdbtm.xsd" ID="xxxx" TMP="unk">
   <COPYRIGHT>
      All  information, data  and  files are copyright.  PDBTM database is
@@ -42,7 +39,7 @@ namespace Tmdet::Utils {
   </RAWRES>
 </pdbtm>
 )";
-            const string _biomatrix_xml=R"(
+            const std::string _biomatrix_xml=R"(
 <MATRIX ID="xxx">
   <APPLY_TO_CHAIN CHAINID="xxx" NEW_CHAINID="xxx"/>
   <TMATRIX>
@@ -53,7 +50,7 @@ namespace Tmdet::Utils {
 </MATRIX>
 )";
 
-            const string _membrane_xml=R"(
+            const std::string _membrane_xml=R"(
 <MEMBRANE>
   <NORMAL X="0.0" Y="0.0" Z="15.0"/>
   <TMATRIX>
@@ -63,7 +60,7 @@ namespace Tmdet::Utils {
   </TMATRIX>
 </MEMBRANE>
 )";
-            const string _chain_xml=R"(
+            const std::string _chain_xml=R"(
 <CHAIN CHAINID="xxx" NUM_TM="xxx" TYPE="xxx">
   <SEQ>
   </SEQ>
@@ -112,34 +109,33 @@ namespace Tmdet::Utils {
 
         public:
             
-            void read(string& path);
-            void write(string& path);
+            void read(const std::string& path);
+            void write(const std::string& path) const;
             void create();
-            bool getTmp();
-            void setTmp(bool& tmp);
-            string getCode();
-            void setCode(string& code);
-            string getCreateDate();
-            void setCreateDate(string& date);
-            vector<Tmdet::ValueObjects::Modification> getModifications();
-            void setModifications(vector<Tmdet::ValueObjects::Modification>& mods);
-            double getQvalue();
-            void setQvalue(double& q);
-            string getTmtype();
-            void setTmtype(string& type);
-            string getSpres();
-            void setSpres(string& type);
-            string getPdbkwres();
-            void setPdbkwres(string& type);
-            Tmdet::ValueObjects::BioMatrix getBioMatrix();
+            bool getTmp() const;
+            void setTmp(const bool& tmp) const;
+            std::string getCode() const;
+            void setCode(const std::string& code) const;
+            std::string getCreateDate() const;
+            void setCreateDate(const std::string& date) const;
+            std::vector<Tmdet::ValueObjects::Modification> getModifications() const;
+            void setModifications(const std::vector<Tmdet::ValueObjects::Modification>& mods);
+            double getQvalue() const;
+            void setQvalue(const double& q) const;
+            std::string getTmtype() const;
+            void setTmtype(const std::string& type) const;
+            std::string getSpres() const;
+            void setSpres(const std::string& type) const;
+            std::string getPdbkwres() const;
+            void setPdbkwres(const std::string& type) const;
+            Tmdet::ValueObjects::BioMatrix getBioMatrix() const;
             void setBioMatrix(Tmdet::ValueObjects::BioMatrix& bioMatrix);
-            vector<Tmdet::ValueObjects::Membrane> getMembranes();
-            void setMembranes(vector<Tmdet::ValueObjects::Membrane>& membranes);
-            void getChains(vector<Tmdet::ValueObjects::Chain>& chains);
-            void setChains(vector<Tmdet::ValueObjects::Chain>& chains);
-            vector<Tmdet::ValueObjects::Region> getRegions(pugi::xml_node& cnode);
-            void setRegions(pugi::xml_node& pnode, vector<Tmdet::ValueObjects::Region>& regions);
-    
+            std::vector<Tmdet::ValueObjects::Membrane> getMembranes() const;
+            void setMembranes(std::vector<Tmdet::ValueObjects::Membrane>& membranes);
+            void getChains(std::vector<Tmdet::ValueObjects::Chain>& chains);
+            void setChains(const std::vector<Tmdet::ValueObjects::Chain>& chains);
+            std::vector<Tmdet::ValueObjects::Region> getRegions(const pugi::xml_node& cnode) const;
+            void setRegions(pugi::xml_node& pnode, const std::vector<Tmdet::ValueObjects::Region>& regions) const;
     };
 }
 

@@ -1,8 +1,8 @@
-#ifndef __TMDET_SYSTEM_ENVIRONMENT__
-#define __TMDET_SYSTEM_ENVIRONMENT__
+#pragma once
 
 #include <unordered_map>
 #include <string>
+#include <iostream>
 
 namespace Tmdet::System {
     
@@ -111,4 +111,3 @@ namespace Tmdet::System {
             void updateByEnvVars(char **envp);
     };    
 }
-#endif

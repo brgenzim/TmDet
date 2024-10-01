@@ -194,7 +194,7 @@ namespace Tmdet::Utils {
             }
             if (minValue < ClusterCutLimit) {
                 for (unsigned int i=bestBeg; i<bestEnd; i++) {
-                    if (clusters[i] == cl) {
+                    if (clusters[i] == (unsigned int)cl) {
                         clusters[i] = numClusters;
                     }
                 }

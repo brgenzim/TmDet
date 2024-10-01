@@ -7,7 +7,6 @@
 #include <gemmi/mmcif.hpp>
 #include <gemmi/model.hpp>
 #include <System/Environment.hpp>
-#include <Services/ConfigurationService.hpp>
 #include <ValueObjects/TmdetStruct.hpp>
 #include <DTOs/TmdetStruct.hpp>
 #include <Utils/Dssp.hpp>
@@ -133,8 +132,6 @@ void setup(Tmdet::Utils::SecStrVec &secStructVectors) {
     auto tmdetVO = Tmdet::ValueObjects::get(inputPath, pdb, document);
 
     Tmdet::Utils::Dssp dssp = Tmdet::Utils::Dssp(tmdetVO);
-    dssp.calcDsspOnStructure();
-    dssp.writeDsspOnStructure();
-
+    
     secStructVectors.define(tmdetVO);
 }

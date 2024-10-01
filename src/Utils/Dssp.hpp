@@ -37,12 +37,13 @@ namespace Tmdet::Utils {
             bool checkIfTurn(Tmdet::ValueObjects::Chain& chain,int pos, int r, string key);
 
         public:
-            Dssp(Tmdet::ValueObjects::TmdetStruct& _tmdetVO) : tmdetVO(_tmdetVO) {} ;
-            ~Dssp() {};
+            explicit Dssp(Tmdet::ValueObjects::TmdetStruct& _tmdetVO) : tmdetVO(_tmdetVO) {
+                exec();
+            } ;
+            ~Dssp()=default;
 
-            void calcDsspOnStructure();
-            void writeDsspOnStructure();
-            static string getDsspOfChain(Tmdet::ValueObjects::Chain& chain);
+            void exec();
+            static string getSecStructAsString(Tmdet::ValueObjects::Chain& chain);
     };
 }
 #endif

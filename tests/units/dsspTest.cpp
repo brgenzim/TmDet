@@ -53,7 +53,7 @@ int main(int argc, char *argv[], char **envp) {
         calcDssp(tmdetVO);
         // assert
         string expected = "---GGG--";
-        auto actual = Tmdet::Utils::Dssp::getDsspOfChain(tmdetVO.chains[3]);
+        auto actual = Tmdet::Utils::Dssp::getSecStructAsString(tmdetVO.chains[3]);
         if (!assertTrue("Verifying 'G' chain of 7ec3", expected == actual, __LINE__)) {
             cout << "           expected: " << expected << endl;
             cout << "        dssp string: " << actual << endl;
@@ -74,7 +74,7 @@ int main(int argc, char *argv[], char **envp) {
         calcDssp(tmdetVO);
         // assert
         string expected = "------EEEE---SS---EEEE---";
-        auto actual = Tmdet::Utils::Dssp::getDsspOfChain(tmdetVO.chains[3]);
+        auto actual = Tmdet::Utils::Dssp::getSecStructAsString(tmdetVO.chains[3]);
         if (!assertTrue("Verifying 'D' chain of 6e8r", expected == actual, __LINE__)) {
             cout << "           expected: " << expected << endl;
             cout << "        dssp string: " << actual << endl;
@@ -104,7 +104,7 @@ int main(int argc, char *argv[], char **envp) {
         calcDssp(tmdetVO);
         // assert
         string expected = "-------------S-TTSTT---HHHHHHHHHHHHHHTTSS-TT-B---HHHHHHHHT--HHHHHHHHHHHHHHTSEEEETTTEEEE-";
-        auto actual = Tmdet::Utils::Dssp::getDsspOfChain(tmdetVO.chains[0]);
+        auto actual = Tmdet::Utils::Dssp::getSecStructAsString(tmdetVO.chains[0]);
         if (!assertTrue("Verifying 'A' chain of 4egy", expected == actual, __LINE__)) {
             cout << "           expected: " << expected << endl;
             cout << "        dssp string: " << actual << endl;
@@ -125,7 +125,7 @@ int main(int argc, char *argv[], char **envp) {
         calcDssp(tmdetVO);
         // assert
         string expected = "--S-HHHHHHHHHHHHHHS-TTS-HHHHHHHHHHHHHHHHHHH---GGGSGGGG-TT-HHHHHHHHHHHHHHHHHHGGGG-HHHHHHHHHHHHHHHHTSTT--HHHHHHHHHHHHHHHHHHSTT--HHHHHHHHHHHHHHHTTT-";
-        auto actual = Tmdet::Utils::Dssp::getDsspOfChain(tmdetVO.chains[3]);
+        auto actual = Tmdet::Utils::Dssp::getSecStructAsString(tmdetVO.chains[3]);
         if (!assertTrue("Verifying 'D' chain of 7e99", expected == actual, __LINE__)) {
             cout << "           expected: " << expected << endl;
             cout << "        dssp string: " << actual << endl;
@@ -146,7 +146,7 @@ int main(int argc, char *argv[], char **envp) {
         calcDssp(tmdetVO);
         // assert
         string expected = "-------STT--TTTGGGT---TTHHHHHHHHH---";
-        auto actual = Tmdet::Utils::Dssp::getDsspOfChain(tmdetVO.chains[0]);
+        auto actual = Tmdet::Utils::Dssp::getSecStructAsString(tmdetVO.chains[0]);
         if (!assertTrue("Verifying 'A' chain of 3ee0", expected == actual, __LINE__)) {
             cout << "           expected: " << expected << endl;
             cout << "        dssp string: " << actual << endl;
@@ -168,8 +168,6 @@ bool assertTrue(std::string testDescription, bool condition, int lineNumber) {
 
 void calcDssp(Tmdet::ValueObjects::TmdetStruct& tmdetVO) {
     Tmdet::Utils::Dssp dssp = Tmdet::Utils::Dssp(tmdetVO);
-    dssp.calcDsspOnStructure();
-    dssp.writeDsspOnStructure();
 }
 
 string getPath(std::string pdbCode) {
@@ -207,7 +205,7 @@ void printTempsOfChain(Tmdet::ValueObjects::Chain& chain) {
     result << "t3: '" << getTempOfChain(chain, "t3") << "'" << endl;
     result << "t4: '" << getTempOfChain(chain, "t4") << "'" << endl;
     result << "t5: '" << getTempOfChain(chain, "t5") << "'" << endl;
-    // result << "ss: '" << Tmdet::Utils::Dssp::getDsspOfChain(chain) << "'" << endl;
+    // result << "ss: '" << Tmdet::Utils::Dssp::getSecStructAsString(chain) << "'" << endl;
     cout << result.str();
 }
 

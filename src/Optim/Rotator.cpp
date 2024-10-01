@@ -1,8 +1,8 @@
 #include <cmath>
 #include <gemmi/model.hpp>
-#include <Utils/Rotator.hpp>
+#include <Optim/Rotator.hpp>
 
-namespace Tmdet::Utils {
+namespace Tmdet::Optim {
 
     /**
      * @brief rotate a normal vector around the 4PI

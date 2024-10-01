@@ -7,12 +7,12 @@
 #include <gemmi/neighbor.hpp>
 #include <Types/Residue.hpp>
 #include <ValueObjects/TmdetStruct.hpp>
-#include <Utils/Optim.hpp>
+#include <Optim/Optim.hpp>
 #include <Utils/Surface.hpp>
 
 using namespace std;
 
-namespace Tmdet::Utils {
+namespace Tmdet::Optim {
 
     void Optim::init() {
         run = true;

@@ -1,6 +1,4 @@
-#ifndef __TMDET_SYSTEM_PROGRESS_BAR__
-#define __TMDET_SYSTEM_PROGRESS_BAR__
-
+#pragma once
 
 #include <iostream>
 #include <vector>
@@ -125,5 +123,3 @@ namespace Tmdet::System {
             
     };
 }
-
-#endif

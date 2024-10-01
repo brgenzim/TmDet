@@ -15,18 +15,18 @@
 #include <gemmi/to_mmcif.hpp>
 #include <DTOs/TmdetStruct.hpp>
 #include <Utils/Alignment.hpp>
-#include <Utils/Xml.hpp>
+#include <DTOs/Xml.hpp>
 #include <Types/Protein.hpp>
 #include <Types/Residue.hpp>
 #include <Types/SecStruct.hpp>
 #include <ValueObjects/TmdetStruct.hpp>
+#include <ValueObjects/Chain.hpp>
+#include <ValueObjects/Residue.hpp>
 
-using namespace std;
+namespace Tmdet::DTOs {
 
-namespace Tmdet::DTOS {
-
-    void TmdetStruct::readXml(Tmdet::ValueObjects::TmdetStruct& tmdetVO, string path) {
-        Tmdet::Utils::Xml xml;
+    void TmdetStruct::readXml(Tmdet::ValueObjects::TmdetStruct& tmdetVO, const std::string& path) {
+        Xml xml;
         xml.read(path);
         tmdetVO.tmp = xml.getTmp();
         tmdetVO.code = xml.getCode();
@@ -41,8 +41,8 @@ namespace Tmdet::DTOS {
         xml.getChains(tmdetVO.chains);
     }
 
-    void TmdetStruct::writeXml(Tmdet::ValueObjects::TmdetStruct& tmdetVO, string path) {
-        Tmdet::Utils::Xml xml;
+    void TmdetStruct::writeXml(Tmdet::ValueObjects::TmdetStruct& tmdetVO, const std::string& path) {
+        Xml xml;
         xml.create();
         xml.setTmp(tmdetVO.tmp);
         xml.setCode(tmdetVO.code);
@@ -58,7 +58,7 @@ namespace Tmdet::DTOS {
         xml.write(path);
     }
 
-    void TmdetStruct::writeCif(Tmdet::ValueObjects::TmdetStruct& tmdetVO, string path) {
+    void TmdetStruct::writeCif(const Tmdet::ValueObjects::TmdetStruct& tmdetVO, const std::string& path) {
         std::ofstream outCif(path);
         gemmi::cif::WriteOptions options(gemmi::cif::Style::Pdbx);
         gemmi::cif::Document document = make_mmcif_document(tmdetVO.gemmi);
@@ -80,13 +80,13 @@ namespace Tmdet::DTOS {
             chainVO.idx = chainIdx++;
             int residueIdx = 0;
             for( auto& residue: chain.residues) {
-                auto residueVO = Tmdet::ValueObjects::Residue(residue);
+                auto residueVO = Tmdet::ValueObjects::Residue(residue,chainVO);
                 residueVO.chainIdx = chainVO.idx;
                 residueVO.idx = residueIdx++;
                 residueVO.surface = 0.0;
                 int atomIdx = 0;
                 for( auto& atom: residue.atoms) {
-                    auto atomVO = Tmdet::ValueObjects::Atom(atom);
+                    auto atomVO = Tmdet::ValueObjects::Atom(atom,residueVO,chainVO);
                     atomVO.chainIdx = chainVO.idx;
                     atomVO.residueIdx = residueVO.idx;
                     atomVO.idx = atomIdx++;
@@ -99,43 +99,55 @@ namespace Tmdet::DTOS {
             tmdetVO.chains.emplace_back(chainVO);
         }
 
-        tmdetVO.neighbors = NeighborSearch(tmdetVO.gemmi.models[0], tmdetVO.gemmi.cell, 9);
+        tmdetVO.neighbors = gemmi::NeighborSearch(tmdetVO.gemmi.models[0], tmdetVO.gemmi.cell, 9);
         tmdetVO.neighbors.populate();
     }
 
-    void TmdetStruct::out(Tmdet::ValueObjects::TmdetStruct& tmdetVO) {
-        for(auto& chain: tmdetVO.chains) {
-            cout << "CHAIN " << chain.gemmi.name << " " << chain.length << endl;
-            for( auto& residue: chain.residues) {
-                cout << "\tRESIDUE " << residue.idx << ":" << residue.resn() << "(" << residue.gemmi.name << ") ";
-                cout << residue.surface << " " << residue.ss.code << endl;
-                if ( residue.temp.contains("fragment") ) {
-                    cout << "\t\tTEMP: fragment: " << any_cast<int>(residue.temp.at("fragment")) << endl;
-                }
-                for( auto& atom: residue.atoms) {
-                    cout << "\t\tATOM " << atom.idx << ": " << atom.gemmi.name << " ";
-                    cout << atom.gemmi.pos.x << " " << atom.gemmi.pos.y << " " << atom.gemmi.pos.z << " ";
-                    Tmdet::Types::Residue residueType = Tmdet::Types::ResidueType::getResidue(residue.gemmi.name);
-                    double vdw = 0.0;
-                    if (residueType.atoms.contains(atom.gemmi.name)) {
-                        vdw = residueType.atoms.at(atom.gemmi.name).atom.vdw;
-                    } else {
-                        vdw = Types::AtomType::DEFAULT_VDW;
-                    }
-                    cout << atom.surface << " " << vdw;
-                    if (atom.temp.find("outside") != atom.temp.end()) {
-                        cout << " out: " << any_cast<double>(atom.temp.at("outside"));
-                    }
-                    cout << endl;
-                }
-            }
+    void TmdetStruct::print(std::ostream& os, const Tmdet::ValueObjects::TmdetStruct& tmdetVO) {
+        for(const auto& chainVO: tmdetVO.chains) {
+            printChain(os, chainVO);
         }
     }
 
-    std::vector<string> TmdetStruct::getChainSequence(
+    void TmdetStruct::printChain(std::ostream& os, const Tmdet::ValueObjects::Chain& chainVO) {
+        for(const auto& residueVO: chainVO.residues) {
+            os << "CHAIN " << chainVO.gemmi.name << " " << chainVO.length << std::endl;
+            printResidue(os, residueVO);
+        }
+    }
+
+    void TmdetStruct::printResidue(std::ostream& os, const Tmdet::ValueObjects::Residue& residueVO) {
+        os << "\tRESIDUE " << residueVO.idx << ":" << residueVO.resn() << "(" << residueVO.gemmi.name << ") ";
+        os << residueVO.surface << " " << residueVO.ss.code << std::endl;
+        if ( residueVO.temp.contains("fragment") ) {
+            os << "\t\tTEMP: fragment: " << any_cast<int>(residueVO.temp.at("fragment")) << std::endl;
+        }
+        for(const auto& atomVO: residueVO.atoms) {
+            printAtom(os, atomVO);
+        }
+    }
+
+    void TmdetStruct::printAtom(std::ostream& os, const Tmdet::ValueObjects::Atom& atomVO) {
+        os << "\t\tATOM " << atomVO.idx << ": " << atomVO.gemmi.name << " ";
+        os << atomVO.gemmi.pos.x << " " << atomVO.gemmi.pos.y << " " << atomVO.gemmi.pos.z << " ";
+        Tmdet::Types::Residue residueType = Tmdet::Types::ResidueType::getResidue(atomVO.parentResidue.gemmi.name);
+        double vdw = 0.0;
+        if (residueType.atoms.contains(atomVO.gemmi.name)) {
+            vdw = residueType.atoms.at(atomVO.gemmi.name).atom.vdw;
+        } else {
+            vdw = Types::AtomType::DEFAULT_VDW;
+        }
+        os << atomVO.surface << " " << vdw;
+        if (atomVO.temp.contains("outside")) {
+            os << " out: " << any_cast<double>(atomVO.temp.at("outside"));
+        }
+        os << std::endl;
+    }
+
+    std::vector<std::string> TmdetStruct::getChainSequence(
         const Tmdet::ValueObjects::TmdetStruct& tmdetVO, const gemmi::Chain& chain) {
 
-        std::vector<string> sequence;
+        std::vector<std::string> sequence;
         auto entityId = chain.residues[0].entity_id;
         for (const auto& entity : tmdetVO.gemmi.entities) {
             if (entity.entity_type == gemmi::EntityType::Polymer
