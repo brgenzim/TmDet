@@ -1,5 +1,4 @@
-#ifndef __TMDET_VALUE_OBJECTS_TMDETSTRUCT__
-#define __TMDET_VALUE_OBJECTS_TMDETSTRUCT__
+#pragma once
 
 #include <string>
 #include <vector>
@@ -46,5 +45,3 @@ namespace Tmdet::ValueObjects {
     TmdetStruct get(const std::string &inputPath, gemmi::Structure &pdb, gemmi::cif::Document &document);
 
 }
-
-#endif

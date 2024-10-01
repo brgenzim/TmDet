@@ -14,7 +14,7 @@ namespace Tmdet::ValueObjects {
         auto pdb_ = gemmi::make_structure(std::move(document));
         pdb = pdb_;
         auto tmdetVO = Tmdet::ValueObjects::TmdetStruct(pdb_, document);
-        Tmdet::DTOS::TmdetStruct::parse(tmdetVO);
+        Tmdet::DTOs::TmdetStruct::parse(tmdetVO);
         return tmdetVO;
     }
 }

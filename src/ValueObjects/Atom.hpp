@@ -8,6 +8,9 @@
 #include <ValueObjects/Chain.hpp>
 #include <ValueObjects/Residue.hpp>
 
+/**
+ * @brief namespace for value objects
+ */
 namespace Tmdet::ValueObjects {
 
     struct Chain;

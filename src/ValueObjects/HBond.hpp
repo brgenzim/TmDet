@@ -1,13 +1,28 @@
-#ifndef __TMDET_VALUE_OBJECTS_HBOND__
-#define __TMDET_VALUE_OBJECTS_HBOND__
+#pragma once
 
+/**
+ * @brief namespace for value objects
+ */
 namespace Tmdet::ValueObjects {
 
+    /**
+     * @brief simple representation of a hydrogen bond
+     */
     struct HBond {
+
+        /**
+         * @brief calculated energy of the hydrogen bond
+         */
         double energy = 1e30;
+
+        /**
+         * @brief chain index of the akceptor residue
+         */
         int toChainIdx = -1;
+
+        /**
+         * @brief residue index of the akceptor
+         */
         int toResIdx = -1;
     };
 }
-
-#endif
