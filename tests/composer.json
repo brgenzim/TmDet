@@ -25,5 +25,8 @@
             "Composer\\Config::disableProcessTimeout",
             "@php vendor/bin/paratest --functional --order-by=duration --filter test_whole_archive --display-skipped --display-errors --display-warnings --testdox tests"
         ]
+    },
+    "require": {
+        "spatie/simple-excel": "^3.7"
     }
 }
