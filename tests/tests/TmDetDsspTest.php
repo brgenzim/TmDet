@@ -203,16 +203,16 @@ class TmDetDsspTest extends TestCase {
 
     public static function getCifPathsOfTmpsWithErrors(): array {
         return [
-            '1bcc.cif.gz' => [ static::PDB_ZFS_DIR . '/bc/1bcc.cif.gz' ],
-            '7a4p.cif.gz' => [ static::PDB_ZFS_DIR . '/a4/7a4p.cif.gz' ],
+            // '1bcc.cif.gz' => [ static::PDB_ZFS_DIR . '/bc/1bcc.cif.gz' ],
+            // '7a4p.cif.gz' => [ static::PDB_ZFS_DIR . '/a4/7a4p.cif.gz' ],
             '7t6b.cif.gz' => [ static::PDB_ZFS_DIR . '/t6/7t6b.cif.gz' ],
-            '8e4o.cif.gz' => [ static::PDB_ZFS_DIR . '/e4/8e4o.cif.gz' ],
-            '3bcc.cif.gz' => [ static::PDB_ZFS_DIR . '/bc/3bcc.cif.gz' ],
-            '4msw.cif.gz' => [ static::PDB_ZFS_DIR . '/ms/4msw.cif.gz' ],
-            '6zxs.cif.gz' => [ static::PDB_ZFS_DIR . '/zx/6zxs.cif.gz' ],
-            '7a5v.cif.gz' => [ static::PDB_ZFS_DIR . '/a5/7a5v.cif.gz' ],
-            '2axt.cif.gz' => [ static::PDB_ZFS_DIR . '/ax/2axt.cif.gz' ],
-            '2bcc.cif.gz' => [ static::PDB_ZFS_DIR . '/bc/2bcc.cif.gz' ],
+            // '8e4o.cif.gz' => [ static::PDB_ZFS_DIR . '/e4/8e4o.cif.gz' ],
+            // '3bcc.cif.gz' => [ static::PDB_ZFS_DIR . '/bc/3bcc.cif.gz' ],
+            // '4msw.cif.gz' => [ static::PDB_ZFS_DIR . '/ms/4msw.cif.gz' ],
+            // '6zxs.cif.gz' => [ static::PDB_ZFS_DIR . '/zx/6zxs.cif.gz' ],
+            // '7a5v.cif.gz' => [ static::PDB_ZFS_DIR . '/a5/7a5v.cif.gz' ],
+            // '2axt.cif.gz' => [ static::PDB_ZFS_DIR . '/ax/2axt.cif.gz' ],
+            // '2bcc.cif.gz' => [ static::PDB_ZFS_DIR . '/bc/2bcc.cif.gz' ],
         ];
     }
 

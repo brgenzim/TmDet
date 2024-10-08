@@ -28,6 +28,9 @@ class Tmdet30Runner extends AbstractProcessRunner {
     public string $entFile = '';
     public string $pdbCode = '';
     public string $tmdetLogFile = '';
+    public bool $enableOverwrite = false;
+    // Enables tmdet -no_forcedel option.
+    public bool $noForceDelete = false;
 
     public function __construct(string $execPath, array $commandParams, string $entFile) {
         parent::__construct($execPath, $commandParams);
@@ -55,17 +58,23 @@ class Tmdet30Runner extends AbstractProcessRunner {
             throw new RuntimeException("Old Tmdet XML of {$this->pdbCode} not found '{$this->oldTmdetFile}'");
         }
 
-        $result = parent::exec();
+        if (file_exists($this->newTmdetFile) && !$this->enableOverwrite) {
+            printf("$this->pdbCode: tmdet exec skipped, since output file exists: "
+                . "{$this->newTmdetFile} - enableOverwrite suppresses this check\n");
+            $result = true;
+        } else {
+            $result = parent::exec();
+            // We do not filter and parse in this kind of runner,
+            // but save the output into logfile.
+            $output = implode(PHP_EOL, $this->outputLines);
+            file_put_contents($this->tmdetLogFile, $output);
 
-        // We do not filter and parse in this kind of runner,
-        // but save the output into logfile.
-        $output = implode(PHP_EOL, $this->outputLines);
-        file_put_contents($this->tmdetLogFile, $output);
-
-        if (!file_exists($this->newTmdetFile)) {
-            throw new RuntimeException("New Tmdet XML of {$this->pdbCode} not found '{$this->newTmdetFile}'");
+            if (!file_exists($this->newTmdetFile)) {
+                throw new RuntimeException("New Tmdet XML of {$this->pdbCode} not found '{$this->newTmdetFile}'");
+            }
         }
 
+        // TODO: remove it later - if processRegions is not needed
         // $newData = static::readPdbtmXml($this->newTmdetFile);
         // $this->newData = $this->processRegions($newData);
 
@@ -102,13 +111,16 @@ class Tmdet30Runner extends AbstractProcessRunner {
         return $line;
     }
 
-    public static function createRunner(string $entFile): static {
+    public static function createRunner(string $entFile, bool $noForceDelete = false): static {
 
         $pdbCode = static::getPdbCodeFromPath($entFile);
         $params = [
             "-p=$pdbCode",
             '-create'
         ];
+        if ($noForceDelete) {
+            $params[] = '-no_forcedel';
+        }
         return new Tmdet30Runner(static::EXEC, $params, $entFile);
     }
 
@@ -142,10 +154,27 @@ class Tmdet30Runner extends AbstractProcessRunner {
                 'regions' => $regions
             ];
         }
+        $deletedChains = [];
+        $addedChains = [];
+        if (isset($xml->BIOMATRIX)) {
+            foreach ($xml->BIOMATRIX->DELETE as $deleteItem) {
+                $deletedChains[] = (string) $deleteItem['CHAINID'];
+            }
+            sort($deletedChains);
+
+            foreach ($xml->BIOMATRIX->MATRIX as $matrix) {
+                foreach ($matrix->APPLY_TO_CHAIN as $applyItem) {
+                    $addedChains[] = (string) $applyItem['NEW_CHAINID'];
+                }
+            }
+            sort($addedChains);
+        }
 
         return [
             'code' => (string)$xml['ID'],
             'chains' => $chains,
+            'deletedChains' => $deletedChains,
+            'addedChains' => $addedChains,
             'isTmp' => ((string)$xml['TMP'] === 'yes') ? true : false,
             'tmType' => (string)$xml->RAWRES->TMTYPE
         ];
@@ -164,5 +193,9 @@ class Tmdet30Runner extends AbstractProcessRunner {
             ];
         };
         return $pdbtmProteins;
+    }
+
+    public function getCommandLine(): string {
+        return $this->commandLine;
     }
 }
