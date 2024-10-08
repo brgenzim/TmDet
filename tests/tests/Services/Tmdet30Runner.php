@@ -121,7 +121,9 @@ class Tmdet30Runner extends AbstractProcessRunner {
         if ($noForceDelete) {
             $params[] = '-no_forcedel';
         }
-        return new Tmdet30Runner(static::EXEC, $params, $entFile);
+        $runner = new Tmdet30Runner(static::EXEC, $params, $entFile);
+        $runner->noForceDelete = $noForceDelete;
+        return $runner;
     }
 
     // Util function
