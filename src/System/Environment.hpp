@@ -25,7 +25,7 @@ namespace Tmdet::System {
              * @param line 
              * @return std::pair 
              */
-            std::pair<std::string,std::string> split(std::string line);
+            std::pair<std::string,std::string> split(const std::string& line) const;
 
             /**
              * @brief replace next variable in value
@@ -43,7 +43,7 @@ namespace Tmdet::System {
              * 
              * @param envFile 
              */
-            void readEnvFile(std::string& envFile);
+            void readEnvFile(const std::string& envFile);
 
 
         public:
@@ -87,7 +87,7 @@ namespace Tmdet::System {
              * @param key 
              * @param value 
              */
-            void set(const std::string key, const std::string value);
+            void set(const std::string& key, const std::string& value);
 
             /**
              * @brief write out all variables and their values

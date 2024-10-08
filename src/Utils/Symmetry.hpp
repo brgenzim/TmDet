@@ -1,15 +1,12 @@
-#ifndef __TMDET_UTILS_SYMMETRY__
-#define __TMDET_UTILS_SYMMETRY__
+#pragma once
 
 #include <vector>
 #include <string>
 #include <any>
 #include <gemmi/model.hpp>
-#include <ValueObjects/TmdetStruct.hpp>
+#include <ValueObjects/Protein.hpp>
 
 // #define __SYM_DBG 1 // to enable debug messages of this feature
-
-using namespace std;
 
 namespace Tmdet::Utils {
 
@@ -24,8 +21,6 @@ namespace Tmdet::Utils {
 
     class Symmetry {
         public:
-        std::vector<std::vector<_symmetryData>> CheckSymmetry(Tmdet::ValueObjects::TmdetStruct &tmdetVO);
+            std::vector<std::vector<_symmetryData>> CheckSymmetry(Tmdet::ValueObjects::Protein &proteinVO);
     };
 }
-
-#endif

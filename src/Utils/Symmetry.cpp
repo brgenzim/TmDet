@@ -2,7 +2,7 @@
 #include <gemmi/model.hpp>
 #include <gemmi/neighbor.hpp>
 #include <Types/Residue.hpp>
-#include <ValueObjects/TmdetStruct.hpp>
+#include <ValueObjects/Protein.hpp>
 #include <Utils/Symmetry.hpp>
 #include <Utils/Oligomer.hpp>
 
@@ -28,13 +28,13 @@ namespace Tmdet::Utils {
     static double cosineAngleOfVectors(Eigen::Vector3d u, gemmi::Vec3 v);
 
 
-    std::vector<std::vector<_symmetryData>> Symmetry::CheckSymmetry(Tmdet::ValueObjects::TmdetStruct &tmdetVO) {
+    std::vector<std::vector<_symmetryData>> Symmetry::CheckSymmetry(Tmdet::ValueObjects::Protein &proteinVO) {
 
         char *seq1, *seq2;
         std::vector<std::vector<_symmetryData>> sim;
-        auto entities = Oligomer::getNumberOfChains(tmdetVO.gemmi);
+        auto entities = Oligomer::getNumberOfChains(proteinVO.gemmi);
 
-        int nc = tmdetVO.chains.size();
+        int nc = proteinVO.chains.size();
         sim.resize(nc);
         for (int i=0;i<nc;i++) {
             sim[i].resize(nc);
@@ -43,8 +43,8 @@ namespace Tmdet::Utils {
             }
         }
 
-        auto ch1 = tmdetVO.chains.begin();
-        for (int i = 0; ch1 != tmdetVO.chains.end(); ch1++, i++) {
+        auto ch1 = proteinVO.chains.begin();
+        for (int i = 0; ch1 != proteinVO.chains.end(); ch1++, i++) {
             if (!ch1->selected || !Oligomer::isEntityOligomerized(ch1->entityId, entities)) {
                 continue;
             }
@@ -78,7 +78,7 @@ namespace Tmdet::Utils {
                 continue;
             }
 
-            auto ch2 = tmdetVO.chains.begin();
+            auto ch2 = proteinVO.chains.begin();
             for (int j = 0; j < i; ch2++, j++) {
                 if (!ch2->selected || ch1->entityId != ch2->entityId) {
                     continue;

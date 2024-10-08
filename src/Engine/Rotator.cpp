@@ -1,8 +1,9 @@
 #include <cmath>
 #include <gemmi/model.hpp>
-#include <Optim/Rotator.hpp>
+#include <System/Config.hpp>
+#include <Engine/Rotator.hpp>
 
-namespace Tmdet::Optim {
+namespace Tmdet::Engine {
 
     /**
      * @brief rotate a normal vector around the 4PI
@@ -36,7 +37,7 @@ namespace Tmdet::Optim {
         q = sin(alpha);
         qq = cos(alpha);
         if (q>1e-10) {
-            beta_step = BALL_DIST/q;
+            beta_step = std::stof(environment.get("TMDET_BALL_DIST",DEFAULT_TMDET_BALL_DIST))/q;
         }
         else {
             beta_step = 2* M_PI; 

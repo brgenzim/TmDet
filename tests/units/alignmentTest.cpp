@@ -7,12 +7,12 @@
 #include <gemmi/mmcif.hpp>
 #include <gemmi/model.hpp>
 #include <System/Environment.hpp>
-#include <ValueObjects/TmdetStruct.hpp>
-#include <DTOs/TmdetStruct.hpp>
+#include <ValueObjects/Protein.hpp>
+#include <DTOs/Protein.hpp>
 
 using namespace std;
 
-Tmdet::ValueObjects::TmdetStruct createTmdetStruct(string pdbCode);
+Tmdet::ValueObjects::Protein createTmdetStruct(string pdbCode);
 void assertTrue(string testDescription, bool condition, int lineNumber);
 vector<string> getResidueNames(gemmi::Chain& chain);
 
@@ -218,14 +218,9 @@ void assertTrue(std::string testDescription, bool condition, int lineNumber) {
     std::cout << std::endl;
 }
 
-Tmdet::ValueObjects::TmdetStruct createTmdetStruct(std::string pdbCode) {
+Tmdet::ValueObjects::Protein createTmdetStruct(std::string pdbCode) {
 
     auto inputPath = environment.get("PDB_CIF_DIR");
     inputPath += (string("/") + pdbCode[1] + pdbCode[2]) + "/" + pdbCode + "_updated.cif.gz";
-
-    gemmi::Structure pdb;
-    gemmi::cif::Document document;
-    auto tmdetVO = Tmdet::ValueObjects::get(inputPath, pdb, document);
-
-    return tmdetVO;
+    return Tmdet::DTOs::Protein::get(inputPath);
 }

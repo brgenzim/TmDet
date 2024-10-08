@@ -1,53 +1,46 @@
-#ifndef __TMDET_DTOS_TMDET__
-#define __TMDET_DTOS_TMDET__
+#pragma once
 
 #include <string>
 #include <vector>
 #include <gemmi/model.hpp>
-#include <ValueObjects/TmdetStruct.hpp>
+#include <ValueObjects/Protein.hpp>
+#include <ValueObjects/Chain.hpp>
+#include <ValueObjects/Residue.hpp>
+#include <ValueObjects/Atom.hpp>
 
+/**
+ * @brief namespace for data transfer objects
+ */
 namespace Tmdet::DTOs {
 
-    struct TmdetStruct {
-
-        /**
-         * @brief read tmdet xml file into TmdetStruct Value Object
-         * 
-         * @param tmdetVO 
-         * @param path 
-         */
-        static void readXml(Tmdet::ValueObjects::TmdetStruct& tmdetVO, const std::string& path);
-
-        /**
-         * @brief write TmdetStruct Value Objects out in xml
-         * 
-         * @param tmdetVO 
-         * @param path 
-         */
-        static void writeXml(Tmdet::ValueObjects::TmdetStruct& tmdetVO, const std::string& path);
+    /**
+     * @brief reading and writing protein structure and parsing
+     *        it to Protein Value Object
+     */
+    struct Protein {
 
         /**
          * @brief write transformed structure into file in cif format
          * 
-         * @param tmdetVO 
+         * @param protein 
          * @param path 
          */
-        static void writeCif(const Tmdet::ValueObjects::TmdetStruct& tmdetVO, const std::string& path);
+        static void writeCif(const Tmdet::ValueObjects::Protein& protein, const std::string& path);
 
         /**
-         * @brief parse pdb structure into TmdetStruct Value Object
+         * @brief get pdb structure and parse it into Protein Value Object
          * 
-         * @param tmdetVO 
+         * @param inputPath
          */
-        static void parse(Tmdet::ValueObjects::TmdetStruct& tmdetVO);
+        static Tmdet::ValueObjects::Protein get(const std::string& inputPath);
 
         /**
          * @brief print the TmdetStruct Value Object into an out stream
          * 
          * @param os 
-         * @param tmdetVO 
+         * @param protein 
          */
-        static void print(std::ostream& os, const Tmdet::ValueObjects::TmdetStruct& tmdetVO);
+        static void print(std::ostream& os, const Tmdet::ValueObjects::Protein& protein);
         
         /**
          * @brief print the Tmdet Chain Value Object into an out stream
@@ -76,13 +69,11 @@ namespace Tmdet::DTOs {
         /**
          * @brief Get the amino acid sequence of a chain
          * 
-         * @param tmdetVO 
+         * @param protein 
          * @param chainVO 
          * @return std::vector<std::string> 
          */
-        static std::vector<std::string> getChainSequence(const Tmdet::ValueObjects::TmdetStruct& tmdetVO,
+        static std::vector<std::string> getChainSequence(const Tmdet::ValueObjects::Protein& protein,
             const gemmi::Chain& chainVO);
     };
 }
-
-#endif

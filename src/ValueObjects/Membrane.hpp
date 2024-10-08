@@ -26,11 +26,35 @@ namespace Tmdet::ValueObjects {
          * @brief the last column in the transformation matrix
          */
         gemmi::Vec3 origo;
+
+        /**
+         * @brief the membrane normal vector after transformation
+         *        i.e. x and y should be zero, while z is the half
+         *        width of the membrane
+         */
         gemmi::Vec3 normal;
+
+        /**
+         * @brief membrane width in angstrom
+         */
         double h;
-        double curver;
+
+        /**
+         * @brief the radius of the membrane curvature 
+         *        zero for plain membrane
+         * 
+         */
+        double curver = 0.0;
+
+        /**
+         * @brief the radius of membrane in the x-y plane that
+         *        contains the protein (for Mol* representation)
+         */
         double sizer;
+
+        /**
+         * @brief type of the membrane (plain or curved)
+         */
         Tmdet::Types::Membrane type;
     };
-
 }

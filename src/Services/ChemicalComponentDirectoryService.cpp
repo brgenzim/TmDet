@@ -10,7 +10,7 @@
 #include <gemmi/gz.hpp>
 #include <gemmi/to_cif.hpp>
 
-#include <config.hpp>
+#include <System/Config.hpp>
 #include <System/Environment.hpp>
 #include <System/Command.hpp>
 #include <System/ProgressBar.hpp>

@@ -6,17 +6,16 @@
 #include <gemmi/model.hpp>
 #include <gemmi/neighbor.hpp>
 #include <Types/Residue.hpp>
-#include <ValueObjects/TmdetStruct.hpp>
-#include <Optim/Optim.hpp>
+#include <Engine/Optim.hpp>
 #include <Utils/Surface.hpp>
 
 using namespace std;
 
-namespace Tmdet::Optim {
+namespace Tmdet::Engine {
 
     void Optim::init() {
         run = true;
-        for(auto& chain: tmdetVO.chains) {
+        for(auto& chain: proteinVO.chains) {
             for(auto& residue: chain.residues) {
                 residue.temp.try_emplace("turn",0);
                 residue.temp.try_emplace("straight",0);
@@ -30,7 +29,7 @@ namespace Tmdet::Optim {
     }
 
     void Optim::end() {
-        for(auto& chain: tmdetVO.chains) {
+        for(auto& chain: proteinVO.chains) {
             for(auto& residue: chain.residues) {
                 residue.temp.erase("turn");
                 residue.temp.erase("straight");
@@ -45,7 +44,7 @@ namespace Tmdet::Optim {
     }
 
     void Optim::setDistances() {
-        for(auto& chain: tmdetVO.chains) {
+        for(auto& chain: proteinVO.chains) {
             for(auto& residue: chain.residues) {
                 setAtomDistances(residue);
             }
@@ -73,7 +72,7 @@ namespace Tmdet::Optim {
     void Optim::setBoundaries() {
         min = 10000;
         max = -10000;
-        for(auto& chain: tmdetVO.chains) {
+        for(auto& chain: proteinVO.chains) {
             for(auto& residue: chain.residues) {
                 for(auto& atom: residue.atoms) {
                     auto dist = any_cast<double>(atom.temp.at("dist"));
@@ -85,7 +84,7 @@ namespace Tmdet::Optim {
     }
 
     void Optim::sumupSlices() {
-        for(auto& chain: tmdetVO.chains) {
+        for(auto& chain: proteinVO.chains) {
             for(auto& residue: chain.residues) {
                 residueToSlice(residue);
             }

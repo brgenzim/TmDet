@@ -1,23 +1,22 @@
-#ifndef __TMDET_UTILS_SURFACE__
-#define __TMDET_UTILS_SURFACE__
+#pragma once
 
 #include <array>
-#include <string>
 #include <any>
 #include <gemmi/model.hpp>
-#include <ValueObjects/TmdetStruct.hpp>
+#include <ValueObjects/Protein.hpp>
 
-using namespace std;
-
-namespace Tmdet::Utils {
-
-#define SURF_PROBSIZE 1.4
-#define SURF_ZSLICE 0.05
-#define SURF_DIST 0.1
 #define VDW(a) (any_cast<double>(a.temp["vdw"]))
 #define MIN(a,b) ((a)<(b)?(a):(b))
 #define MAX(a,b) ((a)>(b)?(a):(b))
 
+/**
+ * @brief namespace for tmdet utils
+ */
+namespace Tmdet::Utils {
+
+    /**
+     * @brief temporary geometry data for neighboring atom
+     */
     struct surfNeighbor {
         Tmdet::ValueObjects::Atom atom;
         double d;
@@ -25,46 +24,227 @@ namespace Tmdet::Utils {
         double beta;
     };
 
+    /**
+     * @brief temporary data for neighbors
+     */
     struct surfTemp {
-        vector<surfNeighbor> neighbors;
-        vector<double> arc1;
-        vector<double> arc2;
-        vector<int> sorted;
+        std::vector<surfNeighbor> neighbors;
+        std::vector<double> arc1;
+        std::vector<double> arc2;
+        std::vector<int> sorted;
     };
 
+    /**
+     * @brief the bounding box containing the molecule
+     */
     struct boundingBox {
-        double xmin,xmax;
-        double ymin,ymax;
-        double zmin,zmax;
-        int l1, l2, l3, op;
-        vector<vector<gemmi::Position>> frame;
-        vector<vector<Tmdet::ValueObjects::Atom *>> closestAtoms;
-        vector<double> closestDist;
+        double xmin;
+        double xmax;
+        double ymin;
+        double ymax;
+        double zmin;
+        double zmax;
+        int l1;
+        int l2;
+        int l3;
+        int op;
+        std::vector<std::vector<gemmi::Position>> frame;
+        std::vector<std::vector<Tmdet::ValueObjects::Atom *>> closestAtoms;
+        std::vector<double> closestDist;
     };
 
+    /**
+     * @brief surface cache data
+     */
+    class surfaceCache {
+        private:
+            /**
+            * @brief the cache container
+            */
+            std::vector<double> cache;
+
+            /**
+            * @brief Convert cache data back to protein value object
+            * 
+            * @param protein 
+            */
+            void proteinFromCache(Tmdet::ValueObjects::Protein& protein);
+
+            /**
+             * @brief Convert cache data back to chain value object
+             * 
+             * @param chain 
+             * @param index 
+             */
+            void chainFromCache(Tmdet::ValueObjects::Chain& chain, unsigned int& index);
+
+            /**
+             * @brief Convert protein value object to cache data
+             * 
+             * @param protein 
+             */
+            void proteinToCache(const Tmdet::ValueObjects::Protein& protein);
+        
+            /**
+             * @brief Convert chain value object to cache data
+             * 
+             * @param chain 
+             */
+            void chainToCache(const Tmdet::ValueObjects::Chain& chain);
+
+        public:
+
+            /**
+            * @brief Read cache data from file and store it in protein value object
+            * 
+            * @param protein 
+            * @return bool
+            */
+            bool read(Tmdet::ValueObjects::Protein& protein);
+
+            /**
+            * @brief Write cache data from protein value objects to file
+            * 
+            * @param protein 
+            */
+            void write(const Tmdet::ValueObjects::Protein& protein);
+    };
+
+    /**
+     * @brief class for calculating solvent accessible
+     *        surface of protein
+     */
     class Surface {
         private:
-            Tmdet::ValueObjects::TmdetStruct& tmdetVO;
-            void initTempData();
-            void setContacts();
-            void setContactsOfAtom(Tmdet::ValueObjects::Atom& a_atom);
-            void setNeighbor(Tmdet::ValueObjects::Atom& a_atom, Tmdet::ValueObjects::Atom& b_atom, surfTemp& st);
-            void calcSurfaceOfAtom(Tmdet::ValueObjects::Atom& atom,  surfTemp& st);
-            bool calcArcsOfAtom(Tmdet::ValueObjects::Atom& a_atom, surfTemp& st, double z);
-            double calcSumArcsOfAtom(Tmdet::ValueObjects::Atom& atom, surfTemp& st, bool ss);
-            void setBoundingBox(boundingBox& box);
-            void initFrame(boundingBox& box);
-            void setFrame(boundingBox& box);
-            void smoothFrame(boundingBox& box);
-            void findClosestAtoms(boundingBox& box);
-            
-        public:
-            Surface(Tmdet::ValueObjects::TmdetStruct& _tmdetVO) : tmdetVO(_tmdetVO) {} ;
-            ~Surface() {};
 
-            void main();
+            /**
+             * @brief protein value objects containing the structure
+             */
+            Tmdet::ValueObjects::Protein& protein;
+
+            /**
+             * @brief flag for do not use cache
+             */
+            bool noCache = false;
+
+            /**
+             * @brief initialize temporary datat containers
+             */
+            void initTempData();
+
+            /**
+             * @brief Set contacts and summarize surface
+             */
+            void setContacts();
+
+            /**
+             * @brief Set contacts for one atom
+             * 
+             * @param a_atom 
+             */
+            void setContactsOfAtom(Tmdet::ValueObjects::Atom& a_atom);
+
+            /**
+             * @brief Set the neighbors of atoms
+             * 
+             * @param a_atom 
+             * @param b_atom 
+             * @param st 
+             */
+            void setNeighbor(Tmdet::ValueObjects::Atom& a_atom, Tmdet::ValueObjects::Atom& b_atom, surfTemp& st);
+
+            /**
+             * @brief Calculate surface of one atom
+             * 
+             * @param atom 
+             * @param st 
+             */
+            void calcSurfaceOfAtom(Tmdet::ValueObjects::Atom& atom,  surfTemp& st);
+
+            /**
+             * @brief Calculate arcs of overlaping atoms in the given plane
+             * 
+             * @param a_atom 
+             * @param st 
+             * @param z 
+             * @return true 
+             * @return false 
+             */
+            bool calcArcsOfAtom(Tmdet::ValueObjects::Atom& a_atom, surfTemp& st, double z);
+
+            /**
+             * @brief Sum up overlaping arcs
+             * 
+             * @param atom 
+             * @param st 
+             * @param ss 
+             * @return double 
+             */
+            double calcSumArcsOfAtom(Tmdet::ValueObjects::Atom& atom, surfTemp& st, bool ss);
+
+            /**
+             * @brief Set up parameters of the bounding box object
+             * 
+             * @param box 
+             */
+            void setBoundingBox(boundingBox& box);
+
+            /**
+             * @brief Initialize frame for setting outside atoms
+             * 
+             * @param box 
+             */
+            void initFrame(boundingBox& box);
+
+            /**
+             * @brief Set up frame for setting outside atoms
+             * 
+             * @param box 
+             */
+            void setFrame(boundingBox& box);
+
+            /**
+             * @brief Smoothing frame data
+             * 
+             * @param box 
+             */
+            void smoothFrame(boundingBox& box);
+
+            /**
+             * @brief Find the closest atom to the frame
+             * 
+             * @param box 
+             */
+            void findClosestAtoms(boundingBox& box);
+
+            /**
+             * @brief Run the solvent accessible surface calculation
+             */
+            void run();
+
+            /**
+             * @brief Calculate outside surface (i.e. the surface that is accessible
+             *        from outside, needed for beta barrels)
+             */
             void setOutsideSurface();
+
+        public:
+
+            /**
+             * @brief Construct a new Surface object
+             * 
+             * @param protein
+             */
+            explicit Surface(Tmdet::ValueObjects::Protein& protein, bool noCache) : 
+                protein(protein),
+                noCache(noCache) {
+                    run();
+                    setOutsideSurface();
+            }
             
+            /**
+             * @brief Destroy the Surface object
+             */
+            ~Surface()=default;
     };
 }
-#endif

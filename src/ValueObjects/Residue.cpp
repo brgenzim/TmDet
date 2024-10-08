@@ -4,8 +4,6 @@
 
 namespace Tmdet::ValueObjects {
 
-    
-
     int Residue::resn() const {
         return gemmi.seqid.num.value;
     }

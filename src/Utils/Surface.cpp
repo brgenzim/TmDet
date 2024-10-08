@@ -3,28 +3,110 @@
 #include <math.h>
 #include <algorithm>
 #include <numeric>
+#include <filesystem>
 #include <gemmi/model.hpp>
 #include <gemmi/neighbor.hpp>
+#include <System/FilePaths.hpp>
 #include <Types/Residue.hpp>
-#include <ValueObjects/TmdetStruct.hpp>
+#include <ValueObjects/Protein.hpp>
 #include <Utils/Surface.hpp>
 
 using namespace std;
+namespace StructVO = Tmdet::ValueObjects;
 
 namespace Tmdet::Utils {
 
+    void surfaceCache::proteinFromCache(Tmdet::ValueObjects::Protein& protein) {
+        unsigned int i =0;
+        for(auto& c : protein.chains) {
+            if (c.selected) {
+                chainFromCache(c,i);
+            }
+        }
+    }
 
-    void Surface::main() {
-        initTempData();
-        setContacts();
+    void surfaceCache::chainFromCache(Tmdet::ValueObjects::Chain& chain, unsigned int& index) {
+        for (auto& r : chain.residues) {
+            r.surface = 0.0;
+            for(auto& a : r.atoms) {
+                a.surface = cache[index];
+                r.surface += a.surface;
+                index++;
+            }
+        }
+    }
+
+    void surfaceCache::proteinToCache(const Tmdet::ValueObjects::Protein& protein) {
+        cache.clear();
+        for( const auto& c : protein.chains) {
+            if (c.selected) {
+                chainToCache(c);
+            }
+        }
+    }
+
+    void surfaceCache::chainToCache(const Tmdet::ValueObjects::Chain& chain) {
+        for (const auto& r : chain.residues) {
+            for(const auto& a : r.atoms) {
+                cache.emplace_back(a.surface);
+            }
+        }
+    }
+
+    bool surfaceCache::read(Tmdet::ValueObjects::Protein& protein) {
+        std::string hash = protein.hash();
+        std::string dir = Tmdet::System::FilePaths::cache(hash);
+        std::string path = dir + "/" + hash + "_" + protein.code + ".bin";
+        std::ifstream file(path, ios::binary);
+        if (!file.is_open()) {
+            std::cerr << "Warning: Could not read cache" << std::endl;
+            return false;
+        }
+        auto size = cache.size();
+        file.read(reinterpret_cast<char*>(&size), sizeof(size));
+        cache.resize(size);
+        file.read(reinterpret_cast<char*>(&cache[0]), sizeof(cache));
+        file.close();
+        proteinFromCache(protein);
+        return true;
+    }
+
+    void surfaceCache::write(const Tmdet::ValueObjects::Protein& protein) {
+        proteinToCache(protein);
+        std::string hash = protein.hash();
+        std::string dir = Tmdet::System::FilePaths::cache(hash);
+        std::filesystem::create_directories(dir);
+        std::string path = dir + "/" + hash + "_" + protein.code + ".bin";
+        std::ofstream file(path, ios::binary);
+        if (!file.is_open()) {
+            std::cerr << "Warning: Could not write cache" << std::endl;
+            return;
+        }
+        auto size = cache.size();
+        std::cerr << size << std::endl;
+        file.write(reinterpret_cast<const char*>(&size), sizeof(size));
+        file.write(reinterpret_cast<const char*>(&cache), sizeof(cache));
+        std::ostream_iterator<double> out_itr(file);
+        std::ranges::copy(cache.begin(), cache.end(), out_itr);
+        file.close();
+    }
+    
+    void Surface::run() {
+        surfaceCache cache;
+        if (noCache || !cache.read(protein) ) {
+            initTempData();
+            setContacts();
+            cache.write(protein);
+        }
     }
 
     void Surface::initTempData() {
-        for(auto& chain: tmdetVO.chains) {
+        const double probSize = std::stof(environment.get("TMDET_SURF_PROBSIZE",DEFAULT_TMDET_SURF_PROBSIZE));
+        for(auto& chain: protein.chains) {
             for(auto& residue: chain.residues) {
                 for(auto& atom: residue.atoms) {
                     Tmdet::Types::Residue residueType = Tmdet::Types::ResidueType::getResidue(residue.gemmi.name);
-                    double vdw = SURF_PROBSIZE;
+                    double vdw = probSize;
                     if (residueType.atoms.contains(atom.gemmi.name)) {
                         vdw += residueType.atoms.at(atom.gemmi.name).atom.vdw;
                     } else {
@@ -37,7 +119,7 @@ namespace Tmdet::Utils {
     }
 
     void Surface::setContacts() {
-        for(auto& chain: tmdetVO.chains) {
+        for(auto& chain: protein.chains) {
             for(auto& residue: chain.residues) {
                 residue.surface = 0.0;
                 for(auto& atom: residue.atoms) {
@@ -50,8 +132,8 @@ namespace Tmdet::Utils {
 
     void Surface::setContactsOfAtom(Tmdet::ValueObjects::Atom& a_atom) {
         surfTemp st;
-        for(auto m : tmdetVO.neighbors.find_neighbors(a_atom.gemmi, 0.1, 7.0)) {
-            auto& b_atom = tmdetVO.chains.at(m->chain_idx).residues.at(m->residue_idx).atoms.at(m->atom_idx);
+        for(auto m : protein.neighbors.find_neighbors(a_atom.gemmi, 0.1, 7.0)) {
+            auto& b_atom = protein.chains.at(m->chain_idx).residues.at(m->residue_idx).atoms.at(m->atom_idx);
             double dist = a_atom.gemmi.pos.dist(b_atom.gemmi.pos);
             if ( dist < VDW(a_atom) + VDW(b_atom)) {
                 setNeighbor(a_atom,b_atom,st);
@@ -71,11 +153,12 @@ namespace Tmdet::Utils {
     }
 
     void Surface::calcSurfaceOfAtom(Tmdet::ValueObjects::Atom& a_atom, surfTemp& st) {
+        const double zSlice = std::stof(environment.get("TMDET_SURF_ZSLICE",DEFAULT_TMDET_SURF_ZSLICE));
         a_atom.surface = 0.0;
         auto& a_gatom = a_atom.gemmi;
         double vdwa = VDW(a_atom);
-        for(double z=a_gatom.pos.z-vdwa+SURF_ZSLICE/2; z<a_gatom.pos.z+vdwa/*+SURF_ZSLICE/2*/; z+=SURF_ZSLICE) {
-            a_atom.surface += calcSumArcsOfAtom(a_atom,st,calcArcsOfAtom(a_atom,st,z)) * SURF_ZSLICE;
+        for(double z=a_gatom.pos.z-vdwa+zSlice/2; z<a_gatom.pos.z+vdwa/*+SURF_ZSLICE/2*/; z+=zSlice) {
+            a_atom.surface += calcSumArcsOfAtom(a_atom,st,calcArcsOfAtom(a_atom,st,z)) * zSlice;
         }
         a_atom.surface *= vdwa;
     }
@@ -173,7 +256,7 @@ namespace Tmdet::Utils {
 	    box.ymin=10000; box.ymax=-10000;        
         box.zmin=10000; box.zmax=-10000;        
 	    
-        for(auto& chain: tmdetVO.chains) {
+        for(auto& chain: protein.chains) {
             for(auto& residue: chain.residues) {
                 for(auto& atom: residue.atoms) {
                     box.xmin = MIN(box.xmin,atom.gemmi.pos.x);
@@ -228,7 +311,7 @@ namespace Tmdet::Utils {
     }
 
     void Surface::setFrame(boundingBox& box) {
-        for(auto& chain: tmdetVO.chains) {
+        for(auto& chain: protein.chains) {
             for(auto& residue: chain.residues) {
                 for(auto& atom: residue.atoms) {
                     if (atom.temp.find("outside") == atom.temp.end()) {
@@ -302,7 +385,7 @@ namespace Tmdet::Utils {
 		    for (int j=0; j<box.zmax-box.zmin; j++) {
 			    box.closestDist[j] = 10000000;
             }
-            for(auto& chain: tmdetVO.chains) {
+            for(auto& chain: protein.chains) {
                 for(auto& residue: chain.residues) {
                     for(auto& atom: residue.atoms) {
 				        int z = (int)(atom.gemmi.pos.z-box.zmin);

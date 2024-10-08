@@ -6,7 +6,7 @@
 #include <vector>
 #include <eigen3/Eigen/Dense>
 #include <Utils/Alignment.hpp>
-#include <DTOs/TmdetStruct.hpp>
+#include <DTOs/Protein.hpp>
 
 using namespace std;
 
@@ -340,11 +340,11 @@ namespace Tmdet::Utils::Alignment {
         residue->sifts_unp = other.sifts_unp;
     }
 
-    void alignResidues(Tmdet::ValueObjects::TmdetStruct& tmdetVO) {
+    void alignResidues(Tmdet::ValueObjects::Protein& proteinVO) {
 
-        for(auto& chain: tmdetVO.gemmi.models[0].chains) {
+        for(auto& chain: proteinVO.gemmi.models[0].chains) {
 
-            auto sequence = Tmdet::DTOs::TmdetStruct::getChainSequence(tmdetVO, chain);
+            auto sequence = Tmdet::DTOs::Protein::getChainSequence(proteinVO, chain);
 
             if (sequence.empty() || chain.residues.empty()) {
                 // no supporting information to do gap fix
@@ -353,7 +353,7 @@ namespace Tmdet::Utils::Alignment {
             }
 
 #ifdef __ALIGNMENT_DBG
-            currentCode = tmdetVO.gemmi.name;
+            currentCode = proteinVO.gemmi.name;
             for (unsigned int i = 0; i < currentCode.size(); ++i) {
                 currentCode[i] = tolower(currentCode[i]);
             }

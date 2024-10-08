@@ -1,35 +1,36 @@
 
 #include <string>
 
-#include <config.hpp>
-#include <Optim/Organizer.hpp>
+#include <System/Config.hpp>
+#include <System/Arguments.hpp>
+#include <Engine/Organizer.hpp>
 #include <Exceptions/NoProteinStructureException.hpp>
 #include <Utils/Dssp.hpp>
 #include <Utils/Surface.hpp>
 #include <Utils/Symmetry.hpp>
 
-namespace Tmdet::Optim {
+namespace Tmdet::Engine {
 
-    void Organizer::main() {
+    void Organizer::run() {
         if (selectChains()) {
             dssp();
             surface();
             checkSymmetry();
-            if (!_tmdetVO.tmp) {
+            if (!protein.tmp) {
                 findMembrane();
             }
-            if (_tmdetVO.tmp) {
+            if (protein.tmp) {
                 annotate();
             }
         }
         else {
-            throw Tmdet::Exceptions::NoProteinStructureException(_tmdetVO.code);
+            throw Tmdet::Exceptions::NoProteinStructureException(protein.code);
         }
     }
 
     unsigned int Organizer::selectChains() {
         unsigned int ret = 0;
-        for (auto& chainVO : _tmdetVO.chains) {
+        for (auto& chainVO : protein.chains) {
             ret += selectChain(chainVO);
         }
         return ret;
@@ -40,26 +41,23 @@ namespace Tmdet::Optim {
         for (const auto& residueVO : chainVO.residues) {
             nr += (residueVO.hasAllSideChainAtoms()?1:0);
         }
-        if (nr < std::stoi(environment.get("TMDET_MIN_NUMBER_OF_RESIDUES_IN_CHAIN",std::to_string(DEFAULT_TMDET_MIN_NUMBER_OF_RESIDUES_IN_CHAIN)))) {
+        if (nr < std::stoi(environment.get("TMDET_MIN_NUMBER_OF_RESIDUES_IN_CHAIN",DEFAULT_TMDET_MIN_NUMBER_OF_RESIDUES_IN_CHAIN))) {
             chainVO.selected = false;
         }
         return chainVO.selected?1:0;
     }
 
     void Organizer::dssp() {
-        Tmdet::Utils::Dssp dssp = Tmdet::Utils::Dssp(_tmdetVO);
+        auto dssp = Tmdet::Utils::Dssp(protein);
     }
 
     void Organizer::surface() {
-        Tmdet::Utils::Surface surf = Tmdet::Utils::Surface(_tmdetVO);
-        surf.main();
-        surf.setOutsideSurface();
+        auto surf = Tmdet::Utils::Surface(protein,args.getValueAsBool("nc"));
     }
 
     void Organizer::checkSymmetry() {
-        //Tmdet::Utils::Symmetry symmetry;
-        //auto result = symmetry.CheckSymmetry(tmdetVO);
-
+        Tmdet::Utils::Symmetry symmetry;
+        auto result = symmetry.CheckSymmetry(protein);
     }
 
     void Organizer::findMembrane() {
@@ -67,6 +65,5 @@ namespace Tmdet::Optim {
     }
 
     void Organizer::annotate() {
-        
     }
 }

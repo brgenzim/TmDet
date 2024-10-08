@@ -1,10 +1,10 @@
-#ifndef __TMDET_UTILS_FRAGMENT__
-#define __TMDET_UTILS_FRAGMENT__
-
+#pragma once
 #include <vector>
 #include <gemmi/model.hpp>
-#include <ValueObjects/TmdetStruct.hpp>
+#include <ValueObjects/Protein.hpp>
 #include <ValueObjects/Residue.hpp>
+
+namespace StructVO = Tmdet::ValueObjects;
 
 #define CA_DIST 8.0
 #define MAX_DIST 10000000
@@ -19,12 +19,12 @@ namespace Tmdet::Utils {
 
     class Fragment {
         private:
-            Tmdet::ValueObjects::TmdetStruct& tmdetVO;
+            StructVO::Protein& proteinVO;
 
             const double CaDistLimit = 8.0;
             
             
-            std::vector<_cr> getNeighbors(const Tmdet::ValueObjects::Residue& residueVO);
+            std::vector<_cr> getNeighbors(const StructVO::Residue& residueVO);
             std::vector<_cr> getCAlphaNetwork();
             std::vector<std::vector<int>> createFragments(const unsigned long size);
             void writeBackFragmentInfoToStructure(std::vector<std::vector<int>> clusters, std::vector<_cr> crs);
@@ -33,11 +33,10 @@ namespace Tmdet::Utils {
 
 
         public:
-            explicit Fragment(Tmdet::ValueObjects::TmdetStruct& _tmdetVO) : tmdetVO(_tmdetVO) {} ;
+            explicit Fragment(StructVO::Protein& proteinVO) : proteinVO(proteinVO) {} ;
             ~Fragment()=default;
 
             void run();
             
     };
 }
-#endif

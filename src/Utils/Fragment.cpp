@@ -5,19 +5,21 @@
 #include <cmath>
 #include <limits>
 #include <gemmi/model.hpp>
-#include <ValueObjects/TmdetStruct.hpp>
+#include <ValueObjects/Protein.hpp>
 #include <ValueObjects/Residue.hpp>
 #include <Utils/Fragment.hpp>
 #include <Utils/Graph.hpp>
 
+namespace StructVO = Tmdet::ValueObjects;
+
 namespace Tmdet::Utils {
 
-#define NODE_ID(c,r) any_cast<int>(tmdetVO.chains[c].residues[r].temp.at("node_index"))
+#define NODE_ID(c,r) any_cast<int>(proteinVO.chains[c].residues[r].temp.at("node_index"))
 
     /**
      * @brief main entry point for fragment generation
      *        the resulted fragment ids are inserted
-     *        to the tmdetVO redidues temp map.
+     *        to the proteinVO redidues temp map.
      * @return void
      */
     void Fragment::run() {
@@ -27,13 +29,13 @@ namespace Tmdet::Utils {
         freeTempValues();
     }
 
-    std::vector<_cr> Fragment::getNeighbors(const Tmdet::ValueObjects::Residue& residueVO) {
+    std::vector<_cr> Fragment::getNeighbors(const StructVO::Residue& residueVO) {
         std::vector<_cr> ret;
         std::vector<_cr> empty;
         const gemmi::Atom* ca_atom = residueVO.gemmi.get_ca();
         if (ca_atom) {
-            for (auto mark: tmdetVO.neighbors.find_neighbors(*ca_atom, 3, 9)) {
-                if (tmdetVO.chains[mark->chain_idx].residues[mark->residue_idx].atoms[mark->atom_idx].gemmi.name == "CA") {
+            for (auto mark: proteinVO.neighbors.find_neighbors(*ca_atom, 3, 9)) {
+                if (proteinVO.chains[mark->chain_idx].residues[mark->residue_idx].atoms[mark->atom_idx].gemmi.name == "CA") {
                     _cr cr;
                     cr.chain_idx = mark->chain_idx;
                     cr.residue_idx = mark->residue_idx;
@@ -47,7 +49,7 @@ namespace Tmdet::Utils {
     std::vector<_cr> Fragment::getCAlphaNetwork() {
         int node_idx = 0;
         std::vector<_cr> crs;
-        for (auto& chainVO: tmdetVO.chains) {
+        for (auto& chainVO: proteinVO.chains) {
             for (auto& residueVO: chainVO.residues) {
                 auto neighbors = getNeighbors(residueVO);
                 
@@ -66,12 +68,12 @@ namespace Tmdet::Utils {
 
     std::vector<std::vector<int>> Fragment::createFragments(const unsigned long size) {
         Graph G(size);
-        for (auto& chainVO: tmdetVO.chains) {
+        for (auto& chainVO: proteinVO.chains) {
             for (auto& residueVO: chainVO.residues) {
                 auto neighbors = std::any_cast<std::vector<_cr>>(residueVO.temp.at("neighbors"));
                 for (const auto& cr: neighbors) {
                     int u = any_cast<int>(residueVO.temp.at("node_index"));
-                    if (tmdetVO.chains[cr.chain_idx].residues[cr.residue_idx].temp.contains("node_index")) {
+                    if (proteinVO.chains[cr.chain_idx].residues[cr.residue_idx].temp.contains("node_index")) {
                         int v = NODE_ID(cr.chain_idx,cr.residue_idx);
                         G.addEdge(u,v);
                     }
@@ -92,12 +94,12 @@ namespace Tmdet::Utils {
             std::cout << "select cl" << cl_idx << ", (";
             bool first = true;
             for(auto& nodeIdx: cluster) {
-                tmdetVO.chains[crs[nodeIdx].chain_idx].residues[crs[nodeIdx].residue_idx].temp.insert({"fragment",std::any_cast<int>(cl_idx)});
+                proteinVO.chains[crs[nodeIdx].chain_idx].residues[crs[nodeIdx].residue_idx].temp.insert({"fragment",std::any_cast<int>(cl_idx)});
                 if (!first) {
                     std::cout << " | ";
                 }
-                std::cout << "(c. " << tmdetVO.chains[crs[nodeIdx].chain_idx].id << " & ";
-                std::cout << "i. " << tmdetVO.chains[crs[nodeIdx].chain_idx].residues[crs[nodeIdx].residue_idx].resn() << ")";
+                std::cout << "(c. " << proteinVO.chains[crs[nodeIdx].chain_idx].id << " & ";
+                std::cout << "i. " << proteinVO.chains[crs[nodeIdx].chain_idx].residues[crs[nodeIdx].residue_idx].resn() << ")";
                 first = false;
             }
             std::cout << ")" << std::endl;
@@ -106,7 +108,7 @@ namespace Tmdet::Utils {
     }
 
     void Fragment::freeTempValues() {
-        for (auto& chainVO: tmdetVO.chains) {
+        for (auto& chainVO: proteinVO.chains) {
             for (auto& residueVO: chainVO.residues) {
                 residueVO.temp.erase("neighbors");
                 if (residueVO.temp.contains("node_index")) {

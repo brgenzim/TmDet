@@ -1,5 +1,4 @@
-#ifndef __TMDET_UTILS_GRAPH__
-#define __TMDET_UTILS_GRAPH__
+#pragma once
 
 #include <vector>
 #include <map>
@@ -31,5 +30,3 @@ namespace Tmdet::Utils {
             int getNumClusters() const { return numClusters;}
     };
 }
-
-#endif

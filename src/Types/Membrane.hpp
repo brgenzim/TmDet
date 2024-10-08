@@ -1,5 +1,4 @@
-#ifndef __TMDET_TYPES_MEMBRANE__
-#define __TMDET_TYPES_MEMBRANE__
+#pragma once
 
 #include <unordered_map>
 #include <string>
@@ -28,5 +27,3 @@ namespace Tmdet::Types {
     };
 
 }
-
-#endif

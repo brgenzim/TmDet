@@ -7,8 +7,8 @@
 #include <gemmi/mmcif.hpp>
 #include <gemmi/model.hpp>
 #include <System/Environment.hpp>
-#include <ValueObjects/TmdetStruct.hpp>
-#include <DTOs/TmdetStruct.hpp>
+#include <ValueObjects/Protein.hpp>
+#include <DTOs/Protein.hpp>
 #include <Utils/Dssp.hpp>
 #include <Utils/SecStrVec.hpp>
 
@@ -126,12 +126,9 @@ void setup(Tmdet::Utils::SecStrVec &secStructVectors) {
     auto inputPath = environment.get("PDB_CIF_DIR");
 
     inputPath += "/af/1afo_updated.cif.gz";
+    auto protein = Tmdet::DTOs::Protein::get(inputPath);
 
-    gemmi::Structure pdb; 
-    gemmi::cif::Document document;
-    auto tmdetVO = Tmdet::ValueObjects::get(inputPath, pdb, document);
-
-    Tmdet::Utils::Dssp dssp = Tmdet::Utils::Dssp(tmdetVO);
+    Tmdet::Utils::Dssp dssp = Tmdet::Utils::Dssp(protein);
     
-    secStructVectors.define(tmdetVO);
+    secStructVectors.define(protein);
 }

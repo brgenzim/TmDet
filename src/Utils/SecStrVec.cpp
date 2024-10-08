@@ -10,8 +10,11 @@
 #include <Types/Residue.hpp>
 #include <Utils/Surface.hpp>
 #include <Utils/SecStrVec.hpp>
+#include <ValueObjects/Protein.hpp>
+#include <ValueObjects/Chain.hpp>
 
 using namespace std;
+namespace StructVO = Tmdet::ValueObjects;
 
 namespace Tmdet::Utils {
     static bool isVectorCrossingPlane(_secStrVec &vector, gemmi::Vec3 &planePoint, gemmi::Vec3 &planeNormal);
@@ -23,7 +26,7 @@ namespace Tmdet::Utils {
     static void dumpVectorsForPyMOL(vector<_secStrVec> &vectors);
 #endif
 
-    void SecStrVec::define(Tmdet::ValueObjects::TmdetStruct& tmdetVO) {
+    void SecStrVec::define(StructVO::Protein& tmdetVO) {
         vectors.clear();
         for(auto& chain: tmdetVO.chains) {
             int begin, end;
@@ -40,7 +43,7 @@ namespace Tmdet::Utils {
 #endif
     }
 
-    void SecStrVec::numCross(Tmdet::ValueObjects::Membrane& membraneVO, int &numBoth, int &numUp, int &numDown) {
+    void SecStrVec::numCross(StructVO::Membrane& membraneVO, int &numBoth, int &numUp, int &numDown) {
         numBoth = numUp = numDown = 0;
         for (auto& vector : vectors) {
             ifCross(vector, membraneVO, numBoth, numUp, numDown);
@@ -48,7 +51,7 @@ namespace Tmdet::Utils {
     }
 
 
-    bool SecStrVec::ifCross(_secStrVec& vec, Tmdet::ValueObjects::Membrane& membraneVO, int& numBoth, int& numUp, int& numDown) {
+    bool SecStrVec::ifCross(_secStrVec& vec, StructVO::Membrane& membraneVO, int& numBoth, int& numUp, int& numDown) {
         bool resultUp = false;
         bool resultDown = false;
 
@@ -181,18 +184,18 @@ namespace Tmdet::Utils {
         return result;
     }
 
-    bool SecStrVec::getNextRegion(Tmdet::ValueObjects::Chain& chain, int& begin, int& end) {
+    bool SecStrVec::getNextRegion(StructVO::Chain& chain, int& begin, int& end) {
         return (getNextNotUnkown(chain, begin) && getNextSame(chain, begin, end));
     }
 
-    bool SecStrVec::getNextNotUnkown(Tmdet::ValueObjects::Chain& chain, int& begin) {
+    bool SecStrVec::getNextNotUnkown(StructVO::Chain& chain, int& begin) {
         while(begin < (int)chain.residues.size() && chain.residues[begin].ss == Tmdet::Types::SecStructType::U) {
             begin++;
         }
         return (begin < (int)chain.residues.size());
     }
 
-    bool SecStrVec::getNextSame(Tmdet::ValueObjects::Chain& chain, int& begin, int& end) {
+    bool SecStrVec::getNextSame(StructVO::Chain& chain, int& begin, int& end) {
         end = begin;
         while(end < (int)chain.residues.size() && chain.residues[begin].ss == chain.residues[end].ss) {
             end++;
@@ -200,13 +203,13 @@ namespace Tmdet::Utils {
         return true;
     }
 
-    _secStrVec SecStrVec::getVector(Tmdet::ValueObjects::Chain& chain, int begin, int end) {
+    _secStrVec SecStrVec::getVector(StructVO::Chain& chain, int begin, int end) {
         return (chain.residues[begin].ss.isAlpha()?
                     getAlphaVector(chain, begin, end):
                     getBetaVector(chain,begin,end));
     }
 
-    _secStrVec SecStrVec::getAlphaVector(Tmdet::ValueObjects::Chain& chain, int begin, int end) {
+    _secStrVec SecStrVec::getAlphaVector(StructVO::Chain& chain, int begin, int end) {
         _secStrVec vec;
         vec.begin = getMeanPosition(chain,begin);
         vec.end = getMeanPosition(chain,end-3);
@@ -215,7 +218,7 @@ namespace Tmdet::Utils {
         return vec;
     }
 
-    gemmi::Vec3 SecStrVec::getMeanPosition(Tmdet::ValueObjects::Chain& chain, int pos) {
+    gemmi::Vec3 SecStrVec::getMeanPosition(StructVO::Chain& chain, int pos) {
         gemmi::Vec3 vec;
         int i = 0;
         for (; i<3; i++) {
@@ -226,7 +229,7 @@ namespace Tmdet::Utils {
         return vec;
     }
 
-    _secStrVec SecStrVec::getBetaVector(Tmdet::ValueObjects::Chain& chain, int begin, int end) {
+    _secStrVec SecStrVec::getBetaVector(StructVO::Chain& chain, int begin, int end) {
         _secStrVec vec;
         vec.begin = chain.residues[begin].gemmi.get_ca()->pos;
         vec.end = chain.residues[end].gemmi.get_ca()->pos;

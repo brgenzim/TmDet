@@ -1,15 +1,14 @@
-#ifndef __TMDET_UTILS_SECSTRVEC__
-#define __TMDET_UTILS_SECSTRVEC__
+#pragma once
 
 #include <string>
 #include <vector>
 #include <any>
 #include <unordered_map>
 #include <Types/SecStruct.hpp>
-#include <ValueObjects/TmdetStruct.hpp>
+#include <ValueObjects/Protein.hpp>
 #include <gemmi/math.hpp>
 
-using namespace std;
+namespace StructVO = Tmdet::ValueObjects;
 
 //#define __SECSTRVEC_DBG 1
 
@@ -23,25 +22,21 @@ namespace Tmdet::Utils {
 
     class SecStrVec {
         private:
-            vector<_secStrVec> vectors;
+            std::vector<_secStrVec> vectors;
 
-            bool ifCross(_secStrVec& vec, Tmdet::ValueObjects::Membrane& membraneVO, int& numBoth, int& numUp, int& numDown);
-            bool getNextRegion(Tmdet::ValueObjects::Chain& chain, int& begin, int& end);
-            bool getNextNotUnkown(Tmdet::ValueObjects::Chain& chain, int& begin);
-            bool getNextSame(Tmdet::ValueObjects::Chain& chain, int& begin, int& end);
-            _secStrVec getVector(Tmdet::ValueObjects::Chain& chain, int begin, int end);
-            _secStrVec getAlphaVector(Tmdet::ValueObjects::Chain& chain, int begin, int end);
-            gemmi::Vec3 getMeanPosition(Tmdet::ValueObjects::Chain& chain, int pos);
-            _secStrVec getBetaVector(Tmdet::ValueObjects::Chain& chain, int begin, int end);
+            bool ifCross(_secStrVec& vec, StructVO::Membrane& membraneVO, int& numBoth, int& numUp, int& numDown);
+            bool getNextRegion(StructVO::Chain& chain, int& begin, int& end);
+            bool getNextNotUnkown(StructVO::Chain& chain, int& begin);
+            bool getNextSame(StructVO::Chain& chain, int& begin, int& end);
+            _secStrVec getVector(StructVO::Chain& chain, int begin, int end);
+            _secStrVec getAlphaVector(StructVO::Chain& chain, int begin, int end);
+            gemmi::Vec3 getMeanPosition(StructVO::Chain& chain, int pos);
+            _secStrVec getBetaVector(StructVO::Chain& chain, int begin, int end);
 
 
         public:
-            SecStrVec() {}
-            ~SecStrVec() {}
-
-            void define(Tmdet::ValueObjects::TmdetStruct& tmdetVO);
-            void numCross(Tmdet::ValueObjects::Membrane& membraneVO, int &numBoth, int &numUp, int &numDown);
+            
+            void define(StructVO::Protein& tmdetVO);
+            void numCross(StructVO::Membrane& membraneVO, int &numBoth, int &numUp, int &numDown);
     };
 }
-
-#endif

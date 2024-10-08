@@ -3,8 +3,8 @@
 #include <string>
 #include <vector>
 #include <Types/Chain.hpp>
-#include <ValueObjects/Region.hpp>
 #include <ValueObjects/Residue.hpp>
+#include <ValueObjects/Region.hpp>
 #include <gemmi/model.hpp>
 
 /**
@@ -47,24 +47,14 @@ namespace Tmdet::ValueObjects {
         std::string seq;
 
         /**
-         * @brief annotated regions (i.e. side1, side2, membrane, loop etc)
-         */
-        std::vector<Tmdet::ValueObjects::Region> regions;
-
-        /**
-         * @brief chain type (e.g. alpha, beta, globular etc)
-         */
-        Tmdet::Types::Chain type = Tmdet::Types::ChainType::UNK;
-
-        /**
          * @brief gemmi chain
          */
-        gemmi::Chain& gemmi;
+        gemmi::Chain gemmi;
 
         /**
          * @brief list of Tmdet ValueObjects Residues in the chain
          */
-        std::vector<Tmdet::ValueObjects::Residue> residues;
+        std::vector<Residue> residues;
 
         /**
          * @brief chain index in gemmi Model
@@ -77,13 +67,18 @@ namespace Tmdet::ValueObjects {
         int length = 0;
 
         /**
-         * @brief Construct a new Chain object
-         * 
-         * @param _gemmi 
+         * @brief annotated regions (i.e. side1, side2, membrane, loop etc)
          */
-        explicit Chain(gemmi::Chain& _gemmi) : 
-            id(_gemmi.name), 
-            gemmi(_gemmi) {
+        std::vector<Region> regions;
+
+        /**
+         * @brief chain type (e.g. alpha, beta, globular etc)
+         */
+        Tmdet::Types::Chain type = Tmdet::Types::ChainType::UNK;
+
+        void addStructure(const gemmi::Chain& _gemmi) {
+                gemmi = _gemmi;
+                id = _gemmi.name;
                 for (const auto &residue : gemmi.residues) {
                     if (!residue.atoms.empty()) {
                         this->entityId = residue.entity_id;

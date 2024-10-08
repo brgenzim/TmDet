@@ -11,7 +11,42 @@
 #include <ValueObjects/Chain.hpp>
 #include <Exceptions/SyntaxErrorException.hpp>
 
+namespace TmdetVO = Tmdet::ValueObjects;
+
 namespace Tmdet::DTOs {
+
+    void Xml::readXml(TmdetVO::Protein& tmdetVO, const std::string& path) {
+        read(path);
+        tmdetVO.tmp = getTmp();
+        tmdetVO.code = getCode();
+        tmdetVO.date = getCreateDate();
+        tmdetVO.version = getVersion();
+        tmdetVO.modifications = getModifications();
+        tmdetVO.qValue = getQvalue();
+        tmdetVO.type = Tmdet::Types::Proteins.at(getTmtype());
+        tmdetVO.spres = getSpres();
+        tmdetVO.pdbkwres = getPdbkwres();
+        tmdetVO.bioMatrix = getBioMatrix();
+        tmdetVO.membranes = getMembranes();
+        getChains(tmdetVO.chains);
+    }
+
+    void Xml::writeXml(TmdetVO::Protein& tmdetVO, const std::string& path) {
+        create();
+        setTmp(tmdetVO.tmp);
+        setCode(tmdetVO.code);
+        setCreateDate(tmdetVO.date);
+        setVersion(tmdetVO.version);
+        setModifications(tmdetVO.modifications);
+        setQvalue(tmdetVO.qValue);
+        setTmtype(tmdetVO.type.name);
+        setSpres(tmdetVO.spres);
+        setPdbkwres(tmdetVO.pdbkwres);
+        setBioMatrix(tmdetVO.bioMatrix);
+        setMembranes(tmdetVO.membranes);
+        setChains(tmdetVO.chains);
+        write(path);
+    }
     
     void Xml::read(const std::string& path) {
         if (pugi::xml_parse_result result = _doc.load_file(path.c_str()); !result) {
@@ -53,15 +88,23 @@ namespace Tmdet::DTOs {
         _root.child(XML_NODE_CREATE_DATE).text() = date.c_str();
     }
 
-    std::vector<Tmdet::ValueObjects::Modification> Xml::getModifications() const {
-        std::vector<Tmdet::ValueObjects::Modification> mods;
+    std::string Xml::getVersion() {
+        return _root.child(XML_NODE_TMDET_VERSION)?_root.child(XML_NODE_TMDET_VERSION).text().get():(std::string)"2.0";
+    }
+
+    void Xml::setVersion(const std::string& version) const {
+        _root.child(XML_NODE_TMDET_VERSION).text() = version.c_str();
+    }
+
+    std::vector<TmdetVO::Modification> Xml::getModifications() const {
+        std::vector<TmdetVO::Modification> mods;
         for (pugi::xml_node mod = _root.child(XML_NODE_MODIFICATION); mod; mod = mod.next_sibling(XML_NODE_MODIFICATION)) {
             mods.emplace_back(mod.child(XML_NODE_DATE).text().get(),mod.child(XML_NODE_DESCR).text().get());
         }
         return mods;
     }
 
-    void Xml::setModifications(const std::vector<Tmdet::ValueObjects::Modification>& mods) {
+    void Xml::setModifications(const std::vector<TmdetVO::Modification>& mods) {
         pugi::xml_node node;
         for(const auto& m : mods) {
             node = _root.insert_child_after(XML_NODE_MODIFICATION, _root.child(XML_NODE_CREATE_DATE));
@@ -77,7 +120,7 @@ namespace Tmdet::DTOs {
     }
 
     void Xml::setQvalue(const double& q) const {
-        _root.child(XML_NODE_RAWRES).child(XML_NODE_TMRES).text() = std::format("{}","%.2f",q).c_str();
+        _root.child(XML_NODE_RAWRES).child(XML_NODE_TMRES).text() = std::format("{:.2f}",q).c_str();
     }
 
     std::string Xml::getTmtype() const {
@@ -89,7 +132,8 @@ namespace Tmdet::DTOs {
     }
 
     std::string Xml::getSpres() const {
-        return _root.child(XML_NODE_RAWRES).child(XML_NODE_SPRES).text().get();
+        return _root.child(XML_NODE_RAWRES).child(XML_NODE_SPRES)?
+                    _root.child(XML_NODE_RAWRES).child(XML_NODE_SPRES).text().get():(std::string)"";
     }
 
     void Xml::setSpres(const std::string& spres) const {
@@ -97,15 +141,16 @@ namespace Tmdet::DTOs {
     }
 
     std::string Xml::getPdbkwres() const {
-        return _root.child(XML_NODE_RAWRES).child(XML_NODE_PDBKWRES).text().get();
+        return _root.child(XML_NODE_RAWRES).child(XML_NODE_PDBKWRES)?
+                    _root.child(XML_NODE_RAWRES).child(XML_NODE_PDBKWRES).text().get():(std::string)"";
     }
 
     void Xml::setPdbkwres(const std::string& pdbkwres) const {
         _root.child(XML_NODE_RAWRES).child(XML_NODE_PDBKWRES).text() = pdbkwres.c_str();
     }
 
-    Tmdet::ValueObjects::TMatrix Xml::getTMatrix(const pugi::xml_node& node) const {
-        Tmdet::ValueObjects::TMatrix tmatrix;
+    TmdetVO::TMatrix Xml::getTMatrix(const pugi::xml_node& node) const {
+        TmdetVO::TMatrix tmatrix;
         tmatrix.rot[0][0] = node.child(XML_NODE_ROWX).attribute(XML_ATTR_X).as_double();
         tmatrix.rot[0][1] = node.child(XML_NODE_ROWX).attribute(XML_ATTR_Y).as_double();
         tmatrix.rot[0][2] = node.child(XML_NODE_ROWX).attribute(XML_ATTR_Z).as_double();
@@ -121,7 +166,7 @@ namespace Tmdet::DTOs {
         return tmatrix;
     }
 
-    void Xml::setTMatrix(const pugi::xml_node& node, Tmdet::ValueObjects::TMatrix& tmatrix) const {
+    void Xml::setTMatrix(const pugi::xml_node& node, TmdetVO::TMatrix& tmatrix) const {
         node.child(XML_NODE_TMATRIX).child(XML_NODE_ROWX).attribute(XML_ATTR_X) = std::to_string(tmatrix.rot[0][0]).c_str();
         node.child(XML_NODE_TMATRIX).child(XML_NODE_ROWX).attribute(XML_ATTR_Y) = std::to_string(tmatrix.rot[0][1]).c_str();
         node.child(XML_NODE_TMATRIX).child(XML_NODE_ROWX).attribute(XML_ATTR_Z) = std::to_string(tmatrix.rot[0][2]).c_str();
@@ -136,8 +181,8 @@ namespace Tmdet::DTOs {
         node.child(XML_NODE_TMATRIX).child(XML_NODE_ROWZ).attribute(XML_ATTR_T) = std::to_string(tmatrix.trans.z).c_str();
     }
 
-     Tmdet::ValueObjects::BioMatrix Xml::getBioMatrix() const {
-        Tmdet::ValueObjects::BioMatrix bioMatrix;
+     TmdetVO::BioMatrix Xml::getBioMatrix() const {
+        TmdetVO::BioMatrix bioMatrix;
         pugi::xml_node node = _root.child(XML_NODE_BIOMATRIX);
         for (pugi::xml_node matrix = node.child(XML_NODE_MATRIX); matrix; matrix = matrix.next_sibling(XML_NODE_MATRIX)) {
             pugi::xml_node tnode = matrix.child(XML_NODE_TMATRIX);
@@ -151,7 +196,10 @@ namespace Tmdet::DTOs {
         return bioMatrix;
      }
 
-    void Xml::setBioMatrix(Tmdet::ValueObjects::BioMatrix& bioMatrix) {
+    void Xml::setBioMatrix(TmdetVO::BioMatrix& bioMatrix) {
+        if (bioMatrix.matrices.empty() && bioMatrix.deletedChainIds.empty() ) {
+            return;
+        }
         pugi::xml_node biom_node = _root.insert_child_after(XML_NODE_BIOMATRIX, _root.child(XML_NODE_RAWRES));
         for(auto& m: bioMatrix.matrices) {
             pugi::xml_document doc;
@@ -166,8 +214,8 @@ namespace Tmdet::DTOs {
 
     }
 
-    std::vector<Tmdet::ValueObjects::Membrane> Xml::getMembranes() const {
-        std::vector<Tmdet::ValueObjects::Membrane> membranes;
+    std::vector<TmdetVO::Membrane> Xml::getMembranes() const {
+        std::vector<TmdetVO::Membrane> membranes;
         for (pugi::xml_node m_node = _root.child(XML_NODE_MEMBRANE); m_node; m_node = m_node.next_sibling(XML_NODE_MEMBRANE)) {
             pugi::xml_node tnode = m_node.child(XML_NODE_TMATRIX);
             membranes.emplace_back(getTMatrix(tnode),
@@ -182,7 +230,7 @@ namespace Tmdet::DTOs {
         return membranes;
     }
 
-    void Xml::setMembranes(std::vector<Tmdet::ValueObjects::Membrane>& membranes) {
+    void Xml::setMembranes(std::vector<TmdetVO::Membrane>& membranes) {
         
         for(auto& m : membranes) {
             pugi::xml_document doc;
@@ -194,7 +242,7 @@ namespace Tmdet::DTOs {
         }
     }
 
-    void Xml::getChains(std::vector<Tmdet::ValueObjects::Chain>& chains) {
+    void Xml::getChains(std::vector<TmdetVO::Chain>& chains) {
         for (pugi::xml_node c_node = _root.child(XML_NODE_CHAIN); c_node; c_node = c_node.next_sibling(XML_NODE_CHAIN)) {
             std::string type = c_node.attribute(XML_ATTR_TYPE).as_string();
             bool found = false;
@@ -210,13 +258,19 @@ namespace Tmdet::DTOs {
                 }
             }
             if (!found) {
-                std::cerr << "Could not find gemmi chain for " << c_node.attribute(XML_ATTR_CHAINID).as_string() << std::endl;
-                exit(EXIT_FAILURE);
+                Tmdet::ValueObjects::Chain c;
+                c.id = c_node.attribute(XML_ATTR_CHAINID).as_string();
+                c.selected = true;
+                c.numtm = c_node.attribute(XML_ATTR_NUM_TM).as_int();
+                c.seq = c_node.child(XML_NODE_SEQ).text().get();
+                c.regions = getRegions(c_node);
+                c.type = Tmdet::Types::Chains.at(type);
+                chains.emplace_back(c);
             }
         }
     }
 
-    void Xml::setChains(const std::vector<Tmdet::ValueObjects::Chain>& chains) {
+    void Xml::setChains(const std::vector<TmdetVO::Chain>& chains) {
         for(const auto& c: chains) {
             pugi::xml_document doc;
             doc.load_string(_chain_xml.c_str());
@@ -230,22 +284,22 @@ namespace Tmdet::DTOs {
         }
     }
 
-    std::vector<Tmdet::ValueObjects::Region> Xml::getRegions(const pugi::xml_node& cnode) const {
-        std::vector<Tmdet::ValueObjects::Region> regions;
+    std::vector<TmdetVO::Region> Xml::getRegions(const pugi::xml_node& cnode) const {
+        std::vector<TmdetVO::Region> regions;
         for (pugi::xml_node r_node = cnode.child(XML_NODE_REGION); r_node; r_node = r_node.next_sibling(XML_NODE_REGION)) {
             char type = r_node.attribute(XML_ATTR_type).value()[0];
             regions.emplace_back(r_node.attribute(XML_ATTR_SEQ_BEG).as_int(),
-                r_node.attribute(XML_ATTR_PDB_BEG).as_string(),
+                r_node.attribute(XML_ATTR_PDB_BEG).as_int(),
+                (r_node.attribute(XML_ATTR_PDB_BEGI)?r_node.attribute(XML_ATTR_PDB_BEGI).as_string():""),
                 r_node.attribute(XML_ATTR_SEQ_END).as_int(),
-                r_node.attribute(XML_ATTR_PDB_END).as_string(),
-                0,
-                0,
+                r_node.attribute(XML_ATTR_PDB_END).as_int(),
+                (r_node.attribute(XML_ATTR_PDB_ENDI)?r_node.attribute(XML_ATTR_PDB_ENDI).as_string():""),
                 Tmdet::Types::Regions.at(type));
         }
         return regions;
     }
 
-    void Xml::setRegions(pugi::xml_node& pnode, const std::vector<Tmdet::ValueObjects::Region>& regions) const {
+    void Xml::setRegions(pugi::xml_node& pnode, const std::vector<TmdetVO::Region>& regions) const {
         for(const auto& r: regions) {
             pugi::xml_node node = pnode.append_child(XML_NODE_REGION);
             node.append_attribute(XML_ATTR_SEQ_BEG) = std::to_string(r.beg).c_str();
@@ -255,5 +309,4 @@ namespace Tmdet::DTOs {
             node.append_attribute(XML_ATTR_type) = std::format("{}","%c",r.type.code).c_str();
         }
     }
-
 }

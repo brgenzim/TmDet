@@ -10,14 +10,14 @@
 #include <gemmi/model.hpp>
 
 #include <System/Environment.hpp>
-#include <ValueObjects/TmdetStruct.hpp>
-#include <DTOs/TmdetStruct.hpp>
+#include <ValueObjects/Protein.hpp>
+#include <DTOs/Protein.hpp>
 #include <Utils/Dssp.hpp>
 
 using namespace std;
 
 string getPath(std::string pdbCode);
-void calcDssp(Tmdet::ValueObjects::TmdetStruct& tmdetVO);
+void calcDssp(Tmdet::ValueObjects::Protein& protein);
 bool assertTrue(string testDescription, bool condition, int lineNumber);
 vector<string> getResidueNames(gemmi::Chain& chain);
 
@@ -45,9 +45,7 @@ int main(int argc, char *argv[], char **envp) {
         string pdbCode = "7ec3";
         string inputPath = getPath(pdbCode);
 
-        gemmi::Structure pdb; 
-        gemmi::cif::Document document;
-        auto tmdetVO = Tmdet::ValueObjects::get(inputPath, pdb, document);
+        auto tmdetVO = Tmdet::DTOs::Protein::get(inputPath);
 
         // action
         calcDssp(tmdetVO);
@@ -66,9 +64,7 @@ int main(int argc, char *argv[], char **envp) {
         string pdbCode = "6e8r";
         string inputPath = getPath(pdbCode);
 
-        gemmi::Structure pdb; 
-        gemmi::cif::Document document;
-        auto tmdetVO = Tmdet::ValueObjects::get(inputPath, pdb, document);
+        auto tmdetVO = Tmdet::DTOs::Protein::get(inputPath);
 
         // action
         calcDssp(tmdetVO);
@@ -96,9 +92,7 @@ int main(int argc, char *argv[], char **envp) {
         string pdbCode = "4egy";
         string inputPath = getPath(pdbCode);
 
-        gemmi::Structure pdb; 
-        gemmi::cif::Document document;
-        auto tmdetVO = Tmdet::ValueObjects::get(inputPath, pdb, document);
+        auto tmdetVO = Tmdet::DTOs::Protein::get(inputPath);
 
         // action
         calcDssp(tmdetVO);
@@ -117,9 +111,7 @@ int main(int argc, char *argv[], char **envp) {
         string pdbCode = "7e99";
         string inputPath = getPath(pdbCode);
 
-        gemmi::Structure pdb; 
-        gemmi::cif::Document document;
-        auto tmdetVO = Tmdet::ValueObjects::get(inputPath, pdb, document);
+        auto tmdetVO = Tmdet::DTOs::Protein::get(inputPath);
 
         // action
         calcDssp(tmdetVO);
@@ -138,9 +130,7 @@ int main(int argc, char *argv[], char **envp) {
         string pdbCode = "3ee0";
         string inputPath = getPath(pdbCode);
 
-        gemmi::Structure pdb; 
-        gemmi::cif::Document document;
-        auto tmdetVO = Tmdet::ValueObjects::get(inputPath, pdb, document);
+        auto tmdetVO = Tmdet::DTOs::Protein::get(inputPath);
 
         // action
         calcDssp(tmdetVO);
@@ -166,7 +156,7 @@ bool assertTrue(std::string testDescription, bool condition, int lineNumber) {
     return condition;
 }
 
-void calcDssp(Tmdet::ValueObjects::TmdetStruct& tmdetVO) {
+void calcDssp(Tmdet::ValueObjects::Protein& tmdetVO) {
     Tmdet::Utils::Dssp dssp = Tmdet::Utils::Dssp(tmdetVO);
 }
 

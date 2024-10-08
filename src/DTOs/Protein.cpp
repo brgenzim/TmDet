@@ -13,70 +13,42 @@
 #include <gemmi/seqtools.hpp>
 #include <gemmi/to_cif.hpp>
 #include <gemmi/to_mmcif.hpp>
-#include <DTOs/TmdetStruct.hpp>
+#include <DTOs/Protein.hpp>
+#include <System/FilePaths.hpp>
 #include <Utils/Alignment.hpp>
-#include <DTOs/Xml.hpp>
 #include <Types/Protein.hpp>
 #include <Types/Residue.hpp>
 #include <Types/SecStruct.hpp>
-#include <ValueObjects/TmdetStruct.hpp>
+#include <ValueObjects/Protein.hpp>
 #include <ValueObjects/Chain.hpp>
 #include <ValueObjects/Residue.hpp>
+#include <ValueObjects/Atom.hpp>
 
 namespace Tmdet::DTOs {
 
-    void TmdetStruct::readXml(Tmdet::ValueObjects::TmdetStruct& tmdetVO, const std::string& path) {
-        Xml xml;
-        xml.read(path);
-        tmdetVO.tmp = xml.getTmp();
-        tmdetVO.code = xml.getCode();
-        tmdetVO.date = xml.getCreateDate();
-        tmdetVO.modifications = xml.getModifications();
-        tmdetVO.qValue = xml.getQvalue();
-        tmdetVO.type = Tmdet::Types::Proteins.at(xml.getTmtype());
-        tmdetVO.spres = xml.getSpres();
-        tmdetVO.pdbkwres = xml.getPdbkwres();
-        tmdetVO.bioMatrix = xml.getBioMatrix();
-        tmdetVO.membranes = xml.getMembranes();
-        xml.getChains(tmdetVO.chains);
-    }
-
-    void TmdetStruct::writeXml(Tmdet::ValueObjects::TmdetStruct& tmdetVO, const std::string& path) {
-        Xml xml;
-        xml.create();
-        xml.setTmp(tmdetVO.tmp);
-        xml.setCode(tmdetVO.code);
-        xml.setCreateDate(tmdetVO.date);
-        xml.setModifications(tmdetVO.modifications);
-        xml.setQvalue(tmdetVO.qValue);
-        xml.setTmtype(tmdetVO.type.name);
-        xml.setSpres(tmdetVO.spres);
-        xml.setPdbkwres(tmdetVO.pdbkwres);
-        xml.setBioMatrix(tmdetVO.bioMatrix);
-        xml.setMembranes(tmdetVO.membranes);
-        xml.setChains(tmdetVO.chains);
-        xml.write(path);
-    }
-
-    void TmdetStruct::writeCif(const Tmdet::ValueObjects::TmdetStruct& tmdetVO, const std::string& path) {
+    void Protein::writeCif(const Tmdet::ValueObjects::Protein& protein, const std::string& path) {
         std::ofstream outCif(path);
         gemmi::cif::WriteOptions options(gemmi::cif::Style::Pdbx);
-        gemmi::cif::Document document = make_mmcif_document(tmdetVO.gemmi);
+        gemmi::cif::Document document = make_mmcif_document(protein.gemmi);
         gemmi::cif::write_cif_to_stream(outCif, document, options);
     }
 
-    void TmdetStruct::parse(Tmdet::ValueObjects::TmdetStruct& tmdetVO) {
-        remove_hydrogens(tmdetVO.gemmi.models[0]);
-        remove_ligands_and_waters(tmdetVO.gemmi.models[0]);
-        remove_alternative_conformations(tmdetVO.gemmi.models[0]);
+    Tmdet::ValueObjects::Protein Protein::get(const std::string& inputPath) {
+        Tmdet::ValueObjects::Protein protein;
+        protein.getStructure(inputPath);
+        protein.code = protein.gemmi.name;
+        remove_hydrogens(protein.gemmi.models[0]);
+        remove_ligands_and_waters(protein.gemmi.models[0]);
+        remove_alternative_conformations(protein.gemmi.models[0]);
         // keep only the first model
-        tmdetVO.gemmi.models.resize(1);
+        protein.gemmi.models.resize(1);
 
         // Fill residue gaps in chains where there is usable entity sequence data
-        Tmdet::Utils::Alignment::alignResidues(tmdetVO);
+        Tmdet::Utils::Alignment::alignResidues(protein);
         int chainIdx = 0;
-        for(auto& chain: tmdetVO.gemmi.models[0].chains) {
-            auto chainVO = Tmdet::ValueObjects::Chain(chain);
+        for(auto& chain: protein.gemmi.models[0].chains) {
+            Tmdet::ValueObjects::Chain chainVO;
+            chainVO.addStructure(chain);
             chainVO.idx = chainIdx++;
             int residueIdx = 0;
             for( auto& residue: chain.residues) {
@@ -96,27 +68,28 @@ namespace Tmdet::DTOs {
                 chainVO.residues.emplace_back(residueVO);
             }
             chainVO.length = residueIdx;
-            tmdetVO.chains.emplace_back(chainVO);
+            protein.chains.emplace_back(chainVO);
         }
 
-        tmdetVO.neighbors = gemmi::NeighborSearch(tmdetVO.gemmi.models[0], tmdetVO.gemmi.cell, 9);
-        tmdetVO.neighbors.populate();
+        protein.neighbors = gemmi::NeighborSearch(protein.gemmi.models[0], protein.gemmi.cell, 9);
+        protein.neighbors.populate();
+        return protein;
     }
 
-    void TmdetStruct::print(std::ostream& os, const Tmdet::ValueObjects::TmdetStruct& tmdetVO) {
-        for(const auto& chainVO: tmdetVO.chains) {
+    void Protein::print(std::ostream& os, const Tmdet::ValueObjects::Protein& protein) {
+        for(const auto& chainVO: protein.chains) {
             printChain(os, chainVO);
         }
     }
 
-    void TmdetStruct::printChain(std::ostream& os, const Tmdet::ValueObjects::Chain& chainVO) {
+    void Protein::printChain(std::ostream& os, const Tmdet::ValueObjects::Chain& chainVO) {
         for(const auto& residueVO: chainVO.residues) {
             os << "CHAIN " << chainVO.gemmi.name << " " << chainVO.length << std::endl;
             printResidue(os, residueVO);
         }
     }
 
-    void TmdetStruct::printResidue(std::ostream& os, const Tmdet::ValueObjects::Residue& residueVO) {
+    void Protein::printResidue(std::ostream& os, const Tmdet::ValueObjects::Residue& residueVO) {
         os << "\tRESIDUE " << residueVO.idx << ":" << residueVO.resn() << "(" << residueVO.gemmi.name << ") ";
         os << residueVO.surface << " " << residueVO.ss.code << std::endl;
         if ( residueVO.temp.contains("fragment") ) {
@@ -127,7 +100,7 @@ namespace Tmdet::DTOs {
         }
     }
 
-    void TmdetStruct::printAtom(std::ostream& os, const Tmdet::ValueObjects::Atom& atomVO) {
+    void Protein::printAtom(std::ostream& os, const Tmdet::ValueObjects::Atom& atomVO) {
         os << "\t\tATOM " << atomVO.idx << ": " << atomVO.gemmi.name << " ";
         os << atomVO.gemmi.pos.x << " " << atomVO.gemmi.pos.y << " " << atomVO.gemmi.pos.z << " ";
         Tmdet::Types::Residue residueType = Tmdet::Types::ResidueType::getResidue(atomVO.parentResidue.gemmi.name);
@@ -144,12 +117,12 @@ namespace Tmdet::DTOs {
         os << std::endl;
     }
 
-    std::vector<std::string> TmdetStruct::getChainSequence(
-        const Tmdet::ValueObjects::TmdetStruct& tmdetVO, const gemmi::Chain& chain) {
+    std::vector<std::string> Protein::getChainSequence(
+        const Tmdet::ValueObjects::Protein& protein, const gemmi::Chain& chain) {
 
         std::vector<std::string> sequence;
         auto entityId = chain.residues[0].entity_id;
-        for (const auto& entity : tmdetVO.gemmi.entities) {
+        for (const auto& entity : protein.gemmi.entities) {
             if (entity.entity_type == gemmi::EntityType::Polymer
                 && entity.name == entityId) {
 
@@ -159,5 +132,4 @@ namespace Tmdet::DTOs {
         }
         return sequence;
     }
-
 }

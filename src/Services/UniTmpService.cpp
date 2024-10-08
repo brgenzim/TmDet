@@ -1,15 +1,15 @@
 #include <string>
 #include <vector>
 #include <nlohmann/json.hpp>
-#include <config.hpp>
+#include <System/Config.hpp>
 #include <Services/CurlWrapperService.hpp>
 #include <ValueObjects/Region.hpp>
 
-using Tmdet::ValueObjects::Region;
+namespace TmdetVO = Tmdet::ValueObjects;
 
 namespace Tmdet::Services::UniTmpService {
 
-    std::vector<Region> getCctopPredictionResult(std::string code, CurlWrapperService::Status& resultCode) {
+    std::vector<TmdetVO::Region> getCctopPredictionResult(std::string code, CurlWrapperService::Status& resultCode) {
         std::string url = environment.get("UNITMP_SCHEMA",DEFAULT_UNITMP_SCHEMA)
                     + "cctop." 
                     + environment.get("UNITMP_DOMAIN",DEFAULT_UNITMP_DOMAIN)
@@ -24,9 +24,9 @@ namespace Tmdet::Services::UniTmpService {
 
         auto json = nlohmann::json::parse(response);
 
-        auto result = std::vector<Region>();
+        auto result = std::vector<TmdetVO::Region>();
         for (auto& item : json["Regions"]) {
-            Region region;
+            TmdetVO::Region region;
             region.rbeg = item["start"].template get<int>();
             region.rend = item["end"].template get<int>();
             region.beg = region.end = 0;

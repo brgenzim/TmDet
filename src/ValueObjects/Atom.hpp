@@ -13,9 +13,19 @@
  */
 namespace Tmdet::ValueObjects {
 
+    /**
+     * @brief forward declaration of Chain
+     */
     struct Chain;
+
+    /**
+     * @brief forward declaration of Residue
+     */
     struct Residue;
     
+    /**
+     * @brief description of an atom
+     */
     struct Atom {
         /**
          * @brief gemmi Atom
@@ -45,12 +55,12 @@ namespace Tmdet::ValueObjects {
         /**
          * @brief parent chain as Tmdet Value Object Chain
          */
-        Tmdet::ValueObjects::Chain& parentChain;
+        Chain& parentChain;
 
         /**
          * @brief parent residue as Tmdet Value Object Residue
          */
-        Tmdet::ValueObjects::Residue& parentResidue;
+        Residue& parentResidue;
 
         /**
          * @brief temporary container for claculating various

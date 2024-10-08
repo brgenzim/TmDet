@@ -10,7 +10,7 @@
 
 namespace Tmdet::System {
 
-    std::pair<std::string,std::string> Environment::split(std::string line) {
+    std::pair<std::string,std::string> Environment::split(const std::string& line) const {
         size_t pos;
         if ((pos = line.find("=")) == std::string::npos) {
             return std::pair<std::string,std::string>{"",""};
@@ -49,7 +49,7 @@ namespace Tmdet::System {
      * 
      * @param envFile 
      */
-    void Environment::readEnvFile(std::string& envFile) {
+    void Environment::readEnvFile(const std::string& envFile) {
         int lineNum = 1;
         std::ifstream file(envFile);
         if (file.is_open()) {
@@ -81,7 +81,7 @@ namespace Tmdet::System {
         return defaultValue;
     }
 
-    void Environment::set(const std::string key, const std::string value) {
+    void Environment::set(const std::string& key, const std::string& value) {
         if (_envs.contains(key)) {
             _envs[key] = value;
         }

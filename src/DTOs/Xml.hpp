@@ -1,5 +1,4 @@
-#ifndef __TMDET_DTOS_XML__
-#define __TMDET_DTOS_XML__
+#pragma once
 
 #include <string>
 #include <vector>
@@ -9,28 +8,61 @@
 #include <ValueObjects/Modification.hpp>
 #include <ValueObjects/TMatrix.hpp>
 #include <ValueObjects/Chain.hpp>
+#include <ValueObjects/Protein.hpp>
 
+namespace TmdetVO = Tmdet::ValueObjects;
+
+/**
+ * @brief namespace for data transfer objects
+ */
 namespace Tmdet::DTOs {
 
+    /**
+     * @brief helper class for reading and writing xml file
+     */
     class Xml {
         private:
+
+            /**
+             * @brief pugixml document
+             */
             pugi::xml_document _doc;
+
+            /**
+             * @brief root node of the xml document
+             */
             pugi::xml_node _root;
-            Tmdet::ValueObjects::TMatrix getTMatrix(const pugi::xml_node& node) const;
-            void setTMatrix(const pugi::xml_node& node, Tmdet::ValueObjects::TMatrix& tmatrix) const;
+
+            /**
+             * @brief read transformation matrix from xml document object
+             * 
+             * @param node 
+             * @return TmdetVO::TMatrix 
+             */
+            TmdetVO::TMatrix getTMatrix(const pugi::xml_node& node) const;
+
+            /**
+             * @brief writing transformation matrix into xml document object
+             * 
+             * @param node 
+             * @param tmatrix 
+             */
+            void setTMatrix(const pugi::xml_node& node, TmdetVO::TMatrix& tmatrix) const;
 
             const std::string _pdbtm_xml=R"(
 <pdbtm xmlns="https://pdbtm.unitmp.org" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://pdbtm.unitmp.org/data/pdbtm.xsd pdbtm.xsd" ID="xxxx" TMP="unk">
   <COPYRIGHT>
-     All  information, data  and  files are copyright.  PDBTM database is
-     produced  in  the  Institute  of  Molecular Life Sciences, Budapest, 
-     Hungary.  There  are  no  restrictions  on  its  use  by  non-profit 
-     institutions as long as its  content is  in no way modified and this 
-     statement is not removed from entries.  Usage  by and for commercial 
-     entities  requires  a  license  agreement (send an email to pdbtm at 
-     enzim dot hu).
+     All  information, data  and  files are copyright.  This document  is
+     produced  in  the  Institute  of  Molecular  Life Sciences, Research
+     Centre of Natural Sciences,  HUN-REN, Budapest, Hungary.  There  are  
+     no restrictions on its use by non-profit institutions as long as its
+     content is in no way modified and this statement is not removed from 
+     entries. Usage  by  and  for  commercial entities and for commercial
+     purpose  requires a license agreement.  It can be purchased from the
+     UniTmp home page (https://www.unitmp.org/licences).
   </COPYRIGHT>
   <CREATE_DATE>YYYY-MM-DD</CREATE_DATE>
+  <TMDET_VERSION>A.B.C</TMDET_VERSION>
   <RAWRES>
     <TMRES>00.00</TMRES>
     <TMTYPE>xxxxx</TMTYPE>
@@ -71,7 +103,9 @@ namespace Tmdet::DTOs {
             const char* XML_ATTR_NEW_CHAINID="NEW_CHAINID";
             const char* XML_ATTR_NUM_TM="NUM_TM";
             const char* XML_ATTR_PDB_BEG="pdb_beg";
+            const char* XML_ATTR_PDB_BEGI="pdb_begi";
             const char* XML_ATTR_PDB_END="pdb_end";
+            const char* XML_ATTR_PDB_ENDI="pdb_endi";
             const char* XML_ATTR_SEQ_BEG="seq_beg";
             const char* XML_ATTR_SEQ_END="seq_end";
             const char* XML_ATTR_TMP="TMP";
@@ -106,37 +140,229 @@ namespace Tmdet::DTOs {
             const char* XML_NODE_TMATRIX="TMATRIX";
             const char* XML_NODE_TMRES="TMRES";
             const char* XML_NODE_TMTYPE="TMTYPE";
+            const char* XML_NODE_TMDET_VERSION="TMDET_VERSION";
 
         public:
             
+            /**
+             * @brief read entire xml file into pugixml doucument object
+             * 
+             * @param path 
+             */
             void read(const std::string& path);
+
+            /**
+             * @brief writing pugixml object into file
+             * 
+             * @param path 
+             */
             void write(const std::string& path) const;
+
+            /**
+             * @brief create an empty pugixml object
+             * 
+             */
             void create();
+
+            /**
+             * @brief Get the value of tmp attribute
+             * 
+             * @return true 
+             * @return false 
+             */
             bool getTmp() const;
+
+            /**
+             * @brief Set the value of tmp attribute
+             * 
+             * @param tmp 
+             */
             void setTmp(const bool& tmp) const;
+
+            /**
+             * @brief Get the value of code attribute
+             * 
+             * @return std::string 
+             */
             std::string getCode() const;
+
+            /**
+             * @brief Set the value of code attribute
+             * 
+             * @param code 
+             */
             void setCode(const std::string& code) const;
+
+            /**
+             * @brief Get the value of CREATE_DATE node
+             * 
+             * @return std::string 
+             */
             std::string getCreateDate() const;
+
+            /**
+             * @brief Set the value of CREATE_DATE node
+             * 
+             * @param date 
+             */
             void setCreateDate(const std::string& date) const;
-            std::vector<Tmdet::ValueObjects::Modification> getModifications() const;
-            void setModifications(const std::vector<Tmdet::ValueObjects::Modification>& mods);
+
+            /**
+             * @brief Get the value of TMDET_VERSION node
+             * 
+             * @return std::string 
+             */
+            std::string getVersion();
+
+            /**
+             * @brief Set the value of TMDET_VERSION node
+             * 
+             * @param version 
+             */
+            void setVersion(const std::string& version) const;
+
+            /**
+             * @brief Get the content of MODIFICATIONS node
+             * 
+             * @return std::vector<TmdetVO::Modification> 
+             */
+            std::vector<TmdetVO::Modification> getModifications() const;
+
+            /**
+             * @brief Set the content of MODIFICATIONS node
+             * 
+             * @param mods 
+             */
+            void setModifications(const std::vector<TmdetVO::Modification>& mods);
+
+            /**
+             * @brief Get the value of Qvalue 
+             * 
+             * @return double 
+             */
             double getQvalue() const;
+
+            /**
+             * @brief Set the value of Qvalue 
+             * 
+             * @param q 
+             */
             void setQvalue(const double& q) const;
+
+            /**
+             * @brief Get the value of transmembrane type
+             * 
+             * @return std::string 
+             */
             std::string getTmtype() const;
+
+            /**
+             * @brief Set the  value of transmembrane type
+             * 
+             * @param type 
+             */
             void setTmtype(const std::string& type) const;
+
+            /**
+             * @brief Get the value of SPRES node
+             * 
+             * @return std::string 
+             */
             std::string getSpres() const;
+
+            /**
+             * @brief Set the value of SPRES node
+             * 
+             * @param type 
+             */
             void setSpres(const std::string& type) const;
+
+            /**
+             * @brief Get the value of PDBKWRES node
+             * 
+             * @return std::string 
+             */
             std::string getPdbkwres() const;
+
+            /**
+             * @brief Set the value of PDBKWRES node
+             * 
+             * @param type 
+             */
             void setPdbkwres(const std::string& type) const;
-            Tmdet::ValueObjects::BioMatrix getBioMatrix() const;
-            void setBioMatrix(Tmdet::ValueObjects::BioMatrix& bioMatrix);
-            std::vector<Tmdet::ValueObjects::Membrane> getMembranes() const;
-            void setMembranes(std::vector<Tmdet::ValueObjects::Membrane>& membranes);
-            void getChains(std::vector<Tmdet::ValueObjects::Chain>& chains);
-            void setChains(const std::vector<Tmdet::ValueObjects::Chain>& chains);
-            std::vector<Tmdet::ValueObjects::Region> getRegions(const pugi::xml_node& cnode) const;
-            void setRegions(pugi::xml_node& pnode, const std::vector<Tmdet::ValueObjects::Region>& regions) const;
+
+            /**
+             * @brief Get the content of BIOMATRIX node
+             * 
+             * @return TmdetVO::BioMatrix 
+             */
+            TmdetVO::BioMatrix getBioMatrix() const;
+
+            /**
+             * @brief Set the content of BIOMATRIX node
+             * 
+             * @param bioMatrix 
+             */
+            void setBioMatrix(TmdetVO::BioMatrix& bioMatrix);
+
+            /**
+             * @brief Get the content of MEMBRANE node
+             * 
+             * @return std::vector<TmdetVO::Membrane> 
+             */
+            std::vector<TmdetVO::Membrane> getMembranes() const;
+
+            /**
+             * @brief Set the content of MEMBRANE node
+             * 
+             * @param membranes 
+             */
+            void setMembranes(std::vector<TmdetVO::Membrane>& membranes);
+
+            /**
+             * @brief Get the content of CHAIN node
+             * 
+             * @param chains 
+             */
+            void getChains(std::vector<TmdetVO::Chain>& chains);
+
+            /**
+             * @brief Set the content of CHAIN node
+             * 
+             * @param chains 
+             */
+            void setChains(const std::vector<TmdetVO::Chain>& chains);
+
+            /**
+             * @brief Get the content of REGION node
+             * 
+             * @param cnode 
+             * @return std::vector<TmdetVO::Region> 
+             */
+            std::vector<TmdetVO::Region> getRegions(const pugi::xml_node& cnode) const;
+
+            /**
+             * @brief Set the content of REGION node
+             * 
+             * @param pnode 
+             * @param regions 
+             */
+            void setRegions(pugi::xml_node& pnode, const std::vector<TmdetVO::Region>& regions) const;
+
+            /**
+             * @brief read tmdet xml file into Tmdet Value Object
+             * 
+             * @param tmdetVO 
+             * @param path 
+             */
+            void readXml(TmdetVO::Protein& tmdetVO, const std::string& path);
+
+            /**
+             * @brief write Tmdet Value Objects out in xml
+             * 
+             * @param tmdetVO 
+             * @param path 
+             */
+            void writeXml(TmdetVO::Protein& tmdetVO, const std::string& path);
     };
 }
-
-#endif

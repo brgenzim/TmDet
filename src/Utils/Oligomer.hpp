@@ -1,5 +1,4 @@
-#ifndef __TMDET_UTILS_OLIGOMER__
-#define __TMDET_UTILS_OLIGOMER__
+#pragma once
 
 #include <array>
 #include <string>
@@ -106,4 +105,3 @@ namespace Tmdet::Utils {
 
     };
 }
-#endif
