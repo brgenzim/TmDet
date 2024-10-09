@@ -9,6 +9,8 @@ use Unitmp\TmdetTest\Services\Tmdet30Runner;
 require_once 'vendor/autoload.php';
 
 const COMPARISION_RESULT_FILE = './tmdet_differences.json';
+// tmdet should be re-run, if $flags->onlyNewTmdetXmlHasDeletedChain
+const OVERWRITE_BY_RERUN = false;
 
 // Pre-check write of output file
 $outputFile = ($argc > 1) ? $argv[1] : COMPARISION_RESULT_FILE;
@@ -23,24 +25,28 @@ class TmDiff {
     public static function main(string $outputFile) {
 
         $codes = PdbtmDifferencesTest::getEntPathsOfTmps();
-        //$codes = array_slice($codes, 0, 1);
+        // $codes = array_slice($codes, 0, 10);
         $compResults = [];
         $byCategories = [];
         $fatalProcessingErrors = [];
-        foreach ($codes as $file => $item) {
+        foreach ($codes as $file => $fullPath) {
             echo "Processing data of $file" . PHP_EOL;
-            $runner = Tmdet30Runner::createRunner($file);
             try {
+                $runner = Tmdet30Runner::createRunner($fullPath[0]);
                 $runner->exec();
 
                 echo "meld {$runner->oldTmdetFile} {$runner->newTmdetFile}" . PHP_EOL;
                 $differences = PdbtmComparator::compareTmdetData($runner);
 
-                $flags = $differences['flags'];
+                $flags = &$differences['flags'];
                 // TODO
                 // This condition is not strict enough yet.
                 // It would be better to check presence/absence at chain level.
                 if ($flags->onlyNewTmdetXmlHasDeletedChain) {
+                    echo "{$runner->pdbCode}: possible re-run detected" . PHP_EOL;
+                    $flags->newRunWithNoForceDelete = true;
+                }
+                if (OVERWRITE_BY_RERUN && $flags->onlyNewTmdetXmlHasDeletedChain) {
                     $runner = Tmdet30Runner::createRunner(entFile: $file, noForceDelete: true);
                     $runner->enableOverwrite = true;
                     $runner->noForceDelete = true;
@@ -58,6 +64,7 @@ class TmDiff {
             }
             $result = [
                 'code' => $runner->pdbCode,
+                'polymerChains' => $runner->polymerChains,
                 'details' => $differences
             ];
             $compResults[$runner->pdbCode] = $result;

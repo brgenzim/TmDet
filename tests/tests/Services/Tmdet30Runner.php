@@ -4,6 +4,7 @@ namespace Unitmp\TmdetTest\Services;
 
 use RuntimeException;
 use Unitmp\TmdetTest\Constants\FileSystem;
+use Unitmp\TmdetTest\Utils\PdbEnt;
 
 class Tmdet30Runner extends AbstractProcessRunner {
 
@@ -19,7 +20,7 @@ class Tmdet30Runner extends AbstractProcessRunner {
         . '; export PDB_INF="$PDBINFO_LINES"'
         . '; /home/tusi/works/pdbtm_3.0/TmdetUtils/bin/tmdet';
 
-    public array $chains = [];
+    public array $polymerChains = [];
     public array $dssps = [];
     public string $newTmdetFile = '';
     public string $oldTmdetFile = '';
@@ -36,6 +37,7 @@ class Tmdet30Runner extends AbstractProcessRunner {
         parent::__construct($execPath, $commandParams);
         $this->disableOutputParsing = true;
         $this->entFile = $entFile;
+        $this->polymerChains = (new PdbEnt())->parse($entFile)->getPloymerChains();
         $this->pdbCode = parent::getPdbCodeFromPath($entFile);
         if (!file_exists(static::TMDET_DB_PATH)) {
             mkdir(static::TMDET_DB_PATH);
