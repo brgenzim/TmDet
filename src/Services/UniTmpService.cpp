@@ -1,7 +1,7 @@
 #include <string>
 #include <vector>
 #include <nlohmann/json.hpp>
-#include <System/Config.hpp>
+#include <Config.hpp>
 #include <Services/CurlWrapperService.hpp>
 #include <ValueObjects/Region.hpp>
 

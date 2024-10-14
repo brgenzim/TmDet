@@ -151,7 +151,7 @@ namespace Tmdet::Utils {
              * @param b_atom 
              * @param st 
              */
-            void setNeighbor(Tmdet::ValueObjects::Atom& a_atom, Tmdet::ValueObjects::Atom& b_atom, surfTemp& st);
+            void setNeighbor(const Tmdet::ValueObjects::Atom& a_atom, const Tmdet::ValueObjects::Atom& b_atom, surfTemp& st);
 
             /**
              * @brief Calculate surface of one atom
@@ -180,14 +180,14 @@ namespace Tmdet::Utils {
              * @param ss 
              * @return double 
              */
-            double calcSumArcsOfAtom(Tmdet::ValueObjects::Atom& atom, surfTemp& st, bool ss);
+            double calcSumArcsOfAtom(const Tmdet::ValueObjects::Atom& atom, surfTemp& st, bool ss) const;
 
             /**
              * @brief Set up parameters of the bounding box object
              * 
              * @param box 
              */
-            void setBoundingBox(boundingBox& box);
+            void setBoundingBox(boundingBox& box) const;
 
             /**
              * @brief Initialize frame for setting outside atoms

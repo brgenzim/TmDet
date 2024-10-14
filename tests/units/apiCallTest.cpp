@@ -4,6 +4,7 @@
 #include <filesystem>
 
 #include <System/Environment.hpp>
+#include <System/Logger.hpp>
 #include <Services/CurlWrapperService.hpp>
 #include <Services/UniTmpService.hpp>
 #include <Types/Region.hpp>
@@ -12,6 +13,7 @@ void assertTrue(std::string testDescription, bool condition, int lineNumber);
 
 std::string fileName;
 Tmdet::System::Environment environment;
+Tmdet::System::Logger logger;
 
 int main(int argc, char *argv[], char **envp) {
 

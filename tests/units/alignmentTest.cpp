@@ -7,6 +7,7 @@
 #include <gemmi/mmcif.hpp>
 #include <gemmi/model.hpp>
 #include <System/Environment.hpp>
+#include <System/Logger.hpp>
 #include <ValueObjects/Protein.hpp>
 #include <DTOs/Protein.hpp>
 
@@ -18,6 +19,7 @@ vector<string> getResidueNames(gemmi::Chain& chain);
 
 string fileName;
 Tmdet::System::Environment environment;
+Tmdet::System::Logger logger;
 
 int main(int argc, char *argv[], char **envp) {
 

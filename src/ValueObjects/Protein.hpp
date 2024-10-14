@@ -134,5 +134,15 @@ namespace Tmdet::ValueObjects {
          * @brief Create a hash for structure that unique for each structure
          */
         std::string hash() const;
+
+        /**
+         * @brief unselect all chains
+         */
+        void unSelectAll();
+
+        /**
+         * @brief search chain by id
+         */
+        int searchChainById(std::string& id) const;
     };
 }

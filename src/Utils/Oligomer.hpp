@@ -1,107 +1,104 @@
 #pragma once
 
-#include <array>
+#include <vector>
 #include <string>
-#include <any>
 #include <gemmi/model.hpp>
 #include <Types/Oligomer.hpp>
 
-using namespace std;
+/**
+ * @brief namespace for Tmdet
+ * @namespace Tmdet
+ */
+namespace Tmdet {
+    
+    /**
+    * @brief namespace for various utilities
+    * @namespace Utils
+    */
+    namespace Utils {
 
-namespace Tmdet::Utils {
+        struct Oligomer {
 
-    struct _chains {
-        string id; // entity id from _entity category
-        int n;
-        vector<string> chids;
-    };
-
-    struct Oligomer {
-
-        static vector<_chains> getNumberOfChains(const gemmi::Structure& structure) {
-            vector<_chains> ret;
-            for (const auto& entity : structure.entities) {
-                if (entity.entity_type == gemmi::EntityType::Polymer) {
-                    // WARNING: entity.subchains contains label asym ids!
-                    ret.emplace_back(_chains(entity.name, entity.subchains.size(), entity.subchains));
-                }
-            }
-
-            return ret;
-        }
-
-        static vector<vector<string>> getHomoOligomerChains(const gemmi::Structure& structure) {
-            auto entities = getNumberOfChains(structure);
-            vector<vector<string>> result;
-            for (auto& chains : entities) {
-                if (chains.chids.size() > 1) {
-                    result.emplace_back(chains.chids);
-                }
-            }
-            return result;
-        }
-
-        static bool isEntityOligomerized(string entityId, vector<_chains>& chains) {
-            bool result = false;
-            auto ch = chains.begin();
-            for (; ch != chains.end(); ch++) {
-                if (ch->id == entityId) {
-                    result = ch->n > 1;
-                    break;
-                }
-            }
-            return result;
-        }
-
-        static bool isMonomer(vector<_chains>& chains) {
-            return (chains.size() == 1 && chains[0].n == 1);
-        }
-
-        static bool isHomoOligomer(vector<_chains>& chains) {
-            return (chains.size() == 1 && chains[0].n > 1);
-        }
-
-        static bool isHomoHeteroOligomer(vector<_chains>& chains) {
-            if (chains.size() > 1) {
-                for( const auto& chain: chains ) {
-                    if (chains[0].n != chain.n) {
-                        return false;
+            static std::vector<gemmi::Entity> getPolimerEntities(const gemmi::Structure& structure) {
+                std::vector<gemmi::Entity> ret;
+                for (const auto& entity : structure.entities) {
+                    if (entity.entity_type == gemmi::EntityType::Polymer) {
+                        // WARNING: entity.subchains contains label asym ids and not auth asym id (that is used in chain name)
+                        ret.emplace_back(entity);
                     }
                 }
-                return (chains[0].n > 1);
+                return ret;
             }
-            return false;
-        }
 
-        static bool isHeteroWithHomoOligomer(vector<_chains>& chains) {
-            int max = 0;
-            if (chains.size() > 1) {
-                for( const auto& chain: chains ) {
-                    if (chain.n > max) {
-                        max = chain.n;
+            static std::vector<gemmi::Entity> getHomoOligomerEntities(const gemmi::Structure& structure) {
+                auto entities = getPolimerEntities(structure);
+                std::vector<gemmi::Entity> result;
+                for (auto& entity : entities) {
+                    if (entity.subchains.size() > 1) {
+                        result.emplace_back(entity);
                     }
                 }
+                return result;
             }
-            return (max > 1);
-        }
 
-        static Tmdet::Types::Oligomer getOligomerType(gemmi::Structure structure) {
-            Tmdet::Types::Oligomer ret = Tmdet::Types::OligomerType::HETERO_OLIGOMER;
-            vector<_chains> chains = getNumberOfChains(structure);
-            if (isMonomer(chains)) {
-                ret = Tmdet::Types::OligomerType::MONOMER;
+            static bool isEntityOligomerized(const std::string& entityId, const gemmi::Structure& structure) {
+                for (const auto& entity: getHomoOligomerEntities(structure)) {
+                    if (entity.name == entityId) {
+                        return true;
+                    }
+                }
+                return false;
             }
-            else if (isHomoOligomer(chains)) {
-                ret = Tmdet::Types::OligomerType::HOMO_OLIGOMER;
-            }
-            else if (isHomoHeteroOligomer(chains)) {
-                ret = Tmdet::Types::OligomerType::HOMO_HETERO_OLIGOMER;
-            }
-            else if (isHeteroWithHomoOligomer(chains)) {
-                ret = Tmdet::Types::OligomerType::HETERO_WITH_HOMO_OLIGOMER;
-            }
-            return ret;
-        }
 
+            static bool isMonomer(const std::vector<gemmi::Entity>& entities) {
+                return (entities.size() == 1 && entities[0].subchains.size() == 1);
+            }
+
+            static bool isHomoOligomer(const std::vector<gemmi::Entity>& entities) {
+                return (entities.size() == 1 && entities[0].subchains.size() > 1);
+            }
+
+            static bool isHomoHeteroOligomer(const std::vector<gemmi::Entity>& entities) {
+                if (entities.size() > 1) {
+                    for( const auto& entity: entities ) {
+                        if (entities[0].subchains.size() != entity.subchains.size()) {
+                            return false;
+                        }
+                    }
+                    return (entities[0].subchains.size() > 1);
+                }
+                return false;
+            }
+
+            static bool isHeteroWithHomoOligomer(const std::vector<gemmi::Entity>& entities) {
+                if (entities.size() > 1) {
+                    auto max = entities[0].subchains.size();
+                    for( const auto& entity: entities ) {
+                        if ( max < entity.subchains.size()) {
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            }
+
+            static Tmdet::Types::Oligomer getOligomerType(gemmi::Structure& structure) {
+                Tmdet::Types::Oligomer ret = Tmdet::Types::OligomerType::HETERO_OLIGOMER;
+                const auto& entities = getPolimerEntities(structure);
+                if (isMonomer(entities)) {
+                    ret = Tmdet::Types::OligomerType::MONOMER;
+                }
+                else if (isHomoOligomer(entities)) {
+                    ret = Tmdet::Types::OligomerType::HOMO_OLIGOMER;
+                }
+                else if (isHomoHeteroOligomer(entities)) {
+                    ret = Tmdet::Types::OligomerType::HOMO_HETERO_OLIGOMER;
+                }
+                else if (isHeteroWithHomoOligomer(entities)) {
+                    ret = Tmdet::Types::OligomerType::HETERO_WITH_HOMO_OLIGOMER;
+                }
+                return ret;
+            }
+        };
     };
 }

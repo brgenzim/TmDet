@@ -1,6 +1,6 @@
 #include <cmath>
 #include <gemmi/model.hpp>
-#include <System/Config.hpp>
+#include <Config.hpp>
 #include <Engine/Rotator.hpp>
 
 namespace Tmdet::Engine {

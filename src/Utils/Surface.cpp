@@ -6,6 +6,7 @@
 #include <filesystem>
 #include <gemmi/model.hpp>
 #include <gemmi/neighbor.hpp>
+#include <Config.hpp>
 #include <System/FilePaths.hpp>
 #include <Types/Residue.hpp>
 #include <ValueObjects/Protein.hpp>
@@ -54,12 +55,13 @@ namespace Tmdet::Utils {
     }
 
     bool surfaceCache::read(Tmdet::ValueObjects::Protein& protein) {
+        logger.debug("Processing surfaceCache::read()");
         std::string hash = protein.hash();
         std::string dir = Tmdet::System::FilePaths::cache(hash);
         std::string path = dir + "/" + hash + "_" + protein.code + ".bin";
         std::ifstream file(path, ios::binary);
         if (!file.is_open()) {
-            std::cerr << "Warning: Could not read cache" << std::endl;
+            logger.warn("No data in surface cache for {}",protein.code);
             return false;
         }
         auto size = cache.size();
@@ -68,10 +70,12 @@ namespace Tmdet::Utils {
         file.read(reinterpret_cast<char*>(&cache[0]), sizeof(cache));
         file.close();
         proteinFromCache(protein);
+        logger.debug(" Processed surfaceCache::read()");
         return true;
     }
 
     void surfaceCache::write(const Tmdet::ValueObjects::Protein& protein) {
+        logger.debug("Processing surfaceCache::write()");
         proteinToCache(protein);
         std::string hash = protein.hash();
         std::string dir = Tmdet::System::FilePaths::cache(hash);
@@ -79,16 +83,16 @@ namespace Tmdet::Utils {
         std::string path = dir + "/" + hash + "_" + protein.code + ".bin";
         std::ofstream file(path, ios::binary);
         if (!file.is_open()) {
-            std::cerr << "Warning: Could not write cache" << std::endl;
+            logger.warn("Could not write surface cache. Path: {}",path);
             return;
         }
         auto size = cache.size();
-        std::cerr << size << std::endl;
         file.write(reinterpret_cast<const char*>(&size), sizeof(size));
         file.write(reinterpret_cast<const char*>(&cache), sizeof(cache));
         std::ostream_iterator<double> out_itr(file);
         std::ranges::copy(cache.begin(), cache.end(), out_itr);
         file.close();
+        logger.debug(" Processed surfaceCache::write()");
     }
     
     void Surface::run() {
@@ -101,6 +105,7 @@ namespace Tmdet::Utils {
     }
 
     void Surface::initTempData() {
+        logger.debug("Processing Surface::initTempData()");
         const double probSize = std::stof(environment.get("TMDET_SURF_PROBSIZE",DEFAULT_TMDET_SURF_PROBSIZE));
         for(auto& chain: protein.chains) {
             for(auto& residue: chain.residues) {
@@ -116,9 +121,11 @@ namespace Tmdet::Utils {
                 }
             }
         }
+        logger.debug(" Processed Surface::initTempData()");
     }
 
     void Surface::setContacts() {
+        logger.debug("Processing Surface::setContacts()");
         for(auto& chain: protein.chains) {
             for(auto& residue: chain.residues) {
                 residue.surface = 0.0;
@@ -128,6 +135,7 @@ namespace Tmdet::Utils {
                 }
             }
         }
+        logger.debug(" Processed Surface::setContacts()");
     }
 
     void Surface::setContactsOfAtom(Tmdet::ValueObjects::Atom& a_atom) {
@@ -142,7 +150,7 @@ namespace Tmdet::Utils {
         calcSurfaceOfAtom(a_atom, st);
     }
 
-    void Surface::setNeighbor(Tmdet::ValueObjects::Atom& a_atom, Tmdet::ValueObjects::Atom& b_atom, surfTemp& st) {
+    void Surface::setNeighbor(const Tmdet::ValueObjects::Atom& a_atom, const Tmdet::ValueObjects::Atom& b_atom, surfTemp& st) {
         double dx=a_atom.gemmi.pos.x-b_atom.gemmi.pos.x;
         double dy=a_atom.gemmi.pos.y-b_atom.gemmi.pos.y;
         double d2 = (dx*dx)+(dy*dy);
@@ -155,7 +163,7 @@ namespace Tmdet::Utils {
     void Surface::calcSurfaceOfAtom(Tmdet::ValueObjects::Atom& a_atom, surfTemp& st) {
         const double zSlice = std::stof(environment.get("TMDET_SURF_ZSLICE",DEFAULT_TMDET_SURF_ZSLICE));
         a_atom.surface = 0.0;
-        auto& a_gatom = a_atom.gemmi;
+        const auto& a_gatom = a_atom.gemmi;
         double vdwa = VDW(a_atom);
         for(double z=a_gatom.pos.z-vdwa+zSlice/2; z<a_gatom.pos.z+vdwa/*+SURF_ZSLICE/2*/; z+=zSlice) {
             a_atom.surface += calcSumArcsOfAtom(a_atom,st,calcArcsOfAtom(a_atom,st,z)) * zSlice;
@@ -174,7 +182,7 @@ namespace Tmdet::Utils {
         for(auto& neighbor: st.neighbors) {
             if (ss) {
                 auto& b_atom = neighbor.atom;
-                auto& b_gatom = b_atom.gemmi;
+                const auto& b_gatom = b_atom.gemmi;
                 double vdwb = VDW(b_atom);
                 if (fabs(b_gatom.pos.z -z) < vdwb) {    
                     double rb2 = vdwb * vdwb - (b_gatom.pos.z - z) * (b_gatom.pos.z - z);
@@ -210,7 +218,7 @@ namespace Tmdet::Utils {
         return ss;
     }
 
-    double Surface::calcSumArcsOfAtom(Tmdet::ValueObjects::Atom& atom, surfTemp& st, bool ss) {
+    double Surface::calcSumArcsOfAtom(const Tmdet::ValueObjects::Atom& atom, surfTemp& st, bool ss) const {
         double arcsum = (ss?2.0*M_PI:0.0);
         int n = (int)(st.arc1.size());
         if (ss && n>0) {
@@ -251,14 +259,14 @@ namespace Tmdet::Utils {
         }
 	}
 
-    void Surface::setBoundingBox(boundingBox& box) {
+    void Surface::setBoundingBox(boundingBox& box) const {
         box.xmin=10000; box.xmax=-10000;        
 	    box.ymin=10000; box.ymax=-10000;        
         box.zmin=10000; box.zmax=-10000;        
 	    
-        for(auto& chain: protein.chains) {
-            for(auto& residue: chain.residues) {
-                for(auto& atom: residue.atoms) {
+        for(const auto& chain: protein.chains) {
+            for(const auto& residue: chain.residues) {
+                for(const auto& atom: residue.atoms) {
                     box.xmin = MIN(box.xmin,atom.gemmi.pos.x);
                     box.xmax = MAX(box.xmax,atom.gemmi.pos.x);
                     box.ymin = MIN(box.ymin,atom.gemmi.pos.y);
@@ -268,9 +276,9 @@ namespace Tmdet::Utils {
 		        }
  	        }
         }
-	    box.xmin=ceilf(box.xmin-1)-2; box.xmax=ceilf(box.xmax)+2;
-	    box.ymin=ceilf(box.ymin-1)-2; box.ymax=ceilf(box.ymax)+2;
-        box.zmin=ceilf(box.zmin-1)-2; box.zmax=ceilf(box.zmax)+2;
+	    box.xmin=ceil(box.xmin-1)-2; box.xmax=ceil(box.xmax)+2;
+	    box.ymin=ceil(box.ymin-1)-2; box.ymax=ceil(box.ymax)+2;
+        box.zmin=ceil(box.zmin-1)-2; box.zmax=ceil(box.zmax)+2;
 
         box.l1 = (box.xmax - box.xmin) + 1; 
 	    box.l2 = 2 * (box.xmax - box.xmin) + 2;

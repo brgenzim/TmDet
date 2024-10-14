@@ -5,8 +5,8 @@
 #include <gemmi/mmcif.hpp>
 #include <gemmi/model.hpp>
 #include <gemmi/neighbor.hpp>
+#include <Version.hpp>
 #include <System/Date.hpp>
-#include <System/Version.hpp>
 #include <Types/Protein.hpp>
 #include <ValueObjects/Protein.hpp>
 #include <Utils/Md5.hpp>
@@ -20,7 +20,7 @@ namespace Tmdet::ValueObjects {
 
     void Protein::notTransmembrane() {
         tmp = false;
-        version = (version==""?Tmdet::System::Version::get():version);
+        version = (version==""?Tmdet::version():version);
         modifications.emplace_back(
             Tmdet::System::Date::get(),
             (std::string)"Not transmembrane protein"
@@ -34,7 +34,7 @@ namespace Tmdet::ValueObjects {
 
     void Protein::clear() {
         tmp = false;
-        version = Tmdet::System::Version::get();
+        version = Tmdet::version();
         date = Tmdet::System::Date::get();
         modifications.clear();
         qValue = 0.0;
@@ -54,5 +54,20 @@ namespace Tmdet::ValueObjects {
         }
         void* sig = hashing::md5::hash(raw);
         return hashing::md5::sig2hex(sig);
+    }
+
+    void Protein::unSelectAll() {
+        for (auto& c: chains) {
+            c.selected = false;
+        }
+    }
+
+    int Protein::searchChainById(std::string& id) const {
+        for (auto& c: chains) {
+            if (c.id == id) {
+                return c.idx;
+            }
+        }
+        return -1;
     }
 }

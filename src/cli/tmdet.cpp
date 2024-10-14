@@ -1,13 +1,18 @@
+// Copyright(c) 2003-present, Gabor E. Tusnady & tmdet contributors.
+// Distributed under the MIT License (http://opensource.org/licenses/MIT)
+
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <Config.hpp>
+#include <Version.hpp>
 #include <Services/ChemicalComponentDirectoryService.hpp>
 #include <System/Arguments.hpp>
 #include <System/Environment.hpp>
-#include <System/Config.hpp>
 #include <System/FilePaths.hpp>
+#include <System/Logger.hpp>
 #include <ValueObjects/Protein.hpp>
 #include <DTOs/Protein.hpp>
 #include <DTOs/Xml.hpp>
@@ -16,6 +21,7 @@
 using namespace std;
 
 Tmdet::System::Environment environment;
+Tmdet::System::Logger logger;
 
 Tmdet::System::Arguments getArguments(int argc, char *argv[]) {
     Tmdet::System::Arguments args;
@@ -43,16 +49,29 @@ void notTransmembrane(const std::string& xmlPath) {
 }
 
 int main(int argc, char *argv[], char **envp) {
-
+    
     //get and check command line arguments
     Tmdet::System::Arguments args = getArguments(argc,argv);
 
     //get environment file content and shell environment variables
     environment.init(envp,args.getValueAsString("e"));
 
+    //setting up logger
+    std::ostream& coutRef = std::cout;
+    std::ofstream logFile(environment.get("TMDET_LOG_FILE",DEFAULT_TMDET_LOG_FILE), std::ios_base::app);
+    logger.addStream(coutRef);
+    logger.addStream(logFile);
+    logger.setLevel(Tmdet::System::level::TMDET_LOG_LEVEL);
+    logger.info("Starting Tmdet(version: {})",Tmdet::version());
+    std::string a;
+    for(int i=1; i<argc; i++) {
+        a += argv[i]; a += " ";
+    }
+    logger.info("command line arguments: {}",a);
+
     //check ccd and fetch it if missing
     if (!Tmdet::Services::ChemicalComponentDirectoryService::isBuilt()) {
-        std::cerr << "Chemical component directory is not set, please wait while installing it." << std::endl;
+        logger.warn("Chemical component directory is not set, please wait while installing it.");
         Tmdet::Services::ChemicalComponentDirectoryService::fetch();
         Tmdet::Services::ChemicalComponentDirectoryService::build();
     }
@@ -67,7 +86,7 @@ int main(int argc, char *argv[], char **envp) {
 
     //check xmlPath
     if (xmlPath == "") {
-        std::cerr << "Error: -x or -c is mandatory" << std::endl;
+        logger.error("argument -x or -c is mandatory");
         args.list();
         exit(EXIT_FAILURE);
     }
@@ -75,7 +94,7 @@ int main(int argc, char *argv[], char **envp) {
     //change xml file to TMP="no" if the protein is set to not transmembrane and exit
     if (bool n = args.getValueAsBool("n"); n) {
         if ( !Tmdet::System::FilePaths::fileExists(xmlPath) ) {
-            std::cerr << "Error: file not found: " << xmlPath << std::endl;
+            logger.error("file not found: {}",xmlPath);
             exit(EXIT_FAILURE);
         }
         notTransmembrane(xmlPath);
@@ -84,12 +103,12 @@ int main(int argc, char *argv[], char **envp) {
     
     //if -n or --not is not set then input is mandatory
     if (inputPath == "") {
-        std::cerr << "Error: -i or -c is mandatory" << std::endl;
+        logger.error("argument -i or -c is mandatory");
         args.list();
         exit(EXIT_FAILURE);
     }
     if ( !Tmdet::System::FilePaths::fileExists(inputPath) ) {
-        std::cerr << "Error: file not found: " << inputPath << std::endl;
+        logger.error("file not found: {}",inputPath);
         exit(EXIT_FAILURE);
     }
     auto protein = Tmdet::DTOs::Protein::get(inputPath);
@@ -98,7 +117,7 @@ int main(int argc, char *argv[], char **envp) {
     //if xml file exists and overwirte is not set then read the content of the
     //xml file and adjust proteinVO accordingly
     if (bool o = args.getValueAsBool("o"); !o && Tmdet::System::FilePaths::fileExists(xmlPath) ) {
-        std::cerr << "xml file exists, updating its content" << std::endl;
+        logger.warn("xml file exists, updating its content");
         xml.readXml(protein, xmlPath);
         //TODO align structure to tmdet data
     }

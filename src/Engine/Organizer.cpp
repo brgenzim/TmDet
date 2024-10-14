@@ -1,17 +1,19 @@
 
 #include <string>
 
-#include <System/Config.hpp>
+#include <Config.hpp>
 #include <System/Arguments.hpp>
 #include <Engine/Organizer.hpp>
 #include <Exceptions/NoProteinStructureException.hpp>
 #include <Utils/Dssp.hpp>
 #include <Utils/Surface.hpp>
 #include <Utils/Symmetry.hpp>
+#include <Utils/Oligomer.hpp>
 
 namespace Tmdet::Engine {
 
     void Organizer::run() {
+        logger.debug("Processing Organizer::run()");
         if (selectChains()) {
             dssp();
             surface();
@@ -26,13 +28,16 @@ namespace Tmdet::Engine {
         else {
             throw Tmdet::Exceptions::NoProteinStructureException(protein.code);
         }
+        logger.debug(" Processed Organizer::run()");
     }
 
     unsigned int Organizer::selectChains() {
+        logger.debug("Processing Organizer::selectChains()");
         unsigned int ret = 0;
         for (auto& chainVO : protein.chains) {
             ret += selectChain(chainVO);
         }
+        logger.debug(" Processed Organizer::selectChains(). Return: {}",ret);
         return ret;
     }
 
@@ -48,16 +53,25 @@ namespace Tmdet::Engine {
     }
 
     void Organizer::dssp() {
+        logger.debug("Processing Organizer::dssp()");
         auto dssp = Tmdet::Utils::Dssp(protein);
+        logger.debug(" Processed Organizer::dssp()");
     }
 
     void Organizer::surface() {
+        logger.debug("Processing Organizer::surface()");
         auto surf = Tmdet::Utils::Surface(protein,args.getValueAsBool("nc"));
+        logger.debug(" Processed Organizer::surface()");
     }
 
     void Organizer::checkSymmetry() {
-        Tmdet::Utils::Symmetry symmetry;
-        auto result = symmetry.CheckSymmetry(protein);
+        logger.debug("Processing Organizer::checkSymmetry()");
+        auto oligomerChains = Tmdet::Utils::Oligomer::getHomoOligomerEntities(protein.gemmi);
+        if (!oligomerChains.empty()) {
+            auto symmetry = Tmdet::Utils::Symmetry(protein);
+            
+        }
+        logger.debug(" Processed Organizer::checkSymmetry()");
     }
 
     void Organizer::findMembrane() {

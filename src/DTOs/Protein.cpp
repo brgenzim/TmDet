@@ -13,6 +13,7 @@
 #include <gemmi/seqtools.hpp>
 #include <gemmi/to_cif.hpp>
 #include <gemmi/to_mmcif.hpp>
+#include <Config.hpp>
 #include <DTOs/Protein.hpp>
 #include <System/FilePaths.hpp>
 #include <Utils/Alignment.hpp>
@@ -34,6 +35,7 @@ namespace Tmdet::DTOs {
     }
 
     Tmdet::ValueObjects::Protein Protein::get(const std::string& inputPath) {
+        logger.debug("Processing Protein::get()");
         Tmdet::ValueObjects::Protein protein;
         protein.getStructure(inputPath);
         protein.code = protein.gemmi.name;
@@ -73,6 +75,7 @@ namespace Tmdet::DTOs {
 
         protein.neighbors = gemmi::NeighborSearch(protein.gemmi.models[0], protein.gemmi.cell, 9);
         protein.neighbors.populate();
+        logger.debug("Processing Protein::get()");
         return protein;
     }
 
