@@ -2,12 +2,15 @@
 
 use Spatie\SimpleExcel\SimpleExcelWriter;
 use Unitmp\TmdetTest\PdbtmDifferencesTest;
+use Unitmp\TmdetTest\Services\DifferenceFlags;
 use Unitmp\TmdetTest\Services\PdbtmComparator;
 use Unitmp\TmdetTest\Services\Tmdet30Runner;
 
 require_once 'vendor/autoload.php';
 
 const COMPARISION_RESULT_FILE = './tmdet_differences.json';
+// tmdet should be re-run, if $flags->onlyNewTmdetXmlHasDeletedChain
+const OVERWRITE_BY_RERUN = false;
 
 // Pre-check write of output file
 $outputFile = ($argc > 1) ? $argv[1] : COMPARISION_RESULT_FILE;
@@ -26,28 +29,46 @@ class TmDiff {
         $compResults = [];
         $byCategories = [];
         $fatalProcessingErrors = [];
-        foreach ($codes as $file => $item) {
+        foreach ($codes as $file => $fullPath) {
             echo "Processing data of $file" . PHP_EOL;
-            $runner = Tmdet30Runner::createRunner($file);
-            // $runner->enableOverwrite = true;
             try {
+                $runner = Tmdet30Runner::createRunner($fullPath[0]);
                 $runner->exec();
+
+                echo "meld {$runner->oldTmdetFile} {$runner->newTmdetFile}" . PHP_EOL;
+                $differences = PdbtmComparator::compareTmdetData($runner);
+
+                $flags = &$differences['flags'];
+                // TODO
+                // This condition is not strict enough yet.
+                // It would be better to check presence/absence at chain level.
+                if ($flags->onlyNewTmdetXmlHasDeletedChain) {
+                    echo "{$runner->pdbCode}: possible re-run detected" . PHP_EOL;
+                    $flags->newRunWithNoForceDelete = true;
+                }
+                if (OVERWRITE_BY_RERUN && $flags->onlyNewTmdetXmlHasDeletedChain) {
+                    $runner = Tmdet30Runner::createRunner(entFile: $file, noForceDelete: true);
+                    $runner->enableOverwrite = true;
+                    $runner->noForceDelete = true;
+                    echo "{$runner->pdbCode}: Running again with -no_forcedel" . PHP_EOL;
+                    $runner->exec();
+                }
+
             } catch (Exception $e) {
                 $fatalProcessingErrors[] = $runner->pdbCode;
                 fprintf(STDERR, "EXCEPTION: %s - %s\n", $runner->pdbCode, $e->getMessage());
                 continue;
             }
-            echo "meld {$runner->oldTmdetFile} {$runner->newTmdetFile}" . PHP_EOL;
-            $differences = PdbtmComparator::compareTmdetData($runner);
             if (empty($differences['categories'])) {
                 continue;
             }
             $result = [
                 'code' => $runner->pdbCode,
+                'polymerChains' => $runner->polymerChains,
                 'details' => $differences
             ];
             $compResults[$runner->pdbCode] = $result;
-            static::addCodeToCategory($byCategories, $result);
+            static::addCodeToCategories($byCategories, $result);
         }
 
         $byCategories['FATAL ERRORS DURING COMPARE PROCESS'] = $fatalProcessingErrors;
@@ -74,11 +95,13 @@ class TmDiff {
     public static function writeExcelOutput(array $compareResults, string $outputFile) {
         echo "Writing result in Excel format: $outputFile ... ";
         $writer = SimpleExcelWriter::create($outputFile);
+        static::addOverviewSheet($writer, $compareResults);
+
         $categories = $compareResults['byCategories'];
         foreach ($categories as $index => $category) {
             $categoryName = $category['category'];
             $writer->nameCurrentSheet(substr($categoryName, 0, 31));
-            $column = 'PDB Codes (' . $categoryName . ')';
+            $column = $categoryName;
             $writer->addHeader([ $column ]);
             foreach ($category['codes'] as $code) {
                 $writer->addRow([ $column => $code ]);
@@ -91,7 +114,7 @@ class TmDiff {
         echo 'DONE.' . PHP_EOL;
     }
 
-    public static function addCodeToCategory(array &$categories, array &$compareResults): void {
+    public static function addCodeToCategories(array &$categories, array &$compareResults): void {
         $code = $compareResults['code'];
         foreach ($compareResults['details']['categories'] as $category) {
             if (array_key_exists($category, $categories)) {
@@ -100,6 +123,30 @@ class TmDiff {
                 $categories[$category] = [ $code ];
             }
         }
+    }
+
+    public static function addOverviewSheet(SimpleExcelWriter $writer, array $results): void {
+
+        $writer->nameCurrentSheet('Overview');
+
+        // Construct header
+        $reflection = new ReflectionClass(new DifferenceFlags());
+        $columns = [ 'code' ];
+        foreach ($reflection->getProperties() as $property) {
+            $columns[] = $property->getName();
+        }
+        $writer->addHeader($columns);
+
+        foreach ($results['detailsByCodes'] as $entry) {
+            $flags = $entry['details']['flags'];
+            $row = [ 'code' => $entry['code'] ];
+            foreach ($flags as $key => $value) {
+                $row[$key] = (int)$value;
+            }
+            $writer->addRow($row);
+        }
+
+        $writer->addNewSheetAndMakeItCurrent();
     }
 
     public static function refactorCategories(array &$categories): array {
