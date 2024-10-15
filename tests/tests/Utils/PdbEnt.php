@@ -16,7 +16,8 @@ class PdbEnt {
         $this->invalidChainList = true;
 
         $pdbLines = explode(PHP_EOL, static::readGzipFile($fileName));
-        $this->compoundLines = preg_grep('/^COMPND.+(MOL_ID|MOLECULE|CHAIN):.+/', $pdbLines);
+        $this->compoundLines = preg_grep('/^COMPND\s+([\d]+)? /', $pdbLines);
+        $this->compoundLines = preg_replace('/^COMPND\s+([\d]+)? /', '', $this->compoundLines);
         $this->seqResLines = preg_grep('/^SEQRES.+/', $pdbLines);
 
         return $this;
@@ -34,39 +35,32 @@ class PdbEnt {
             $polymerChainsSeqRes[$chain] = $chain;
         }
 
-        if (empty($polymerChainsSeqRes)) {
+        $pattern = '/MOL_ID: (.*?);\s+MOLECULE: (.*?);\s+CHAIN: (.*?);/ms';
+        if (empty($polymerChainsSeqRes)
+            || preg_match_all($pattern, implode(PHP_EOL, $this->compoundLines), $molecules) == 0) {
+
             return false;
         }
 
+        $moleculeCount = count($molecules[0]);
         $moleculeName = '';
         $resultChains = [];
-        foreach ($this->compoundLines as $line) {
-            $columns = preg_split(
-                pattern: '/[ ,;:]/',
-                subject: $line,
+        for ($index = 0; $index < $moleculeCount; $index++) {
+            // we have 3 groups in the pattern
+            // $moleculeId = $molecules[1][$index];
+            $moleculeName = $molecules[2][$index];
+            $moleculeName = preg_replace("/\s+/s", ' ', $moleculeName);
+            $moleculeChains = $molecules[3][$index];
+            $moleculeChains = preg_split(
+                pattern: '/[ ,;]/',
+                subject: $moleculeChains,
                 flags: PREG_SPLIT_NO_EMPTY
             );
-            // Process only the first molecule
-            if ($columns[1] == 'MOL_ID' && $columns[2] != '1') {
-                break;
-            }
-            // The lines are in pairs: MOLECULE and CHAIN
-            // Chains follows molecule information,
-            // but this check is applied before molecule check.
-            // (simplicity)
-            if ($columns[2] == 'CHAIN') {
-                // the first char is the chain name
-                $chains = array_slice($columns, 3);
-                if (!empty(array_intersect($chains, $polymerChainsSeqRes))) {
-                    $chains = array_fill_keys($chains, $moleculeName);
-                    $resultChains = array_merge($resultChains, $chains);
-                }
-                continue;
-            }
 
-            $matches = [];
-            if (preg_match('/^.+MOLECULE: (.+);/', $line, $matches)) {
-                $moleculeName = $matches[1];
+            // the first char is the chain name
+            if (!empty(array_intersect($moleculeChains, $polymerChainsSeqRes))) {
+                $chains = array_fill_keys($moleculeChains, $moleculeName);
+                $resultChains = array_merge($resultChains, $chains);
             }
         }
 
