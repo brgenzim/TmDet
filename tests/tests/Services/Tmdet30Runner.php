@@ -8,7 +8,8 @@ use Unitmp\TmdetTest\Utils\PdbEnt;
 
 class Tmdet30Runner extends AbstractProcessRunner {
 
-    const TMDET_DB_PATH = '/tmp/tmdet-3.0';
+    // const TMDET_DB_PATH = '/tmp/tmdet-3.0';
+    const TMDET_DB_PATH = '/lhome/csongor/tmdet-3.0';
     const EXEC = 'export PDBMODE="subdirs"'
         . '; export TMDET_DATABASE_PATH="' . Tmdet30Runner::TMDET_DB_PATH . '"'
         . '; export PDBPATH="' . FileSystem::PDB_ENT_ZFS_DIR . '"'
