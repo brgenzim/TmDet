@@ -9,6 +9,7 @@
 #include <ctime>
 #include <iomanip>
 #include <sstream>
+#include <source_location>
 
 #define LOG_LEVEL_TRACE 1
 #define LOG_LEVEL_DEBUG 2
@@ -38,7 +39,7 @@ namespace Tmdet::System {
             const std::vector<std::string> logLevels = {
                 "nop", "trace", "debug", "info", "warning", "error", "critical", "off"
             };
-
+            
             bool shouldLog(level lvl) const {
                 return lvl >= logLevel;
             }
@@ -66,8 +67,10 @@ namespace Tmdet::System {
                 auto microseconds = std::chrono::duration_cast<std::chrono::microseconds>(now.time_since_epoch()) % 1000000;
                 std::ostringstream oss;
                 oss << std::put_time(&localTime, "[%Y-%m-%d %H:%M:%S.");
+                //return std::format("{} {:06}] ",
+                //    std::put_time(&localTime, "[%Y-%m-%d %H:%M:%S."),
+                //    microseconds.count());
                 oss << std::setfill('0') << std::setw(6) << microseconds.count() << "] ";
-
                 return oss.str();
             }
 

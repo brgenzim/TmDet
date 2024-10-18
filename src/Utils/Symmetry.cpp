@@ -12,75 +12,53 @@
 #include <ValueObjects/Protein.hpp>
 #include <Utils/Symmetry.hpp>
 #include <Utils/Oligomer.hpp>
-//#include <System/Logger.hpp>
 
 using namespace std;
 
-#define TINY   1.0e-10
-#define RAD2DEG   57.29576
-
 namespace Tmdet::Utils {
 
-    static Eigen::Matrix4d Rotate_Z(Eigen::Vector3d T);
-    static double cosineAngleOfVectors(Eigen::Vector3d u, gemmi::Vec3 v);
-
-    void Symmetry::run() {
-        logger.debug("Processing Symmetry::run()");
-        initSymetryContainer();
-        auto axes = getRotationalAxes();
-        clusterAxes(axes);
-        logger.debug(" Processed Symmetry::run()");
-    }
-
-    void Symmetry::initSymetryContainer() {
-        logger.debug("Processing Symmetry::initSymmetryContainer()");
-        const auto& nc = protein.chains.size();
-        sim.resize(nc);
-        for (auto& s: sim) {
-            s.resize(nc);
-        }
-        logger.debug(" Processed Symmetry::initSymmetryContainer()");
+    std::vector<gemmi::Vec3> Symmetry::getMembraneAxes() {
+        return clusterAxes(getRotationalAxes());
     }
 
     std::vector<_symmetryData> Symmetry::getRotationalAxes() {
         logger.debug("Processing Symmetry::getRotationalAxes()");
-        for (const auto& chain: protein.chains) {
-            if (chain.selected && Oligomer::isEntityOligomerized(chain.entityId, protein.gemmi)) {
-                searchForRotatedChains(chain.idx);
-            }
-        }
         std::vector<_symmetryData> axes;
-        for (const auto& chain1: protein.chains ) {
-            for (const auto& chain2: protein.chains) {
-                auto& s = sim[chain1.idx][chain2.idx];
-                if (s.id == 1) {
-                    s.id = 0;
-                    s.cidx1 = chain1.idx;
-                    s.cidx2 = chain2.idx;
-                    s.entityId = chain1.entityId;
-                    axes.emplace_back(s);
-                    logger.debug("Chains {} and {} are rotated", chain1.id, chain2.id);
-                    logger.debug("\t Origo: {} {} {}", s.origo.x, s.origo.y, s.origo.z);
-                    logger.debug("\tNormal: {} {} {}", s.axis.x, s.axis.y, s.axis.z);
-                    logger.debug("\t Angle: {}", s.rotAngle);
-                }
+        for (const auto& entity: Tmdet::Utils::Oligomer::getHomoOligomerEntities(protein.gemmi)) {
+            if (searchForRotatedChains(entity.subchains) && haveSameAxes()) {
+                    logger.debug("Entity {} is oligomerized with rotational axes",entity.name);
+                    axes.emplace_back(getAverageAxes());
             }
         }
         logger.debug(" Processed Symmetry::getRotationalAxes()");
         return axes;
     }
 
-    void Symmetry::searchForRotatedChains(int cidx1) {
-        logger.debug("Processing Symmetry::searchForRotatedChains({})",protein.chains[cidx1].id);
-        for(const auto& chain2: protein.chains) {
-            if (chain2.idx > cidx1 && chain2.selected && protein.chains[cidx1].entityId == chain2.entityId) {
-                calculateRotationalOperation(cidx1,chain2.idx);
+    bool Symmetry::searchForRotatedChains(const std::vector<std::string>& chainIds) {
+        std::string ids = "";
+        for(const auto& c: chainIds) {
+            ids += c+":";
+        }
+        logger.debug("Processing Symmetry::searchForRotatedChains({})",ids);
+        int numChains = 0 ;
+        int numRotated = 0;
+        sim.clear();
+        if (auto cidx1 = protein.searchChainByLabId(chainIds[0]); cidx1 != -1) {
+            for(const auto& chain2Id: chainIds) {
+                if (auto cidx2 = protein.searchChainByLabId(chain2Id); cidx2 != -1) {
+                    if (cidx1 != cidx2) {
+                        numRotated += calculateRotationalOperation(cidx1,cidx2);
+                        numChains++;
+                    }
+                }
             }
         }
-        logger.debug(" Processed Symmetry::searchForRotatedChains({})",protein.chains[cidx1].id);
+        logger.debug("\t\tNumber of chains: {} Number of rotated chains: {}",numChains,numRotated);
+        logger.debug(" Processed Symmetry::searchForRotatedChains({})",ids);
+        return numRotated == numChains;
     }
 
-    void Symmetry::calculateRotationalOperation(int cidx1, int cidx2) {
+    int Symmetry::calculateRotationalOperation(int cidx1, int cidx2) {
         logger.debug("Processing Symmetry::calculateRotationalOperation({}:{})",
             protein.chains[cidx1].id,protein.chains[cidx2].id);
         std::vector<Eigen::Vector3d> coord1;
@@ -90,28 +68,21 @@ namespace Tmdet::Utils {
         getCoordinates(cidx1,cidx2,coord1,coord2, t1, t2);
         double rmsd;
         Eigen::Matrix4d R;
+        _symmetryData curSim;
         std::span<Eigen::Vector3d> coord1Slice(coord1.begin(), coord1.size());
         std::span<Eigen::Vector3d> coord2Slice(coord2.begin(), coord2.size());
         lsqFit(coord1Slice, coord2Slice, rmsd, R);
-        getSymmetryOperand( R, t1, t2, sim[cidx1][cidx2]);
+        getSymmetryOperand( R, t1, t2, curSim);
         double distance = (t2 - t1).squaredNorm();
         logger.debug("results {} {} distance: {} rmsd: {}",cidx1,cidx2,distance,rmsd);
-        if (distance > 2.0 && rmsd < 5 /** orig: 3 */) {
-            sim[cidx1][cidx2].id = sim[cidx1][cidx2].id = 1;
+        if (distance > 2.0 && rmsd < 3 ) {
+            curSim.good = true;
         }
+        sim.emplace_back(curSim);
 
-        if (distance < 2.0 && R(0, 0) > 0.98 && R(1, 1) > 0.98 && R(2, 2) > 0.98) {
-            logger.warn("Chain {} and {} are on top of each other", 
-                protein.chains[cidx1].id, protein.chains[cidx2].id);
-            sim[cidx1][cidx2].id = sim[cidx1][cidx2].id = -1;
-        }
-        else if (fabs(cosineAngleOfVectors((t1 - t2), sim[cidx1][cidx2].axis)) > 0.15) {
-            logger.warn("Chain {} and {} are not simply rotated",
-                protein.chains[cidx1].id, protein.chains[cidx2].id);
-            sim[cidx1][cidx2].id = sim[cidx1][cidx2].id = -1;
-        }
         logger.debug(" Processed Symmetry::calculateRotationalOperation({}:{})",
             protein.chains[cidx1].id,protein.chains[cidx2].id);
+        return curSim.good?1:0;
     }
     
     void Symmetry::getCoordinates(int cidx1, int cidx2, std::vector<Eigen::Vector3d>& coord1, std::vector<Eigen::Vector3d>& coord2, Eigen::Vector3d& t1, Eigen::Vector3d& t2) {
@@ -150,10 +121,13 @@ namespace Tmdet::Utils {
             protein.chains[cidx1].id,protein.chains[cidx2].id);
     }
    
-    void Symmetry::getSymmetryOperand(Eigen::Matrix4d& R, Eigen::Vector3d& t1, Eigen::Vector3d& t2, _symmetryData& simij) {
+    void Symmetry::getSymmetryOperand(Eigen::Matrix4d& R, const Eigen::Vector3d& t1, const Eigen::Vector3d& t2, _symmetryData& simij) const {
         logger.debug("Processing Symmetry::getSymmetryOperand()");
-        Eigen::Matrix4d LR, Rot;
-        Eigen::Vector3d av, ori, axis;
+        Eigen::Matrix4d LR;
+        Eigen::Matrix4d Rot;
+        Eigen::Vector3d av;
+        Eigen::Vector3d ori;
+        Eigen::Vector3d axis;
         double tg;
 
         if ((R(0, 0)<0.999)&&(R(1, 1)<0.999) /*&&(R(0, 0)>-0.999)*/)
@@ -185,7 +159,7 @@ namespace Tmdet::Utils {
 
         }
         axis = axis / axis.norm();
-        LR=Rotate_Z(axis);
+        LR=rotateZ(axis);
 
         Rot= LR.inverse() * (R * LR);
 
@@ -203,24 +177,22 @@ namespace Tmdet::Utils {
 
         ori += midpoint;
         simij.origo = gemmi::Vec3(ori.x(), ori.y(), ori.z());
-
-        simij.rotAngle = RAD2DEG*acos(Rot(0, 0));
         simij.axis = gemmi::Vec3(axis.x(), axis.y(), axis.z());
         logger.debug(" Processed Symmetry::getSymmetryOperand()");
     }
 
-    bool Symmetry::lsqFit(std::span<Eigen::Vector3d>& r1, std::span<Eigen::Vector3d>& r2, double& rmsd, Eigen::Matrix4d& Rot) {
+    bool Symmetry::lsqFit(const std::span<Eigen::Vector3d>& r1, const std::span<Eigen::Vector3d>& r2, double& rmsd, Eigen::Matrix4d& Rot) const {
         logger.debug("Processing Symmetry::Lsq_fit");
         Eigen::Matrix3d U = Eigen::Matrix3d::Zero();
-        auto nr_atoms = r1.size();
+        auto rsize = r1.size();
 
-        for (int n = 0; n < nr_atoms; n++) {
-            U += /*weight[n] * */ r1[n] * r2[n].transpose();
+        for (unsigned int n = 0; n < rsize; n++) {
+            U += r1[n] * r2[n].transpose();
         }
 
         double det_U = U.determinant();
-        if (std::abs(det_U) < TINY) {
-            logger.error("{}.{}: determinant of U equals to zero", __FILE__, __LINE__);
+        if (std::abs(det_U) < TMDET_TINY) {
+            logger.error("determinant of U equals to zero");
             return false;
         }
 
@@ -233,28 +205,26 @@ namespace Tmdet::Utils {
 
         Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> eigensolver(omega);
         if (eigensolver.info() != Eigen::Success) {
-            logger.error("{}.{}: Eigen decomposition failed", __FILE__, __LINE__);
+            logger.error("Eigen decomposition failed");
             return false;
         }
 
         Eigen::VectorXd eva_omega = eigensolver.eigenvalues();
         Eigen::MatrixXd eve_omega = eigensolver.eigenvectors();
 
-        if (det_U < 0.0) {
-            if (std::abs(eva_omega(1) - eva_omega(2)) < TINY) {
-                logger.error("{}.{}: determinant of U < 0 && degenerated eigenvalues", __FILE__, __LINE__);
-                return false;
-            }
+        if (det_U < 0.0 && std::abs(eva_omega(1) - eva_omega(2)) < TMDET_TINY) {
+            logger.error("determinant of U < 0 && degenerated eigenvalues");
+            return false;
         }
         
-        Eigen::Matrix3d H, K;
+        Eigen::Matrix3d H;
+        Eigen::Matrix3d K;
         for (int i = 0; i < 3; i++) {
             H.col(i) = M_SQRT2 * eve_omega.col(i).head<3>();
             K.col(i) = M_SQRT2 * eve_omega.col(i).tail<3>();
         }
 
-        double sigma = (H.col(1).cross(H.col(2))).dot(H.col(0));
-        if (sigma <= 0.0) {
+        if ((H.col(1).cross(H.col(2))).dot(H.col(0)) <= 0.0) {
             H.col(2) = -H.col(2);
             K.col(2) = -K.col(2);
         }
@@ -263,17 +233,16 @@ namespace Tmdet::Utils {
         R *= sign_detU;
         R *= -1;
 
-        for (int n = 0; n < nr_atoms; n++) {
+        for (unsigned int n = 0; n < rsize; n++) {
             r1[n] = R * r1[n];
         }
 
         rmsd = 0.0;
-        for (int n = 0; n < nr_atoms; n++) {
+        for (unsigned int n = 0; n < rsize; n++) {
             Eigen::Vector3d dr = r1[n] - r2[n];
-            //rmsd += dr.squaredNorm();
-            rmsd += dr[0]*dr[0] + dr[1]*dr[1] + dr[2]*dr[2];
+            rmsd += dr.squaredNorm();
         }
-        rmsd /= nr_atoms;
+        rmsd /= (double)rsize;
         rmsd = std::sqrt(rmsd);
 
         Rot.block<3,3>(0,0) = R;
@@ -286,9 +255,16 @@ namespace Tmdet::Utils {
         return true;
     }
 
-    Eigen::Matrix4d Rotate_Z(Eigen::Vector3d T) {
-        double a, b, c, d, cosa, sina;
-        Eigen::Matrix4d R1, R2, R;
+    Eigen::Matrix4d Symmetry::rotateZ(Eigen::Vector3d T) const {
+        double a;
+        double b;
+        double c;
+        double d;
+        double cosa;
+        double sina;
+        Eigen::Matrix4d R1;
+        Eigen::Matrix4d R2;
+        Eigen::Matrix4d R;
         Eigen::Vector3d normalized;
 
         normalized = T / T.norm();
@@ -320,50 +296,64 @@ namespace Tmdet::Utils {
         return R;
     }
 
-    double cosineAngleOfVectors(Eigen::Vector3d u, gemmi::Vec3 v) {
-        Eigen::Vector3d v_(v.x, v.y, v.z);
-        double dotProduct = u.dot(v_);
-        return dotProduct / (u.norm() * v_.norm());
-    }
-
-    std::vector<_symmetryData> Symmetry::clusterAxes(std::vector<_symmetryData>& axes) {
-        std::vector<_symmetryData> ret;
-        int cl=0;
-        for (unsigned long int i = 0; i<axes.size(); i++) {
-            if (axes[i].id == 0) {
-                for (unsigned long int j = i+1; j<axes.size(); j++) {
-                    if (axes[i].entityId == axes[j].entityId) {
-                        logger.debug("Sim dist: {}:{} - {}:{}= {}",
-                            protein.chains[axes[i].cidx1].id,
-                            protein.chains[axes[i].cidx2].id,
-                            protein.chains[axes[j].cidx1].id,
-                            protein.chains[axes[j].cidx2].id,
-                            axes[i].distance(axes[j]));
-                        if (axes[i].same(axes[j])) {
-                            logger.debug("Axes {} and {} are the same",i,j);
-                            if (axes[i].id==0) {
-                                cl++;
-                                axes[i].id=cl;
-                            }
-                            if (axes[j].id == 0) {
-                                axes[j].id = axes[i].id;
-                            }
-                            else {
-                                for (unsigned long int k = 0; k<axes.size(); k++) {
-                                    if (axes[k].id == axes[j].id) {
-                                        axes[k].id = axes[i].id;
-                                    }
-                                }
-                            }
-                        }
+    bool Symmetry::haveSameAxes() const {
+        bool first = true;
+        _symmetryData sim1;
+        for(const auto& s: sim) {
+            if (s.good) {
+                if (first) {
+                    sim1 = s;
+                }
+                else {
+                    if (!sim1.same(s)) {
+                        return false;
                     }
                 }
             }
         }
-        for (auto& a: axes) {
-            logger.debug("Cluster: {} {} {}",protein.chains[a.cidx1].id, protein.chains[a.cidx2].id, a.id);
+        return true;
+    }
+
+    _symmetryData Symmetry::getAverageAxes() const {
+        logger.debug("Processing Symmetry::getAverageAxes(). Sim size: {}",sim.size());
+        _symmetryData ret;
+        int n=0;
+        for(const auto& s: sim) {
+            if (s.good) {
+                ret.origo += s.origo;
+                ret.axis += s.axis;
+                n++;
+            }
         }
+        if (n > 0) {
+            ret.origo /= n;
+            ret.axis /= n;
+            ret.good = true;
+        }
+        logger.debug(" Processed Symmetry::getAverageAxes()");
         return ret;
     }
 
+    std::vector<gemmi::Vec3> Symmetry::clusterAxes(std::vector<_symmetryData> axes) {
+        logger.debug("Processing Symmetry::clusterAxes()");
+        std::vector<gemmi::Vec3> ret;
+        for(unsigned int i = 0; i<axes.size(); i++) {
+            if (axes[i].good) {
+                gemmi::Vec3 m;
+                m = axes[i].axis;
+                int k = 1;
+                for(unsigned int j = i+1; j<axes.size(); j++) {
+                    if (axes[j].good) {
+                        axes[j].good = false;
+                        m += axes[j].axis;
+                        k++;
+                    }
+                }
+                m /= k;
+                ret.emplace_back(m);
+            }
+        }
+        logger.debug(" Processed Symmetry::clusterAxes(): {}",ret.size());
+        return ret;
+    }
 }

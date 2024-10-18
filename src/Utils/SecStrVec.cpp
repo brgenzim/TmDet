@@ -58,18 +58,18 @@ namespace Tmdet::Utils {
         if (membraneVO.type.name == Tmdet::Types::MembraneType::PLAIN.name) {
             auto normal = membraneVO.normal;
             // UP case
-            auto membranePoint = membraneVO.origo + normal * membraneVO.h;
+            auto membranePoint = membraneVO.origo + normal * membraneVO.halfThickness;
             resultUp = isVectorCrossingPlane(vec, membranePoint, normal);
             // DOWN case
-            membranePoint = membraneVO.origo - normal * membraneVO.h;
+            membranePoint = membraneVO.origo - normal * membraneVO.halfThickness;
             resultDown = isVectorCrossingPlane(vec, membranePoint, normal);
         } else if (membraneVO.type.name == Tmdet::Types::MembraneType::CURVED.name) {
             auto normal = membraneVO.normal;
             // UP case
-            auto membranePoint = membraneVO.origo + normal * (membraneVO.curver + membraneVO.h);
+            auto membranePoint = membraneVO.origo + normal * (membraneVO.sphereRadius + membraneVO.halfThickness);
             resultUp = isVectorCrossingSphere(vec, membranePoint, membraneVO.origo);
             // DOWN case
-            membranePoint = membraneVO.origo + normal * (membraneVO.curver - membraneVO.h);
+            membranePoint = membraneVO.origo + normal * (membraneVO.sphereRadius - membraneVO.halfThickness);
             resultDown = isVectorCrossingSphere(vec, membranePoint, membraneVO.origo);
         } else {
             throw runtime_error("Unexpected membrane type: " + membraneVO.type.name);

@@ -141,8 +141,15 @@ namespace Tmdet::ValueObjects {
         void unSelectAll();
 
         /**
-         * @brief search chain by id
+         * @brief search chain by id (auth_asym_id)
          */
-        int searchChainById(std::string& id) const;
+        int searchChainById(const std::string& id) const;
+
+        /**
+         * @brief search chain by id (label_asym_id)
+         */
+        int searchChainByLabId(const std::string& id) const;
+
+        gemmi::Vec3 centre();
     };
 }

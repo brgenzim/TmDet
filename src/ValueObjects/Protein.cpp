@@ -6,6 +6,7 @@
 #include <gemmi/model.hpp>
 #include <gemmi/neighbor.hpp>
 #include <Version.hpp>
+#include <Config.hpp>
 #include <System/Date.hpp>
 #include <Types/Protein.hpp>
 #include <ValueObjects/Protein.hpp>
@@ -62,12 +63,38 @@ namespace Tmdet::ValueObjects {
         }
     }
 
-    int Protein::searchChainById(std::string& id) const {
+    int Protein::searchChainById(const std::string& id) const {
         for (auto& c: chains) {
             if (c.id == id) {
                 return c.idx;
             }
         }
+        logger.error("Chain {} not found",id);
         return -1;
+    }
+
+    int Protein::searchChainByLabId(const std::string& id) const {
+        for (auto& c: chains) {
+            if (c.labId == id) {
+                return c.idx;
+            }
+        }
+        logger.error("Chain {} not found",id);
+        return -1;
+    }
+
+    gemmi::Vec3 Protein::centre() {
+        gemmi::Vec3 ret(0,0,0);
+        int n = 0;
+        for(auto& chain: chains) {
+            if (chain.selected) {
+                ret += chain.centre();
+                n++;
+            }
+        }
+        if (n>0) {
+            ret /= n;
+        }
+        return ret;
     }
 }

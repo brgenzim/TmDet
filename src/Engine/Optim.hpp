@@ -21,28 +21,33 @@ namespace Tmdet::Engine {
         /**
          * @brief number of crossing straight secondary structure elements
          */
-        int numStraight;
+        int numStraight = 0;
 
         /**
          * @brief number of turns in the slice
          * 
          */
-        int numTurn;
+        int numTurn = 0;
 
         /**
          * @brief number of all residues (C alpha atoms) in the slice
          */
-        int numCA;
+        int numCA = 0;
 
         /**
          * @brief outside water accessible surface of the atoms in the slice
          */
-        double surf;
+        double surf = 0.0;
 
         /**
          * @brief sum up voromqa_v1_energy_means producted with atom surface
          */
-        double voronota;
+        double voronota = 0.0;
+
+        /**
+         * @brief calculated qValue for the slice
+         */
+        double qValue = 0.0;
     };
 
     /**
@@ -72,14 +77,34 @@ namespace Tmdet::Engine {
             std::vector<_slice> slices;
 
             /**
-             * @brief properties of the actual membrane definition
+             * @brief the actual membrane normal
              */
-            Tmdet::ValueObjects::Membrane membraneVO;
+            gemmi::Vec3 normal;
+
+            /**
+             * @brief the mass centre of the protein
+             */
+            gemmi::Vec3 massCentre;
 
             /**
              * @brief the protein structure in Protein Value Object
              */
-            Tmdet::ValueObjects::Protein& proteinVO;
+            Tmdet::ValueObjects::Protein& protein;
+
+            /**
+             * @brief best qValue
+             */
+            double bestQ = 0.0;
+
+            /**
+             * @brief slice index of highest qValue
+             */
+            unsigned long int bestSliceIndex;
+
+            /**
+             * @brief membrane normal belonging to the best qValue
+             */
+            gemmi::Vec3 bestNormal;
 
             /**
              * @brief initialize the algorithm
@@ -101,7 +126,7 @@ namespace Tmdet::Engine {
              * 
              * @param residue 
              */
-            void setAtomDistances(Tmdet::ValueObjects::Residue& residue);
+            void setAtomDistances(Tmdet::ValueObjects::Residue& residue) const;
 
             /**
              * @brief Set the box containing the protein
@@ -126,7 +151,7 @@ namespace Tmdet::Engine {
              * @param s 
              * @return double 
              */
-            double getQValueForSlice(const _slice& s);
+            double getQValueForSlice(const _slice& s) const;
 
             /**
              * @brief calculate the value of the objective function for each slice
@@ -143,27 +168,64 @@ namespace Tmdet::Engine {
              */
             double smoothQValues(std::vector<double> qs);
 
+            /**
+             * @brief check if tests resulted valid membrane definition
+             *
+             * @return bool
+             */
+            bool isTransmembrane() const;
+
+            /**
+             * @brief set membrane width using the best membrane definition
+             *        and the qValues of slices
+             * @return bool
+             */
+            bool getMembrane(Tmdet::ValueObjects::Membrane& membrane) ;
+
         public:
 
             /**
              * @brief Construct a new Optim object
              * 
-             * @param proteinVO 
+             * @param protein
              */
-            explicit Optim(Tmdet::ValueObjects::Protein& proteinVO) : 
-                proteinVO(proteinVO) {}
+            explicit Optim(Tmdet::ValueObjects::Protein& protein) : 
+                protein(protein) {}
 
             /**
              * @brief Destroy the Optim object
              * 
              */
-            ~Optim()=default;
+            ~Optim() {
+                end();
+            };
 
             /**
-             * @brief get Q value for a given membrane normal
+             * @brief set the membrane normal
              * 
-             * @return double 
+             * @param _normal
              */
-            double getQValue();
+            void setNormal(const gemmi::Vec3 _normal);
+
+            /**
+             * @brief calculate Q value for a given normal
+             */
+            void testMembraneNormal();
+
+            /**
+             * @brief copy membrane definition to the protein value object
+             */
+            void setMembranesToProtein();
+
+            /**
+             * @brief search for best membrane normal by rotating
+             *        membrane normal around 4pi
+             */
+            void searchForMembraneNormal();
+
+            /**
+             * @brief 
+             */
+            void setMembraneTMatrix(Tmdet::ValueObjects::Membrane& membrane) const;
     };
 }

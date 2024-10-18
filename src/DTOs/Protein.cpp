@@ -52,6 +52,9 @@ namespace Tmdet::DTOs {
             Tmdet::ValueObjects::Chain chainVO;
             chainVO.addStructure(chain);
             chainVO.idx = chainIdx++;
+            auto poly = chain.get_polymer();
+            chainVO.labId = (poly?poly.subchain_id():chainVO.id);
+            logger.debug("Loading chain auth_asym_id: {} label_asym_id: {}",chainVO.id,chainVO.labId);
             int residueIdx = 0;
             for( auto& residue: chain.residues) {
                 auto residueVO = Tmdet::ValueObjects::Residue(residue,chainVO);
@@ -75,7 +78,7 @@ namespace Tmdet::DTOs {
 
         protein.neighbors = gemmi::NeighborSearch(protein.gemmi.models[0], protein.gemmi.cell, 9);
         protein.neighbors.populate();
-        logger.debug("Processing Protein::get()");
+        logger.debug(" Processed Protein::get()");
         return protein;
     }
 

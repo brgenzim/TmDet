@@ -4,6 +4,7 @@
 #include <map>
 #include <set>
 
+#include <Engine/Optim.hpp>
 #include <System/Arguments.hpp>
 #include <ValueObjects/Protein.hpp>
 #include <ValueObjects/Chain.hpp>
@@ -30,6 +31,7 @@ namespace Tmdet::Engine {
              * @brief command line arguments
              */
             Tmdet::System::Arguments& args;
+
             /**
              * @brief select chains that contains more than 15 residues
              *        and return the number of these chains
@@ -64,7 +66,7 @@ namespace Tmdet::Engine {
              *        is that and the rotational axes for that part and check if
              *        the rotational axes can be the membrane normal
              */
-            void checkSymmetry();
+            void checkSymmetry(Tmdet::Engine::Optim& optimizer);
 
             /**
              * @brief if no symmetry in the molecule or it can not be the membrane plane

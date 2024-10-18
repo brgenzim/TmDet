@@ -22,11 +22,11 @@ namespace Tmdet::ValueObjects {
         /**
          * @brief rotation
          */
-        gemmi::Mat33 rot;
+        gemmi::Mat33 rot = {1.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,1.0};
 
         /**
          * @brief translation
          */
-        gemmi::Vec3 trans;
+        gemmi::Vec3 trans = {0.0,0.0,0.0};
     };
 }

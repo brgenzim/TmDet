@@ -126,5 +126,7 @@ namespace Tmdet::ValueObjects {
          * @return false 
          */
         bool hasAllAtoms() const;
+
+        gemmi::Vec3 centre();
     };
 }

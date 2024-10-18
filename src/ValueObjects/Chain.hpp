@@ -22,9 +22,14 @@ namespace Tmdet::ValueObjects {
      */
     struct Chain {
         /**
-         * @brief chain identifier
+         * @brief chain identifier (auth_sym_id in cif)
          */
         std::string id;
+
+        /**
+         * @brief chain identifier (label_sym_id in cif)
+         */
+        std::string labId;
 
         /**
          * @brief entity identifier in cif file
@@ -76,20 +81,13 @@ namespace Tmdet::ValueObjects {
          */
         Tmdet::Types::Chain type = Tmdet::Types::ChainType::UNK;
 
-        void addStructure(const gemmi::Chain& _gemmi) {
-                gemmi = _gemmi;
-                id = _gemmi.name;
-                for (const auto &residue : gemmi.residues) {
-                    if (!residue.atoms.empty()) {
-                        this->entityId = residue.entity_id;
-                        break;
-                    }
-                }
-        }
+        void addStructure(const gemmi::Chain& _gemmi);
 
         /**
          * @brief Destroy the Chain object
          */
         ~Chain()=default;
+
+        gemmi::Vec3 centre();
     };
 }

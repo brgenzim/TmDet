@@ -22,4 +22,13 @@ namespace Tmdet::ValueObjects {
     bool Residue::hasAllAtoms() const {
         return atoms.size() >= (type.atoms.size() - 1);
     }
+
+    gemmi::Vec3 Residue::centre() {
+            gemmi::Vec3 ret(0,0,0);
+            for(const auto& atom: atoms) {
+                ret += atom.gemmi.pos;
+            }
+            ret /= atoms.size();
+            return ret;
+        }
 }

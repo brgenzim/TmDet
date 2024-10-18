@@ -5,6 +5,11 @@
 
 namespace Tmdet::Engine {
 
+    Rotator::Rotator() {
+        alpha_step = std::stof(environment.get("TMDET_BALL_DIST",DEFAULT_TMDET_BALL_DIST)) / 2;
+        logger.debug("Init rotator. alpha_step: {}",alpha_step);
+    }
+
     /**
      * @brief rotate a normal vector around the 4PI
      *        give the next rotated vector
@@ -14,6 +19,7 @@ namespace Tmdet::Engine {
      * @return bool
      */
     bool Rotator::next(gemmi::Vec3& normal) {
+        
         if (alpha>M_PI) {
             return false;
         }
@@ -25,6 +31,8 @@ namespace Tmdet::Engine {
             beta=0;
             nextAlpha();
         }
+        logger.debug("Next normal: alpha {} beta {} normal {} {} {}",
+            alpha, beta, normal.x, normal.y, normal.z);
         return true;
     }
 
@@ -43,5 +51,7 @@ namespace Tmdet::Engine {
             beta_step = 2* M_PI; 
             q = 0;
         }
+        logger.debug("nextAlpha: alpha: {} beta_step: {} q: {} qq: {}",
+            alpha,beta_step,q,qq);
     }
 }

@@ -49,7 +49,7 @@ namespace Tmdet::Utils {
     void surfaceCache::chainToCache(const Tmdet::ValueObjects::Chain& chain) {
         for (const auto& r : chain.residues) {
             for(const auto& a : r.atoms) {
-                cache.emplace_back(a.surface);
+                cache.push_back(a.surface);
             }
         }
     }
@@ -67,7 +67,7 @@ namespace Tmdet::Utils {
         auto size = cache.size();
         file.read(reinterpret_cast<char*>(&size), sizeof(size));
         cache.resize(size);
-        file.read(reinterpret_cast<char*>(&cache[0]), sizeof(cache));
+        file.read(reinterpret_cast<char*>(cache.data()), size * sizeof(double));
         file.close();
         proteinFromCache(protein);
         logger.debug(" Processed surfaceCache::read()");
@@ -88,9 +88,7 @@ namespace Tmdet::Utils {
         }
         auto size = cache.size();
         file.write(reinterpret_cast<const char*>(&size), sizeof(size));
-        file.write(reinterpret_cast<const char*>(&cache), sizeof(cache));
-        std::ostream_iterator<double> out_itr(file);
-        std::ranges::copy(cache.begin(), cache.end(), out_itr);
+        file.write(reinterpret_cast<const char*>(cache.data()), size * sizeof(double));
         file.close();
         logger.debug(" Processed surfaceCache::write()");
     }

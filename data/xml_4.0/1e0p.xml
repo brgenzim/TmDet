@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<pdbtm xmlns="https://pdbtm.unitmp.org" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://pdbtm.unitmp.org/data/pdbtm.xsd pdbtm.xsd" pdbCode="1e0p" transmembrane="yes">
+  <copyright>
+     All  information, data  and  files are copyright.  This document  is
+     produced  in  the  Institute  of  Molecular  Life Sciences, Research
+     Centre of Natural Sciences,  HUN-REN, Budapest, Hungary.  There  are  
+     no restrictions on its use by non-profit institutions as long as its
+     content is in no way modified and this statement is not removed from 
+     entries. Usage  by  and  for  commercial entities and for commercial
+     purpose  requires a license agreement.  It can be purchased from the
+     UniTmp home page (https://www.unitmp.org/licences).
+  </copyright>
+  <rawData>
+    <created>2003-08-11</created>
+    <tmdetVersion>4.0.0</tmdetVersion>
+    <assembly>1</assembly>
+    <qValue>74.36</qValue>
+    <tmType>Tm_Alpha</tmType>
+  </rawData>
+  <modifications>
+    <modification date="2005-04-06">
+      Format has been changed to pdbtm format v2.0
+    </modification>
+    <modification date="2005-07-19">
+      Model has been recalculated by TMDET version 2.0
+    </modification>
+    <modification date="2012-03-08">
+      PDB entry has been changed
+    </modification>
+    <modification date="2024-10-17">
+      Format has been changed to pdbtm format v4.0.0
+    </modification>
+    <modification date="2024-10-17">
+      Model has been recalculated by TmDet version 4.0.0
+    </modification>
+  </modifications>
+  <membrane  halfThickness="17.50" type="Plain">
+    <transformation>
+      <translate x="0.00000836" y="-35.19528961" z="-6.74299955"/>
+      <rotate>
+        <rowX x="1.00000000" y="0.00000000" z="0.00000000"/>
+        <rowY x="0.00000000" y="1.00000000" z="0.00000000"/>
+        <rovZ x="0.00000000" y="0.00000000" z="1.00000000"/>
+      </rotate>
+    </transformation>
+  </membrane>
+  <chain pdb_auth_asym_id="A" pdb_label_asym_id="A" numTM="7" type="alpha">
+    <sequence>
+      TGRPEWIWLA LGTALMGLGT LYFLVKGMGV SDPDAKKFYA ITTLVPAIAF 
+      TMYLSMLLGY GLTMVPFGGE QNPIYWARYA DWLFTTPLLL LDLALLVDAD 
+      QGTILALVGA DGIMIGTGLV GALTKVYSYR FVWWAISTAA MLYILYVLFF 
+      GFTSKAESMR PEVASTFKVL RNVTVVLWSA YPVVWLIGSE GAGIVPLNIE 
+      TLLFMVLDVS AKVGFGLILL RSRAIFGE
+    </sequence>
+    <region>
+      <start seq="1" pdb_auth_seq_id="5" pdb_label_seq_id="1"/>
+      <end seq="7" pdb_auth_seq_id="11" pdb_label_seq_id="7"/>
+    </region>
+  </chain>
+  <chain pdb_auth_asym_id="B" pdb_label_asym_id="A-2" numTM="7" type="alpha">
+    <sequence>
+      TGRPEWIWLA LGTALMGLGT LYFLVKGMGV SDPDAKKFYA ITTLVPAIAF 
+      TMYLSMLLGY GLTMVPFGGE QNPIYWARYA DWLFTTPLLL LDLALLVDAD 
+      QGTILALVGA DGIMIGTGLV GALTKVYSYR FVWWAISTAA MLYILYVLFF 
+      GFTSKAESMR PEVASTFKVL RNVTVVLWSA YPVVWLIGSE GAGIVPLNIE 
+      TLLFMVLDVS AKVGFGLILL RSRAIFGE
+    </sequence>
+    <region>
+      <start seq="1" pdb_auth_seq_id="5" pdb_label_seq_id="1"/>
+      <end seq="7" pdb_auth_seq_id="11" pdb_label_seq_id="7"/>
+    </region>
+  </chain>
+  <chain pdb_auth_asym_id="C" pdb_label_asym_id="A-3" type="notSelected"/>
+</pdbtm>

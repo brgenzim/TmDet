@@ -9,6 +9,7 @@
 AUX_SOURCE_DIRECTORY( . LibrarySources )
 AUX_SOURCE_DIRECTORY( cli CliSources )
 AUX_SOURCE_DIRECTORY( DTOs DtosSources )
+AUX_SOURCE_DIRECTORY( DTOs/Xml XmlSources )
 AUX_SOURCE_DIRECTORY( Engine EngineSources )
 AUX_SOURCE_DIRECTORY( Exceptions ExceptionsSources )
 AUX_SOURCE_DIRECTORY( Optim OptimSources )
@@ -30,6 +31,7 @@ LIST (APPEND FULL_SRC
      ${TypesSources}
      ${UtilsSources}
      ${ValueObjectsSources}
+     ${XmlSources}
      ${PugiSources}
 )
 

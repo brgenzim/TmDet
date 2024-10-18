@@ -15,11 +15,13 @@ namespace Tmdet::Engine {
     void Organizer::run() {
         logger.debug("Processing Organizer::run()");
         if (selectChains()) {
+            auto optimizer = Optim(protein);
             dssp();
             surface();
-            checkSymmetry();
+            checkSymmetry(optimizer);
             if (!protein.tmp) {
-                findMembrane();
+                optimizer.searchForMembraneNormal();
+                optimizer.setMembranesToProtein();
             }
             if (protein.tmp) {
                 annotate();
@@ -34,22 +36,24 @@ namespace Tmdet::Engine {
     unsigned int Organizer::selectChains() {
         logger.debug("Processing Organizer::selectChains()");
         unsigned int ret = 0;
-        for (auto& chainVO : protein.chains) {
-            ret += selectChain(chainVO);
+        for (auto& chain : protein.chains) {
+            ret += selectChain(chain);
         }
         logger.debug(" Processed Organizer::selectChains(). Return: {}",ret);
         return ret;
     }
 
-    unsigned int Organizer::selectChain(Tmdet::ValueObjects::Chain& chainVO) {
+    unsigned int Organizer::selectChain(Tmdet::ValueObjects::Chain& chain) {
         int nr = 0;
-        for (const auto& residueVO : chainVO.residues) {
-            nr += (residueVO.hasAllSideChainAtoms()?1:0);
+        for (const auto& residue : chain.residues) {
+            if (chain.selected) {
+                nr += (residue.hasAllSideChainAtoms()?1:0);
+            }
         }
         if (nr < std::stoi(environment.get("TMDET_MIN_NUMBER_OF_RESIDUES_IN_CHAIN",DEFAULT_TMDET_MIN_NUMBER_OF_RESIDUES_IN_CHAIN))) {
-            chainVO.selected = false;
+            chain.selected = false;
         }
-        return chainVO.selected?1:0;
+        return chain.selected?1:0;
     }
 
     void Organizer::dssp() {
@@ -64,20 +68,23 @@ namespace Tmdet::Engine {
         logger.debug(" Processed Organizer::surface()");
     }
 
-    void Organizer::checkSymmetry() {
+    void Organizer::checkSymmetry(Tmdet::Engine::Optim& optimizer) {
         logger.debug("Processing Organizer::checkSymmetry()");
-        auto oligomerChains = Tmdet::Utils::Oligomer::getHomoOligomerEntities(protein.gemmi);
-        if (!oligomerChains.empty()) {
+        if (auto oligomerChains = Tmdet::Utils::Oligomer::getHomoOligomerEntities(protein.gemmi); !oligomerChains.empty()) {
             auto symmetry = Tmdet::Utils::Symmetry(protein);
-            
+            auto axes = symmetry.getMembraneAxes();
+            for(auto& normal: axes) {
+                optimizer.setNormal(normal);
+                optimizer.testMembraneNormal();
+                optimizer.setMembranesToProtein();
+            }
         }
         logger.debug(" Processed Organizer::checkSymmetry()");
     }
 
-    void Organizer::findMembrane() {
-
-    }
-
     void Organizer::annotate() {
+        logger.debug("Processing Organizer::annotate()");
+        //TODO
+        logger.debug(" Processed Organizer::annotate()");
     }
 }

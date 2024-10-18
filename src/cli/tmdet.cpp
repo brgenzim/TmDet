@@ -15,7 +15,7 @@
 #include <System/Logger.hpp>
 #include <ValueObjects/Protein.hpp>
 #include <DTOs/Protein.hpp>
-#include <DTOs/Xml.hpp>
+#include <DTOs/Xml/Reader3.hpp>
 #include <Engine/Organizer.hpp>
 
 using namespace std;
@@ -42,10 +42,10 @@ Tmdet::System::Arguments getArguments(int argc, char *argv[]) {
 
 void notTransmembrane(const std::string& xmlPath) {
     Tmdet::ValueObjects::Protein protein;
-    Tmdet::DTOs::Xml xml;
-    xml.readXml(protein, xmlPath);
+    Tmdet::DTOs::Xml::Reader3 reader;
+    reader.readXml(protein, xmlPath);
     protein.notTransmembrane();
-    xml.writeXml(protein, xmlPath);
+    //xml.writeXml(protein, xmlPath);
 }
 
 int main(int argc, char *argv[], char **envp) {
@@ -112,7 +112,7 @@ int main(int argc, char *argv[], char **envp) {
         exit(EXIT_FAILURE);
     }
     auto protein = Tmdet::DTOs::Protein::get(inputPath);
-    Tmdet::DTOs::Xml xml;
+    Tmdet::DTOs::Xml::Reader3 xml;
 
     //if xml file exists and overwirte is not set then read the content of the
     //xml file and adjust proteinVO accordingly

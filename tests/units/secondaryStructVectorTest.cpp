@@ -42,7 +42,7 @@ int main(int argc, char *argv[], char **envp) {
         testDescription = "two vectors intersects with two planes (numBoth: 2)";
         membrane.origo = gemmi::Vec3(0, 0, 0);
         membrane.normal = gemmi::Vec3(1, 0, 0);
-        membrane.h = 7;
+        membrane.halfThickness = 7;
         membrane.type = Tmdet::Types::MembraneType::PLAIN;
         secStructVectors.numCross(membrane, numBoth, numUp, numDown);
         assertTrue(testDescription, numBoth == 2 && numUp == 0 && numDown == 0, __LINE__);
@@ -53,7 +53,7 @@ int main(int argc, char *argv[], char **envp) {
         testDescription = "no intersections (two vectors between two planes)";
         membrane.origo = gemmi::Vec3(0, 0, 0);
         membrane.normal = gemmi::Vec3(1, 0, 0);
-        membrane.h = 20; // between two planes
+        membrane.halfThickness = 20; // between two planes
         membrane.type = Tmdet::Types::MembraneType::PLAIN;
         secStructVectors.numCross(membrane, numBoth, numUp, numDown);
         assertTrue(testDescription, numBoth == 0 && numUp == 0 && numDown == 0, __LINE__);
@@ -65,7 +65,7 @@ int main(int argc, char *argv[], char **envp) {
         // membrane planes are "under" helicies
         membrane.origo = gemmi::Vec3(-21, 0, 0);
         membrane.normal = gemmi::Vec3(1, 0, 0);
-        membrane.h = 5;
+        membrane.halfThickness = 5;
         membrane.type = Tmdet::Types::MembraneType::PLAIN;
         secStructVectors.numCross(membrane, numBoth, numUp, numDown);
         assertTrue(testDescription, numBoth == 0 && numUp == 0 && numDown == 0, __LINE__);
@@ -77,8 +77,8 @@ int main(int argc, char *argv[], char **envp) {
         // curved membrane
         membrane.origo = gemmi::Vec3(0, 0, 0);
         membrane.normal = gemmi::Vec3(1, 0, 0);
-        membrane.h = 2;
-        membrane.curver = 5;
+        membrane.halfThickness = 2;
+        membrane.sphereRadius = 5;
         membrane.type = Tmdet::Types::MembraneType::CURVED;
         secStructVectors.numCross(membrane, numBoth, numUp, numDown);
         // no intersection with inner sphere
@@ -91,8 +91,8 @@ int main(int argc, char *argv[], char **envp) {
         // curved membrane with no intersections
         membrane.origo = gemmi::Vec3(-20.196, -3.826, -1.197);
         membrane.normal = gemmi::Vec3(1, 0, 0);
-        membrane.h = 2;
-        membrane.curver = 3;
+        membrane.halfThickness = 2;
+        membrane.sphereRadius = 3;
         membrane.type = Tmdet::Types::MembraneType::CURVED;
         secStructVectors.numCross(membrane, numBoth, numUp, numDown);
         // no intersection with inner sphere
@@ -105,8 +105,8 @@ int main(int argc, char *argv[], char **envp) {
         // curved membrane with UP intersection
         membrane.origo = gemmi::Vec3(-20.196, -3.826, -1.197);
         membrane.normal = gemmi::Vec3(1, 0, 0);
-        membrane.h = 2;
-        membrane.curver = 3.4;
+        membrane.halfThickness = 2;
+        membrane.sphereRadius = 3.4;
         membrane.type = Tmdet::Types::MembraneType::CURVED;
         secStructVectors.numCross(membrane, numBoth, numUp, numDown);
         // no intersection with inner sphere

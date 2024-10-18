@@ -10,15 +10,20 @@
 #include <ValueObjects/Chain.hpp>
 #include <ValueObjects/Protein.hpp>
 
-namespace TmdetVO = Tmdet::ValueObjects;
-
 /**
- * @brief namespace for data transfer objects
+ * @brief namespace Tmdet classes
+ * @namespace Tmdet
  */
-namespace Tmdet::DTOs {
+namespace Tmdet {
+    
+    /**
+     * @brief namespace for data transfer objects
+     * @namespace DTOs
+     */
+    namespace DTOs {
 
     /**
-     * @brief helper class for reading and writing xml file
+     * @brief base class for reading and writing xml files
      */
     class Xml {
         private:
@@ -49,49 +54,19 @@ namespace Tmdet::DTOs {
              */
             void setTMatrix(const pugi::xml_node& node, TmdetVO::TMatrix& tmatrix) const;
 
-            const std::string _pdbtm_xml=R"(
-<pdbtm xmlns="https://pdbtm.unitmp.org" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://pdbtm.unitmp.org/data/pdbtm.xsd pdbtm.xsd" ID="xxxx" TMP="unk">
-  <COPYRIGHT>
-     All  information, data  and  files are copyright.  This document  is
-     produced  in  the  Institute  of  Molecular  Life Sciences, Research
-     Centre of Natural Sciences,  HUN-REN, Budapest, Hungary.  There  are  
-     no restrictions on its use by non-profit institutions as long as its
-     content is in no way modified and this statement is not removed from 
-     entries. Usage  by  and  for  commercial entities and for commercial
-     purpose  requires a license agreement.  It can be purchased from the
-     UniTmp home page (https://www.unitmp.org/licences).
-  </COPYRIGHT>
-  <CREATE_DATE>YYYY-MM-DD</CREATE_DATE>
-  <TMDET_VERSION>A.B.C</TMDET_VERSION>
-  <RAWRES>
-    <TMRES>00.00</TMRES>
-    <TMTYPE>xxxxx</TMTYPE>
-    <SPRES>xxxx</SPRES>
-    <PDBKWRES>xxx</PDBKWRES>
-  </RAWRES>
-</pdbtm>
-)";
-            const std::string _biomatrix_xml=R"(
-<MATRIX ID="xxx">
-  <APPLY_TO_CHAIN CHAINID="xxx" NEW_CHAINID="xxx"/>
-  <TMATRIX>
-    <ROWX X="1.00000000" Y="0.00000000" Z="0.00000000" T="0.00000000"/>
-    <ROWY X="0.00000000" Y="1.00000000" Z="0.00000000" T="0.00000000"/>
-    <ROWZ X="0.00000000" Y="0.00000000" Z="1.00000000" T="0.00000000"/>
-  </TMATRIX>
-</MATRIX>
-)";
+            /**
+             * @brief header part of the xml file
+             */
+            virtual const std::string _pdbtm_xml=nullptr;
+            
+            /**
+             * @brief membrane part of the xml
+             */
+            virtual const std::string _membrane_xml=nullptr;
 
-            const std::string _membrane_xml=R"(
-<MEMBRANE>
-  <NORMAL X="0.0" Y="0.0" Z="15.0"/>
-  <TMATRIX>
-    <ROWX X="1.00000000" Y="0.00000000" Z="0.00000000" T="0.00000000"/>
-    <ROWY X="0.00000000" Y="1.00000000" Z="0.00000000" T="0.00000000"/>
-    <ROWZ X="0.00000000" Y="0.00000000" Z="1.00000000" T="0.00000000"/>
-  </TMATRIX>
-</MEMBRANE>
-)";
+            /**
+             * @brief description of a chain
+             */
             const std::string _chain_xml=R"(
 <CHAIN CHAINID="xxx" NUM_TM="xxx" TYPE="xxx">
   <SEQ>
@@ -162,7 +137,7 @@ namespace Tmdet::DTOs {
              * @brief create an empty pugixml object
              * 
              */
-            void create();
+            virtual void create() = 0;
 
             /**
              * @brief Get the value of tmp attribute

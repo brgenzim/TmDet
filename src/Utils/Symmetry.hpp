@@ -3,6 +3,8 @@
 #include <vector>
 #include <string>
 #include <any>
+#include <format>
+#include <iostream>
 #include <eigen3/Eigen/Dense>
 #include <gemmi/model.hpp>
 #include <ValueObjects/Protein.hpp>
@@ -25,21 +27,22 @@ namespace Tmdet {
          * @brief temporary container for the results of symmetry operation
          */
         struct _symmetryData {
-            int id = 0;
-            int cidx1;
-            int cidx2;
-            std::string entityId;
-            gemmi::Vec3 origo;
-            gemmi::Vec3 axis;
-            double rotAngle;
+            bool good = false;
+            gemmi::Vec3 origo = {0.0,0.0,0.0};
+            gemmi::Vec3 axis = {0.0,0.0,0.0};
 
-            double distance(struct _symmetryData& other) {
-                return axis.dist(other.axis)
-                        + abs(rotAngle - other.rotAngle);
+            double distance(const struct _symmetryData& other) const {
+                return axis.dist(other.axis);
             }
 
-            bool same(struct _symmetryData& other) {
+            bool same(const struct _symmetryData& other) const {
                 return distance(other) < 7;
+            }
+
+            friend std::ostream& operator<<(std::ostream& os, const _symmetryData& other) {
+                os << std::format("Origo: {:.4f} {:.4f} {:.4f}",other.origo.x,other.origo.y,other.origo.z) << std::endl;
+                os << std::format(" Axes: {:.4f} {:.4f} {:.4f}",other.axis.x,other.axis.y,other.axis.z)  << std::endl;
+                return os;
             }
         };
 
@@ -59,18 +62,20 @@ namespace Tmdet {
                  * @brief calculated symmetry operation between
                  *        chain pairs
                  */
-                std::vector<std::vector<_symmetryData>> sim;
+                std::vector<_symmetryData> sim;
 
-                void run();
-                void initSymetryContainer();
+                std::vector<Tmdet::ValueObjects::Membrane> run();
                 std::vector<_symmetryData> getRotationalAxes();
-                void searchForRotatedChains(int cidx1);
-                void calculateRotationalOperation(int cidx1, int cidx2);
+                bool searchForRotatedChains(const std::vector<std::string>& chainIds);
+                int calculateRotationalOperation(int cidx1, int cidx2);
                 void getCoordinates(int cidx1, int cidx2, std::vector<Eigen::Vector3d>& coord1, std::vector<Eigen::Vector3d>& coord2, Eigen::Vector3d& t1, Eigen::Vector3d& t2);
-                void getSymmetryOperand(Eigen::Matrix4d& R, Eigen::Vector3d& t1, Eigen::Vector3d& t2, _symmetryData& simij);
-                bool lsqFit(std::span<Eigen::Vector3d>& r1, std::span<Eigen::Vector3d>& r2, double& rmsd, Eigen::Matrix4d& Rot);
-                std::vector<_symmetryData> clusterAxes(std::vector<_symmetryData>& axes);
-
+                void getSymmetryOperand(Eigen::Matrix4d& R, const Eigen::Vector3d& t1, const Eigen::Vector3d& t2, _symmetryData& simij) const;
+                bool lsqFit(const std::span<Eigen::Vector3d>& r1, const std::span<Eigen::Vector3d>& r2, double& rmsd, Eigen::Matrix4d& Rot) const;
+                Eigen::Matrix4d rotateZ(Eigen::Vector3d T) const;
+                bool haveSameAxes() const;
+                _symmetryData getAverageAxes() const;
+                std::vector<gemmi::Vec3> clusterAxes(std::vector<_symmetryData> axes);
+                
             public:
                 /**
                  * @brief Construct a new Symmetry object
@@ -78,9 +83,7 @@ namespace Tmdet {
                  * @param protein 
                  */
                 explicit Symmetry(Tmdet::ValueObjects::Protein& protein) :
-                    protein(protein) {
-                        run();
-                }
+                    protein(protein) {}
                 
                 /**
                  * @brief Destroy the Symmetry object
@@ -90,7 +93,7 @@ namespace Tmdet {
                 /**
                  * @brief get definition of possible membrane planes
                  */
-                std::vector<Tmdet::ValueObjects::Membrane> getMembraneAxes();
+                std::vector<gemmi::Vec3> getMembraneAxes();
         };
     }
 }

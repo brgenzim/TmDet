@@ -9,6 +9,9 @@
 
 namespace Tmdet::Types {
 
+    const double voronotaMeanMin = -0.567174;
+    const double voronotaMeanMax = -0.227304;
+
     /**
      * mean and sds are taken from voronota 
      * (voromqa_v1_energy_means_and_sds)
