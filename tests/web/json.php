@@ -5,13 +5,16 @@ ob_start();
 $radius = get_cfg_var('radius');
 $thickness = get_cfg_var('thickness');
 if (empty($radius) || empty($thickness)) {
-    error('radius and thickness are mandatory config variables');
+    error("'radius' and 'thickness' are mandatory config variables");
+}
+if (empty($pdbCode = get_cfg_var('pdbCode'))) {
+    error("Empty 'pdbCode' config variable");
 }
 $radius = floatval($radius);
 $thickness = floatval($thickness);
 
 // generate response body
-$data = getJson(radius: 14, thickness: 30);
+$data = getJson(pdbCode: $pdbCode, radius: $radius, thickness: $thickness);
 
 header('Content-Type: application/json');
 header('Content-Length: ' . strlen($data));
@@ -32,11 +35,11 @@ function error(string $message, int $code = 500) {
     exit();
 }
 
-function getJson(float $radius, float $thickness): string {
+function getJson(string $pdbCode, float $radius, float $thickness): string {
 
     $annotation = [
         "data_resource" => "TmDet Debug Web App",
-        "pdb_id" => "1bxw",
+        "pdb_id" => $pdbCode,
         "includes_het_groups" => false,
         "chains" => [],
         "sites" => [],
