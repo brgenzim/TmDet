@@ -2,8 +2,8 @@
 
 ob_start();
 
-if (($pdbCode = get_cfg_var('pdbCode')) === false) {
-    error('Empty PDB CODE');
+if (empty($pdbCode = get_cfg_var('pdbCode'))) {
+    error("Empty 'pdbCode' config variable");
 }
 $molstarId = 'molstar_' . $pdbCode;
 
