@@ -14,7 +14,7 @@ $radius = floatval($radius);
 $thickness = floatval($thickness);
 
 // generate response body
-$data = getJson(pdbCode: $pdbCode, radius: 14, thickness: 30);
+$data = getJson(pdbCode: $pdbCode, radius: $radius, thickness: $thickness);
 
 header('Content-Type: application/json');
 header('Content-Length: ' . strlen($data));
