@@ -16,7 +16,24 @@ class PdbEnt {
         $this->invalidChainList = true;
 
         $pdbLines = explode(PHP_EOL, static::readGzipFile($fileName));
-        $this->compoundLines = preg_grep('/^COMPND\s+([\d]+)? /', $pdbLines);
+        // fix molecule lines
+        $this->compoundLines = preg_grep('/^COMPND\s+([\d]+)?\s+/', $pdbLines);
+        foreach(preg_grep('/MOLECULE: .*$/', $this->compoundLines) as $index => $brokenLine) {
+            // iterate to a CHAIN field
+            $possibleMoleculeLine = $index + 1;
+            $chainFound = str_contains($this->compoundLines[$possibleMoleculeLine], ' CHAIN: ');
+            while (!$chainFound) {
+                // concatenate long lines molecule name
+                $nextLine = $this->compoundLines[$possibleMoleculeLine];
+                $nextLine = preg_replace('/^COMPND\s+([\d]+)? /', '', $nextLine);
+                $this->compoundLines[$index] = trim($brokenLine) . ' ' . $nextLine;
+                unset($this->compoundLines[$possibleMoleculeLine]);
+                $possibleMoleculeLine++;
+                $chainFound = str_contains($this->compoundLines[$possibleMoleculeLine], ' CHAIN: ');
+            }
+        }
+        $this->compoundLines = preg_grep('/^COMPND\s+([\d]+)?\s+(MOL_ID|MOLECULE|CHAIN)/', $this->compoundLines);
+        $this->compoundLines = array(...$this->compoundLines);
         $this->compoundLines = preg_replace('/^COMPND\s+([\d]+)? /', '', $this->compoundLines);
         $this->seqResLines = preg_grep('/^SEQRES.+/', $pdbLines);
 
@@ -36,8 +53,10 @@ class PdbEnt {
         }
 
         $pattern = '/MOL_ID: (.*?);\s+MOLECULE: (.*?);\s+CHAIN: (.*?);/ms';
+        // ensure presence of the last ';'
+        $compounds = implode(PHP_EOL, $this->compoundLines) . ';';
         if (empty($polymerChainsSeqRes)
-            || preg_match_all($pattern, implode(PHP_EOL, $this->compoundLines), $molecules) == 0) {
+            || preg_match_all($pattern, $compounds, $molecules) == 0) {
 
             return false;
         }

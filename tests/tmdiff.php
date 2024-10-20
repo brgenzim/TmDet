@@ -30,9 +30,11 @@ class TmDiff {
         $byCategories = [];
         $fatalProcessingErrors = [];
         foreach ($codes as $file => $fullPath) {
+            $code = substr($file, 3, 4);
             $entPath = $fullPath[0];
             echo "Processing data of $entPath" . PHP_EOL;
             $runner = null;
+
             try {
                 $runner = Tmdet30Runner::createRunner($entPath);
                 $runner->exec();
@@ -57,12 +59,12 @@ class TmDiff {
                 }
 
             } catch (Exception $e) {
-                $code = substr($file, 3, 4);
                 $fatalProcessingErrors[] = $code;
                 fprintf(STDERR, "EXCEPTION: %s - %s\n", $code, $e->getMessage());
                 continue;
             }
             if (empty($differences['categories'])) {
+                fprintf(STDERR, "Ignoring $code: no significant differences\n");
                 continue;
             }
             $result = [
