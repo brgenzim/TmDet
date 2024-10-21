@@ -1,0 +1,57 @@
+version = 1
+
+[[annotations]]
+path = [ "**/*.php", "**/*.cpp", "**/*.hpp", "Do*file", "**.txt", "**.sh", "**.c", "README", "REUSE.toml", ".env**", "**composer.json" ]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2003 HUN-REN Research Center of Natural Sciences"
+SPDX-License-Identifier = "CC-BY-NC-4.0"
+
+[[annotations]]
+path = [ "**/*.php", "**/*.cpp", "**/*.hpp", "Do*file", "**.txt", "**.sh", "**.c", "README", "REUSE.toml", ".env**", "**composer.json" ]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2003 Gabor E. Tusnady <tusnady.gabor@ttk.hu>"
+SPDX-FileContributor = "2024 Csongor Gerdan <gerdan.csongor@ttk.hu>"
+SPDX-License-Identifier = "CC-BY-NC-4.0"
+
+[[annotations]]
+path = [ "tests/web/js/tm_molstar.js", "tests/web/css/molstar_viewer.css" ]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2022 HUN-REN Research Center of Natural Sciences"
+SPDX-License-Identifier = "CC-BY-NC-4.0"
+
+[[annotations]]
+path = [ "tests/web/js/tm_molstar.js", "tests/web/css/molstar_viewer.css" ]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2022 Gabor E. Tusnady <tusnady.gabor@ttk.hu>"
+SPDX-FileContributor = "2022 Csongor Gerdan <gerdan.csongor@ttk.hu>"
+SPDX-License-Identifier = "CC-BY-NC-4.0"
+
+
+
+[[annotations]]
+path = [ "tests/web/js/tm_molstar.js", "tests/web/css/molstar.css" ]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2017 Mol* contributors"
+SPDX-License-Identifier = "MIT"
+
+
+
+[[annotations]]
+path = [ "tests/web/wrench-adjustable.svg" ]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2019-2024 The Bootstrap Authors"
+SPDX-License-Identifier = "MIT"
+
+
+
+[[annotations]]
+path = [ "data/AF-P33527-F1-model_v4.cif" ]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2022 AlphaFold Data, DeepMind Technologies Limited."
+SPDX-License-Identifier = "CC-BY-4.0"
+
+[[annotations]]
+path = [ "data/AF-P33527-F1-model_v4.cif" ]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2023 AlphaMissense, DeepMind Technologies Limited."
+SPDX-License-Identifier = "CC-BY-4.0"

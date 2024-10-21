@@ -30,9 +30,13 @@ class TmDiff {
         $byCategories = [];
         $fatalProcessingErrors = [];
         foreach ($codes as $file => $fullPath) {
-            echo "Processing data of $file" . PHP_EOL;
+            $code = substr($file, 3, 4);
+            $entPath = $fullPath[0];
+            echo "Processing data of $entPath" . PHP_EOL;
+            $runner = null;
+
             try {
-                $runner = Tmdet30Runner::createRunner($fullPath[0]);
+                $runner = Tmdet30Runner::createRunner($entPath);
                 $runner->exec();
 
                 echo "meld {$runner->oldTmdetFile} {$runner->newTmdetFile}" . PHP_EOL;
@@ -47,7 +51,7 @@ class TmDiff {
                     $flags->newRunWithNoForceDelete = true;
                 }
                 if (OVERWRITE_BY_RERUN && $flags->onlyNewTmdetXmlHasDeletedChain) {
-                    $runner = Tmdet30Runner::createRunner(entFile: $file, noForceDelete: true);
+                    $runner = Tmdet30Runner::createRunner(entFile: $entPath, noForceDelete: true);
                     $runner->enableOverwrite = true;
                     $runner->noForceDelete = true;
                     echo "{$runner->pdbCode}: Running again with -no_forcedel" . PHP_EOL;
@@ -55,11 +59,12 @@ class TmDiff {
                 }
 
             } catch (Exception $e) {
-                $fatalProcessingErrors[] = $runner->pdbCode;
-                fprintf(STDERR, "EXCEPTION: %s - %s\n", $runner->pdbCode, $e->getMessage());
+                $fatalProcessingErrors[] = $code;
+                fprintf(STDERR, "EXCEPTION: %s - %s\n", $code, $e->getMessage());
                 continue;
             }
             if (empty($differences['categories'])) {
+                fprintf(STDERR, "Ignoring $code: no significant differences\n");
                 continue;
             }
             $result = [

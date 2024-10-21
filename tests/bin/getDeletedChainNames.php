@@ -1,10 +1,12 @@
 <?php
 
+// getDeletedChainNames.php: collects deleted polymer names deleted manually in PDBTM XMLs
+// To resolve requirement in comment: https://redmine.enzim.ttk.hu/issues/943#note-9
+
 $differences = json_decode(json: file_get_contents($argv[1]), associative: true);
 
 $chainNames = [];
 $detailsByCode = $differences['detailsByCodes'];
-// $detailsByCode = array_slice($detailsByCode, 0, 100);
 foreach ($detailsByCode as $entry) {
     $code = $entry['code'];
     $details = $entry['details'];
@@ -22,7 +24,7 @@ foreach ($detailsByCode as $entry) {
 
         $name = $polymers[$chain];
         if (empty(trim($name))) {
-            // var_dump([ $code, $entry['polymerChains'] ]);
+            die('Something is wrong: empty polymer name found' . PHP_EOL);
         }
         if (!array_key_exists($name, $chainNames)) {
             $chainNames[$name] = [ $code ];
