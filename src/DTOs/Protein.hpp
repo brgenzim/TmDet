@@ -77,5 +77,10 @@ namespace Tmdet::DTOs {
             const gemmi::Chain& chainVO);
 
         static void transform(Tmdet::ValueObjects::Protein& protein);
+
+        /**
+         * @brief Unselect polymer chains based on their name and the given string set in TMDET_POLYMER_FILTER_FILE.
+         */
+        static void unselectPolymers(Tmdet::ValueObjects::Protein& protein);
     };
 }

@@ -120,6 +120,12 @@ namespace Tmdet::ValueObjects {
         TMatrix tmatrix;
 
         /**
+         * @brief contains names of polymer entities (_entity.pdbx_description);
+         *        keys are entity names (_entity.id)
+         */
+        std::map<std::string, std::string> polymerNames;
+
+        /**
          * @brief set transmembrane to no and clear data
          */
         void notTransmembrane();

@@ -16,6 +16,7 @@
 #define DEFAULT_TMDET_CC_DIR "/tmp/TmDet/data/ccd"
 #define DEFAULT_TMDET_CC_FILE "/tmp/TmDet/data/components.cif.gz"
 #define DEFAULT_TMDET_CC_URL "https://files.wwpdb.org/pub/pdb/data/monomers/components.cif.gz"
+#define DEFAULT_TMDET_POLYMER_FILTER_FILE "/tmp/TmDet/data/polymer_filter.txt"
 
 #define DEFAULT_PDBTM_DATA_ROOT "/tmp/PDBTM"
 

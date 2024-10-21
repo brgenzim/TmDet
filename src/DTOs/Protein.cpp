@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <string>
 #include <vector>
 #include <iostream>
@@ -80,6 +81,46 @@ namespace Tmdet::DTOs {
         protein.neighbors.populate();
         logger.debug(" Processed Protein::get()");
         return protein;
+    }
+
+    void Protein::unselectPolymers(Tmdet::ValueObjects::Protein& protein) {
+        // Load unselectable names
+        std::ifstream filters;
+        auto filterPath = environment.get("TMDET_POLYMER_FILTER_FILE", DEFAULT_TMDET_POLYMER_FILTER_FILE);
+        if ( !Tmdet::System::FilePaths::fileExists(filterPath) ) {
+            logger.warn("polymer filter file not found: {}", filterPath);
+        }
+
+        std::set<std::string> nameSet;
+        filters.open(filterPath);
+        for (std::string line; std::getline(filters, line); ) {
+            if (line.length() == 0) {
+                continue;
+            }
+            nameSet.insert(line);
+        }
+        filters.close();
+
+        // to_upper implementation
+        auto toUpper = [](std::string subject) {
+            std::transform(subject.begin(), subject.end(), subject.begin(),
+                [](unsigned char c){ return std::toupper(c); }
+            );
+            return subject;
+        };
+
+        for (auto& chain : protein.chains) {
+            if (!protein.polymerNames.contains(chain.entityId)) {
+                continue;
+            }
+            auto name = protein.polymerNames[chain.entityId];
+            for (auto& filter : nameSet) {
+                if (toUpper(name).find(toUpper(filter)) != name.npos) {
+                    chain.selected = false;
+                    break;
+                }
+            }
+        }
     }
 
     void Protein::print(std::ostream& os, const Tmdet::ValueObjects::Protein& protein) {

@@ -33,3 +33,7 @@ INSTALL( TARGETS alignmentTest RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX_BIN} )
 ADD_EXECUTABLE( dsspTest units/dsspTest.cpp )
 TARGET_LINK_LIBRARIES( dsspTest PRIVATE TmdetLib z gemmi::gemmi_cpp curl )
 INSTALL( TARGETS dsspTest RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX_BIN} )
+
+ADD_EXECUTABLE( unselectPolymersTest units/unselectPolymersTest.cpp )
+TARGET_LINK_LIBRARIES( unselectPolymersTest PRIVATE TmdetLib z gemmi::gemmi_cpp curl )
+INSTALL( TARGETS unselectPolymersTest RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX_BIN} )
