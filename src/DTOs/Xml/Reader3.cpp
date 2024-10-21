@@ -110,12 +110,11 @@ namespace Tmdet::DTOs::Xml {
         std::vector<Tmdet::ValueObjects::Membrane> membranes;
         for (pugi::xml_node m_node = _root.child(XML_NODE_MEMBRANE); m_node; m_node = m_node.next_sibling(XML_NODE_MEMBRANE)) {
             pugi::xml_node tnode = m_node.child(XML_NODE_TMATRIX);
-            membranes.emplace_back(getTMatrix(tnode),
-                gemmi::Vec3(0,0,0), //todo get origo
-                gemmi::Vec3(0,0,1), //todo get normal
+            membranes.emplace_back(//getTMatrix(tnode),
+                0.0, //todo get origo
                 m_node.child(XML_NODE_NORMAL).attribute(XML_ATTR_Z).as_double(),
                 0.0,
-                0.0,
+                10.0,
                 Tmdet::Types::Membranes.at("Plain")
             );
         }

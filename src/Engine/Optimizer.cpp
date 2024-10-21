@@ -8,7 +8,7 @@
 #include <gemmi/neighbor.hpp>
 #include <Config.hpp>
 #include <Types/Residue.hpp>
-#include <Engine/Optim.hpp>
+#include <Engine/Optimizer.hpp>
 #include <Engine/Rotator.hpp>
 #include <Utils/Surface.hpp>
 
@@ -16,14 +16,14 @@ using namespace std;
 
 namespace Tmdet::Engine {
 
-    void Optim::init() {
-        logger.debug("Processing: Optim::init()");
+    void Optimizer::init() {
+        DEBUG_LOG("Processing: Optimizer::init()");
         run = true;
         massCentre = protein.centre();
         for(auto& chain: protein.chains) {
             for(auto& residue: chain.residues) {
-                residue.temp.try_emplace("turn",0);
-                residue.temp.try_emplace("straight",0);
+                residue.temp.try_emplace("turn",any(0));
+                residue.temp.try_emplace("straight",any(0));
                 residue.temp.try_emplace("win",any(0));
                 residue.temp.try_emplace("dist",any(0.0));
                 for(auto& atom: residue.atoms) {
@@ -31,11 +31,11 @@ namespace Tmdet::Engine {
                 }
             }
         }
-        logger.debug(" Processed: Optim::init()");
+        DEBUG_LOG(" Processed: Optimizer::init()");
     }
 
-    void Optim::end() {
-        logger.debug("Processing: Optim::end()");
+    void Optimizer::end() {
+        DEBUG_LOG("Processing: Optimizer::end()");
         for(auto& chain: protein.chains) {
             for(auto& residue: chain.residues) {
                 residue.temp.erase("turn");
@@ -47,20 +47,20 @@ namespace Tmdet::Engine {
                 }
             }
         }
-        logger.debug(" Processed: Optim::end()");
+        DEBUG_LOG(" Processed: Optimizer::end()");
     }
 
-    void Optim::setDistances() {
-        logger.debug("Processing: Optim::setDistances()");
+    void Optimizer::setDistances() {
+        DEBUG_LOG("Processing: Optimizer::setDistances()");
         for(auto& chain: protein.chains) {
             for(auto& residue: chain.residues) {
                 setAtomDistances(residue);
             }
         }
-        logger.debug(" Processed: Optim::setDistances()");
+        DEBUG_LOG(" Processed: Optimizer::setDistances()");
     }
 
-    void Optim::setAtomDistances(Tmdet::ValueObjects::Residue& residue) const {
+    void Optimizer::setAtomDistances(Tmdet::ValueObjects::Residue& residue) const {
         bool hasCA = false;
         double d;
         for(auto& atom: residue.atoms) {
@@ -78,8 +78,8 @@ namespace Tmdet::Engine {
         }
     }
 
-    void Optim::setBoundaries() {
-        logger.debug("Processing: Optim::setBoundaries()");
+    void Optimizer::setBoundaries() {
+        DEBUG_LOG("Processing: Optimizer::setBoundaries()");
         min = 10000;
         max = -10000;
         for(auto& chain: protein.chains) {
@@ -91,23 +91,23 @@ namespace Tmdet::Engine {
                 }
             }
         }
-        logger.debug("Box size: {} {}: {}",min,max,(unsigned int)(max-min+2));
+        DEBUG_LOG("Box size: {} {}: {}",min,max,(unsigned int)(max-min+2));
         slices.clear();
         slices.resize((unsigned int)(max-min+2));
-        logger.debug(" Processed: Optim::setBoundaries()");
+        DEBUG_LOG(" Processed: Optimizer::setBoundaries()");
     }
 
-    void Optim::sumupSlices() {
-        logger.debug("Processing: Optim::sumupSlices()");
+    void Optimizer::sumupSlices() {
+        DEBUG_LOG("Processing: Optimizer::sumupSlices()");
         for(auto& chain: protein.chains) {
             for(auto& residue: chain.residues) {
                 residueToSlice(residue);
             }
         }
-        logger.debug(" Processed: Optim::sumupSlices()");
+        DEBUG_LOG(" Processed: Optimizer::sumupSlices()");
     }
 
-    void Optim::residueToSlice(Tmdet::ValueObjects::Residue& residue) {
+    void Optimizer::residueToSlice(Tmdet::ValueObjects::Residue& residue) {
         auto sliceIndex = (unsigned int)(any_cast<double>(residue.temp.at("dist")) - min);
         slices[sliceIndex].numCA++;
         if (residue.ss.isAlpha() || residue.ss.isBeta()) {
@@ -128,18 +128,18 @@ namespace Tmdet::Engine {
         }
     }
 
-    double Optim::getQValueForSlice(const _slice& s) const {
+    double Optimizer::getQValueForSlice(const _slice& s) const {
         double q = 0.0;
         if (s.numCA > 0 && s.surf >0 ) {
-            q += 40 * (double)s.numStraight / s.numCA;
-            q += 10 * (1.0 - (double)s.numTurn / s.numCA);
+            q += 35 * (double)s.numStraight / s.numCA;
+            q += 11 * (1.0 - (double)s.numTurn / s.numCA);
             q += 60 * s.voronota / s.surf;
-            logger.debug("Slice: ca: {} nStr: {} nT: {} voronota: {} surf: {} q: {}",s.numCA,s.numStraight,s.numTurn,s.voronota,s.surf,q);
+            DEBUG_LOG("Slice: ca: {} nStr: {} nT: {} voronota: {} surf: {} q: {}",s.numCA,s.numStraight,s.numTurn,s.voronota,s.surf,q);
         }
         return q;
     }
 
-    std::vector<double> Optim::getQValueForSlices() {
+    std::vector<double> Optimizer::getQValueForSlices() {
         auto s = slices.size();
         std::vector<double> qs(s,0);
         for(unsigned long int i = 0; i<s; i++) {
@@ -149,9 +149,10 @@ namespace Tmdet::Engine {
     }
 
 
-    double Optim::smoothQValues(std::vector<double> qs) {
-        std::string m="**************************************************************************************************";
-        std::string o="++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++";
+    double Optimizer::smoothQValues(std::vector<double> qs) {
+        std::string n="***************************************************************************";
+        std::string m="mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm";
+        std::string b="bbbbbbbbbbbbbbbbbbbbbbbbbbbb";
         double maxQ = -1e30;
         auto s = slices.size();
         for(unsigned long int i = 0; i<s; i++) {
@@ -170,23 +171,31 @@ namespace Tmdet::Engine {
                 maxQ = q;
                 bestSliceIndex = i;
             }
-            if (q>TMDET_MEMBRANE_QVALUE) {
-                logger.debug("{}{}",
-                    o.substr(0,TMDET_MEMBRANE_QVALUE),
-                    m.substr(0,(int)(q-TMDET_MEMBRANE_QVALUE)));
+            if (q>TMDET_MINIMUM_QVALUE) {
+                DEBUG_LOG("{}: {}{}{}",
+                    i,
+                    n.substr(0,TMDET_MEMBRANE_QVALUE),
+                    m.substr(0,(int)(TMDET_MINIMUM_QVALUE-TMDET_MEMBRANE_QVALUE)),
+                    b.substr(0,(int)(q-TMDET_MINIMUM_QVALUE+1)));
+            }
+            else if (q>TMDET_MEMBRANE_QVALUE) {
+                DEBUG_LOG("{}: {}{}",
+                    i,
+                    n.substr(0,TMDET_MEMBRANE_QVALUE),
+                    m.substr(0,(int)(q-TMDET_MEMBRANE_QVALUE+1)));
             }
             else {
-                logger.debug("{}",o.substr(0,(int)(q)));
+                DEBUG_LOG("{}: {}",i,n.substr(0,(int)(q)));
             }
         }
         return maxQ;
     }
 
-    void Optim::setNormal(gemmi::Vec3 _normal) {
+    void Optimizer::setNormal(gemmi::Vec3 _normal) {
         normal = _normal;
     }
 
-    void Optim::testMembraneNormal() {
+    void Optimizer::testMembraneNormal() {
         if (!run) {
             init();
         }
@@ -200,35 +209,40 @@ namespace Tmdet::Engine {
         }
     }
 
-    bool Optim::isTransmembrane() const {
+    bool Optimizer::isTransmembrane() const {
+        DEBUG_LOG("Processing Optimizer::isTransmembrane(): {}",bestQ);
         return bestQ > TMDET_MINIMUM_QVALUE;
     }
 
-    void Optim::setMembranesToProtein() {
+    void Optimizer::setMembranesToProtein() {
+        DEBUG_LOG("Processing Optimizer::setMembranesToProtein()");
         if (!isTransmembrane()) {
+            DEBUG_LOG("Processing Optimizer::setMembranesToProtein(): not transmembrane protein");
             return;
         }
         setNormal(bestNormal);
         testMembraneNormal();
         Tmdet::ValueObjects::Membrane membrane;
         protein.membranes.clear();
-        while(getMembrane(membrane)) {
+        while(getMembrane(membrane) && protein.membranes.size() < 2) {
             protein.membranes.push_back(membrane);
         }
         if (!protein.membranes.empty()) {
             protein.tmp = true;
+            setProteinTMatrix(massCentre,normal);
         }
+        DEBUG_LOG(" Processed Optimizer::setMembranesToProtein()");
     }
 
-    void Optim::searchForMembraneNormal() {
+    void Optimizer::searchForMembraneNormal() {
         Tmdet::Engine::Rotator rotator;
         while(rotator.next(normal)) {
             testMembraneNormal();
         }
     }
 
-    bool Optim::getMembrane(Tmdet::ValueObjects::Membrane& membrane) {
-        logger.debug("Processing Optim::getMembrane()");
+    bool Optimizer::getMembrane(Tmdet::ValueObjects::Membrane& membrane) {
+        DEBUG_LOG("Processing Optimizer::getMembrane()");
         unsigned long int bestZ = -1;
         double q = -1e30;
         for (unsigned long int i = 0; i <slices.size(); i++) {
@@ -237,9 +251,9 @@ namespace Tmdet::Engine {
                 bestZ = i;
             }
         }
-
-        if (bestZ < TMDET_MEMBRANE_QVALUE) {
-            logger.debug(" Processed Optim::getMembrane(): no more membrane");
+        DEBUG_LOG("\tLargest qValue: {}",q);
+        if (q < TMDET_MINIMUM_QVALUE) {
+            DEBUG_LOG(" Processed Optimizer::getMembrane({}): no more membrane",q);
             return false;
         }
         
@@ -254,7 +268,7 @@ namespace Tmdet::Engine {
         membrane.halfThickness = (maxz-minz) / 2;
 
         if (membrane.halfThickness < TMDET_MEMBRANE_MIN_HALFTHICKNESS) {
-            logger.debug(" Processed Optim::getMembrane(): not transmembrane, membrane thickness is small");
+            DEBUG_LOG(" Processed Optimizer::getMembrane(): not transmembrane, membrane thickness is small");
             return false;
         }
 
@@ -263,46 +277,52 @@ namespace Tmdet::Engine {
         }
 
         double o = (minz+maxz) / 2;
-        membrane.origo = massCentre + o * normal;
-        membrane.normal = normal;
-        setMembraneTMatrix(membrane);
+        if (protein.membranes.empty()) {
+            massCentre += o * normal;
+            membrane.origo = 0;
+            lastO = o;
+        }
+        else {
+            membrane.origo = o - lastO;
+        }
 
-        logger.debug(" Processed Optim::getMembrane() thickness: {} ",membrane.halfThickness);
+        DEBUG_LOG(" Processed Optimizer::getMembrane({}-{}) thickness: {} ",
+            minz,maxz,membrane.halfThickness);
         return true;
     }
 
-    void Optim::setMembraneTMatrix(Tmdet::ValueObjects::Membrane& membrane) const {
-        double x = membrane.normal.x;
-	    double y = membrane.normal.y;
-	    double z = membrane.normal.z;
+    void Optimizer::setProteinTMatrix(gemmi::Vec3& origo, gemmi::Vec3& normal) const {
+        double x = normal.x;
+	    double y = normal.y;
+	    double z = normal.z;
 	    if (double d = sqrt(y*y+z*z); d>1e-5) {
 		    double sa=z/d;
 		    double ca=y/d;
-		    membrane.tmatrix.rot[0][0] = d;
-            membrane.tmatrix.rot[0][1] = -x*ca;
-            membrane.tmatrix.rot[0][2] = -x*sa;
+		    protein.tmatrix.rot[0][0] = d;
+            protein.tmatrix.rot[0][1] = -x*ca;
+            protein.tmatrix.rot[0][2] = -x*sa;
             
-		    membrane.tmatrix.rot[1][0] = 0;
-            membrane.tmatrix.rot[1][1] = sa;
-            membrane.tmatrix.rot[1][2] = -ca;
+		    protein.tmatrix.rot[1][0] = 0;
+            protein.tmatrix.rot[1][1] = sa;
+            protein.tmatrix.rot[1][2] = -ca;
             
-		    membrane.tmatrix.rot[2][0] = x;
-            membrane.tmatrix.rot[2][1] = d*ca;
-            membrane.tmatrix.rot[2][2] = d*sa;
+		    protein.tmatrix.rot[2][0] = x;
+            protein.tmatrix.rot[2][1] = d*ca;
+            protein.tmatrix.rot[2][2] = d*sa;
         }
         else {
-        	membrane.tmatrix.rot[0][0]=0;
-            membrane.tmatrix.rot[0][1]=0;
-            membrane.tmatrix.rot[0][2]=1;
+        	protein.tmatrix.rot[0][0]=0;
+            protein.tmatrix.rot[0][1]=0;
+            protein.tmatrix.rot[0][2]=1;
 
-            membrane.tmatrix.rot[1][0]=0;
-            membrane.tmatrix.rot[1][1]=1;
-            membrane.tmatrix.rot[1][2]=0;
+            protein.tmatrix.rot[1][0]=0;
+            protein.tmatrix.rot[1][1]=1;
+            protein.tmatrix.rot[1][2]=0;
 
-            membrane.tmatrix.rot[2][0]=1;
-            membrane.tmatrix.rot[2][1]=0;
-            membrane.tmatrix.rot[2][2]=0;
+            protein.tmatrix.rot[2][0]=1;
+            protein.tmatrix.rot[2][1]=0;
+            protein.tmatrix.rot[2][2]=0;
         }
-        membrane.tmatrix.trans = -membrane.origo;
+        protein.tmatrix.trans = -origo;
     }
 }

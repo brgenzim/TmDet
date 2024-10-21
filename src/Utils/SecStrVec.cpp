@@ -17,8 +17,8 @@ using namespace std;
 namespace StructVO = Tmdet::ValueObjects;
 
 namespace Tmdet::Utils {
-    static bool isVectorCrossingPlane(_secStrVec &vector, gemmi::Vec3 &planePoint, gemmi::Vec3 &planeNormal);
-    static bool isVectorCrossingSphere(_secStrVec &vector, gemmi::Vec3 &spherePoint, gemmi::Vec3 &origo);
+    static bool isVectorCrossingPlane(_secStrVec &vector, double planePoint);
+    static bool isVectorCrossingSphere(_secStrVec &vector, double spherePoint, double origo);
     static bool inline isPointOnVector(gemmi::Vec3 &vector, gemmi::Vec3 &vectorBegin, gemmi::Vec3 &point);
 
 #ifdef __SECSTRVEC_DBG
@@ -56,20 +56,18 @@ namespace Tmdet::Utils {
         bool resultDown = false;
 
         if (membraneVO.type.name == Tmdet::Types::MembraneType::PLAIN.name) {
-            auto normal = membraneVO.normal;
             // UP case
-            auto membranePoint = membraneVO.origo + normal * membraneVO.halfThickness;
-            resultUp = isVectorCrossingPlane(vec, membranePoint, normal);
+            auto membranePoint = membraneVO.origo + membraneVO.halfThickness;
+            resultUp = isVectorCrossingPlane(vec, membranePoint);
             // DOWN case
-            membranePoint = membraneVO.origo - normal * membraneVO.halfThickness;
-            resultDown = isVectorCrossingPlane(vec, membranePoint, normal);
+            membranePoint = membraneVO.origo - membraneVO.halfThickness;
+            resultDown = isVectorCrossingPlane(vec, membranePoint);
         } else if (membraneVO.type.name == Tmdet::Types::MembraneType::CURVED.name) {
-            auto normal = membraneVO.normal;
             // UP case
-            auto membranePoint = membraneVO.origo + normal * (membraneVO.sphereRadius + membraneVO.halfThickness);
+            auto membranePoint = membraneVO.origo + (membraneVO.sphereRadius + membraneVO.halfThickness);
             resultUp = isVectorCrossingSphere(vec, membranePoint, membraneVO.origo);
             // DOWN case
-            membranePoint = membraneVO.origo + normal * (membraneVO.sphereRadius - membraneVO.halfThickness);
+            membranePoint = membraneVO.origo + (membraneVO.sphereRadius - membraneVO.halfThickness);
             resultDown = isVectorCrossingSphere(vec, membranePoint, membraneVO.origo);
         } else {
             throw runtime_error("Unexpected membrane type: " + membraneVO.type.name);
@@ -86,7 +84,7 @@ namespace Tmdet::Utils {
         return resultUp || resultDown;
     }
 
-    bool isVectorCrossingPlane(_secStrVec &vector, gemmi::Vec3 &planePoint, gemmi::Vec3 &planeNormal) {
+    bool isVectorCrossingPlane(_secStrVec &vector, double planePoint) {
         // https://en.wikipedia.org/wiki/Line%E2%80%93plane_intersection#Algebraic_form
         // plane points: (p - p0)*n = 0 (n is normal vector of plane)
         // line points:  p = l0 + l*d (l is unit vector)
@@ -96,8 +94,8 @@ namespace Tmdet::Utils {
         auto l0 = vector.begin;
         auto vectorDiff = vector.end - vector.begin;
         auto l = vectorDiff.normalized();
-        auto n = planeNormal;
-        auto p0 = planePoint;
+        auto n = gemmi::Vec3(0,0,1);
+        auto p0 = gemmi::Vec3(0,0,planePoint);
         auto numerator = (p0 - l0).dot(n);
         auto denominator = l.dot(n);
         if (numerator != 0 && denominator == 0) {
@@ -120,7 +118,7 @@ namespace Tmdet::Utils {
         return result;
     }
 
-    bool isVectorCrossingSphere(_secStrVec &vector, gemmi::Vec3 &spherePoint, gemmi::Vec3 &origo) {
+    bool isVectorCrossingSphere(_secStrVec &vector, double spherePoint, double origo) {
         // sphere points: |p-a| = r (a is origo, r is radii)
         // line points:  p = l0 + l*d (l is unit vector, l0 is a fix point of the line)
         // ergo: |l0 + l*d - a| = r
@@ -139,8 +137,8 @@ namespace Tmdet::Utils {
         auto l0 = vector.begin;
         auto vectorDiff = vector.end - vector.begin;
         auto l = vectorDiff.normalized();
-        auto a = origo;
-        auto r2 = (spherePoint - origo).length_sq();
+        auto a = gemmi::Vec3(1,1,origo);
+        auto r2 = (spherePoint - origo)*(spherePoint - origo);
         auto m = l0 - a;
         auto A = l.dot(l);
         auto B = 2 * m.dot(l);

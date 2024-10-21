@@ -75,5 +75,7 @@ namespace Tmdet::DTOs {
          */
         static std::vector<std::string> getChainSequence(const Tmdet::ValueObjects::Protein& protein,
             const gemmi::Chain& chainVO);
+
+        static void transform(Tmdet::ValueObjects::Protein& protein);
     };
 }

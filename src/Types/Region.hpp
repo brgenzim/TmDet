@@ -57,6 +57,11 @@ namespace Tmdet::Types {
             'N',
             "Beta barrel inside element"
         };
+        const Region INTERMEMB = {
+            "intermembrane",
+            '3',
+            "Intermembrane space if protein crosses two membranes"
+        };
         const Region UNK = {
             "unkown",
             'U',
@@ -86,6 +91,7 @@ namespace Tmdet::Types {
         { 'B', RegionType::BETA },
         { '1', RegionType::SIDE1 },
         { '2', RegionType::SIDE2 },
+        { '3', RegionType::INTERMEMB },
         { 'L', RegionType::LOOP },
         { 'F', RegionType::IFH },
         { 'I', RegionType::INSIDE },

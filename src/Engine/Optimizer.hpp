@@ -53,7 +53,7 @@ namespace Tmdet::Engine {
     /**
      * @brief class for searching for membrane plane
      */
-    class Optim {
+    class Optimizer {
         private:
 
             /**
@@ -105,6 +105,8 @@ namespace Tmdet::Engine {
              * @brief membrane normal belonging to the best qValue
              */
             gemmi::Vec3 bestNormal;
+
+            double lastO;
 
             /**
              * @brief initialize the algorithm
@@ -189,14 +191,14 @@ namespace Tmdet::Engine {
              * 
              * @param protein
              */
-            explicit Optim(Tmdet::ValueObjects::Protein& protein) : 
+            explicit Optimizer(Tmdet::ValueObjects::Protein& protein) : 
                 protein(protein) {}
 
             /**
              * @brief Destroy the Optim object
              * 
              */
-            ~Optim() {
+            ~Optimizer() {
                 end();
             };
 
@@ -226,6 +228,6 @@ namespace Tmdet::Engine {
             /**
              * @brief 
              */
-            void setMembraneTMatrix(Tmdet::ValueObjects::Membrane& membrane) const;
+            void setProteinTMatrix(gemmi::Vec3& origo, gemmi::Vec3& normal) const;
     };
 }

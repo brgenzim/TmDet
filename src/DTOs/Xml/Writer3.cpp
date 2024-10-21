@@ -97,7 +97,7 @@ namespace Tmdet::DTOs::Xml {
             doc.load_string(_membrane_xml.c_str());
             pugi::xml_node node = doc.child(XML_NODE_MEMBRANE);
             node.child(XML_NODE_NORMAL).attribute(XML_ATTR_Z) = std::to_string(m.halfThickness).c_str();
-            setTMatrix(node,m.tmatrix);
+            //setTMatrix(node,m.tmatrix);
             _root.append_copy(node);
         }
     }

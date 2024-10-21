@@ -113,6 +113,13 @@ namespace Tmdet::ValueObjects {
         std::vector<Membrane> membranes;
 
         /**
+         * @brief transformation matrix for the protein
+         *        to be the membrane plane in the xy plane
+         *        and the membrane normal parallel to the z axes
+         */
+        TMatrix tmatrix;
+
+        /**
          * @brief set transmembrane to no and clear data
          */
         void notTransmembrane();

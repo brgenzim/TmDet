@@ -19,16 +19,60 @@
 #define LOG_LEVEL_CRITICAL 6
 #define LOG_LEVEL_OFF 7
 
+#define LOG_LEVEL_TRACE_STR trace
+#define LOG_LEVEL_DEBUG_STR debug
+#define LOG_LEVEL_INFO_STR info
+#define LOG_LEVEL_WARN_STR warn
+#define LOG_LEVEL_ERROR_STR err
+#define LOG_LEVEL_CRITICAL_STR critical
+#define LOG_LEVEL_OFF_STR off
+
+#if defined TMDET_LOG_LEVEL && TMDET_LOG_LEVEL == LOG_LEVEL_TRACE_STR
+#define TRACE_LOG(...) logger.trace(__VA_ARGS__)
+#else
+#define TRACE_LOG(...)
+#endif
+
+#if defined TMDET_LOG_LEVEL && TMDET_LOG_LEVEL == LOG_LEVEL_DEBUG_STR
+#define DEBUG_LOG(...) logger.debug(__VA_ARGS__)
+#else
+#define DEBUG_LOG(...)
+#endif
+
+#if defined TMDET_LOG_LEVEL && TMDET_LOG_LEVEL == LOG_LEVEL_INFO_STR
+#define INFO_LOG(...) logger.info(__VA_ARGS__)
+#else
+#define INFO_LOG(...)
+#endif
+
+#if defined TMDET_LOG_LEVEL && TMDET_LOG_LEVEL == LOG_LEVEL_WARN_STR
+#define WARN_LOG(...) logger.warn(__VA_ARGS__)
+#else
+#define WARN_LOG(...)
+#endif
+
+#if defined TMDET_LOG_LEVEL && TMDET_LOG_LEVEL == LOG_LEVEL_ERROR_STR
+#define ERROR_LOG(...) logger.error(__VA_ARGS__)
+#else
+#define ERROR_LOG(...)
+#endif
+
+#if defined TMDET_LOG_LEVEL && TMDET_LOG_LEVEL == LOG_LEVEL_CRITICAL_STR
+#define CRITICAL_LOG(...) logger.critical(__VA_ARGS__)
+#else
+#define CRITICAL_LOG(...)
+#endif
+
 namespace Tmdet::System {
 
     enum level : int {
-        trace = LOG_LEVEL_TRACE,
-        debug = LOG_LEVEL_DEBUG,
-        info = LOG_LEVEL_INFO,
-        warn = LOG_LEVEL_WARN,
-        err = LOG_LEVEL_ERROR,
-        critical = LOG_LEVEL_CRITICAL,
-        off = LOG_LEVEL_OFF,
+        LOG_LEVEL_TRACE_STR = LOG_LEVEL_TRACE,
+        LOG_LEVEL_DEBUG_STR = LOG_LEVEL_DEBUG,
+        LOG_LEVEL_INFO_STR = LOG_LEVEL_INFO,
+        LOG_LEVEL_WARN_STR = LOG_LEVEL_WARN,
+        LOG_LEVEL_ERROR_STR = LOG_LEVEL_ERROR,
+        LOG_LEVEL_CRITICAL_STR = LOG_LEVEL_CRITICAL,
+        LOG_LEVEL_OFF_STR = LOG_LEVEL_OFF,
         n_levels
     };
 
@@ -67,9 +111,6 @@ namespace Tmdet::System {
                 auto microseconds = std::chrono::duration_cast<std::chrono::microseconds>(now.time_since_epoch()) % 1000000;
                 std::ostringstream oss;
                 oss << std::put_time(&localTime, "[%Y-%m-%d %H:%M:%S.");
-                //return std::format("{} {:06}] ",
-                //    std::put_time(&localTime, "[%Y-%m-%d %H:%M:%S."),
-                //    microseconds.count());
                 oss << std::setfill('0') << std::setw(6) << microseconds.count() << "] ";
                 return oss.str();
             }

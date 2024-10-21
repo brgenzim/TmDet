@@ -16,28 +16,14 @@ namespace Tmdet::ValueObjects {
     struct Membrane {
 
         /**
-         * @brief transformation matrix for the protein
-         *        to be the membrane plane in the xy plane
-         *        and the membrane normal parallel to the z axes
-         */
-        TMatrix tmatrix;
-
-        /**
-         * @brief centre of the membrane in the original structure for
-         *        plain membrane, after tarnsformation the origo is 0,0,0
+         * @brief centre of the membrane after tarnsformation 
+         *        for the firs membrane it is always zero
          *
          *        For curved membrane the origo is the centre of the
          *        sphere and the membrane is between sphereRadius -
          *        halfThickness and sphereRadius + halThickness
          */
-        gemmi::Vec3 origo = {0.0,0.0,0.0};
-
-        /**
-         * @brief the membrane normal vector for the original structure
-         *        after transformation x and y is zero, while z
-         *        is the half thickness of the membrane
-         */
-        gemmi::Vec3 normal = {0.0,0.0,0.0};
+        double origo = 0.0;
 
         /**
          * @brief membrane half thickness in angstrom

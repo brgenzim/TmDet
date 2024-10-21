@@ -138,4 +138,15 @@ namespace Tmdet::DTOs {
         }
         return sequence;
     }
+
+    void Protein::transform(Tmdet::ValueObjects::Protein& protein) {
+        for (auto& chain: protein.chains) {
+            for (auto& residue: chain.residues) {
+                for (auto& atom: residue.atoms) {
+                    atom.gemmi.pos += gemmi::Position(protein.tmatrix.trans);
+                    //atom.gemmi.pos *= protein.membranes[0].tmatrix.rot;
+                }
+            }
+        }
+    }
 }

@@ -34,41 +34,44 @@
       Model has been recalculated by TmDet version 4.0.0
     </modification>
   </modifications>
-  <membrane  halfThickness="17.50" type="Plain">
-    <transformation>
-      <translate x="0.00000836" y="-35.19528961" z="-6.74299955"/>
-      <rotate>
-        <rowX x="1.00000000" y="0.00000000" z="0.00000000"/>
-        <rowY x="0.00000000" y="1.00000000" z="0.00000000"/>
-        <rovZ x="0.00000000" y="0.00000000" z="1.00000000"/>
-      </rotate>
-    </transformation>
-  </membrane>
-  <chain pdb_auth_asym_id="A" pdb_label_asym_id="A" numTM="7" type="alpha">
-    <sequence>
-      TGRPEWIWLA LGTALMGLGT LYFLVKGMGV SDPDAKKFYA ITTLVPAIAF 
-      TMYLSMLLGY GLTMVPFGGE QNPIYWARYA DWLFTTPLLL LDLALLVDAD 
-      QGTILALVGA DGIMIGTGLV GALTKVYSYR FVWWAISTAA MLYILYVLFF 
-      GFTSKAESMR PEVASTFKVL RNVTVVLWSA YPVVWLIGSE GAGIVPLNIE 
-      TLLFMVLDVS AKVGFGLILL RSRAIFGE
-    </sequence>
-    <region>
-      <start seq="1" pdb_auth_seq_id="5" pdb_label_seq_id="1"/>
-      <end seq="7" pdb_auth_seq_id="11" pdb_label_seq_id="7"/>
-    </region>
-  </chain>
-  <chain pdb_auth_asym_id="B" pdb_label_asym_id="A-2" numTM="7" type="alpha">
-    <sequence>
-      TGRPEWIWLA LGTALMGLGT LYFLVKGMGV SDPDAKKFYA ITTLVPAIAF 
-      TMYLSMLLGY GLTMVPFGGE QNPIYWARYA DWLFTTPLLL LDLALLVDAD 
-      QGTILALVGA DGIMIGTGLV GALTKVYSYR FVWWAISTAA MLYILYVLFF 
-      GFTSKAESMR PEVASTFKVL RNVTVVLWSA YPVVWLIGSE GAGIVPLNIE 
-      TLLFMVLDVS AKVGFGLILL RSRAIFGE
-    </sequence>
-    <region>
-      <start seq="1" pdb_auth_seq_id="5" pdb_label_seq_id="1"/>
-      <end seq="7" pdb_auth_seq_id="11" pdb_label_seq_id="7"/>
-    </region>
-  </chain>
-  <chain pdb_auth_asym_id="C" pdb_label_asym_id="A-3" type="notSelected"/>
+  <transformation>
+    <translate x="0.00000836" y="-35.19528961" z="-6.74299955"/>
+    <rotate>
+      <rowX x="1.00000000" y="0.00000000" z="0.00000000"/>
+      <rowY x="0.00000000" y="1.00000000" z="0.00000000"/>
+      <rovZ x="0.00000000" y="0.00000000" z="1.00000000"/>
+    </rotate>
+  </transformation>
+  <membranes>
+    <membrane halfThickness="17.50" type="Plain" z="0.0">
+  </membranes>
+  <chains>
+    <chain pdb_auth_asym_id="A" pdb_label_asym_id="A" numTM="7" type="alpha">
+      <sequence>
+        TGRPEWIWLA LGTALMGLGT LYFLVKGMGV SDPDAKKFYA ITTLVPAIAF 
+        TMYLSMLLGY GLTMVPFGGE QNPIYWARYA DWLFTTPLLL LDLALLVDAD 
+        QGTILALVGA DGIMIGTGLV GALTKVYSYR FVWWAISTAA MLYILYVLFF 
+        GFTSKAESMR PEVASTFKVL RNVTVVLWSA YPVVWLIGSE GAGIVPLNIE 
+        TLLFMVLDVS AKVGFGLILL RSRAIFGE
+      </sequence>
+      <region>
+        <start seq="1" pdb_auth_seq_id="5" pdb_label_seq_id="1"/>
+        <end seq="7" pdb_auth_seq_id="11" pdb_label_seq_id="7"/>
+      </region>
+    </chain>
+    <chain pdb_auth_asym_id="B" pdb_label_asym_id="A-2" numTM="7" type="alpha">
+      <sequence>
+        TGRPEWIWLA LGTALMGLGT LYFLVKGMGV SDPDAKKFYA ITTLVPAIAF 
+        TMYLSMLLGY GLTMVPFGGE QNPIYWARYA DWLFTTPLLL LDLALLVDAD 
+        QGTILALVGA DGIMIGTGLV GALTKVYSYR FVWWAISTAA MLYILYVLFF 
+        GFTSKAESMR PEVASTFKVL RNVTVVLWSA YPVVWLIGSE GAGIVPLNIE 
+        TLLFMVLDVS AKVGFGLILL RSRAIFGE
+      </sequence>
+      <region>
+        <start seq="1" pdb_auth_seq_id="5" pdb_label_seq_id="1"/>
+        <end seq="7" pdb_auth_seq_id="11" pdb_label_seq_id="7"/>
+      </region>
+    </chain>
+    <chain pdb_auth_asym_id="C" pdb_label_asym_id="A-3" type="notSelected"/>
+  </chains>
 </pdbtm>
