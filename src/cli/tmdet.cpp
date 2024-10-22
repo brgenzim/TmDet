@@ -16,6 +16,7 @@
 #include <ValueObjects/Protein.hpp>
 #include <DTOs/Protein.hpp>
 #include <DTOs/Xml/Reader3.hpp>
+#include <DTOs/Xml/Writer.hpp>
 #include <Engine/Organizer.hpp>
 
 using namespace std;
@@ -28,13 +29,12 @@ Tmdet::System::Arguments getArguments(int argc, char *argv[]) {
     args.define(false,"e","env","Path for environment variable file","string",".env");
     args.define(false,"i","input","Input PDB file full path (in cif format)","string","");
     args.define(false,"c","code","Input PDB code (c or i is mandatory)","string","");
-    args.define(false,"x","xml","Input/output xml file path","string","");
-    args.define(false,"p","pdb_out","Output pdb file path","string","");
-    args.define(false,"o","over_write","Over write xml file instead of update","bool","false");
+    args.define(false,"x","xml","Input/Output xml file path","string","");
+    args.define(false,"po","pdb_out","Output pdb file path","string","");
     args.define(false,"n","not","Set transmembrane='not' in the xml file","bool","false");
     args.define(false,"nc","no_cache","Do not use cached data","bool","false");
-    args.define(false,"nd","force_nodel","Force not to delete not connected chains","bool","false");
-    args.define(false,"tm","force_transmembrane","Set type to transmembrane without making decision using Q value","bool","false");
+    //args.define(false,"nd","force_nodel","Force not to delete not connected chains","bool","false");
+    //args.define(false,"tm","force_transmembrane","Set type to transmembrane without making decision using Q value","bool","false");
     args.set(argc,argv);
     args.check();
     return args;
@@ -112,23 +112,18 @@ int main(int argc, char *argv[], char **envp) {
         exit(EXIT_FAILURE);
     }
     auto protein = Tmdet::DTOs::Protein::get(inputPath);
-    Tmdet::DTOs::Xml::Reader3 xml;
-
+    
     //if xml file exists and overwirte is not set then read the content of the
     //xml file and adjust proteinVO accordingly
-    if (bool o = args.getValueAsBool("o"); !o && Tmdet::System::FilePaths::fileExists(xmlPath) ) {
-        logger.warn("xml file exists, updating its content");
-        xml.readXml(protein, xmlPath);
-        //TODO align structure to tmdet data
+    if (Tmdet::System::FilePaths::fileExists(xmlPath) ) {
+        Tmdet::DTOs::Xml::Reader3 xmlInput;
+        logger.warn("overwriting xml file");
+        xmlInput.readXml(protein, xmlPath);
     }
-    else {
-        if (Tmdet::System::FilePaths::fileExists(xmlPath)) {
-            protein.clear();
-            std::cerr << "overwriting xml file" << std::endl;
-        }
-    }
-    
     
     //do the membrane region determination and annotation
     auto organizer = Tmdet::Engine::Organizer(protein, args);
+    Tmdet::DTOs::Xml::Writer xmlOutput;
+    xmlOutput.writeXml(protein, xmlPath);
+    
 }

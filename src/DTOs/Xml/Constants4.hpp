@@ -27,9 +27,11 @@ namespace Tmdet::DTOs::Xml {
     const char* XML_NODE_ASSEMBLY="assembly";
     const char* XML_NODE_COPYRIGHT="copyright";
     const char* XML_NODE_CHAIN="chain";
+    const char* XML_NODE_CHAINS="chains";
     const char* XML_NODE_CREATED="created";
     const char* XML_NODE_END="end";
     const char* XML_NODE_MEMBRANE="membrane";
+    const char* XML_NODE_MEMBRANES="membranes";
     const char* XML_NODE_MODIFICATION="modification";
     const char* XML_NODE_MODIFICATIONS="modifications";
     const char* XML_NODE_ROOT="pdbtm";

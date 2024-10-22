@@ -19,32 +19,17 @@ namespace Tmdet::ValueObjects {
         document = gemmi::cif::read(gemmi::MaybeGzipped(inputPath));
         gemmi = gemmi::make_structure(std::move(document));
 
-        const auto& block = document.blocks[0];
-
-        //
-        // Fill polymerNames map
-        //
-
         for (auto& entity : gemmi.entities) {
             if (entity.entity_type == gemmi::EntityType::Polymer) {
                 polymerNames[entity.name] = "DESCRIPTION: N/A";
             }
         }
-
-        auto entityLoop = block.find_loop_item("_entity.id")->loop;
-        int loopLength = entityLoop.length();
-        int idCol = entityLoop.find_tag("_entity.id");
-        int descriptionCol = entityLoop.find_tag("_entity.pdbx_description");
-        for (int row = 0; row < loopLength; row++) {
-            const std::string& id = entityLoop.val(row, idCol);
-            if (polymerNames.contains(id)) {
-                std::string name(entityLoop.val(row, descriptionCol));
-                if (name.starts_with("'") && name.ends_with("'")) {
-                    name = name.substr(1, name.length() - 2);
-                }
-                polymerNames[id] = name;
+        for (gemmi::cif::Block& block : document.blocks) {
+            for (auto entity : block.find("_entity.", {"id", "pdbx_description"})) {
+                polymerNames[entity[0]] = entity[1];
             }
         }
+      
     }
 
     void Protein::notTransmembrane() {
@@ -64,7 +49,7 @@ namespace Tmdet::ValueObjects {
     void Protein::clear() {
         tmp = false;
         version = Tmdet::version();
-        date = Tmdet::System::Date::get();
+        date = (date==""?Tmdet::System::Date::get():"date");
         modifications.clear();
         qValue = 0.0;
         type = Tmdet::Types::ProteinType::SOLUBLE;

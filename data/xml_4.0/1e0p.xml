@@ -17,23 +17,6 @@
     <qValue>74.36</qValue>
     <tmType>Tm_Alpha</tmType>
   </rawData>
-  <modifications>
-    <modification date="2005-04-06">
-      Format has been changed to pdbtm format v2.0
-    </modification>
-    <modification date="2005-07-19">
-      Model has been recalculated by TMDET version 2.0
-    </modification>
-    <modification date="2012-03-08">
-      PDB entry has been changed
-    </modification>
-    <modification date="2024-10-17">
-      Format has been changed to pdbtm format v4.0.0
-    </modification>
-    <modification date="2024-10-17">
-      Model has been recalculated by TmDet version 4.0.0
-    </modification>
-  </modifications>
   <transformation>
     <translate x="0.00000836" y="-35.19528961" z="-6.74299955"/>
     <rotate>
@@ -67,7 +50,7 @@
         GFTSKAESMR PEVASTFKVL RNVTVVLWSA YPVVWLIGSE GAGIVPLNIE 
         TLLFMVLDVS AKVGFGLILL RSRAIFGE
       </sequence>
-      <region>
+      <region type="1">
         <start seq="1" pdb_auth_seq_id="5" pdb_label_seq_id="1"/>
         <end seq="7" pdb_auth_seq_id="11" pdb_label_seq_id="7"/>
       </region>

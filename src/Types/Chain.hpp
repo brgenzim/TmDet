@@ -20,7 +20,7 @@ namespace Tmdet::Types {
             "beta", 
             "Chain containing beta barrel transmembrane domain"
         };
-        const Chain NONTM = {
+        const Chain NON_TM = {
             "non_tm",
             "Chain without any transmembrane region"
         };
@@ -28,13 +28,18 @@ namespace Tmdet::Types {
             "unknown",
             "Chain type is not determined"
         };
+        const Chain NOT_SELECTED = {
+            "not_selected",
+            "Chain is unselected"
+        };
     }
 
     const std::unordered_map<std::string, const Chain> Chains = {
         { "alpha", ChainType::ALPHA },
         { "beta", ChainType::BETA },
-        { "non_tm", ChainType::NONTM },
-        { "unknown", ChainType::UNK}
+        { "non_tm", ChainType::NON_TM },
+        { "unknown", ChainType::UNK},
+        { "not_selected", ChainType::NOT_SELECTED}
     };
 
 }
