@@ -85,14 +85,15 @@ namespace Tmdet::DTOs {
 
     void Protein::unselectPolymers(Tmdet::ValueObjects::Protein& protein) {
         // Load unselectable names
-        std::ifstream filters;
         auto filterPath = environment.get("TMDET_POLYMER_FILTER_FILE", DEFAULT_TMDET_POLYMER_FILTER_FILE);
         if ( !Tmdet::System::FilePaths::fileExists(filterPath) ) {
             logger.warn("polymer filter file not found: {}", filterPath);
+            return;
         }
 
-        std::set<std::string> nameSet;
+        std::ifstream filters;
         filters.open(filterPath);
+        std::set<std::string> nameSet;
         for (std::string line; std::getline(filters, line); ) {
             if (line.length() == 0) {
                 continue;
