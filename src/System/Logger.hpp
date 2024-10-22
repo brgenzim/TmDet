@@ -83,24 +83,24 @@ namespace Tmdet::System {
             const std::vector<std::string> logLevels = {
                 "nop", "trace", "debug", "info", "warning", "error", "critical", "off"
             };
-            
+
             bool shouldLog(level lvl) const {
                 return lvl >= logLevel;
             }
 
             template <typename... Args>
-            void logIt(std::format_string<Args...> fmt, Args &&... args) {
+            void logIt(level lvl, std::format_string<Args...> fmt, Args &&... args) {
                 std::string str = std::format(fmt,std::forward<Args>(args)...);
                 std::string dt = getCurrentDateTime();
                 for( std::ostream* os : logStreams) {
-                    (*os) << dt << "[" << logLevels[logLevel] << "] " << str << std::endl;
+                    (*os) << dt << "[" << logLevels[lvl] << "] " << str << std::endl;
                 }
             }
 
             template <typename... Args>
             void log(level lvl, std::format_string<Args...> fmt, Args &&... args) {
                 if (shouldLog(lvl)) {
-                    logIt(fmt, std::forward<Args>(args)...);
+                    logIt(lvl, fmt, std::forward<Args>(args)...);
                 }
             }
 
@@ -152,6 +152,6 @@ namespace Tmdet::System {
             template <typename... Args>
             void critical(std::format_string<Args...> fmt, Args &&...args) {
                 log(level::critical, fmt, std::forward<Args>(args)...);
-            }      
+            }
     };
 }

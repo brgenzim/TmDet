@@ -23,6 +23,9 @@ Tmdet::System::Logger logger;
 
 int main(int argc, char *argv[], char **envp) {
 
+    logger.setLevel(Tmdet::System::level::warn);
+    logger.addStream(std::cout);
+
     environment.init(envp, ".env");
     fileName = filesystem::path(__FILE__).filename();
 
