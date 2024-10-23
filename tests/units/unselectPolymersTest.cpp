@@ -38,6 +38,14 @@ int main(int argc, char *argv[], char **envp) {
         assertTrue("Verifying chain G of 5uow" , protein.chains[5].selected == false, __LINE__);
     }
 
+    // Test case 2
+    {
+        auto protein = createTmdetStruct("1afo");
+        Tmdet::DTOs::Protein::unselectPolymers(protein);
+        assertTrue("Verifying chain A of 1afo" , protein.chains[0].selected, __LINE__);
+        assertTrue("Verifying chain B of 1afo" , protein.chains[1].selected, __LINE__);
+    }
+
     return 0;
 }
 
