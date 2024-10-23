@@ -62,6 +62,7 @@ namespace Tmdet::DTOs {
                 residueVO.chainIdx = chainVO.idx;
                 residueVO.idx = residueIdx++;
                 residueVO.surface = 0.0;
+                chainVO.seq += residueVO.type.a1;
                 int atomIdx = 0;
                 for( auto& atom: residue.atoms) {
                     auto atomVO = Tmdet::ValueObjects::Atom(atom,residueVO,chainVO);
@@ -185,8 +186,21 @@ namespace Tmdet::DTOs {
         for (auto& chain: protein.chains) {
             for (auto& residue: chain.residues) {
                 for (auto& atom: residue.atoms) {
-                    atom.gemmi.pos += gemmi::Position(protein.tmatrix.trans);
-                    //atom.gemmi.pos *= protein.membranes[0].tmatrix.rot;
+                    double x = protein.tmatrix.trans.x
+                                + atom.gemmi.pos.x * protein.tmatrix.rot[0][0]
+                                + atom.gemmi.pos.y * protein.tmatrix.rot[0][1]
+                                + atom.gemmi.pos.z * protein.tmatrix.rot[0][2];
+			        double y = protein.tmatrix.trans.y
+                                + atom.gemmi.pos.x * protein.tmatrix.rot[1][0]
+                                + atom.gemmi.pos.y * protein.tmatrix.rot[1][1]
+                                + atom.gemmi.pos.z * protein.tmatrix.rot[1][2];
+			        double z = protein.tmatrix.trans.z
+                                + atom.gemmi.pos.x * protein.tmatrix.rot[2][0]
+                                + atom.gemmi.pos.y * protein.tmatrix.rot[2][1]
+                                + atom.gemmi.pos.z * protein.tmatrix.rot[2][2];
+                    atom.gemmi.pos.x = x;
+                    atom.gemmi.pos.y = y;
+                    atom.gemmi.pos.z = z;
                 }
             }
         }

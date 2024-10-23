@@ -11,6 +11,7 @@ namespace Tmdet::DTOs::Xml {
             
     const char* XML_ATTR_AUTH_ASYM_ID="pdb_auth_asym_id";
     const char* XML_ATTR_AUTH_SEQ_ID="pdb_auth_seq_id";
+    const char* XML_ATTR_AUTH_SEQ_ICODE="pdb_auth_seq_icode";
     const char* XML_ATTR_DATE="date";
     const char* XML_ATTR_HALF_THICKNESS="halfThickness";
     const char* XML_ATTR_LABEL_ASYM_ID="pdb_label_asym_id";
@@ -18,6 +19,7 @@ namespace Tmdet::DTOs::Xml {
     const char* XML_ATTR_PDB_CODE="pdbCode";
     const char* XML_ATTR_NUM_TM="numTM";
     const char* XML_ATTR_SEQ="seq";
+    const char* XML_ATTR_SIZE="size";
     const char* XML_ATTR_TRANSMEMBRANE="transmembrane";
     const char* XML_ATTR_TYPE="type";
     const char* XML_ATTR_X="x";

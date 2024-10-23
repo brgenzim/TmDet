@@ -38,8 +38,8 @@
         TLLFMVLDVS AKVGFGLILL RSRAIFGE
       </sequence>
       <region>
-        <start seq="1" pdb_auth_seq_id="5" pdb_label_seq_id="1"/>
-        <end seq="7" pdb_auth_seq_id="11" pdb_label_seq_id="7"/>
+        <start seq="1" pdb_label_seq_id="5"/>
+        <end seq="7" pdb_label_seq_id="11"/>
       </region>
     </chain>
     <chain pdb_auth_asym_id="B" pdb_label_asym_id="A-2" numTM="7" type="alpha">
@@ -51,8 +51,8 @@
         TLLFMVLDVS AKVGFGLILL RSRAIFGE
       </sequence>
       <region type="1">
-        <start seq="1" pdb_auth_seq_id="5" pdb_label_seq_id="1"/>
-        <end seq="7" pdb_auth_seq_id="11" pdb_label_seq_id="7"/>
+        <start seq="1" pdb_auth_seq_id="5" pdb_auth_seq_icode="A" pdb_label_seq_id="1"/>
+        <end seq="7" pdb_auth_seq_id="11" pdb_auth_seq_icode="A" pdb_label_seq_id="7"/>
       </region>
     </chain>
     <chain pdb_auth_asym_id="C" pdb_label_asym_id="A-3" type="notSelected"/>

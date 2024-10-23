@@ -229,6 +229,7 @@ namespace Tmdet::Engine {
         }
         if (!protein.membranes.empty()) {
             protein.tmp = true;
+            protein.qValue = bestQ;
             setProteinTMatrix(massCentre,normal);
         }
         DEBUG_LOG(" Processed Optimizer::setMembranesToProtein()");
@@ -276,7 +277,7 @@ namespace Tmdet::Engine {
             slices[i].qValue = 0;
         }
 
-        double o = (minz+maxz) / 2;
+        double o = (minz+maxz) / 2 + min;
         if (protein.membranes.empty()) {
             massCentre += o * normal;
             membrane.origo = 0;

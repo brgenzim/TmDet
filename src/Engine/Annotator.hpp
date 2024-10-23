@@ -53,6 +53,7 @@ namespace Tmdet::Engine {
 
             void setZs();
              Tmdet::Types::Region getSideByZ(double z);
+            void storeRegion(Tmdet::ValueObjects::Chain& chain, unsigned int beg, unsigned int end) const;
 
         public:
             void detectSides();
@@ -60,6 +61,7 @@ namespace Tmdet::Engine {
             void detectBarrel();
             void detectLoops();
             void detectInterFacialHelices();
+            void getRegions();
 
             explicit Annotator(Tmdet::ValueObjects::Protein& protein) :
                 protein(protein) {}

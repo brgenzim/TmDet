@@ -16,38 +16,46 @@ namespace Tmdet::ValueObjects {
         /**
          * @brief start of the region in sequence position
          */
-        int beg;
+        int beg = 0;
 
         /**
-         * @brief start of the region in PDB numbering
+         * @brief start of the region in PDB by auth
          */
-        int rbeg;
+        int beg_auth_seq_id = 0;
 
         /**
-         * @brief insertion code in PDB structure of 
-         *        region start position
+         * @brief insertion code of start residue
          */
-        std::string begi;
+        char beg_auth_seq_icode = ' ';
+
+        /**
+         * @brief start of the region in PDB by label
+         */
+        int beg_label_seq_id = 0;
 
         /**
          * @brief end of the region in sequence position
          */
-        int end;
+        int end = 0;
         
         /**
-         * @brief end of the region in PDB numbering
+         * @brief end of the region in PDB by auth
          */
-        int rend;
+        int end_auth_seq_id = 0;
         
         /**
-         * @brief insertion code in PDB structure of 
-         *        region end position
+         * @brief insertion code of start residue
          */
-        std::string endi;
+        char end_auth_seq_icode = ' ';
+
+        /**
+         * @brief end of the region in PDB by label
+         */
+        int end_label_seq_id = 0;
         
         /**
          * @brief region type
          */
-        Tmdet::Types::Region type;
+        Tmdet::Types::Region type = Tmdet::Types::RegionType::UNK;
     };
 }

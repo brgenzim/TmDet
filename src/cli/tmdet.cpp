@@ -80,7 +80,7 @@ int main(int argc, char *argv[], char **envp) {
     //if code is given then system directories are used
     //else user should provide the full path of xml and cif files
     string code = args.getValueAsString("c");
-    string xmlPath = (code != ""?Tmdet::System::FilePaths::xml(code):args.getValueAsString("x"));
+    string xmlPath = (code != ""?Tmdet::System::FilePaths::xml(code,true):args.getValueAsString("x"));
     string inputPath = (code != ""?Tmdet::System::FilePaths::cif(code):args.getValueAsString("i"));
     string outputPdbPath = (code != ""?Tmdet::System::FilePaths::pdbOut(code):args.getValueAsString("p"));
 
@@ -125,5 +125,5 @@ int main(int argc, char *argv[], char **envp) {
     auto organizer = Tmdet::Engine::Organizer(protein, args);
     Tmdet::DTOs::Xml::Writer xmlOutput;
     xmlOutput.writeXml(protein, xmlPath);
-    
+    Tmdet::DTOs::Protein::writeCif(protein,outputPdbPath);
 }

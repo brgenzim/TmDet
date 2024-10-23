@@ -18,7 +18,7 @@ namespace Tmdet::Engine {
                 }
             }
         }
-        DEBUG_LOG("Processing: Annotator::detectSides()");
+        DEBUG_LOG(" Processed: Annotator::detectSides()");
     }
 
     void Annotator::setZs() {
@@ -66,5 +66,41 @@ namespace Tmdet::Engine {
         return r;
     }
 
+    void Annotator::storeRegion(Tmdet::ValueObjects::Chain& chain,unsigned int beg, unsigned int end) const {
+        Tmdet::ValueObjects::Region region = {
+            (int)(beg+1),
+            (int)chain.residues[beg].gemmi.seqid.num,
+            chain.residues[beg].gemmi.seqid.icode,
+            (int)chain.residues[beg].gemmi.label_seq,
+            (int)(end+1),
+            (int)chain.residues[end].gemmi.seqid.num,
+            chain.residues[end].gemmi.seqid.icode,
+            (int)chain.residues[end].gemmi.label_seq,
+            std::any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("type"))
+        };
+        chain.regions.emplace_back(region);
+    }
+
+    void Annotator::getRegions() {
+        DEBUG_LOG("Processing: Annotator::getRegions()");
+        for(auto& chain: protein.chains) {
+            if (chain.selected) {
+                unsigned int start = 0;
+                for(unsigned int i = 0; i< chain.residues.size(); i++) {
+                    if (std::any_cast<Tmdet::Types::Region>(chain.residues[start].temp.at("type")) 
+                        != std::any_cast<Tmdet::Types::Region>(chain.residues[i].temp.at("type"))) {
+                        storeRegion(chain,start,i-1);
+                        start = i;
+                    }
+                }
+                storeRegion(chain,start,chain.residues.size()-1);
+            }
+        }
+        DEBUG_LOG(" Processed: Annotator::detectgetRegions()");
+    }
+
+    void Annotator::detectBarrel() {
+        
+    }
 
 }

@@ -8,6 +8,10 @@ namespace Tmdet::Types {
     struct Membrane {
         std::string name;
         std::string description;
+
+        bool operator==(Membrane other) {
+            return name == other.name;
+        }
     };
 
     namespace MembraneType {

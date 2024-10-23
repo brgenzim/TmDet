@@ -155,10 +155,12 @@ namespace Tmdet::DTOs::Xml {
             char type = r_node.attribute(XML3_ATTR_type).value()[0];
             regions.emplace_back(r_node.attribute(XML3_ATTR_SEQ_BEG).as_int(),
                 r_node.attribute(XML3_ATTR_PDB_BEG).as_int(),
-                (r_node.attribute(XML3_ATTR_PDB_BEGI)?r_node.attribute(XML3_ATTR_PDB_BEGI).as_string():""),
+                (r_node.attribute(XML3_ATTR_PDB_BEGI)?r_node.attribute(XML3_ATTR_PDB_BEGI).as_string()[0]:' '),
+                r_node.attribute(XML3_ATTR_PDB_BEG).as_int(),
                 r_node.attribute(XML3_ATTR_SEQ_END).as_int(),
                 r_node.attribute(XML3_ATTR_PDB_END).as_int(),
-                (r_node.attribute(XML3_ATTR_PDB_ENDI)?r_node.attribute(XML3_ATTR_PDB_ENDI).as_string():""),
+                (r_node.attribute(XML3_ATTR_PDB_ENDI)?r_node.attribute(XML3_ATTR_PDB_ENDI).as_string()[0]:' '),
+                r_node.attribute(XML3_ATTR_PDB_END).as_int(),
                 Tmdet::Types::Regions.at(type));
         }
         return regions;

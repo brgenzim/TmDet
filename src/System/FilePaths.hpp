@@ -4,6 +4,7 @@
 #include <fstream>
 #include <string>
 #include <format>
+#include <filesystem>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <Config.hpp>
@@ -17,10 +18,14 @@ namespace Tmdet::System {
             return (stat (name.c_str(), &buffer) == 0); 
         }
 
-        static std::string xml(const std::string& code) {
-            return std::format("{}/{}/{}.xml",
+        static std::string xml(const std::string& code, const bool createDir = false) {
+            std::string path = std::format("{}/{}",
                     environment.get("TMDET_DATA_ROOT",DEFAULT_TMDET_DATA_ROOT),
-                    code.substr(1,2),code);
+                    code.substr(1,2));
+            if (createDir) {
+                std::filesystem::create_directories(path);
+            }
+            return std::format("{}/{}.xml",path,code);
         }
 
         static std::string cif(const std::string& code) {

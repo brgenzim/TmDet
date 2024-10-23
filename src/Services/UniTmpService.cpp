@@ -27,10 +27,8 @@ namespace Tmdet::Services::UniTmpService {
         auto result = std::vector<TmdetVO::Region>();
         for (auto& item : json["Regions"]) {
             TmdetVO::Region region;
-            region.rbeg = item["start"].template get<int>();
-            region.rend = item["end"].template get<int>();
-            region.beg = region.end = 0;
-            region.begi = region.endi = ' ';
+            region.beg = item["start"].template get<int>();
+            region.end = item["end"].template get<int>();
             region.type = Tmdet::Types::RegionsByName.at(item["loc"]);
             result.emplace_back(region);
         }

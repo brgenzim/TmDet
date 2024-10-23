@@ -89,6 +89,8 @@ namespace Tmdet::Engine {
         Tmdet::DTOs::Protein::transform(protein);
         auto annotator = Tmdet::Engine::Annotator(protein);
         annotator.detectSides();
+        //TODO
+        annotator.getRegions();
         DEBUG_LOG(" Processed Organizer::annotate()");
     }
 }
