@@ -32,6 +32,15 @@ namespace Tmdet::DTOs {
         std::ofstream outCif(path);
         gemmi::cif::WriteOptions options(gemmi::cif::Style::Pdbx);
         gemmi::cif::Document document = make_mmcif_document(protein.gemmi);
+
+        // correction of _chem_comp
+        auto& newChemLoop = document.blocks[0].init_mmcif_loop("_chem_comp.", { "id", "type" });
+        auto oldBlock = protein.document.blocks[0];
+        for (auto chemComp : oldBlock.find("_chem_comp.", { "id", "type" })) {
+            std::cout << "item: " << chemComp[0] << ": " << chemComp[1] << std::endl;
+            newChemLoop.add_row({ chemComp[0], chemComp[1] });
+        }
+
         gemmi::cif::write_cif_to_stream(outCif, document, options);
     }
 
