@@ -5,6 +5,7 @@
 #include <vector>
 #include <gemmi/model.hpp>
 #include <Types/Region.hpp>
+#include <Utils/SecStrVec.hpp>
 #include <ValueObjects/Protein.hpp>
 #include <ValueObjects/Residue.hpp>
 #include <ValueObjects/Membrane.hpp>
@@ -50,6 +51,7 @@ namespace Tmdet::Engine {
             double z3;
             double z4;
             bool doubleMembrane = false;
+            Tmdet::Utils::SecStrVec ssVec = Tmdet::Utils::SecStrVec(protein);
 
             void setZs();
              Tmdet::Types::Region getSideByZ(double z);

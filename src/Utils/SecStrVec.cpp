@@ -21,7 +21,8 @@ using namespace std;
 
 namespace Tmdet::Utils {
     
-    void SecStrVec::define(Tmdet::ValueObjects::Protein& protein) {
+    void SecStrVec::define() {
+        DEBUG_LOG("Processing SecStrVec::define()");
         vectors.clear();
         for(auto& chain: protein.chains) {
             int begin, end;
@@ -34,32 +35,41 @@ namespace Tmdet::Utils {
             }
         }
         DEBUG_LOG("{}",Tmdet::Helpers::Pymol::dumpSecStrVec(vectors,"yellow"));
+        DEBUG_LOG(" Processed SecStrVec::define(#vectors: {})",vectors.size());
     }
 
-    void SecStrVec::numCross(Tmdet::ValueObjects::Membrane& membrane, int &numBoth, int &numUp, int &numDown) {
+    void SecStrVec::numCrossingAlpha(Tmdet::ValueObjects::Membrane& membrane, int &numBoth, int &numUp, int &numDown) {
         numBoth = numUp = numDown = 0;
         for (auto& vector : vectors) {
-            ifCross(vector, membrane, numBoth, numUp, numDown);
+            if (vector.type.isAlpha()) {
+                checkCross(vector, membrane, numBoth, numUp, numDown);
+            }
         }
     }
 
+    void SecStrVec::numCrossingBeta(Tmdet::ValueObjects::Membrane& membrane, int &numBoth, int &numUp, int &numDown) {
+        numBoth = numUp = numDown = 0;
+        for (auto& vector : vectors) {
+            if (vector.type.isBeta()) {
+                checkCross(vector, membrane, numBoth, numUp, numDown);
+            }
+        }
+    }
 
-    bool SecStrVec::ifCross(_secStrVec& vec, Tmdet::ValueObjects::Membrane& membrane, int& numBoth, int& numUp, int& numDown) {
+    bool SecStrVec::checkCross(_secStrVec& vec, Tmdet::ValueObjects::Membrane& membrane, int& numBoth, int& numUp, int& numDown) {
         bool resultUp = false;
         bool resultDown = false;
 
         if (membrane.type == Tmdet::Types::MembraneType::PLAIN) {
             resultUp = Tmdet::Helpers::Vector::doesVectorCrossPlane(
-                    vec.begin, vec.end, gemmi::Vec3(0,0,1), gemmi::Vec3(0,0,membrane.origo + membrane.halfThickness));
+                    vec.begin, vec.end, gemmi::Vec3(0,0,1), gemmi::Vec3(0,0,membrane.origo + 5.0));
             resultDown = Tmdet::Helpers::Vector::doesVectorCrossPlane(
-                    vec.begin, vec.end, gemmi::Vec3(0,0,1), gemmi::Vec3(0,0,membrane.origo - membrane.halfThickness));
+                    vec.begin, vec.end, gemmi::Vec3(0,0,1), gemmi::Vec3(0,0,membrane.origo - 5.0));
         } else if (membrane.type == Tmdet::Types::MembraneType::CURVED) {
             resultUp = Tmdet::Helpers::Vector::doesVectorCrossSphere(
-                    vec.begin, vec.end, gemmi::Vec3(0,0,membrane.origo), 
-                    membrane.sphereRadius + membrane.halfThickness);
+                    vec.begin, vec.end, gemmi::Vec3(0,0,membrane.origo), sphereRadius + 5.0);
             resultDown = Tmdet::Helpers::Vector::doesVectorCrossSphere(
-                    vec.begin, vec.end, gemmi::Vec3(0,0,membrane.origo), 
-                    membrane.sphereRadius - membrane.halfThickness);
+                    vec.begin, vec.end, gemmi::Vec3(0,0,membrane.), membrane.sphereRadius - 5.0);
         } else {
             throw runtime_error("Unexpected membrane type: " + membrane.type.name);
         }
@@ -100,7 +110,8 @@ namespace Tmdet::Utils {
     _secStrVec SecStrVec::getVector(Tmdet::ValueObjects::Chain& chain, int begin, int end) {
         return (chain.residues[begin].ss.isAlpha()?
                     getAlphaVector(chain, begin, end):
-                    getBetaVector(chain,begin,end));
+                    getBetaVector(chain,begin,end),
+                    chain.idx, begin, end);
     }
 
     _secStrVec SecStrVec::getAlphaVector(Tmdet::ValueObjects::Chain& chain, int begin, int end) {
@@ -131,12 +142,5 @@ namespace Tmdet::Utils {
 
         return vec;
     }
-
-
-    //
-    // Util/Debug functions
-    //
-
-    
 
 }
