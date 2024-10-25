@@ -71,6 +71,14 @@ std::string getPrefix(const std::string& key) {
     return key.substr(0, pos);
 }
 
+std::string getSuffix(const std::string& key) {
+    auto pos = key.find(".");
+    if (pos == key.npos) {
+        throw runtime_error(std::format("no prefix in '{}'", key));
+    }
+    return key.substr(pos + 1);
+}
+
 void printDocument(std::ostream& outputStream, const std::string& pdbCode) {
 
     auto inputPath = environment.get("PDB_CIF_DIR");
@@ -78,6 +86,41 @@ void printDocument(std::ostream& outputStream, const std::string& pdbCode) {
     std::cerr << "reading: " << inputPath << " ..." << std::endl;
 
     auto document = gemmi::cif::read(gemmi::MaybeGzipped(inputPath));
+
+    //
+    // Update atom lines
+    //
+
+    auto oldBlock = document.blocks[0];
+    // oldBlock.find_loop(); // col
+    if (!oldBlock.has_mmcif_category("_atom_site")) {
+        throw runtime_error("_atom_site not found");
+    }
+    auto atomLoopItem = *oldBlock.find_loop_item("_atom_site.id");
+    auto atomTable = oldBlock.item_as_table(atomLoopItem);
+    std::vector<std::string> columns;
+    for (auto& tag : atomTable.tags()) {
+        columns.emplace_back(getSuffix(tag.data()));
+    }
+    // auto& newLoop = document.blocks[0].init_mmcif_loop("_atom_site.", { "id", "name" });
+    auto& newLoop = document.blocks[0].init_mmcif_loop("_atom_site.", columns);
+
+    for (auto atom : atomTable) {
+        // outputStream << atom.row_index << std::endl;
+        std::vector<std::string> atomLine;
+        for (auto& value : atom) {
+            atomLine.emplace_back(value);
+        }
+        // TODO: replace this part by coords update
+        // _atom_site.Cartn_x
+        // _atom_site.Cartn_y
+        // _atom_site.Cartn_z
+
+        newLoop.add_row(atom);
+    }
+
+
+    // Printing...
 
     for (auto& block : document.blocks) {
         outputStream << std::format("data_{}", block.name) << std::endl;
