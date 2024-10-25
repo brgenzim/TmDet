@@ -12,6 +12,7 @@ AUX_SOURCE_DIRECTORY( DTOs DtosSources )
 AUX_SOURCE_DIRECTORY( DTOs/Xml XmlSources )
 AUX_SOURCE_DIRECTORY( Engine EngineSources )
 AUX_SOURCE_DIRECTORY( Exceptions ExceptionsSources )
+AUX_SOURCE_DIRECTORY( Helpers HelpersSources )
 AUX_SOURCE_DIRECTORY( Optim OptimSources )
 AUX_SOURCE_DIRECTORY( Services ServicesSources )
 AUX_SOURCE_DIRECTORY( System SystemSources )
@@ -25,6 +26,7 @@ LIST (APPEND FULL_SRC
      ${DtosSources}
      ${EngineSources}
      ${ExceptionsSources}
+     ${HelpersSources}
      ${OptimSources}
      ${ServicesSources}
      ${SystemSources}

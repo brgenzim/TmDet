@@ -1,26 +1,13 @@
-#include <algorithm>
-#include <string>
-#include <vector>
-#include <iostream>
-#include <fstream>
-#include <algorithm>
-#include <cstdlib>
-#include <gemmi/cifdoc.hpp>
-#include <gemmi/model.hpp>
+#include <sstream>
 #include <gemmi/modify.hpp>
 #include <gemmi/polyheur.hpp>
-#include <gemmi/align.hpp>
-#include <gemmi/seqalign.hpp>
-#include <gemmi/seqtools.hpp>
 #include <gemmi/to_cif.hpp>
 #include <gemmi/to_mmcif.hpp>
-#include <Config.hpp>
 #include <DTOs/Protein.hpp>
+#include <Helpers/Gzip.hpp>
 #include <System/FilePaths.hpp>
 #include <Utils/Alignment.hpp>
-#include <Types/Protein.hpp>
-#include <Types/Residue.hpp>
-#include <Types/SecStruct.hpp>
+#include <System/Logger.hpp>
 #include <ValueObjects/Protein.hpp>
 #include <ValueObjects/Chain.hpp>
 #include <ValueObjects/Residue.hpp>
@@ -29,10 +16,27 @@
 namespace Tmdet::DTOs {
 
     void Protein::writeCif(const Tmdet::ValueObjects::Protein& protein, const std::string& path) {
-        std::ofstream outCif(path);
-        gemmi::cif::WriteOptions options(gemmi::cif::Style::Pdbx);
         gemmi::cif::Document document = make_mmcif_document(protein.gemmi);
-        gemmi::cif::write_cif_to_stream(outCif, document, options);
+
+        // correction of _chem_comp
+        logger.debug("Updating chem_comp types before writing document into '{}'", path);
+        auto& newChemLoop = document.blocks[0].init_mmcif_loop("_chem_comp.", { "id", "type" });
+        auto oldBlock = protein.document.blocks[0];
+        for (auto chemComp : oldBlock.find("_chem_comp.", { "id", "type" })) {
+            logger.debug("chem_comp: {} {}", chemComp[0], chemComp[1]);
+            newChemLoop.add_row({ chemComp[0], chemComp[1] });
+        }
+
+        std::stringstream sstream;
+        gemmi::cif::WriteOptions options(gemmi::cif::Style::Pdbx);
+        gemmi::cif::write_cif_to_stream(sstream, document, options);
+
+        if (path.ends_with(".gz")) {
+            Tmdet::Helpers::Gzip::writeFile(path, sstream.str());
+        } else {
+            std::ofstream outCif(path);
+            outCif << sstream.str();
+        }
     }
 
     Tmdet::ValueObjects::Protein Protein::get(const std::string& inputPath) {
