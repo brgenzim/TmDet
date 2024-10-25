@@ -3,6 +3,7 @@
 #include <vector>
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <algorithm>
 #include <cstdlib>
 #include <gemmi/cifdoc.hpp>
@@ -16,6 +17,7 @@
 #include <gemmi/to_mmcif.hpp>
 #include <Config.hpp>
 #include <DTOs/Protein.hpp>
+#include <Helpers/Gzip.hpp>
 #include <System/FilePaths.hpp>
 #include <Utils/Alignment.hpp>
 #include <Types/Protein.hpp>
@@ -30,8 +32,6 @@
 namespace Tmdet::DTOs {
 
     void Protein::writeCif(const Tmdet::ValueObjects::Protein& protein, const std::string& path) {
-        std::ofstream outCif(path);
-        gemmi::cif::WriteOptions options(gemmi::cif::Style::Pdbx);
         gemmi::cif::Document document = make_mmcif_document(protein.gemmi);
 
         // correction of _chem_comp
@@ -43,7 +43,16 @@ namespace Tmdet::DTOs {
             newChemLoop.add_row({ chemComp[0], chemComp[1] });
         }
 
-        gemmi::cif::write_cif_to_stream(outCif, document, options);
+        std::stringstream sstream;
+        gemmi::cif::WriteOptions options(gemmi::cif::Style::Pdbx);
+        gemmi::cif::write_cif_to_stream(sstream, document, options);
+
+        if (path.ends_with(".gz")) {
+            Tmdet::Helpers::Gzip::writeFile(path, sstream.str());
+        } else {
+            std::ofstream outCif(path);
+            outCif << sstream.str();
+        }
     }
 
     Tmdet::ValueObjects::Protein Protein::get(const std::string& inputPath) {
