@@ -7,77 +7,91 @@
 namespace Tmdet::Types {
 
     struct Region {
+        int id;
         std::string name;
         char code;
         std::string description;
 
-        bool operator==(Region other) {
-            return code == other.code;
+        bool operator == (const Region& other) const {
+            return id == other.id;
         }
     };
 
     namespace RegionType {
         const Region MEMB = {
+            0,
             "transmembrane", 
             'M',
             "Region crossing the membrane"
         };
         const Region HELIX = {
+            1,
             "Alpha helical transmembrane", 
             'H',
             "Alpha helical region crossing the membrane"
         };
         const Region BETA = {
+            2,
             "Beta barrel strain", 
             'B',
             "Beta strain crossing the membrane"
         };
         const Region SIDE1 = {
+            3,
             "side1",
             '1',
             "Side one of the membrane"
         };
         const Region SIDE2 = {
+            4,
             "side2",
             '2',
             "Other side of the membrane"
         };
         const Region LOOP = {
+            5,
             "loop",
             'L',
             "Re-entrant membrane loop"
         };
         const Region IFH = {
+            6,
             "interfacial helix",
             'F',
             "Interfacial helix on membrane surface"
         };
         const Region MEMBINS = {
+            7,
             "membins",
             'N',
             "Beta barrel inside element"
         };
         const Region INTERMEMB = {
+            8,
             "intermembrane",
             '3',
             "Intermembrane space if protein crosses two membranes"
         };
         const Region UNK = {
+            9,
             "unkown",
             'U',
             "Unknown localization"
         };
         const Region INSIDE = {
+            10,
             "inside",
             'I',
             "inside (i.e cytoplasmic) in TOPDB"
         };
         const Region OUTSIDE = {
+            11,
             "outside",
             'O',
             "outside (i.e extra-cytosolic) in TOPDB"
         };
         const Region PERIPLASM = {
+            12,
             "periplasm",
             'E',
             "Periplasmic"

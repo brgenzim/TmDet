@@ -19,16 +19,20 @@ namespace Tmdet::Types {
             return (code != other.code);
         }
 
-        bool isAlpha() {
-            return (code == 'H' || code == 'G' || code == 'I');
+        bool isAlpha() const {
+            return (code == 'H' || code == 'G' || code == 'I' || code == 'T');
         }
 
-        bool isBeta() {
+        bool isBeta() const {
             return (code == 'E');
         }
 
-        bool isTurn() {
+        bool isTurn() const {
             return (code == 'T' || code == 'B' || code == 'S');
+        }
+
+        bool same(const SecStruct &other) const {
+            return ((isAlpha() && other.isAlpha()) || (isBeta() && other.isBeta()));
         }
     };
 

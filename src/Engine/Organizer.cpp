@@ -61,6 +61,9 @@ namespace Tmdet::Engine {
     void Organizer::dssp() {
         DEBUG_LOG("Processing Organizer::dssp()");
         auto dssp = Tmdet::Utils::Dssp(protein);
+        for (auto& chain : protein.chains) {
+            DEBUG_LOG(" DSSP: {}: {}",chain.id,dssp.getSecStructAsString(chain));
+        }
         DEBUG_LOG(" Processed Organizer::dssp()");
     }
 
@@ -75,8 +78,9 @@ namespace Tmdet::Engine {
         if (auto oligomerChains = Tmdet::Utils::Oligomer::getHomoOligomerEntities(protein.gemmi); !oligomerChains.empty()) {
             auto symmetry = Tmdet::Utils::Symmetry(protein);
             auto axes = symmetry.getMembraneAxes();
-            for(auto& normal: axes) {
+            for(const auto& normal: axes) {
                 optimizer.setNormal(normal);
+                optimizer.clear();
                 optimizer.testMembraneNormal();
                 optimizer.setMembranesToProtein();
             }
@@ -89,6 +93,9 @@ namespace Tmdet::Engine {
         Tmdet::DTOs::Protein::transform(protein);
         auto annotator = Tmdet::Engine::Annotator(protein);
         annotator.detectSides();
+        annotator.detectAlphaHelices();
+        annotator.detectBarrel();
+        annotator.detectInterfacialHelices();
         //TODO
         annotator.getRegions();
         DEBUG_LOG(" Processed Organizer::annotate()");

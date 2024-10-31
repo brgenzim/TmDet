@@ -131,9 +131,9 @@ namespace Tmdet::Engine {
     double Optimizer::getQValueForSlice(const _slice& s) const {
         double q = 0.0;
         if (s.numCA > 0 && s.surf >0 ) {
-            q += 35 * (double)s.numStraight / s.numCA;
-            q += 11 * (1.0 - (double)s.numTurn / s.numCA);
-            q += 60 * s.voronota / s.surf;
+            q += 40 * (double)s.numStraight / s.numCA;
+            q += 30 * (1.0 - (double)s.numTurn / s.numCA);
+            q += 50 * s.voronota / s.surf;
             DEBUG_LOG("Slice: ca: {} nStr: {} nT: {} voronota: {} surf: {} q: {}",s.numCA,s.numStraight,s.numTurn,s.voronota,s.surf,q);
         }
         return q;
@@ -193,6 +193,10 @@ namespace Tmdet::Engine {
 
     void Optimizer::setNormal(gemmi::Vec3 _normal) {
         normal = _normal;
+    }
+
+    void Optimizer::clear() {
+        bestQ = 0;
     }
 
     void Optimizer::testMembraneNormal() {
@@ -259,11 +263,11 @@ namespace Tmdet::Engine {
         }
         
         unsigned long int minz = bestZ; 
-        while (minz>2 && slices[minz].qValue > TMDET_MEMBRANE_QVALUE) {
+        while (minz>2 && slices[minz].qValue > TMDET_MEMBRANE_QVALUE && bestZ - minz < TMDET_MEMBRANE_MAX_HALFTHICKNESS) {
             minz--;
         }
         unsigned long int maxz = bestZ; 
-        while (maxz<slices.size()-2 && slices[maxz].qValue > TMDET_MEMBRANE_QVALUE) {
+        while (maxz<slices.size()-2 && slices[maxz].qValue > TMDET_MEMBRANE_QVALUE && maxz - bestZ < TMDET_MEMBRANE_MAX_HALFTHICKNESS) {
             maxz++;
         }
         membrane.halfThickness = (maxz-minz) / 2;

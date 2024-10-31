@@ -12,6 +12,10 @@ namespace Tmdet::Types {
         bool globular;
         bool membrane;
         bool alpha;
+
+        bool operator == (const Protein& other) const {
+            return name == other.name;
+        }
     };
 
     namespace ProteinType {

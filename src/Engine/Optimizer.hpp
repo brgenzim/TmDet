@@ -229,5 +229,7 @@ namespace Tmdet::Engine {
              * @brief 
              */
             void setProteinTMatrix(gemmi::Vec3& origo, gemmi::Vec3& normal) const;
+
+            void clear();
     };
 }

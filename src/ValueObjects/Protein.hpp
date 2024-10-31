@@ -13,13 +13,13 @@
 #include <ValueObjects/Modification.hpp>
 #include <ValueObjects/BioMatrix.hpp>
 #include <ValueObjects/Membrane.hpp>
-
+#include <ValueObjects/SecStrVec.hpp>
 
 /**
  * @brief namespace for value objects
  */
 namespace Tmdet::ValueObjects {
-
+    
     /**
      * @brief Protein contains both gemmi structure 
      *        description and all information about
@@ -162,6 +162,8 @@ namespace Tmdet::ValueObjects {
          * @brief search chain by id (label_asym_id)
          */
         int searchChainByLabId(const std::string& id) const;
+
+        std::vector<Tmdet::ValueObjects::SecStrVec> vectors;
 
         gemmi::Vec3 centre();
     };

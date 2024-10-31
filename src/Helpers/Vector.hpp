@@ -28,7 +28,7 @@ namespace Tmdet::Helpers::Vector {
      * @param vec 
      * @return std::string 
      */
-    static std::string vec3ToString(gemmi::Vec3& vec) {
+    static std::string vec3ToString(const gemmi::Vec3& vec) {
         return std::format("[{}, {}, {}]",vec.x, vec.y, vec.z);
     }
 
@@ -68,6 +68,11 @@ namespace Tmdet::Helpers::Vector {
         }
 
         return result;
+    }
+
+    static bool simplifiedDoesVectorCrossPlane(double begin, double end, double plane) {
+        DEBUG_LOG("simplifiedDoesVectorCrossPlane: {} {} {}",begin,end,plane);
+        return ((begin<plane && plane<end) || (begin>plane && plane>end));
     }
 
     /**
@@ -132,5 +137,10 @@ namespace Tmdet::Helpers::Vector {
         return result;
     }
 
-    
+    static double distanceFromLine(const gemmi::Vec3& a, const gemmi::Vec3& b, const gemmi::Vec3& c) {
+        auto ab = b - a;
+        auto ac = c - a;
+        auto crossProduct = ab.cross(ac);
+        return crossProduct.length() / ab.length();
+    }
 }

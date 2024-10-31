@@ -4,50 +4,45 @@
 #include <vector>
 #include <any>
 #include <unordered_map>
-#include <Types/SecStruct.hpp>
-#include <ValueObjects/Protein.hpp>
 #include <gemmi/math.hpp>
-
-namespace StructVO = Tmdet::ValueObjects;
-
-//#define __SECSTRVEC_DBG 1
+#include <Types/SecStruct.hpp>
+#include <ValueObjects/SecStrVec.hpp>
+#include <ValueObjects/Protein.hpp>
 
 namespace Tmdet::Utils {
 
-    struct _secStrVec {
-        Tmdet::Types::SecStruct type;
-        gemmi::Vec3 begin;
-        gemmi::Vec3 end;
-        int chainIdx;
-        int begResIdx;
-        int endResIdx;
-    };
-
     class SecStrVec {
         private:
-            std::vector<_secStrVec> vectors;
             Tmdet::ValueObjects::Protein& protein;
 
-            void define();
-            bool checkCross(_secStrVec& vec, Tmdet::ValueObjects::Membrane& membrane, int& numBoth, int& numUp, int& numDown);
-            bool getNextRegion(StructVO::Chain& chain, int& begin, int& end);
-            bool getNextNotUnkown(StructVO::Chain& chain, int& begin);
-            bool getNextSame(StructVO::Chain& chain, int& begin, int& end);
-            _secStrVec getVector(StructVO::Chain& chain, int begin, int end);
-            _secStrVec getAlphaVector(StructVO::Chain& chain, int begin, int end);
-            gemmi::Vec3 getMeanPosition(StructVO::Chain& chain, int pos);
-            _secStrVec getBetaVector(StructVO::Chain& chain, int begin, int end);
-
+            void define();            
+            bool checkCross(Tmdet::ValueObjects::SecStrVec& vec, Tmdet::ValueObjects::Membrane& membrane) const;
+            bool checkParallel(Tmdet::ValueObjects::SecStrVec& vec, Tmdet::ValueObjects::Membrane& membrane) const;
+            bool getNextRegion(Tmdet::ValueObjects::Chain& chain, int& begin, int& end) const;
+            bool getNextNotUnkown(Tmdet::ValueObjects::Chain& chain, int& begin) const;
+            bool getNextSame(Tmdet::ValueObjects::Chain& chain, const int& begin, int& end) const;
+            Tmdet::ValueObjects::SecStrVec getVector(Tmdet::ValueObjects::Chain& chain, int begin, int end) const;
+            Tmdet::ValueObjects::SecStrVec getAlphaVector(Tmdet::ValueObjects::Chain& chain, int begin, int end) const;
+            gemmi::Vec3 getMeanPosition(Tmdet::ValueObjects::Chain& chain, int pos) const;
+            Tmdet::ValueObjects::SecStrVec getBetaVector(Tmdet::ValueObjects::Chain& chain, int begin, int end) const;
+            void checkAlphaVectorsForSplitting();
+            bool checkAlphaVectorForSplitting(const Tmdet::ValueObjects::SecStrVec& vector);
+            std::vector<Tmdet::ValueObjects::SecStrVec> splitAlphaVector(const Tmdet::ValueObjects::SecStrVec& vector);
+            bool getStraightVector(int chainIdx, int begResIdx, int endResIdxAll, Tmdet::ValueObjects::SecStrVec& vec);
+            double getCaDist(int chainIdx, int resIdx);
+            void checkAlphaVectorsForMerging();
+            bool checkAlphaVectorForMerging(const Tmdet::ValueObjects::SecStrVec& v1, const Tmdet::ValueObjects::SecStrVec& v2) const;
+            Tmdet::ValueObjects::SecStrVec mergeVectors(const Tmdet::ValueObjects::SecStrVec& v1, const Tmdet::ValueObjects::SecStrVec& v2) const;
 
         public:
             explicit SecStrVec(Tmdet::ValueObjects::Protein& protein) :
                 protein(protein) {
                     define();
             }
-            
-            void numCrossingAlpha(Tmdet::ValueObjects::Membrane& membrane, int &numBoth, int &numUp, int &numDown);
-            void numCrossingBeta(Tmdet::ValueObjects::Membrane& membrane, int &numBoth, int &numUp, int &numDown);
-            
+            ~SecStrVec()=default;
 
+            std::vector<Tmdet::ValueObjects::SecStrVec> getCrossingAlphas(Tmdet::ValueObjects::Membrane& membrane);
+            std::vector<Tmdet::ValueObjects::SecStrVec> getParallelAlphas(Tmdet::ValueObjects::Membrane& membrane);
+            std::vector<Tmdet::ValueObjects::SecStrVec> getCrossingBetas(Tmdet::ValueObjects::Membrane& membrane);
     };
 }

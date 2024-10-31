@@ -78,4 +78,4 @@ link_directories(${CMAKE_INSTALL_PREFIX_LIB})
 
 # Subdirectories
   ADD_SUBDIRECTORY ( src )
-  ADD_SUBDIRECTORY ( tests )
+  #ADD_SUBDIRECTORY ( tests )

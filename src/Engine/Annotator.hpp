@@ -54,15 +54,20 @@ namespace Tmdet::Engine {
             Tmdet::Utils::SecStrVec ssVec = Tmdet::Utils::SecStrVec(protein);
 
             void setZs();
-             Tmdet::Types::Region getSideByZ(double z);
+             Tmdet::Types::Region getSideByZ(double z) const;
             void storeRegion(Tmdet::ValueObjects::Chain& chain, unsigned int beg, unsigned int end) const;
+            void replaceRegion(const Tmdet::ValueObjects::SecStrVec& vector, Tmdet::Types::Region regionType);
+            bool getNextRegion(Tmdet::ValueObjects::Chain& chain, int& begin, int& end) const;
+            bool getNextDefined(Tmdet::ValueObjects::Chain& chain, int& begin) const;
+            bool getNextSame(Tmdet::ValueObjects::Chain& chain, const int& begin, int& end) const;
+
 
         public:
             void detectSides();
-            void detectHelices();
+            void detectAlphaHelices();
             void detectBarrel();
             void detectLoops();
-            void detectInterFacialHelices();
+            void detectInterfacialHelices();
             void getRegions();
 
             explicit Annotator(Tmdet::ValueObjects::Protein& protein) :

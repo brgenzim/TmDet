@@ -8,6 +8,7 @@
 #include <gemmi/model.hpp>
 #include <gemmi/neighbor.hpp>
 #include <Config.hpp>
+#include <DTOs/SecStrVec.hpp>
 #include <Helpers/Vector.hpp>
 #include <Helpers/Pymol.hpp>
 #include <System/Logger.hpp>
@@ -16,6 +17,7 @@
 #include <Utils/SecStrVec.hpp>
 #include <ValueObjects/Protein.hpp>
 #include <ValueObjects/Chain.hpp>
+#include <ValueObjects/SecStrVec.hpp>
 
 using namespace std;
 
@@ -23,124 +25,253 @@ namespace Tmdet::Utils {
     
     void SecStrVec::define() {
         DEBUG_LOG("Processing SecStrVec::define()");
-        vectors.clear();
+        protein.vectors.clear();
         for(auto& chain: protein.chains) {
-            int begin, end;
-            begin = end = 0;
+            int begin = 0;
+            int end = 0;
             while(getNextRegion(chain, begin, end)) {
-                if (end - begin > 1) {
-                    vectors.push_back(getVector(chain, begin, end - 1));
+                if (end - begin > 4) {
+                    protein.vectors.push_back(getVector(chain, begin, end - 1));
                 }
                 begin = end;
             }
         }
-        DEBUG_LOG("{}",Tmdet::Helpers::Pymol::dumpSecStrVec(vectors,"yellow"));
-        DEBUG_LOG(" Processed SecStrVec::define(#vectors: {})",vectors.size());
+        for(auto& vector: protein.vectors) {
+            DEBUG_LOG("{}",Tmdet::DTOs::SecStrVec::print(vector));
+        }
+        checkAlphaVectorsForSplitting();
+        checkAlphaVectorsForMerging();
+        DEBUG_LOG(" Processed SecStrVec::define(#vectors: {})",protein.vectors.size());
     }
 
-    void SecStrVec::numCrossingAlpha(Tmdet::ValueObjects::Membrane& membrane, int &numBoth, int &numUp, int &numDown) {
-        numBoth = numUp = numDown = 0;
-        for (auto& vector : vectors) {
-            if (vector.type.isAlpha()) {
-                checkCross(vector, membrane, numBoth, numUp, numDown);
+    std::vector<Tmdet::ValueObjects::SecStrVec> SecStrVec::getCrossingAlphas(Tmdet::ValueObjects::Membrane& membrane) {
+        std::vector<Tmdet::ValueObjects::SecStrVec> ret;
+        for (auto& vector : protein.vectors) {
+            if (vector.type.isAlpha() && checkCross(vector, membrane)) {
+                ret.emplace_back(vector);
             }
         }
+        return ret;
     }
 
-    void SecStrVec::numCrossingBeta(Tmdet::ValueObjects::Membrane& membrane, int &numBoth, int &numUp, int &numDown) {
-        numBoth = numUp = numDown = 0;
-        for (auto& vector : vectors) {
-            if (vector.type.isBeta()) {
-                checkCross(vector, membrane, numBoth, numUp, numDown);
+    std::vector<Tmdet::ValueObjects::SecStrVec> SecStrVec::getParallelAlphas(Tmdet::ValueObjects::Membrane& membrane) {
+        std::vector<Tmdet::ValueObjects::SecStrVec> ret;
+        for (auto& vector : protein.vectors) {
+            if (vector.type.isAlpha() && checkParallel(vector, membrane)) {
+                ret.emplace_back(vector);
             }
         }
+        return ret;
     }
 
-    bool SecStrVec::checkCross(_secStrVec& vec, Tmdet::ValueObjects::Membrane& membrane, int& numBoth, int& numUp, int& numDown) {
+    std::vector<Tmdet::ValueObjects::SecStrVec> SecStrVec::getCrossingBetas(Tmdet::ValueObjects::Membrane& membrane) {
+        std::vector<Tmdet::ValueObjects::SecStrVec> ret;
+        for (auto& vector : protein.vectors) {
+            if (vector.type.isBeta() && checkCross(vector, membrane)) {
+                ret.emplace_back(vector);
+            }
+        }
+        return ret;
+    }
+
+    bool SecStrVec::checkCross(Tmdet::ValueObjects::SecStrVec& vec, Tmdet::ValueObjects::Membrane& membrane) const {
         bool resultUp = false;
         bool resultDown = false;
 
         if (membrane.type == Tmdet::Types::MembraneType::PLAIN) {
-            resultUp = Tmdet::Helpers::Vector::doesVectorCrossPlane(
-                    vec.begin, vec.end, gemmi::Vec3(0,0,1), gemmi::Vec3(0,0,membrane.origo + 5.0));
-            resultDown = Tmdet::Helpers::Vector::doesVectorCrossPlane(
-                    vec.begin, vec.end, gemmi::Vec3(0,0,1), gemmi::Vec3(0,0,membrane.origo - 5.0));
+            resultUp = Tmdet::Helpers::Vector::simplifiedDoesVectorCrossPlane(
+                    vec.begin.z,vec.end.z,membrane.origo + 3);
+            resultDown = Tmdet::Helpers::Vector::simplifiedDoesVectorCrossPlane(
+                    vec.begin.z,vec.end.z,membrane.origo - 3);
         } else if (membrane.type == Tmdet::Types::MembraneType::CURVED) {
             resultUp = Tmdet::Helpers::Vector::doesVectorCrossSphere(
-                    vec.begin, vec.end, gemmi::Vec3(0,0,membrane.origo), sphereRadius + 5.0);
+                    vec.begin, vec.end, gemmi::Vec3(0,0,membrane.origo), membrane.sphereRadius + 5.0);
             resultDown = Tmdet::Helpers::Vector::doesVectorCrossSphere(
-                    vec.begin, vec.end, gemmi::Vec3(0,0,membrane.), membrane.sphereRadius - 5.0);
-        } else {
-            throw runtime_error("Unexpected membrane type: " + membrane.type.name);
-        }
-
-        if (resultUp && resultDown) {
-            numBoth++;
-        } else if (resultUp) {
-            numUp++;
-        } else if (resultDown) {
-            numDown++;
-        }
-
-        return resultUp || resultDown;
+                    vec.begin, vec.end, gemmi::Vec3(0,0,membrane.origo), membrane.sphereRadius - 5.0);
+        } 
+        DEBUG_LOG("==>{}:{}",resultUp,resultDown);
+        return resultUp && resultDown;
     }
 
-    
+    bool SecStrVec::checkParallel(Tmdet::ValueObjects::SecStrVec& vec, Tmdet::ValueObjects::Membrane& membrane) const {    
+        double sign = vec.begin.z / std::abs(vec.begin.z);
+        return (std::abs(sign * vec.begin.z - membrane.halfThickness) < 8
+                && std::abs(sign * vec.end.z - membrane.halfThickness) < 8
+        );
+    }
 
-    
-    bool SecStrVec::getNextRegion(Tmdet::ValueObjects::Chain& chain, int& begin, int& end) {
+    bool SecStrVec::getNextRegion(Tmdet::ValueObjects::Chain& chain, int& begin, int& end) const {
         return (getNextNotUnkown(chain, begin) && getNextSame(chain, begin, end));
     }
 
-    bool SecStrVec::getNextNotUnkown(Tmdet::ValueObjects::Chain& chain, int& begin) {
+    bool SecStrVec::getNextNotUnkown(Tmdet::ValueObjects::Chain& chain, int& begin) const {
         while(begin < (int)chain.residues.size() && chain.residues[begin].ss == Tmdet::Types::SecStructType::U) {
             begin++;
         }
         return (begin < (int)chain.residues.size());
     }
 
-    bool SecStrVec::getNextSame(Tmdet::ValueObjects::Chain& chain, int& begin, int& end) {
-        end = begin;
-        while(end < (int)chain.residues.size() && chain.residues[begin].ss == chain.residues[end].ss) {
+    bool SecStrVec::getNextSame(Tmdet::ValueObjects::Chain& chain, const int& begin, int& end) const {
+        end = begin+1;
+        while(end < (int)chain.residues.size() && chain.residues[begin].ss.same(chain.residues[end].ss)) {
             end++;
         }
         return true;
     }
 
-    _secStrVec SecStrVec::getVector(Tmdet::ValueObjects::Chain& chain, int begin, int end) {
+    Tmdet::ValueObjects::SecStrVec SecStrVec::getVector(Tmdet::ValueObjects::Chain& chain, int begin, int end) const {
+        DEBUG_LOG("SecStrVec defined: {}-{}-{}",chain.id,begin,end);
         return (chain.residues[begin].ss.isAlpha()?
                     getAlphaVector(chain, begin, end):
-                    getBetaVector(chain,begin,end),
-                    chain.idx, begin, end);
+                    getBetaVector(chain,begin,end));
     }
 
-    _secStrVec SecStrVec::getAlphaVector(Tmdet::ValueObjects::Chain& chain, int begin, int end) {
-        _secStrVec vec;
-        vec.begin = getMeanPosition(chain,begin);
-        vec.end = getMeanPosition(chain,end-3);
-        vec.type = Tmdet::Types::SecStructType::H;
-
-        return vec;
+    Tmdet::ValueObjects::SecStrVec SecStrVec::getAlphaVector(Tmdet::ValueObjects::Chain& chain, int begin, int end) const {
+        DEBUG_LOG("getAlphaVector: {} {}",begin,end);
+        auto b = getMeanPosition(chain,begin);
+        auto e = getMeanPosition(chain,end-3);
+        auto v = (e -b).normalized();
+        b -= 2 * v;
+        e += 4 * v;
+        return Tmdet::ValueObjects::SecStrVec({
+            Tmdet::Types::SecStructType::H,
+            b, e, chain.idx, begin, end
+        });
     }
 
-    gemmi::Vec3 SecStrVec::getMeanPosition(Tmdet::ValueObjects::Chain& chain, int pos) {
-        gemmi::Vec3 vec;
+    gemmi::Vec3 SecStrVec::getMeanPosition(Tmdet::ValueObjects::Chain& chain, int pos) const {
+        gemmi::Vec3 vec(0,0,0);
         int i = 0;
-        for (; i<3; i++) {
-            auto CA = chain.residues[pos+i].gemmi.get_ca();
-            vec += CA->pos;
+        while (i<3) {
+            if (auto ca = chain.residues[pos+i].gemmi.get_ca(); ca != nullptr) {
+                vec += ca->pos;
+                i++;
+            }
         }
-        vec /= i;
+        if (i) {
+            vec /= i;
+        }
         return vec;
     }
 
-    _secStrVec SecStrVec::getBetaVector(Tmdet::ValueObjects::Chain& chain, int begin, int end) {
-        _secStrVec vec;
-        vec.begin = chain.residues[begin].gemmi.get_ca()->pos;
-        vec.end = chain.residues[end].gemmi.get_ca()->pos;
-        vec.type = Tmdet::Types::SecStructType::E;
-
-        return vec;
+    Tmdet::ValueObjects::SecStrVec SecStrVec::getBetaVector(Tmdet::ValueObjects::Chain& chain, int begin, int end) const {
+        auto b = gemmi::Vec3(chain.residues[begin].gemmi.get_ca()->pos);
+        auto e = gemmi::Vec3(chain.residues[end].gemmi.get_ca()->pos);
+        auto v = (e -b).normalized();
+        b -= v;
+        e += v;
+        return Tmdet::ValueObjects::SecStrVec({
+            Tmdet::Types::SecStructType::E,
+            b, e, chain.idx, begin, end
+        });
     }
 
+    void SecStrVec::checkAlphaVectorsForSplitting() {
+        auto vectors = protein.vectors;
+        protein.vectors.clear();
+        for(auto& vector: vectors) {
+            if (vector.type.isAlpha() && !checkAlphaVectorForSplitting(vector)) {
+                for (auto part: splitAlphaVector(vector)) {
+                    protein.vectors.emplace_back(part);
+                }
+            }
+            else {
+                protein.vectors.emplace_back(vector);
+            }
+        }
+    }
+
+    bool SecStrVec::checkAlphaVectorForSplitting(const Tmdet::ValueObjects::SecStrVec& vector) {
+        if (vector.endResIdx - vector.begResIdx < 15) {
+            return true;
+        }
+        for (int i = vector.begResIdx; i<= vector.endResIdx; i++) {
+            if (auto ca = protein.chains[vector.chainIdx].residues[i].gemmi.get_ca(); ca != nullptr 
+                && Tmdet::Helpers::Vector::distanceFromLine(vector.begin, vector.end, ca->pos) > 10.0) {
+                    return false;
+            }
+        }
+        return true;
+    }
+
+    std::vector<Tmdet::ValueObjects::SecStrVec> SecStrVec::splitAlphaVector(const Tmdet::ValueObjects::SecStrVec& vector) {
+        std::vector<Tmdet::ValueObjects::SecStrVec> ret;
+        int begResIdx = vector.begResIdx;
+        Tmdet::ValueObjects::SecStrVec straightVec;
+        while(begResIdx < vector.endResIdx) {
+            if (getStraightVector(vector.chainIdx,begResIdx, vector.endResIdx, straightVec)) {
+                ret.emplace_back(straightVec);
+            }
+            begResIdx = straightVec.endResIdx + 1;
+        }
+        return ret;
+    }
+
+    bool SecStrVec::getStraightVector(int chainIdx, int begResIdx, int endResIdxAll, Tmdet::ValueObjects::SecStrVec& vec) {
+        int p1=begResIdx;
+        bool ok = true;
+        while (ok) {
+            if (abs(getCaDist(chainIdx,p1) - 6.2) < 1 && p1+4<endResIdxAll) {
+                p1++; 
+            }
+            else {
+                ok = false;
+            }
+        }
+        DEBUG_LOG("getStraightVector: {} {} {}",begResIdx,p1,endResIdxAll);
+        if (begResIdx+1<p1) {
+            vec = getAlphaVector(protein.chains[chainIdx],begResIdx,p1+4);
+        }
+        else {
+            vec.endResIdx = p1;
+        }
+        return (p1-begResIdx>2);
+    }
+
+    double SecStrVec::getCaDist(int chainIdx, int resIdx) {
+        auto a1 = protein.chains[chainIdx].residues[resIdx].gemmi.get_ca();
+        auto a2 = protein.chains[chainIdx].residues[resIdx+4].gemmi.get_ca();
+        return (a1!=nullptr&&a2!=nullptr?a1->pos.dist(a2->pos):-1000);
+    }
+
+    void SecStrVec::checkAlphaVectorsForMerging() {
+        auto vectors = protein.vectors;
+        protein.vectors.clear();
+        unsigned long int i = 0;
+        unsigned long step = 1;
+        while (i<vectors.size()-1) {
+            if (vectors[i].type.isAlpha() && vectors[i+1].type.isAlpha() && checkAlphaVectorForMerging(vectors[i],vectors[i+1])) {
+                protein.vectors.emplace_back(mergeVectors(vectors[i],vectors[i+1]));
+                step = 2;
+            }
+            else {
+                protein.vectors.emplace_back(vectors[i]);
+                step = 1;
+            }
+            i+=step;
+        }
+        if (step == 1) {
+            protein.vectors.emplace_back(vectors[i]);
+        }
+    }
+
+    bool SecStrVec::checkAlphaVectorForMerging(const Tmdet::ValueObjects::SecStrVec& v1, const Tmdet::ValueObjects::SecStrVec& v2) const {
+        double d = v1.end.dist(v2.begin);
+        auto vv1 = v1.end - v1.begin;
+        auto vv2 = v2.end - v2.begin;
+        double a = std::abs(vv1.dot(vv2) * 180 / (vv1.length() * vv2.length() * M_PI));
+        DEBUG_LOG("merge: {} {}",d,a);
+        return (d<5.0
+                && a<10
+                && v1.chainIdx==v2.chainIdx
+                && std::abs(v1.end.z) < TMDET_MEMBRANE_MIN_HALFTHICKNESS
+                && std::abs(v2.end.z)< TMDET_MEMBRANE_MIN_HALFTHICKNESS
+        );
+    }
+
+    Tmdet::ValueObjects::SecStrVec SecStrVec::mergeVectors(const Tmdet::ValueObjects::SecStrVec& v1, const Tmdet::ValueObjects::SecStrVec& v2) const {
+        return Tmdet::ValueObjects::SecStrVec({
+            v1.type,v1.begin,v2.end,v1.begResIdx,v2.endResIdx
+        });
+    }
 }

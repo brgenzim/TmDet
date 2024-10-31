@@ -2,23 +2,44 @@
 
 #include <string>
 #include <vector>
-#include <format>
-#include <Utils/SecStrVec.hpp>
+#include <iostream>
+#include <fstream>
+#include <System/FilePaths.hpp>
+#include <ValueObjects/SecStrVec.hpp>
+#include <ValueObjects/Protein.hpp>
 
-namespace Tmdet::Helpers::Pymol {
+namespace Tmdet::Helpers {
 
-    struct _secStrVec;
+    class Pymol {
+        private:
+            std::string pmlFileName;
+            std::ofstream os;
+            const Tmdet::ValueObjects::Protein& protein;
+            const std::vector<std::string> colors = {
+                "limon", //MEMB
+                "yellow", //HELIX
+                "yellow", //BETA
+                "red", //SIDE1
+                "blue", //SIDE2
+                "orange", //LOOP
+                "green", //IFH
+                "pink", //MEMBINS
+                "teal", //INTERMEMB
+                "grey80", //UNK
+            };
 
-    static std::string dumpSecStrVec(std::vector<Tmdet::Utils::_secStrVec>& vectors, std::string color) {
-        int counter = 1;
-        std::string ret;
-        for (auto& vector : vectors) {
-            ret += std::format("cgo_arrow [ {}, {}, {}], [ {}, {}, {}], name={}_{}, color={}",
-                    vector.begin.x, vector.begin.y, vector.begin.z,
-                    vector.end.x, vector.end.y, vector.end.z,
-                    vector.type.name, counter, color);
-            counter++;
-        }
-        return ret;
-    }
+            void head();
+            void regions();
+            void dumpSecStrVec(std::string color);
+            void tail();
+
+
+        public:
+
+            explicit Pymol(const Tmdet::ValueObjects::Protein& protein) :
+                protein(protein) {}
+
+            void show();
+
+    };
 }

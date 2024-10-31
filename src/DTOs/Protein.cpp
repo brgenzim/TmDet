@@ -5,6 +5,7 @@
 #include <gemmi/to_mmcif.hpp>
 #include <DTOs/Protein.hpp>
 #include <Helpers/Gzip.hpp>
+#include <Helpers/String.hpp>
 #include <System/FilePaths.hpp>
 #include <Utils/Alignment.hpp>
 #include <System/Logger.hpp>
@@ -44,6 +45,7 @@ namespace Tmdet::DTOs {
         Tmdet::ValueObjects::Protein protein;
         protein.getStructure(inputPath);
         protein.code = protein.gemmi.name;
+        Tmdet::Helpers::String::toLower(protein.code);
         remove_hydrogens(protein.gemmi.models[0]);
         remove_ligands_and_waters(protein.gemmi.models[0]);
         remove_alternative_conformations(protein.gemmi.models[0]);
@@ -190,16 +192,16 @@ namespace Tmdet::DTOs {
         for (auto& chain: protein.chains) {
             for (auto& residue: chain.residues) {
                 for (auto& atom: residue.atoms) {
-                    double x = protein.tmatrix.trans.x
-                                + atom.gemmi.pos.x * protein.tmatrix.rot[0][0]
+                    atom.gemmi.pos.x += protein.tmatrix.trans.x;
+                    atom.gemmi.pos.y += protein.tmatrix.trans.y;
+                    atom.gemmi.pos.z += protein.tmatrix.trans.z;
+                    double x = atom.gemmi.pos.x * protein.tmatrix.rot[0][0]
                                 + atom.gemmi.pos.y * protein.tmatrix.rot[0][1]
                                 + atom.gemmi.pos.z * protein.tmatrix.rot[0][2];
-			        double y = protein.tmatrix.trans.y
-                                + atom.gemmi.pos.x * protein.tmatrix.rot[1][0]
+			        double y = atom.gemmi.pos.x * protein.tmatrix.rot[1][0]
                                 + atom.gemmi.pos.y * protein.tmatrix.rot[1][1]
                                 + atom.gemmi.pos.z * protein.tmatrix.rot[1][2];
-			        double z = protein.tmatrix.trans.z
-                                + atom.gemmi.pos.x * protein.tmatrix.rot[2][0]
+			        double z = atom.gemmi.pos.x * protein.tmatrix.rot[2][0]
                                 + atom.gemmi.pos.y * protein.tmatrix.rot[2][1]
                                 + atom.gemmi.pos.z * protein.tmatrix.rot[2][2];
                     atom.gemmi.pos.x = x;

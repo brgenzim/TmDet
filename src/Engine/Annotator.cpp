@@ -4,6 +4,7 @@
 #include <Engine/Annotator.hpp>
 #include <System/Logger.hpp>
 #include <Types/Region.hpp>
+#include <Utils/SecStrVec.hpp>
 
 namespace Tmdet::Engine {
 
@@ -42,7 +43,7 @@ namespace Tmdet::Engine {
         }
     }
 
-    Tmdet::Types::Region Annotator::getSideByZ(double z) {
+    Tmdet::Types::Region Annotator::getSideByZ(double z) const {
         Tmdet::Types::Region r;
         if (z > z1) {
             r = Tmdet::Types::RegionType::SIDE1;
@@ -67,7 +68,8 @@ namespace Tmdet::Engine {
     }
 
     void Annotator::storeRegion(Tmdet::ValueObjects::Chain& chain,unsigned int beg, unsigned int end) const {
-        Tmdet::ValueObjects::Region region = {
+        
+        chain.regions.emplace_back(
             (int)(beg+1),
             (int)chain.residues[beg].gemmi.seqid.num,
             chain.residues[beg].gemmi.seqid.icode,
@@ -77,30 +79,104 @@ namespace Tmdet::Engine {
             chain.residues[end].gemmi.seqid.icode,
             (int)chain.residues[end].gemmi.label_seq,
             std::any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("type"))
-        };
-        chain.regions.emplace_back(region);
+        );
     }
 
     void Annotator::getRegions() {
         DEBUG_LOG("Processing: Annotator::getRegions()");
         for(auto& chain: protein.chains) {
             if (chain.selected) {
-                unsigned int start = 0;
-                for(unsigned int i = 0; i< chain.residues.size(); i++) {
-                    if (std::any_cast<Tmdet::Types::Region>(chain.residues[start].temp.at("type")) 
-                        != std::any_cast<Tmdet::Types::Region>(chain.residues[i].temp.at("type"))) {
-                        storeRegion(chain,start,i-1);
-                        start = i;
+                int begin = 0;
+                int end = 0;
+                while(getNextRegion(chain,begin,end)) {
+                    if (end - begin > 1) {
+                        storeRegion(chain,begin,end-1);
                     }
+                    begin = end;
                 }
-                storeRegion(chain,start,chain.residues.size()-1);
             }
         }
-        DEBUG_LOG(" Processed: Annotator::detectgetRegions()");
+        DEBUG_LOG(" Processed: Annotator::getRegions()");
+    }
+
+    bool Annotator::getNextRegion(Tmdet::ValueObjects::Chain& chain, int& begin, int& end) const {
+        DEBUG_LOG("getNextRegion: {} {} {}",chain.id,begin,end);
+        return (getNextDefined(chain, begin) && getNextSame(chain, begin, end));
+    }
+
+    bool Annotator::getNextDefined(Tmdet::ValueObjects::Chain& chain, int& begin) const {
+        while(begin < (int)chain.residues.size() && !chain.residues[begin].temp.contains("type")) {
+            begin++;
+        }
+        DEBUG_LOG("getNextDefined: {} {}",chain.id,begin);
+        return (begin < (int)chain.residues.size());
+    }
+
+    bool Annotator::getNextSame(Tmdet::ValueObjects::Chain& chain, const int& begin, int& end) const {
+        end = begin;
+        while(end < (int)chain.residues.size() && chain.residues[end].temp.contains("type")
+            && std::any_cast<Tmdet::Types::Region>(chain.residues[begin].temp.at("type")) 
+                        == std::any_cast<Tmdet::Types::Region>(chain.residues[end].temp.at("type"))) {
+            end++;
+        }
+        DEBUG_LOG("getNextSame: {} {} {}",chain.id,begin,end);
+        return true;
+    }
+
+    void Annotator::detectAlphaHelices() {
+        DEBUG_LOG("Processing Annotator::detectAlphaHelices()");
+        for(auto& membrane: protein.membranes) {
+            auto alphaVecs = ssVec.getCrossingAlphas(membrane);
+            if (!alphaVecs.empty() ) {
+                protein.type = Tmdet::Types::ProteinType::TM_ALPHA;
+                for(const auto& vector: alphaVecs) {
+                    replaceRegion(vector,Tmdet::Types::RegionType::HELIX);
+                }
+            }
+            DEBUG_LOG(" #alphaVecs: {}",alphaVecs.size());
+        }
+        DEBUG_LOG(" Processed Annotator::detectAlphaHelices()");
     }
 
     void Annotator::detectBarrel() {
-        
+        DEBUG_LOG("Processing Annotator::detectBarrel()");
+        for(auto& membrane: protein.membranes) {
+            auto betaVecs = ssVec.getCrossingBetas(membrane);
+            if (betaVecs.size() > 7) {
+                protein.type = (protein.type == Tmdet::Types::ProteinType::TM_ALPHA?Tmdet::Types::ProteinType::TM_MIXED:Tmdet::Types::ProteinType::TM_BETA);
+                for(const auto& vector: betaVecs) {
+                    replaceRegion(vector,Tmdet::Types::RegionType::BETA);
+                }
+            }
+        }
+        DEBUG_LOG(" Processed Annotator::detectBarrel()");
+    }
+
+    void Annotator::detectInterfacialHelices() {
+        DEBUG_LOG("Processing Annotator::detectInterfacialHelices()");
+        for(auto& membrane: protein.membranes) {
+            auto alphaVecs = ssVec.getParallelAlphas(membrane);
+            if (!alphaVecs.empty() ) {
+                for(const auto& vector: alphaVecs) {
+                    for (int i = vector.begResIdx; i<= vector.endResIdx; i++) {
+                        protein.chains[vector.chainIdx].residues[i].temp.at("type") = std::any(Tmdet::Types::RegionType::IFH);
+                    }
+                }
+            }
+            DEBUG_LOG(" #alphaVecs: {}",alphaVecs.size());
+        }
+        DEBUG_LOG(" Processed Annotator::detectInterfacialHelices()");
+    }
+
+    void Annotator::replaceRegion(const Tmdet::ValueObjects::SecStrVec& vector, Tmdet::Types::Region regionType) {
+        DEBUG_LOG("Processing Annotator::replaceRegion({} {} {} --> {})",
+            protein.chains[vector.chainIdx].id,vector.begResIdx,vector.endResIdx,regionType.name);
+        for (int i = vector.begResIdx; i<= vector.endResIdx; i++) {
+            if (std::any_cast<Tmdet::Types::Region>(protein.chains[vector.chainIdx].residues[i].temp.at("type")) == Tmdet::Types::RegionType::MEMB) {
+                protein.chains[vector.chainIdx].residues[i].temp.at("type") = std::any(regionType);
+            }
+        }
+        DEBUG_LOG(" Processed Annotator::replaceRegion()");
     }
 
 }

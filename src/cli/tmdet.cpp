@@ -8,16 +8,17 @@
 #include <unistd.h>
 #include <Config.hpp>
 #include <Version.hpp>
+#include <DTOs/Protein.hpp>
+#include <DTOs/Xml/Reader3.hpp>
+#include <DTOs/Xml/Writer.hpp>
+#include <Engine/Organizer.hpp>
+#include <Helpers/Pymol.hpp>
 #include <Services/ChemicalComponentDirectoryService.hpp>
 #include <System/Arguments.hpp>
 #include <System/Environment.hpp>
 #include <System/FilePaths.hpp>
 #include <System/Logger.hpp>
 #include <ValueObjects/Protein.hpp>
-#include <DTOs/Protein.hpp>
-#include <DTOs/Xml/Reader3.hpp>
-#include <DTOs/Xml/Writer.hpp>
-#include <Engine/Organizer.hpp>
 
 using namespace std;
 
@@ -116,9 +117,9 @@ int main(int argc, char *argv[], char **envp) {
     //if xml file exists and overwirte is not set then read the content of the
     //xml file and adjust proteinVO accordingly
     if (Tmdet::System::FilePaths::fileExists(xmlPath) ) {
-        Tmdet::DTOs::Xml::Reader3 xmlInput;
-        logger.warn("overwriting xml file");
-        xmlInput.readXml(protein, xmlPath);
+        //Tmdet::DTOs::Xml::Reader3 xmlInput;
+        //logger.warn("overwriting xml file");
+        //xmlInput.readXml(protein, xmlPath);
     }
     
     //do the membrane region determination and annotation
@@ -126,4 +127,6 @@ int main(int argc, char *argv[], char **envp) {
     Tmdet::DTOs::Xml::Writer xmlOutput;
     xmlOutput.writeXml(protein, xmlPath);
     Tmdet::DTOs::Protein::writeCif(protein,outputPdbPath);
+    auto pymol = Tmdet::Helpers::Pymol(protein);
+    pymol.show();
 }
