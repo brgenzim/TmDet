@@ -9,6 +9,10 @@ namespace Tmdet::Types {
     struct Chain {
         std::string name;
         std::string description;
+
+        bool operator == (const Chain& other) const {
+            return name == other.name;
+        }
     };
 
     namespace ChainType {

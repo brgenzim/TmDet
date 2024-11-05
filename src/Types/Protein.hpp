@@ -49,9 +49,9 @@ namespace Tmdet::Types {
             "Globular, not transmembrane protein in low resolution, containing mostly Calpha or backbone atoms",
             true, false, false 
         };
-        const Protein NUCLEOTIDE = { 
-            "Nucleotide",
-            "Nucleotide polimer chain",
+        const Protein NOPROTEIN = { 
+            "Noprotein",
+            "PDB entry does not contain any amino acid polymer",
             false, false, false 
         };
     }
@@ -63,7 +63,7 @@ namespace Tmdet::Types {
         { "Soluble", ProteinType::SOLUBLE},
         { "Ca_Tm", ProteinType::CA_TM},
         { "Ca_Globular", ProteinType::CA_GLOBULAR},
-        { "Nucleotide", ProteinType::NUCLEOTIDE}
+        { "Noprotein", ProteinType::NOPROTEIN}
     };
 }
 

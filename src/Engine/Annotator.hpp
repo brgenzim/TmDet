@@ -51,8 +51,7 @@ namespace Tmdet::Engine {
             double z3;
             double z4;
             bool doubleMembrane = false;
-            Tmdet::Utils::SecStrVec ssVec = Tmdet::Utils::SecStrVec(protein);
-
+            
             void setZs();
              Tmdet::Types::Region getSideByZ(double z) const;
             void storeRegion(Tmdet::ValueObjects::Chain& chain, unsigned int beg, unsigned int end) const;
@@ -60,7 +59,12 @@ namespace Tmdet::Engine {
             bool getNextRegion(Tmdet::ValueObjects::Chain& chain, int& begin, int& end) const;
             bool getNextDefined(Tmdet::ValueObjects::Chain& chain, int& begin) const;
             bool getNextSame(Tmdet::ValueObjects::Chain& chain, const int& begin, int& end) const;
-
+            std::vector<Tmdet::ValueObjects::SecStrVec> getCrossingAlphas(Tmdet::ValueObjects::Membrane& membrane);
+            std::vector<Tmdet::ValueObjects::SecStrVec> getParallelAlphas(Tmdet::ValueObjects::Membrane& membrane);
+            std::vector<Tmdet::ValueObjects::SecStrVec> getCrossingBetas(Tmdet::ValueObjects::Membrane& membrane);
+            bool checkCross(Tmdet::ValueObjects::SecStrVec& vec, Tmdet::ValueObjects::Membrane& membrane) const;
+            bool checkParallel(Tmdet::ValueObjects::SecStrVec& vec, Tmdet::ValueObjects::Membrane& membrane) const;
+            
 
         public:
             void detectSides();

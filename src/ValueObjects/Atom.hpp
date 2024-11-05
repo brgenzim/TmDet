@@ -10,6 +10,8 @@
 
 /**
  * @brief namespace for value objects
+ * @namespace Tmdet
+ * @namespace ValueObjects
  */
 namespace Tmdet::ValueObjects {
 

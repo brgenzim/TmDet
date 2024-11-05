@@ -23,7 +23,7 @@ namespace Tmdet::ValueObjects {
     /**
      * @brief Protein contains both gemmi structure 
      *        description and all information about
-     *        protein ensembly with orientation to the membrane
+     *        protein assembly with orientation to the membrane
      */
     struct Protein {
 
@@ -56,7 +56,7 @@ namespace Tmdet::ValueObjects {
         /**
          * @brief flag if the protein is transmembrane or not
          */
-        bool tmp;
+        bool tmp = false;
 
         /**
          * @brief date of creation of the entry
@@ -79,27 +79,27 @@ namespace Tmdet::ValueObjects {
          *        structure - membrane orientation
          * 
          */
-        double qValue;
+        double qValue = 0.0;
 
         /**
          * @brief protein type (alpha, beta, mixed etc.)
          * 
          */
-        Tmdet::Types::Protein type;
+        Tmdet::Types::Protein type = Tmdet::Types::ProteinType::SOLUBLE;
 
         /**
          * @brief facts about the transmembrane type in the 
          *        corresponding swiss-prot (UniProt) entry
          *        it is not used from tmdet version 2.0
          */
-        std::string spres;
+        std::string spres = "";
 
         /**
          * @brief facts about the transmembrane type in the 
          *        corresponding PDB entry it is not used
          *        from tmdet version 2.0
          */
-        std::string pdbkwres;
+        std::string pdbkwres = "";
 
         /**
          * @brief biomatrix for generating the biological

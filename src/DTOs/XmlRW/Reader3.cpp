@@ -3,37 +3,39 @@
 #include <iostream>
 #include <format>
 #include <pugixml.hpp>
-#include <DTOs/Xml/Constants3.hpp>
-#include <DTOs/Xml/Reader3.hpp>
+#include <Config.hpp>
+#include <System/Logger.hpp>
+#include <DTOs/XmlRW/Constants3.hpp>
+#include <DTOs/XmlRW/Reader3.hpp>
 #include <ValueObjects/Membrane.hpp>
 #include <ValueObjects/BioMatrix.hpp>
 #include <ValueObjects/Modification.hpp>
 #include <ValueObjects/TMatrix.hpp>
-#include <ValueObjects/Chain.hpp>
-#include <Exceptions/SyntaxErrorException.hpp>
+#include <ValueObjects/Xml.hpp>
 
-namespace Tmdet::DTOs::Xml {
+namespace Tmdet::DTOs::XmlRW {
 
-    void Reader3::read(const std::string& path) {
-        if (pugi::xml_parse_result result = _doc.load_file(path.c_str()); !result) {
-            throw Tmdet::Exceptions::SyntaxErrorException(path,(int)result.offset,result.description());
-        }
-        _root = _doc.child(XML3_NODE_ROOT);
+    void Reader3::setRoot(const pugi::xml_document& doc) {
+        _root = doc.child(XML3_NODE_ROOT);
     }
 
-    void Reader3::readXml(Tmdet::ValueObjects::Protein& protein, const std::string& path) {
-        read(path);
-        protein.tmp = getTmp();
-        protein.code = getCode();
-        protein.date = getCreateDate();
-        protein.modifications = getModifications();
-        protein.qValue = getQvalue();
-        protein.type = Tmdet::Types::Proteins.at(getTmtype());
-        protein.spres = getSpres();
-        protein.pdbkwres = getPdbkwres();
-        protein.bioMatrix = getBioMatrix();
-        protein.membranes = getMembranes();
-        getChains(protein.chains);
+    void Reader3::readXml(Tmdet::ValueObjects::Xml& xmlData) {
+        xmlData.tmp = getTmp();
+        DEBUG_LOG("tmp: {}",(xmlData.tmp?"yes":"no"));
+        xmlData.code = getCode();
+        xmlData.date = getCreateDate();
+        xmlData.modifications = getModifications();
+        xmlData.qValue = getQvalue();
+        DEBUG_LOG("qValue: {}",xmlData.qValue);
+        auto type = getTmtype();
+        DEBUG_LOG("type: {}",type);
+        xmlData.type = Tmdet::Types::Proteins.at(type);
+        xmlData.spres = getSpres();
+        xmlData.pdbkwres = getPdbkwres();
+        xmlData.bioMatrix = getBioMatrix();
+        xmlData.membranes = getMembranes();
+        xmlData.tmatrix = getTMatrix(_root.child(XML3_NODE_MEMBRANE).child(XML3_NODE_TMATRIX));
+        xmlData.chains = getChains();
     }
 
     bool Reader3::getTmp() const {
@@ -109,8 +111,7 @@ namespace Tmdet::DTOs::Xml {
     std::vector<Tmdet::ValueObjects::Membrane> Reader3::getMembranes() const {
         std::vector<Tmdet::ValueObjects::Membrane> membranes;
         for (pugi::xml_node m_node = _root.child(XML3_NODE_MEMBRANE); m_node; m_node = m_node.next_sibling(XML3_NODE_MEMBRANE)) {
-            pugi::xml_node tnode = m_node.child(XML3_NODE_TMATRIX);
-            membranes.emplace_back(//getTMatrix(tnode),
+            membranes.emplace_back(
                 0.0, //todo get origo
                 m_node.child(XML3_NODE_NORMAL).attribute(XML3_ATTR_Z).as_double(),
                 0.0,
@@ -121,32 +122,21 @@ namespace Tmdet::DTOs::Xml {
         return membranes;
     }
 
-    void Reader3::getChains(std::vector<Tmdet::ValueObjects::Chain>& chains) {
+    std::vector<Tmdet::ValueObjects::XmlChain> Reader3::getChains() {
+        std::vector<Tmdet::ValueObjects::XmlChain> xmlChains;
         for (pugi::xml_node c_node = _root.child(XML3_NODE_CHAIN); c_node; c_node = c_node.next_sibling(XML3_NODE_CHAIN)) {
-            std::string type = c_node.attribute(XML3_ATTR_TYPE).as_string();
-            bool found = false;
-            for( auto& c: chains) {
-                if (c.id == c_node.attribute(XML3_ATTR_CHAINID).as_string()) {
-                    c.selected = true;
-                    c.numtm = c_node.attribute(XML3_ATTR_NUM_TM).as_int();
-                    c.seq = c_node.child(XML3_NODE_SEQ).text().get();
-                    c.regions = getRegions(c_node);
-                    c.type = Tmdet::Types::Chains.at(type);
-                    found = true;
-                    continue;
-                }
-            }
-            if (!found) {
-                Tmdet::ValueObjects::Chain c;
-                c.id = c_node.attribute(XML3_ATTR_CHAINID).as_string();
-                c.selected = true;
-                c.numtm = c_node.attribute(XML3_ATTR_NUM_TM).as_int();
-                c.seq = c_node.child(XML3_NODE_SEQ).text().get();
-                c.regions = getRegions(c_node);
-                c.type = Tmdet::Types::Chains.at(type);
-                chains.emplace_back(c);
-            }
+            auto type = c_node.attribute(XML3_ATTR_TYPE).as_string();
+            xmlChains.emplace_back(
+                c_node.attribute(XML3_ATTR_ID).as_string(), //id
+                c_node.attribute(XML3_ATTR_ID).as_string(), //labId
+                true, //selected
+                c_node.attribute(XML3_ATTR_NUM_TM).as_int(), //numtm
+                c_node.child(XML3_NODE_SEQ).text().get(), //seq
+                getRegions(c_node), //regions
+                Tmdet::Types::Chains.at(type) //type
+            );
         }
+        return xmlChains;
     }
 
     std::vector<Tmdet::ValueObjects::Region> Reader3::getRegions(const pugi::xml_node& cnode) const {

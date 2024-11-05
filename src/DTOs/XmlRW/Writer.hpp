@@ -7,6 +7,7 @@
 #include <ValueObjects/Membrane.hpp>
 #include <ValueObjects/Protein.hpp>
 #include <ValueObjects/TMatrix.hpp>
+#include <ValueObjects/Xml.hpp>
 
 /**
  * @brief namespace for tmdet xml data transfer objects
@@ -15,7 +16,7 @@
  * @namespace DTOs
  * @namespace Xml
  */
-namespace Tmdet::DTOs::Xml {
+namespace Tmdet::DTOs::XmlRW {
 
     /**
      * @brief class for writing old (pdbtm_3.0) xml files
@@ -125,7 +126,7 @@ namespace Tmdet::DTOs::Xml {
              * 
              * @param chains 
              */
-            void setChains(const std::vector<Tmdet::ValueObjects::Chain>& chains);
+            void setChains(const std::vector<Tmdet::ValueObjects::XmlChain>& chains);
 
             /**
              * @brief Set the content of REGION node
@@ -135,6 +136,6 @@ namespace Tmdet::DTOs::Xml {
              */
             void setRegions(pugi::xml_node& pnode, const std::vector<Tmdet::ValueObjects::Region>& regions) const;
           public:
-            void writeXml(Tmdet::ValueObjects::Protein& protein, const std::string& path);
+            void writeXml(Tmdet::ValueObjects::Xml& xmlData, const std::string& path);
     };
 }

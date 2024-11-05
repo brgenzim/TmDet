@@ -16,11 +16,7 @@ namespace Tmdet::Helpers::Vector {
      * @return true 
      * @return false 
      */
-    static bool isPointOnVector(gemmi::Vec3 &vector, gemmi::Vec3 &vectorBegin, gemmi::Vec3 &point) {
-        // if same direction and between begin-end (length less than vector length)
-        return ((point - vectorBegin).dot(vector) > 0
-                && (point - vectorBegin).length_sq() < vector.length_sq());
-    }
+    extern bool isPointOnVector(gemmi::Vec3 &vector, gemmi::Vec3 &vectorBegin, gemmi::Vec3 &point);
 
     /**
      * @brief convert gemmi::Vec3 into string
@@ -28,9 +24,7 @@ namespace Tmdet::Helpers::Vector {
      * @param vec 
      * @return std::string 
      */
-    static std::string vec3ToString(const gemmi::Vec3& vec) {
-        return std::format("[{}, {}, {}]",vec.x, vec.y, vec.z);
-    }
+    extern std::string vec3ToString(const gemmi::Vec3& vec);
 
     /**
      * @brief check if a vector crosses a plane
@@ -47,33 +41,9 @@ namespace Tmdet::Helpers::Vector {
      * @return true 
      * @return false 
      */
-    static bool doesVectorCrossPlane(gemmi::Vec3& begin, gemmi::Vec3& end, gemmi::Vec3 planeNormal, gemmi::Vec3 planePoint) {
-        bool result = false;
+    extern bool doesVectorCrossPlane(gemmi::Vec3& begin, gemmi::Vec3& end, gemmi::Vec3 planeNormal, gemmi::Vec3 planePoint);
 
-        auto vectorDiff = end - begin;
-        auto l = vectorDiff.normalized();
-        auto numerator = (planePoint - begin).dot(planeNormal);
-        auto denominator = l.dot(planeNormal);
-        if (numerator != 0 && denominator == 0) {
-            result = false; // parallel
-        } else if (numerator == 0 && denominator == 0) {
-            result = true; // vector lies in the plane
-        } else { // denominator != 0
-            // intersection point - based on vector equation: begin + l*d
-            auto intersectionPoint = begin + l * (numerator / denominator);
-            if (Tmdet::Helpers::Vector::isPointOnVector(vectorDiff, begin, intersectionPoint)) {
-                result = true; // intersects the plane and between BEGIN and END
-                DEBUG_LOG("Intersection Point: {}",vec3ToString(intersectionPoint));
-            }
-        }
-
-        return result;
-    }
-
-    static bool simplifiedDoesVectorCrossPlane(double begin, double end, double plane) {
-        DEBUG_LOG("simplifiedDoesVectorCrossPlane: {} {} {}",begin,end,plane);
-        return ((begin<plane && plane<end) || (begin>plane && plane>end));
-    }
+    extern bool simplifiedDoesVectorCrossPlane(double begin, double end, double plane);
 
     /**
      * @brief check if a vector crosses a sphere
@@ -96,51 +66,9 @@ namespace Tmdet::Helpers::Vector {
      * @return true 
      * @return false 
      */
-    static bool doesVectorCrossSphere(gemmi::Vec3& begin, gemmi::Vec3& end, gemmi::Vec3 origo, double radius) {
-        bool result = false;
+    extern bool doesVectorCrossSphere(gemmi::Vec3& begin, gemmi::Vec3& end, gemmi::Vec3 origo, double radius);
 
-        auto vectorDiff = end - begin;
-        auto l = vectorDiff.normalized();
-        auto m = begin - origo;
-        auto A = l.dot(l);
-        auto B = 2 * m.dot(l);
-        auto C = m.dot(m) - radius * radius;
-        auto discriminant = B*B - 4*A*C;
+    extern double distanceFromLine(const gemmi::Vec3& a, const gemmi::Vec3& b, const gemmi::Vec3& c);
 
-        // one intersection point
-        if (discriminant == 0) {
-            auto d = -B / 2*A;
-            // intersection point - based on vector equation: begin + l*d
-            auto intersectionPoint = begin + l * d;
-            // if same direction and between begin-end (length less than vector length)
-            if (Tmdet::Helpers::Vector::isPointOnVector(vectorDiff, begin, intersectionPoint)) {
-                result = true; // intersects the plane and between BEGIN and END
-                DEBUG_LOG("Intersection Point: {}",Tmdet::Helpers::Vector::vec3ToString(intersectionPoint));
-            }
-        } else if (discriminant > 0) {
-            // line and sphere have two intersection points
-            auto sqrtDiscriminant = sqrt(discriminant);
-            auto d1 = (-B + sqrtDiscriminant) / 2*A;
-            auto d2 = (-B - sqrtDiscriminant) / 2*A;
-            auto intersectionPoint1 = begin + l * d1;
-            auto intersectionPoint2 = begin + l * d2;
-            if (Tmdet::Helpers::Vector::isPointOnVector(vectorDiff, begin, intersectionPoint1)) {
-                result = true;
-                DEBUG_LOG("Intersection Point1: {}",Tmdet::Helpers::Vector::vec3ToString(intersectionPoint1));
-            }
-            if (Tmdet::Helpers::Vector::isPointOnVector(vectorDiff, begin, intersectionPoint2)) {
-                result = true;
-                DEBUG_LOG("Intersection Point2: {}",Tmdet::Helpers::Vector::vec3ToString(intersectionPoint2));
-            }
-        }
-
-        return result;
-    }
-
-    static double distanceFromLine(const gemmi::Vec3& a, const gemmi::Vec3& b, const gemmi::Vec3& c) {
-        auto ab = b - a;
-        auto ac = c - a;
-        auto crossProduct = ab.cross(ac);
-        return crossProduct.length() / ab.length();
-    }
+    extern double angle(const gemmi::Vec3& a, const gemmi::Vec3& b);
 }

@@ -5,8 +5,10 @@
 #include <list>
 #include <vector>
 #include <eigen3/Eigen/Dense>
-#include <Utils/Alignment.hpp>
+#include <Config.hpp>
 #include <DTOs/Protein.hpp>
+#include <System/Logger.hpp>
+#include <Utils/Alignment.hpp>
 
 using namespace std;
 
@@ -193,9 +195,9 @@ namespace Tmdet::Utils::Alignment {
         while (UTI >= 0 && UTJ >= 0) {
             auto currentResidue = chain.residues[UTJ];
             if (seqResidues[UTI]->name != currentResidue.name) {
-                cerr << "Conflict in residue name: chain "
-                    << chain.name << " at position " << currentResidue.label_seq.value
-                    << seqResidues[UTI]->name << " vs " << currentResidue.name << endl;
+                INFO_LOG("Conflict in residue name: chain {} at position {}{} vs {}",
+                    chain.name, currentResidue.label_seq.value,
+                    seqResidues[UTI]->name, currentResidue.name);
                 seqResidues[UTI]->name = currentResidue.name;
             }
             nuti = iPath(UTI, UTJ);

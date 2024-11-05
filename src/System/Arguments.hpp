@@ -44,6 +44,8 @@ namespace Tmdet::System {
              */
             std::string _setValueByShortFlag(char *flag);
 
+            std::string commandLine = "";
+
             /**
              * @brief 
              * 
@@ -119,6 +121,8 @@ namespace Tmdet::System {
              * @return std::string
              */
             std::string getValueAsString(std::string name);
+
+            std::string getCommandLine() const;
     };
     
 }

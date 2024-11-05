@@ -4,15 +4,16 @@
 #include <format>
 #include <pugixml.hpp>
 #include <Config.hpp>
+#include <DTOs/XmlRW/Constants4.hpp>
+#include <DTOs/XmlRW/Writer.hpp>
+#include <Exceptions/SyntaxErrorException.hpp>
 #include <System/Logger.hpp>
-#include <DTOs/Xml/Writer.hpp>
-#include <DTOs/Xml/Constants4.hpp>
 #include <ValueObjects/Membrane.hpp>
 #include <ValueObjects/TMatrix.hpp>
 #include <ValueObjects/Chain.hpp>
-#include <Exceptions/SyntaxErrorException.hpp>
+#include <ValueObjects/Xml.hpp>
 
-namespace Tmdet::DTOs::Xml {
+namespace Tmdet::DTOs::XmlRW {
 
     void Writer::write(const std::string& path) const {
         _doc.save_file(path.c_str(),"  ");
@@ -79,7 +80,7 @@ namespace Tmdet::DTOs::Xml {
         }
     }
 
-    void Writer::setChains(const std::vector<Tmdet::ValueObjects::Chain>& chains) {
+    void Writer::setChains(const std::vector<Tmdet::ValueObjects::XmlChain>& chains) {
         auto pnode = _root.insert_child_after(XML_NODE_CHAINS, _root.child(XML_NODE_MEMBRANES));
         for(const auto& chain: chains) {
             pugi::xml_node node = pnode.append_child(XML_NODE_CHAIN);
@@ -117,18 +118,18 @@ namespace Tmdet::DTOs::Xml {
         }
     }
             
-    void Writer::writeXml(Tmdet::ValueObjects::Protein& protein, const std::string& path) {
+    void Writer::writeXml(Tmdet::ValueObjects::Xml& xmlData, const std::string& path) {
         DEBUG_LOG("Processing: Writer::writeXml({})",path);
         create();
-        setTmp(protein.tmp);
-        setCode(protein.code);
-        setCreateDate(protein.date);
-        setVersion(protein.version);
-        setQvalue(protein.qValue);
-        setTmtype(protein.type.name);
-        setTMatrix(protein.tmatrix);
-        setMembranes(protein.membranes);
-        setChains(protein.chains);
+        setTmp(xmlData.tmp);
+        setCode(xmlData.code);
+        setCreateDate(xmlData.date);
+        setVersion(xmlData.version);
+        setQvalue(xmlData.qValue);
+        setTmtype(xmlData.type.name);
+        setTMatrix(xmlData.tmatrix);
+        setMembranes(xmlData.membranes);
+        setChains(xmlData.chains);
         write(path);
         DEBUG_LOG(" Processed: Writer::writeXml({})",path);
     }

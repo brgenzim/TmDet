@@ -1,6 +1,7 @@
 #include <any>
 #include <gemmi/model.hpp>
 #include <Config.hpp>
+#include <Helpers/Vector.hpp>
 #include <Engine/Annotator.hpp>
 #include <System/Logger.hpp>
 #include <Types/Region.hpp>
@@ -126,7 +127,7 @@ namespace Tmdet::Engine {
     void Annotator::detectAlphaHelices() {
         DEBUG_LOG("Processing Annotator::detectAlphaHelices()");
         for(auto& membrane: protein.membranes) {
-            auto alphaVecs = ssVec.getCrossingAlphas(membrane);
+            auto alphaVecs = getCrossingAlphas(membrane);
             if (!alphaVecs.empty() ) {
                 protein.type = Tmdet::Types::ProteinType::TM_ALPHA;
                 for(const auto& vector: alphaVecs) {
@@ -141,7 +142,7 @@ namespace Tmdet::Engine {
     void Annotator::detectBarrel() {
         DEBUG_LOG("Processing Annotator::detectBarrel()");
         for(auto& membrane: protein.membranes) {
-            auto betaVecs = ssVec.getCrossingBetas(membrane);
+            auto betaVecs = getCrossingBetas(membrane);
             if (betaVecs.size() > 7) {
                 protein.type = (protein.type == Tmdet::Types::ProteinType::TM_ALPHA?Tmdet::Types::ProteinType::TM_MIXED:Tmdet::Types::ProteinType::TM_BETA);
                 for(const auto& vector: betaVecs) {
@@ -155,7 +156,7 @@ namespace Tmdet::Engine {
     void Annotator::detectInterfacialHelices() {
         DEBUG_LOG("Processing Annotator::detectInterfacialHelices()");
         for(auto& membrane: protein.membranes) {
-            auto alphaVecs = ssVec.getParallelAlphas(membrane);
+            auto alphaVecs = getParallelAlphas(membrane);
             if (!alphaVecs.empty() ) {
                 for(const auto& vector: alphaVecs) {
                     for (int i = vector.begResIdx; i<= vector.endResIdx; i++) {
@@ -178,5 +179,62 @@ namespace Tmdet::Engine {
         }
         DEBUG_LOG(" Processed Annotator::replaceRegion()");
     }
+
+    std::vector<Tmdet::ValueObjects::SecStrVec> Annotator::getCrossingAlphas(Tmdet::ValueObjects::Membrane& membrane) {
+        std::vector<Tmdet::ValueObjects::SecStrVec> ret;
+        for (auto& vector : protein.vectors) {
+            if (vector.type.isAlpha() && checkCross(vector, membrane)) {
+                ret.emplace_back(vector);
+            }
+        }
+        return ret;
+    }
+
+    std::vector<Tmdet::ValueObjects::SecStrVec> Annotator::getParallelAlphas(Tmdet::ValueObjects::Membrane& membrane) {
+        std::vector<Tmdet::ValueObjects::SecStrVec> ret;
+        for (auto& vector : protein.vectors) {
+            if (vector.type.isAlpha() && checkParallel(vector, membrane)) {
+                ret.emplace_back(vector);
+            }
+        }
+        return ret;
+    }
+
+    std::vector<Tmdet::ValueObjects::SecStrVec> Annotator::getCrossingBetas(Tmdet::ValueObjects::Membrane& membrane) {
+        std::vector<Tmdet::ValueObjects::SecStrVec> ret;
+        for (auto& vector : protein.vectors) {
+            if (vector.type.isBeta() && checkCross(vector, membrane)) {
+                ret.emplace_back(vector);
+            }
+        }
+        return ret;
+    }
+
+    bool Annotator::checkCross(Tmdet::ValueObjects::SecStrVec& vec, Tmdet::ValueObjects::Membrane& membrane) const {
+        bool resultUp = false;
+        bool resultDown = false;
+
+        if (membrane.type == Tmdet::Types::MembraneType::PLAIN) {
+            resultUp = Tmdet::Helpers::Vector::simplifiedDoesVectorCrossPlane(
+                    vec.begin.z,vec.end.z,membrane.origo + 3);
+            resultDown = Tmdet::Helpers::Vector::simplifiedDoesVectorCrossPlane(
+                    vec.begin.z,vec.end.z,membrane.origo - 3);
+        } else if (membrane.type == Tmdet::Types::MembraneType::CURVED) {
+            resultUp = Tmdet::Helpers::Vector::doesVectorCrossSphere(
+                    vec.begin, vec.end, gemmi::Vec3(0,0,membrane.origo), membrane.sphereRadius + 5.0);
+            resultDown = Tmdet::Helpers::Vector::doesVectorCrossSphere(
+                    vec.begin, vec.end, gemmi::Vec3(0,0,membrane.origo), membrane.sphereRadius - 5.0);
+        } 
+        DEBUG_LOG("==>{}:{}",resultUp,resultDown);
+        return resultUp && resultDown;
+    }
+
+    bool Annotator::checkParallel(Tmdet::ValueObjects::SecStrVec& vec, Tmdet::ValueObjects::Membrane& membrane) const {    
+        double sign = vec.begin.z / std::abs(vec.begin.z);
+        return (std::abs(sign * vec.begin.z - membrane.halfThickness) < 8
+                && std::abs(sign * vec.end.z - membrane.halfThickness) < 8
+        );
+    }
+
 
 }

@@ -44,62 +44,7 @@ namespace Tmdet::Utils {
         DEBUG_LOG(" Processed SecStrVec::define(#vectors: {})",protein.vectors.size());
     }
 
-    std::vector<Tmdet::ValueObjects::SecStrVec> SecStrVec::getCrossingAlphas(Tmdet::ValueObjects::Membrane& membrane) {
-        std::vector<Tmdet::ValueObjects::SecStrVec> ret;
-        for (auto& vector : protein.vectors) {
-            if (vector.type.isAlpha() && checkCross(vector, membrane)) {
-                ret.emplace_back(vector);
-            }
-        }
-        return ret;
-    }
-
-    std::vector<Tmdet::ValueObjects::SecStrVec> SecStrVec::getParallelAlphas(Tmdet::ValueObjects::Membrane& membrane) {
-        std::vector<Tmdet::ValueObjects::SecStrVec> ret;
-        for (auto& vector : protein.vectors) {
-            if (vector.type.isAlpha() && checkParallel(vector, membrane)) {
-                ret.emplace_back(vector);
-            }
-        }
-        return ret;
-    }
-
-    std::vector<Tmdet::ValueObjects::SecStrVec> SecStrVec::getCrossingBetas(Tmdet::ValueObjects::Membrane& membrane) {
-        std::vector<Tmdet::ValueObjects::SecStrVec> ret;
-        for (auto& vector : protein.vectors) {
-            if (vector.type.isBeta() && checkCross(vector, membrane)) {
-                ret.emplace_back(vector);
-            }
-        }
-        return ret;
-    }
-
-    bool SecStrVec::checkCross(Tmdet::ValueObjects::SecStrVec& vec, Tmdet::ValueObjects::Membrane& membrane) const {
-        bool resultUp = false;
-        bool resultDown = false;
-
-        if (membrane.type == Tmdet::Types::MembraneType::PLAIN) {
-            resultUp = Tmdet::Helpers::Vector::simplifiedDoesVectorCrossPlane(
-                    vec.begin.z,vec.end.z,membrane.origo + 3);
-            resultDown = Tmdet::Helpers::Vector::simplifiedDoesVectorCrossPlane(
-                    vec.begin.z,vec.end.z,membrane.origo - 3);
-        } else if (membrane.type == Tmdet::Types::MembraneType::CURVED) {
-            resultUp = Tmdet::Helpers::Vector::doesVectorCrossSphere(
-                    vec.begin, vec.end, gemmi::Vec3(0,0,membrane.origo), membrane.sphereRadius + 5.0);
-            resultDown = Tmdet::Helpers::Vector::doesVectorCrossSphere(
-                    vec.begin, vec.end, gemmi::Vec3(0,0,membrane.origo), membrane.sphereRadius - 5.0);
-        } 
-        DEBUG_LOG("==>{}:{}",resultUp,resultDown);
-        return resultUp && resultDown;
-    }
-
-    bool SecStrVec::checkParallel(Tmdet::ValueObjects::SecStrVec& vec, Tmdet::ValueObjects::Membrane& membrane) const {    
-        double sign = vec.begin.z / std::abs(vec.begin.z);
-        return (std::abs(sign * vec.begin.z - membrane.halfThickness) < 8
-                && std::abs(sign * vec.end.z - membrane.halfThickness) < 8
-        );
-    }
-
+    
     bool SecStrVec::getNextRegion(Tmdet::ValueObjects::Chain& chain, int& begin, int& end) const {
         return (getNextNotUnkown(chain, begin) && getNextSame(chain, begin, end));
     }
@@ -259,19 +204,19 @@ namespace Tmdet::Utils {
         double d = v1.end.dist(v2.begin);
         auto vv1 = v1.end - v1.begin;
         auto vv2 = v2.end - v2.begin;
-        double a = std::abs(vv1.dot(vv2) * 180 / (vv1.length() * vv2.length() * M_PI));
-        DEBUG_LOG("merge: {} {}",d,a);
-        return (d<5.0
-                && a<10
+        double a = Tmdet::Helpers::Vector::angle(vv1,vv2);
+        DEBUG_LOG("check merge {} {}-{}: {} {}",
+            protein.chains[v1.chainIdx].id,v1.endResIdx,v2.begResIdx,d,a);
+        return (d < TMDET_SECSTRVEC_MERGE_DIST
+                && a < TMDET_SECSTRVEC_MERGE_ANGLE
                 && v1.chainIdx==v2.chainIdx
-                && std::abs(v1.end.z) < TMDET_MEMBRANE_MIN_HALFTHICKNESS
-                && std::abs(v2.end.z)< TMDET_MEMBRANE_MIN_HALFTHICKNESS
         );
     }
 
     Tmdet::ValueObjects::SecStrVec SecStrVec::mergeVectors(const Tmdet::ValueObjects::SecStrVec& v1, const Tmdet::ValueObjects::SecStrVec& v2) const {
+        DEBUG_LOG("merge");
         return Tmdet::ValueObjects::SecStrVec({
-            v1.type,v1.begin,v2.end,v1.begResIdx,v2.endResIdx
+            v1.type,v1.begin,v2.end,v1.chainIdx,v1.begResIdx,v2.endResIdx
         });
     }
 }

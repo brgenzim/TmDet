@@ -84,6 +84,8 @@ namespace Tmdet::Engine {
              * @brief run the process
              */
             void run();
+
+            void searchForOneTm();
             
         public:
             /**

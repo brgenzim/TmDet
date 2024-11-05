@@ -50,10 +50,13 @@ namespace Tmdet::System {
     }
 
     void Arguments::set(int argc, char *argv[]) {
+        commandLine = "";
         char *c=(char *)nullptr;
         char flag[1024];
         std::string name;
         for(int i=1; i<argc; i++) {
+            commandLine += argv[i];
+            commandLine += " ";
             if (!strncmp(argv[i],"--",2)) {
                 if ((c=strchr(argv[i],'=')) != (char*)nullptr) {
                     strncpy(flag, &argv[i][2], (int)(c-argv[i])-2);
@@ -154,5 +157,9 @@ namespace Tmdet::System {
         }
         std::cerr << "Argument name error: " << name << std::endl;
         exit(EXIT_FAILURE);
+    }
+
+    std::string Arguments::getCommandLine() const {
+        return commandLine;
     }
 }

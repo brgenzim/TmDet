@@ -13,11 +13,25 @@ namespace Tmdet::System {
 
     struct FilePaths {
 
+        /**
+         * @brief check if a file exists
+         * 
+         * @param name 
+         * @return true 
+         * @return false 
+         */
         static bool fileExists (const std::string& name) {
             struct stat buffer;   
             return (stat (name.c_str(), &buffer) == 0); 
         }
 
+        /**
+         * @brief generate the path for xml file given the pdb code
+         * 
+         * @param code 
+         * @param createDir 
+         * @return std::string 
+         */
         static std::string xml(const std::string& code, const bool createDir = false) {
             std::string path = std::format("{}/{}",
                     environment.get("TMDET_DATA_ROOT",DEFAULT_TMDET_DATA_ROOT),
@@ -28,6 +42,12 @@ namespace Tmdet::System {
             return std::format("{}/{}.xml",path,code);
         }
 
+        /**
+         * @brief generate the path for a cif file given the pdb code
+         * 
+         * @param code 
+         * @return std::string 
+         */
         static std::string cif(const std::string& code) {
             return std::format("{}/{}/{}{}",
                     environment.get("PDB_CIF_DIR",DEFAULT_PDB_CIF_DIR),
@@ -35,18 +55,37 @@ namespace Tmdet::System {
                     environment.get("PDB_CIF_EXT",DEFAULT_PDB_CIF_EXT));
         }
 
+        /**
+         * @brief generate the path for an ent file given the pdb code
+         * 
+         * @param code 
+         * @param ext 
+         * @return std::string 
+         */
         static std::string ent(const std::string& code, const std::string& ext) {
             return std::format("{}/{}/pdb{}.ent.gz",
                     environment.get("PDB_ENT_DIR",DEFAULT_PDB_ENT_DIR),
                     code.substr(1,2),code);
         }
 
+        /**
+         * @brief generate the path for the transformed pdb file given the pdb code
+         * 
+         * @param code 
+         * @return std::string 
+         */
         static std::string pdbOut(const std::string& code) {
             return std::format("{}/{}/{}_updated_tr.cif.gz",
                     environment.get("TMDET_DATA_ROOT",DEFAULT_TMDET_DATA_ROOT),
                     code.substr(1,2),code);
         }
 
+        /**
+         * @brief generate the cache directory name given the hash of the protein
+         * 
+         * @param hash 
+         * @return std::string 
+         */
         static std::string cache(const std::string& hash) {
             return std::format("{}/{}/{}/{}",
                     environment.get("TMDET_CACHE_ROOT",DEFAULT_TMDET_CACHE_ROOT),

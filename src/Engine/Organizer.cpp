@@ -7,6 +7,7 @@
 #include <Engine/Organizer.hpp>
 #include <Exceptions/NoProteinStructureException.hpp>
 #include <System/Arguments.hpp>
+#include <Types/Protein.hpp>
 #include <Utils/Dssp.hpp>
 #include <Utils/Surface.hpp>
 #include <Utils/Symmetry.hpp>
@@ -21,16 +22,23 @@ namespace Tmdet::Engine {
             dssp();
             surface();
             checkSymmetry(optimizer);
+            auto ssVec = Tmdet::Utils::SecStrVec(protein);
+            if (!protein.tmp) {
+                searchForOneTm();
+            }
             if (!protein.tmp) {
                 optimizer.searchForMembraneNormal();
                 optimizer.setMembranesToProtein();
             }
-            if (protein.tmp) {
+            if (bool na = args.getValueAsBool("na"); !na && protein.tmp) {
                 annotate();
             }
         }
         else {
-            throw Tmdet::Exceptions::NoProteinStructureException(protein.code);
+            //throw Tmdet::Exceptions::NoProteinStructureException(protein.code);
+            protein.tmp = false;
+            protein.qValue = 0;
+            protein.type = Tmdet::Types::ProteinType::NOPROTEIN;
         }
         DEBUG_LOG(" Processed Organizer::run()");
     }
@@ -88,8 +96,16 @@ namespace Tmdet::Engine {
         DEBUG_LOG(" Processed Organizer::checkSymmetry()");
     }
 
+    void Organizer::searchForOneTm() {
+        DEBUG_LOG("Processing Organizer::searchForOneTm()");
+        //TODO: check if protein contains only onel long alpha helix
+        //      then search for membrane normal around 30 degree
+        //      of the arrow of the helix
+        DEBUG_LOG(" Processed Organizer::searchForOneTm()");
+    }
+
     void Organizer::annotate() {
-        DEBUG_LOG("Processing Organizer::annotate()");
+        DEBUG_LOG("Processing Organizer::annotate({})",protein.tmp);
         Tmdet::DTOs::Protein::transform(protein);
         auto annotator = Tmdet::Engine::Annotator(protein);
         annotator.detectSides();

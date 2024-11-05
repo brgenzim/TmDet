@@ -7,6 +7,7 @@
 #include <gemmi/model.hpp>
 #include <gemmi/neighbor.hpp>
 #include <Config.hpp>
+#include <System/Logger.hpp>
 #include <System/FilePaths.hpp>
 #include <Types/Residue.hpp>
 #include <ValueObjects/Protein.hpp>
@@ -55,13 +56,13 @@ namespace Tmdet::Utils {
     }
 
     bool surfaceCache::read(Tmdet::ValueObjects::Protein& protein) {
-        logger.debug("Processing surfaceCache::read()");
+        DEBUG_LOG("Processing surfaceCache::read()");
         std::string hash = protein.hash();
         std::string dir = Tmdet::System::FilePaths::cache(hash);
         std::string path = dir + "/" + hash + "_" + protein.code + ".bin";
         std::ifstream file(path, ios::binary);
         if (!file.is_open()) {
-            logger.warn("No data in surface cache for {}",protein.code);
+            INFO_LOG("No data in surface cache for {}",protein.code);
             return false;
         }
         auto size = cache.size();
@@ -70,12 +71,12 @@ namespace Tmdet::Utils {
         file.read(reinterpret_cast<char*>(cache.data()), size * sizeof(double));
         file.close();
         proteinFromCache(protein);
-        logger.debug(" Processed surfaceCache::read()");
+        DEBUG_LOG(" Processed surfaceCache::read()");
         return true;
     }
 
     void surfaceCache::write(const Tmdet::ValueObjects::Protein& protein) {
-        logger.debug("Processing surfaceCache::write()");
+        DEBUG_LOG("Processing surfaceCache::write()");
         proteinToCache(protein);
         std::string hash = protein.hash();
         std::string dir = Tmdet::System::FilePaths::cache(hash);
@@ -90,7 +91,7 @@ namespace Tmdet::Utils {
         file.write(reinterpret_cast<const char*>(&size), sizeof(size));
         file.write(reinterpret_cast<const char*>(cache.data()), size * sizeof(double));
         file.close();
-        logger.debug(" Processed surfaceCache::write()");
+        DEBUG_LOG(" Processed surfaceCache::write()");
     }
     
     void Surface::run() {
@@ -103,7 +104,7 @@ namespace Tmdet::Utils {
     }
 
     void Surface::initTempData() {
-        logger.debug("Processing Surface::initTempData()");
+        DEBUG_LOG("Processing Surface::initTempData()");
         const double probSize = std::stof(environment.get("TMDET_SURF_PROBSIZE",DEFAULT_TMDET_SURF_PROBSIZE));
         for(auto& chain: protein.chains) {
             for(auto& residue: chain.residues) {
@@ -119,11 +120,11 @@ namespace Tmdet::Utils {
                 }
             }
         }
-        logger.debug(" Processed Surface::initTempData()");
+        DEBUG_LOG(" Processed Surface::initTempData()");
     }
 
     void Surface::setContacts() {
-        logger.debug("Processing Surface::setContacts()");
+        DEBUG_LOG("Processing Surface::setContacts()");
         for(auto& chain: protein.chains) {
             for(auto& residue: chain.residues) {
                 residue.surface = 0.0;
@@ -133,7 +134,7 @@ namespace Tmdet::Utils {
                 }
             }
         }
-        logger.debug(" Processed Surface::setContacts()");
+        DEBUG_LOG(" Processed Surface::setContacts()");
     }
 
     void Surface::setContactsOfAtom(Tmdet::ValueObjects::Atom& a_atom) {

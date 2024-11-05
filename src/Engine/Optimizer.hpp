@@ -59,17 +59,17 @@ namespace Tmdet::Engine {
             /**
              * @brief flag for running (i.e. temporary containers are set)
              */
-            bool run;
+            bool run = false;
 
             /**
              * @brief minimum on z axes for the given normal vector
              */
-            double min;
+            double min = 1e30;
 
             /**
              * @brief maximum on z axes for the given normal vector
              */
-            double max;
+            double max = -1e30;
 
             /**
              * @brief 1 Angstrom wide slices of the protein along the z axes
@@ -106,7 +106,7 @@ namespace Tmdet::Engine {
              */
             gemmi::Vec3 bestNormal;
 
-            double lastO;
+            double lastO = 0;
 
             /**
              * @brief initialize the algorithm

@@ -31,6 +31,7 @@ namespace Tmdet::Engine {
                 }
             }
         }
+        //std::cerr << "init: " << run << std::endl;
         DEBUG_LOG(" Processed: Optimizer::init()");
     }
 
@@ -80,20 +81,22 @@ namespace Tmdet::Engine {
 
     void Optimizer::setBoundaries() {
         DEBUG_LOG("Processing: Optimizer::setBoundaries()");
-        min = 10000;
-        max = -10000;
+        min = 1e30;
+        max = -1e30;
         for(auto& chain: protein.chains) {
             for(auto& residue: chain.residues) {
-                for(auto& atom: residue.atoms) {
-                    auto dist = any_cast<double>(atom.temp.at("dist"));
+                //for(auto& atom: residue.atoms) {
+                //    auto dist = any_cast<double>(atom.temp.at("dist"));
+                    auto dist = any_cast<double>(residue.temp.at("dist"));
                     min = (dist < min ? dist : min);
                     max = (dist > max ? dist : max);
-                }
+                //}
             }
         }
-        DEBUG_LOG("Box size: {} {}: {}",min,max,(unsigned int)(max-min+2));
+        min--; max++;
+        DEBUG_LOG("Box size: {} {}: {}",min,max,(unsigned int)(max-min));
         slices.clear();
-        slices.resize((unsigned int)(max-min+2));
+        slices.resize((unsigned int)(max-min));
         DEBUG_LOG(" Processed: Optimizer::setBoundaries()");
     }
 
@@ -109,6 +112,8 @@ namespace Tmdet::Engine {
 
     void Optimizer::residueToSlice(Tmdet::ValueObjects::Residue& residue) {
         auto sliceIndex = (unsigned int)(any_cast<double>(residue.temp.at("dist")) - min);
+        //std::cerr << min << " "  << max << std::endl;
+        //std::cerr << sliceIndex << " "  << any_cast<double>(residue.temp.at("dist")) << std::endl;
         slices[sliceIndex].numCA++;
         if (residue.ss.isAlpha() || residue.ss.isBeta()) {
             slices[sliceIndex].numStraight++;
@@ -131,9 +136,9 @@ namespace Tmdet::Engine {
     double Optimizer::getQValueForSlice(const _slice& s) const {
         double q = 0.0;
         if (s.numCA > 0 && s.surf >0 ) {
-            q += 40 * (double)s.numStraight / s.numCA;
-            q += 30 * (1.0 - (double)s.numTurn / s.numCA);
-            q += 50 * s.voronota / s.surf;
+            q += 38 * (double)s.numStraight / s.numCA;
+            q -= 50 * (double)s.numTurn / s.numCA;
+            q += 77 * s.voronota / s.surf;
             DEBUG_LOG("Slice: ca: {} nStr: {} nT: {} voronota: {} surf: {} q: {}",s.numCA,s.numStraight,s.numTurn,s.voronota,s.surf,q);
         }
         return q;
@@ -158,7 +163,7 @@ namespace Tmdet::Engine {
         for(unsigned long int i = 0; i<s; i++) {
             int k=0;
             double q=0;
-            for (int j=-3; j<=3; j++) {
+            for (int j=-7; j<=7; j++) {
                 if (j+(int)i>=0 && j+i<s) {
                     q += qs[j+i];
                     k++;
@@ -220,8 +225,10 @@ namespace Tmdet::Engine {
 
     void Optimizer::setMembranesToProtein() {
         DEBUG_LOG("Processing Optimizer::setMembranesToProtein()");
+        protein.qValue = bestQ;
         if (!isTransmembrane()) {
             DEBUG_LOG("Processing Optimizer::setMembranesToProtein(): not transmembrane protein");
+            protein.tmp = false;
             return;
         }
         setNormal(bestNormal);
@@ -233,7 +240,6 @@ namespace Tmdet::Engine {
         }
         if (!protein.membranes.empty()) {
             protein.tmp = true;
-            protein.qValue = bestQ;
             setProteinTMatrix(massCentre,normal);
         }
         DEBUG_LOG(" Processed Optimizer::setMembranesToProtein()");
@@ -273,12 +279,19 @@ namespace Tmdet::Engine {
         membrane.halfThickness = (maxz-minz) / 2;
 
         if (membrane.halfThickness < TMDET_MEMBRANE_MIN_HALFTHICKNESS) {
-            DEBUG_LOG(" Processed Optimizer::getMembrane(): not transmembrane, membrane thickness is small");
+            DEBUG_LOG(" Processed Optimizer::getMembrane(): not transmembrane, membrane thickness is small: {} {} {}",minz,bestZ,maxz);
             return false;
         }
 
-        for (unsigned long int i=minz; i<=maxz; i++) {
-            slices[i].qValue = 0;
+        unsigned long int i = bestZ; 
+        while (i>2 && slices[i].qValue > TMDET_MEMBRANE_QVALUE) {
+            slices[i].qValue=0;
+            i--;
+        }
+        i = bestZ+1; 
+        while (i<slices.size()-2 && slices[i].qValue > TMDET_MEMBRANE_QVALUE) {
+            slices[i].qValue=0;
+            i++;
         }
 
         double o = (minz+maxz) / 2 + min;
@@ -291,8 +304,8 @@ namespace Tmdet::Engine {
             membrane.origo = o - lastO;
         }
 
-        DEBUG_LOG(" Processed Optimizer::getMembrane({}-{}) thickness: {} ",
-            minz,maxz,membrane.halfThickness);
+        DEBUG_LOG(" Processed Optimizer::getMembrane({}-{}-{}) thickness: {} ",
+            minz,bestZ,maxz,membrane.halfThickness);
         return true;
     }
 

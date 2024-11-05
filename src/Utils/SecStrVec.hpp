@@ -16,8 +16,6 @@ namespace Tmdet::Utils {
             Tmdet::ValueObjects::Protein& protein;
 
             void define();            
-            bool checkCross(Tmdet::ValueObjects::SecStrVec& vec, Tmdet::ValueObjects::Membrane& membrane) const;
-            bool checkParallel(Tmdet::ValueObjects::SecStrVec& vec, Tmdet::ValueObjects::Membrane& membrane) const;
             bool getNextRegion(Tmdet::ValueObjects::Chain& chain, int& begin, int& end) const;
             bool getNextNotUnkown(Tmdet::ValueObjects::Chain& chain, int& begin) const;
             bool getNextSame(Tmdet::ValueObjects::Chain& chain, const int& begin, int& end) const;
@@ -41,8 +39,6 @@ namespace Tmdet::Utils {
             }
             ~SecStrVec()=default;
 
-            std::vector<Tmdet::ValueObjects::SecStrVec> getCrossingAlphas(Tmdet::ValueObjects::Membrane& membrane);
-            std::vector<Tmdet::ValueObjects::SecStrVec> getParallelAlphas(Tmdet::ValueObjects::Membrane& membrane);
-            std::vector<Tmdet::ValueObjects::SecStrVec> getCrossingBetas(Tmdet::ValueObjects::Membrane& membrane);
+            
     };
 }

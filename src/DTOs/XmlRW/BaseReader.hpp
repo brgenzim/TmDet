@@ -8,6 +8,7 @@
 #include <ValueObjects/TMatrix.hpp>
 #include <ValueObjects/Chain.hpp>
 #include <ValueObjects/Protein.hpp>
+#include <ValueObjects/Xml.hpp>
 
 /**
  * @brief namespace for tmdet xml data transfer objects
@@ -16,18 +17,13 @@
  * @namespace DTOs
  * @namespace Xml
  */
-namespace Tmdet::DTOs::Xml {
+namespace Tmdet::DTOs::XmlRW {
     
     /**
      * @brief base class for reading xml files
      */
     class BaseReader  {
         protected:
-
-            /**
-             * @brief pugixml document
-             */
-            pugi::xml_document _doc;
 
             /**
              * @brief root node of the xml document
@@ -41,13 +37,6 @@ namespace Tmdet::DTOs::Xml {
              * @return Tmdet::ValueObjects::TMatrix 
              */
             virtual Tmdet::ValueObjects::TMatrix getTMatrix(const pugi::xml_node& node) const = 0;
-
-            /**
-             * @brief read entire xml file into pugixml doucument object
-             * 
-             * @param path 
-             */
-            void read(const std::string& path);
 
             /**
              * @brief Get the value of tmp attribute
@@ -70,13 +59,6 @@ namespace Tmdet::DTOs::Xml {
              * @return std::string 
              */
             virtual std::string getCreateDate() const = 0;
-
-            /**
-             * @brief Get the content of MODIFICATIONS node
-             * 
-             * @return std::vector<Tmdet::ValueObjects::Modification> 
-             */
-            virtual std::vector<Tmdet::ValueObjects::Modification> getModifications() const = 0;
 
             /**
              * @brief Get the value of Qvalue 
@@ -102,9 +84,9 @@ namespace Tmdet::DTOs::Xml {
             /**
              * @brief Get the content of CHAIN node
              * 
-             * @param chains 
+             * @return std::vector<Tmdet::ValueObjects::XmlChain>
              */
-            virtual void getChains(std::vector<Tmdet::ValueObjects::Chain>& chains) = 0;
+            virtual std::vector<Tmdet::ValueObjects::XmlChain> getChains() = 0;
 
             /**
              * @brief Get the content of REGION node
@@ -120,11 +102,20 @@ namespace Tmdet::DTOs::Xml {
             /**
              * @brief read tmdet xml file into Protein Value Object
              * 
-             * @param Tmdet::ValueObjects::Protein
+             * @param Tmdet::ValueObjects::Xml& xmlData
              * @param path 
              */
-            virtual void readXml(Tmdet::ValueObjects::Protein& protein, const std::string& path) = 0;
+            virtual void readXml(Tmdet::ValueObjects::Xml& xmlData) = 0;
 
             virtual ~BaseReader()=default;
+
+            /**
+             * @brief set the root element of xml document
+             * 
+             * @param path 
+             */
+            virtual void setRoot(const pugi::xml_document& doc) = 0;
+
+            
     };
 }
