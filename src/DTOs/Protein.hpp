@@ -27,7 +27,7 @@ namespace Tmdet::DTOs {
          * @param protein 
          * @param path 
          */
-        static void writeCif(const Tmdet::VOs::Protein& protein, const std::string& path);
+        static void writeCif(Tmdet::VOs::Protein& protein, const std::string& path);
 
         /**
          * @brief get pdb structure and parse it into Protein Value Object

@@ -19,21 +19,14 @@
 
 namespace Tmdet::DTOs {
 
-    void Protein::writeCif(const Tmdet::VOs::Protein& protein, const std::string& path) {
-        gemmi::cif::Document document = make_mmcif_document(protein.gemmi);
+    void Protein::writeCif(Tmdet::VOs::Protein& protein, const std::string& path) {
 
-        // correction of _chem_comp
-        DEBUG_LOG("Updating chem_comp types before writing document into '{}'", path);
-        auto& newChemLoop = document.blocks[0].init_mmcif_loop("_chem_comp.", { "id", "type" });
-        auto oldBlock = protein.document.blocks[0];
-        for (auto chemComp : oldBlock.find("_chem_comp.", { "id", "type" })) {
-            DEBUG_LOG("chem_comp: {} {}", chemComp[0], chemComp[1]);
-            newChemLoop.add_row({ chemComp[0], chemComp[1] });
-        }
+        logger.debug("Processing Protein::writeCif()");
+
+        void printDocument(std::ostream& outputStream, Tmdet::VOs::Protein& protein);
 
         std::stringstream sstream;
-        gemmi::cif::WriteOptions options(gemmi::cif::Style::Pdbx);
-        gemmi::cif::write_cif_to_stream(sstream, document, options);
+        printDocument(sstream, protein);
 
         if (path.ends_with(".gz")) {
             Tmdet::Helpers::Gzip::writeFile(path, sstream.str());
@@ -41,6 +34,166 @@ namespace Tmdet::DTOs {
             std::ofstream outCif(path);
             outCif << sstream.str();
         }
+
+        logger.debug(" Document is written into {}", path);
+        logger.debug(" Processed Protein::writeCif()");
+    }
+
+    void printDocument(std::ostream& outputStream, Tmdet::VOs::Protein& protein) {
+
+        //
+        // Helper functions
+        //
+
+        auto getPrefix = [](const std::string& key) -> std::string {
+            auto pos = key.find(".");
+            if (pos == key.npos) {
+                throw std::runtime_error(std::format("no prefix in '{}'", key));
+            }
+            return key.substr(0, pos);
+        };
+
+        auto getSuffix = [](const std::string& key) -> std::string {
+            auto pos = key.find(".");
+            if (pos == key.npos) {
+                throw std::runtime_error(std::format("no prefix in '{}'", key));
+            }
+            return key.substr(pos + 1);
+        };
+
+        /////////////////////////////////////////////////////////////
+        //
+        // Main logic
+        //
+        /////////////////////////////////////////////////////////////
+
+
+        //
+        // Update atom lines in the document
+        //
+        auto& document = protein.document;
+        auto oldBlock = document.blocks[0];
+
+        if (!oldBlock.has_mmcif_category("_atom_site")) {
+            throw std::runtime_error("_atom_site not found");
+        }
+        auto atomLoopItem = *oldBlock.find_loop_item("_atom_site.id");
+        auto atomTable = oldBlock.item_as_table(atomLoopItem);
+        // collect column names and store indecies of x,y,z coord columns
+        std::vector<std::string> columns;
+        int xIndex = -1;
+        int yIndex = -1;
+        int zIndex = -1;
+
+        // set column indecies
+        int colIndex = 0;
+        for (auto& tag : atomTable.tags()) {
+            auto colName = getSuffix(tag.data());
+            columns.emplace_back(colName);
+            if (colName == "Cartn_x") {
+                xIndex = colIndex;
+            } else if (colName == "Cartn_y") {
+                yIndex = colIndex;
+            } else if (colName == "Cartn_z") {
+                zIndex = colIndex;
+            }
+            // } else if (colName == "id") {
+            //     serialIndex = colIndex;
+            // }
+            colIndex++;
+        }
+        auto& newLoop = document.blocks[0].init_mmcif_loop("_atom_site.", columns);
+
+        // update atom coords
+        auto updateCoords = [protein](std::vector<std::string>& values, int xColumn, int yColumn, int zColumn) {
+
+            double x = std::stod(values[xColumn]);
+            double y = std::stod(values[yColumn]);
+            double z = std::stod(values[zColumn]);
+
+            gemmi::Vec3 pos{x, y, z};
+            pos = protein.tmatrix.rot.multiply(pos);
+
+            x = protein.tmatrix.trans.x + pos.x;
+            y = protein.tmatrix.trans.y + pos.y;
+            z = protein.tmatrix.trans.z + pos.z;
+
+            values[xColumn] = std::format("{:.3f}", x);
+            values[yColumn] = std::format("{:.3f}", y);
+            values[zColumn] = std::format("{:.3f}", z);
+        };
+        for (auto atom : atomTable) {
+            // outputStream << atom.row_index << std::endl;
+            std::vector<std::string> atomLine;
+            for (auto& value : atom) {
+                atomLine.emplace_back(value);
+            }
+            // transform atom position
+            updateCoords(atomLine, xIndex, yIndex, zIndex);
+            // overwrite atom position id in the Table
+            atom[xIndex] = atomLine[xIndex];
+            atom[yIndex] = atomLine[yIndex];
+            atom[zIndex] = atomLine[zIndex];
+            // add atom row to the loop
+            newLoop.add_row(atom);
+        }
+
+
+        // Printing...
+
+        for (auto& block : document.blocks) {
+            outputStream << std::format("data_{}", block.name) << std::endl;
+            std::string lastPrefix{"data_"};
+            for (auto& item : block.items) {
+                // outputStream << item.line_number << std::endl;
+                if (item.type == gemmi::cif::ItemType::Pair) {
+                    auto pair = item.pair;
+                    // get category prefix
+                    const std::string currentPrefix = getPrefix(pair[0]);
+                    if (currentPrefix != lastPrefix) {
+                        // if prefix changes print category delimiter
+                        lastPrefix = currentPrefix;
+                        outputStream << "#" << std::endl;
+                    }
+                    // if long string value (with ';' - boundaries)
+                    // then print '\n' between tag and its value
+                    // else just use a space
+                    const char separator = pair[1][0] == ';' ? '\n' : ' ';
+                    outputStream << std::format("{}{}{}", pair[0], separator, pair[1]) << std::endl;
+                } else if (item.type == gemmi::cif::ItemType::Loop) {
+                    outputStream << "#" << std::endl;
+                    auto loop = item.loop;
+                    auto table = block.item_as_table(item);
+                    outputStream << "loop_" << std::endl;
+                    // process the loop as table
+                    for (const auto& tag : table.tags()) {
+                        outputStream << tag.data() << std::endl;
+                    }
+                    // number of columns in the table
+                    int colNum = table.tags().size();
+                    int column = 0;
+                    // iterate on values in the loop object;
+                    // 'column' helps to identify end of rows
+                    for (auto value : loop.values) {
+                        column++;
+                        // print value of a column
+                        outputStream << value;
+                        // if new row begins
+                        if (column % colNum == 0) {
+                            outputStream << std::endl;
+                        } else {
+                            // separator between column values
+                            outputStream << " ";
+                        }
+                    }
+                    lastPrefix = "loop_";
+                } else {
+                    outputStream << "unexpected type" << std::endl;
+                }
+            }
+            outputStream << "#" << std::endl;
+        }
+
     }
 
     Tmdet::VOs::Protein Protein::get(const std::string& inputPath) {
