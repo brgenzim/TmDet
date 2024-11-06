@@ -24,7 +24,9 @@ namespace Tmdet::VOs {
 
     void Protein::getStructure(const std::string& inputPath) {
 
+        logger.debug("Processing protein.getStructure()");
         Tmdet::System::FilePaths::isCif(inputPath)?getCifStructure(inputPath):getEntStructure(inputPath);
+        logger.debug(" Processed protein.getStructure()");
     }
 
     void Protein::getEntStructure(const std::string& inputPath) {
@@ -37,6 +39,8 @@ namespace Tmdet::VOs {
     }
 
     void Protein::getCifStructure(const std::string& inputPath) {
+        version = Tmdet::version();
+        date = Tmdet::System::Date::get();
         document = gemmi::cif::read(gemmi::MaybeGzipped(inputPath));
         gemmi = gemmi::make_structure(std::move(document));
         setupPolymerNames();
