@@ -16,8 +16,6 @@
 namespace Tmdet::ValueObjects {
 
     void Protein::getStructure(const std::string& inputPath) {
-        version = Tmdet::version();
-        date = Tmdet::System::Date::get();
         document = gemmi::cif::read(gemmi::MaybeGzipped(inputPath));
         gemmi = gemmi::make_structure(std::move(document));
 

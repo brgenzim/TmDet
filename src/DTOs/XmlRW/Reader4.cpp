@@ -3,8 +3,11 @@
 #include <iostream>
 #include <format>
 #include <pugixml.hpp>
+#include <Config.hpp>
+#include <DTOs/Region.hpp>
 #include <DTOs/XmlRW/Constants4.hpp>
 #include <DTOs/XmlRW/Reader4.hpp>
+#include <System/Logger.hpp>
 #include <ValueObjects/Membrane.hpp>
 #include <ValueObjects/BioMatrix.hpp>
 #include <ValueObjects/Modification.hpp>
@@ -111,9 +114,8 @@ namespace Tmdet::DTOs::XmlRW {
     std::vector<Tmdet::ValueObjects::Region> Reader4::getRegions(const pugi::xml_node& pnode) const {
         std::vector<Tmdet::ValueObjects::Region> regions;
         for(pugi::xml_node regionNode: pnode.children(XML_NODE_REGION)) {
-            pugi::xml_node node = regionNode.child(XML_NODE_REGION);
-            pugi::xml_node startNode = node.child(XML_NODE_START);
-            pugi::xml_node endNode = node.child(XML_NODE_END);
+            pugi::xml_node startNode = regionNode.child(XML_NODE_START);
+            pugi::xml_node endNode = regionNode.child(XML_NODE_END);
             regions.emplace_back(
                 startNode.attribute(XML_ATTR_SEQ).as_int(),
                 startNode.attribute(XML_ATTR_AUTH_SEQ_ID).as_int(),
@@ -126,6 +128,9 @@ namespace Tmdet::DTOs::XmlRW {
                 endNode.attribute(XML_ATTR_LABEL_SEQ_ID).as_int(),
                 Tmdet::Types::Regions.at(regionNode.attribute(XML_ATTR_TYPE).as_string()[0])
             );
+        }
+        for(auto& region: regions) {
+            DEBUG_LOG("{}",Tmdet::DTOs::Region::print(region));
         }
         return regions;
     }

@@ -28,6 +28,10 @@ namespace Tmdet::Types {
             "non_tm",
             "Chain without any transmembrane region"
         };
+        const Chain LOW_RES = {
+            "low_res",
+            "Chain only with backbone atoms"
+        };
         const Chain UNK = {
             "unknown",
             "Chain type is not determined"
@@ -42,6 +46,7 @@ namespace Tmdet::Types {
         { "alpha", ChainType::ALPHA },
         { "beta", ChainType::BETA },
         { "non_tm", ChainType::NON_TM },
+        { "low_res", ChainType::LOW_RES},
         { "unknown", ChainType::UNK},
         { "not_selected", ChainType::NOT_SELECTED}
     };

@@ -26,12 +26,15 @@ namespace Tmdet::Types {
     struct Residue {
         std::string name;
         char a1;
+        float apol = 0.0;
+        float hsc = 0.0;
+        int nsa = 0;
         std::unordered_map<std::string,AtomData> atoms;
     };
 
     namespace ResidueType {
         const Residue ALA = {
-            "ALA", 'A',
+            "ALA", 'A', 0, 1.6, 1,
             {
                 {"N", {AtomType::N, true, -0.366099, 0.260687}},
                 {"CA", {AtomType::C_ALI, true, -0.345553, 0.267743}},
@@ -42,7 +45,7 @@ namespace Tmdet::Types {
             }
         };
         const Residue CYS = {
-            "CYS", 'C',
+            "CYS", 'C', 0, 2.0, 2,
             {
                 {"N", {AtomType::N, true, -0.452772, 0.25979}},
                 {"CA", {AtomType::C_ALI, true, -0.452816, 0.264808}},
@@ -54,7 +57,7 @@ namespace Tmdet::Types {
             }
         };
         const Residue ASP = {
-            "ASP", 'D',
+            "ASP", 'D', 0,  -9.2, 4,
             {
                 {"N", {AtomType::N, true, -0.284671, 0.219865}},
                 {"CA", {AtomType::C_ALI,  true, -0.227304, 0.211296}},
@@ -68,7 +71,7 @@ namespace Tmdet::Types {
             }
         };
         const Residue GLU = {
-            "GLU", 'E',
+            "GLU", 'E', 0, -8.2, 5,
             {
                 {"N", {AtomType::N, true, -0.280941, 0.224805}},
                 {"CA", {AtomType::C_ALI, true, -0.228705, 0.219997}},
@@ -83,7 +86,7 @@ namespace Tmdet::Types {
             }
         };
         const Residue PHE = {
-            "PHE", 'F',
+            "PHE", 'F', 1, 3.7, 7,
             {
                 {"N", {AtomType::N, true, -0.414952, 0.27603}},
                 {"CA", {AtomType::C_ALI, true, -0.4315, 0.282044}},
@@ -100,7 +103,7 @@ namespace Tmdet::Types {
             }
         };
         const Residue GLY = {
-            "GLY", 'G',
+            "GLY", 'G', 1, 1.0, 0,
             {
                 {"N", {AtomType::N, true, -0.271878, 0.243837}},
                 {"CA", {AtomType::C_ALI, true, -0.255495, 0.224329}},
@@ -110,7 +113,7 @@ namespace Tmdet::Types {
             }
         };
         const Residue HIS = {
-            "HIS", 'H',
+            "HIS", 'H', 0, -3.0, 6,
             {
                 {"N", {AtomType::N, true, -0.33991, 0.253808}},
                 {"CA", {AtomType::C_ALI, true, -0.304916, 0.242045}},
@@ -126,7 +129,7 @@ namespace Tmdet::Types {
             }
         };
         const Residue ILE = {
-            "ILE", 'I',
+            "ILE", 'I', 1, 3.1, 4,
             {
                 {"N", {AtomType::N, true, -0.461542, 0.287267}},
                 {"CA", {AtomType::C_ALI, true, -0.479819, 0.309649}},
@@ -140,7 +143,7 @@ namespace Tmdet::Types {
             }
         };
         const Residue LYS = {
-            "LYS", 'K',
+            "LYS", 'K', 0, -8.8, 5,
             {
                 {"N", {AtomType::N, true, -0.288103, 0.231916}},
                 {"CA", {AtomType::C_ALI, true, -0.231758, 0.227465}},
@@ -155,7 +158,7 @@ namespace Tmdet::Types {
             }
         };
         const Residue LEU = {
-            "LEU", 'L',
+            "LEU", 'L', 1, 2.8, 4,
             {
                 {"N", {AtomType::N, true, -0.430719, 0.273607}},
                 {"CA", {AtomType::C_ALI, true, -0.433988, 0.288229}},
@@ -169,7 +172,7 @@ namespace Tmdet::Types {
             }
         };
         const Residue MET = {
-            "MET", 'M',
+            "MET", 'M', 1, 3.4, 4,
             {
                 {"N", {AtomType::N, true, -0.391078, 0.284179}},
                 {"CA", {AtomType::C_ALI, true, -0.396421, 0.286734}},
@@ -183,7 +186,7 @@ namespace Tmdet::Types {
             }
         };
         const Residue ASN = {
-            "ASN", 'N',
+            "ASN", 'N', 0, -4.8, 4,
             {
                 {"N", {AtomType::N, true, -0.285685, 0.227598}},
                 {"CA", {AtomType::C_ALI, true, -0.239685, 0.216018}},
@@ -197,7 +200,7 @@ namespace Tmdet::Types {
             }
         };
         const Residue PRO = {
-            "PRO", 'P',
+            "PRO", 'P', 0, -0.2, 3,
             {
                 {"N", {AtomType::N, true, -0.265365, 0.239899}},
                 {"CA", {AtomType::C_ALI, true, -0.235571, 0.22395}},
@@ -210,7 +213,7 @@ namespace Tmdet::Types {
             }
         };
         const Residue GLN = {
-            "GLN", 'Q',
+            "GLN", 'Q', 0, -4.1, 5,
             {
                 {"N", {AtomType::N, true, -0.294536, 0.233243}},
                 {"CA", {AtomType::C_ALI, true, -0.249327, 0.227324}},
@@ -225,7 +228,7 @@ namespace Tmdet::Types {
             }
         };
         const Residue ARG = {
-            "ARG", 'R',
+            "ARG", 'R', 0, -12.3, 7,
             {
                 {"N", {AtomType::N, true, -0.326924, 0.237998}},
                 {"CA", {AtomType::C_ALI, true, -0.283062, 0.235648}},
@@ -242,7 +245,7 @@ namespace Tmdet::Types {
             }
         };
         const Residue SER = {
-            "SER", 'S',
+            "SER", 'S', 0, 0.6, 2,
             {
                 {"N", {AtomType::N, true, -0.305418, 0.242504}},
                 {"CA", {AtomType::C_ALI, true, -0.265312, 0.240888}},
@@ -254,7 +257,7 @@ namespace Tmdet::Types {
             }
         };
         const Residue THR = {
-            "THR", 'T',
+            "THR", 'T', 0, 1.2, 3,
             {
                 {"N", {AtomType::N, true, -0.336243, 0.250223}},
                 {"CA", {AtomType::C_ALI, true, -0.30935, 0.25289}},
@@ -267,7 +270,7 @@ namespace Tmdet::Types {
             }
         };
         const Residue VAL = {
-            "VAL", 'V',
+            "VAL", 'V', 1, 2.6, 3,
             {
                 {"N", {AtomType::N, true, -0.446777, 0.287806}},
                 {"CA", {AtomType::C_ALI, true, -0.47288, 0.3119}},
@@ -280,7 +283,7 @@ namespace Tmdet::Types {
             }
         };
         const Residue TRP = {
-            "TRP", 'W',
+            "TRP", 'W', 1, 1.9, 10,
             {
                 {"N", {AtomType::N, true, -0.388018, 0.255962}},
                 {"CA", {AtomType::C_ALI, true, -0.407684, 0.260605}},
@@ -300,7 +303,7 @@ namespace Tmdet::Types {
             }
         };
         const Residue TYR = {
-            "TYR", 'Y',
+            "TYR", 'Y', 1, -0.7, 8,
             {
                 {"N", {AtomType::N, true, -0.395839, 0.270795}},
                 {"CA", {AtomType::C_ALI, true, -0.397171, 0.266279}},

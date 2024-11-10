@@ -40,7 +40,9 @@ namespace Tmdet::Utils {
             DEBUG_LOG("{}",Tmdet::DTOs::SecStrVec::print(vector));
         }
         checkAlphaVectorsForSplitting();
-        checkAlphaVectorsForMerging();
+        if (protein.vectors.size()>1) {
+            checkAlphaVectorsForMerging();
+        }
         DEBUG_LOG(" Processed SecStrVec::define(#vectors: {})",protein.vectors.size());
     }
 
@@ -72,7 +74,6 @@ namespace Tmdet::Utils {
     }
 
     Tmdet::ValueObjects::SecStrVec SecStrVec::getAlphaVector(Tmdet::ValueObjects::Chain& chain, int begin, int end) const {
-        DEBUG_LOG("getAlphaVector: {} {}",begin,end);
         auto b = getMeanPosition(chain,begin);
         auto e = getMeanPosition(chain,end-3);
         auto v = (e -b).normalized();
@@ -87,21 +88,25 @@ namespace Tmdet::Utils {
     gemmi::Vec3 SecStrVec::getMeanPosition(Tmdet::ValueObjects::Chain& chain, int pos) const {
         gemmi::Vec3 vec(0,0,0);
         int i = 0;
+        int j = 0;
         while (i<3) {
             if (auto ca = chain.residues[pos+i].gemmi.get_ca(); ca != nullptr) {
                 vec += ca->pos;
-                i++;
+                j++;
             }
+            i++;
         }
-        if (i) {
-            vec /= i;
+        if (j) {
+            vec /= j;
         }
         return vec;
     }
 
     Tmdet::ValueObjects::SecStrVec SecStrVec::getBetaVector(Tmdet::ValueObjects::Chain& chain, int begin, int end) const {
-        auto b = gemmi::Vec3(chain.residues[begin].gemmi.get_ca()->pos);
-        auto e = gemmi::Vec3(chain.residues[end].gemmi.get_ca()->pos);
+        auto ca = getCa(chain,begin,end);
+        auto b = gemmi::Vec3(ca->pos);
+        ca = getCa(chain,end,begin);
+        auto e = gemmi::Vec3(ca->pos);
         auto v = (e -b).normalized();
         b -= v;
         e += v;
@@ -109,6 +114,25 @@ namespace Tmdet::Utils {
             Tmdet::Types::SecStructType::E,
             b, e, chain.idx, begin, end
         });
+    }
+
+    const gemmi::Atom* SecStrVec::getCa(Tmdet::ValueObjects::Chain& chain, int begin, int end) const {
+        int direction = (end-begin) / std::abs(end-begin);
+        auto i = begin;
+        while((direction == 1 && i<end) || (direction == -1 && i>end)) {
+            auto a = chain.residues[i].gemmi.get_ca();
+            if (a == nullptr) {
+                a = chain.residues[i].gemmi.get_c();
+            }
+            if (a == nullptr) {
+                a = chain.residues[i].gemmi.get_n();
+            }
+            if (a != nullptr) {
+                return a;
+            }
+            i += direction;
+        }
+        return (gemmi::Atom*)nullptr;
     }
 
     void SecStrVec::checkAlphaVectorsForSplitting() {
@@ -156,7 +180,7 @@ namespace Tmdet::Utils {
         int p1=begResIdx;
         bool ok = true;
         while (ok) {
-            if (abs(getCaDist(chainIdx,p1) - 6.2) < 1 && p1+4<endResIdxAll) {
+            if (abs(getCaDist(chainIdx,p1) - 6.2) < 1 && p1+5<endResIdxAll) {
                 p1++; 
             }
             else {
@@ -174,6 +198,9 @@ namespace Tmdet::Utils {
     }
 
     double SecStrVec::getCaDist(int chainIdx, int resIdx) {
+        if (resIdx+4>=(int)protein.chains[chainIdx].residues.size()) {
+            return 1000;
+        }
         auto a1 = protein.chains[chainIdx].residues[resIdx].gemmi.get_ca();
         auto a2 = protein.chains[chainIdx].residues[resIdx+4].gemmi.get_ca();
         return (a1!=nullptr&&a2!=nullptr?a1->pos.dist(a2->pos):-1000);

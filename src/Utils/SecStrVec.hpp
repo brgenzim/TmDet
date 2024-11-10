@@ -23,6 +23,7 @@ namespace Tmdet::Utils {
             Tmdet::ValueObjects::SecStrVec getAlphaVector(Tmdet::ValueObjects::Chain& chain, int begin, int end) const;
             gemmi::Vec3 getMeanPosition(Tmdet::ValueObjects::Chain& chain, int pos) const;
             Tmdet::ValueObjects::SecStrVec getBetaVector(Tmdet::ValueObjects::Chain& chain, int begin, int end) const;
+            const gemmi::Atom* getCa(Tmdet::ValueObjects::Chain& chain, int begin, int end) const;
             void checkAlphaVectorsForSplitting();
             bool checkAlphaVectorForSplitting(const Tmdet::ValueObjects::SecStrVec& vector);
             std::vector<Tmdet::ValueObjects::SecStrVec> splitAlphaVector(const Tmdet::ValueObjects::SecStrVec& vector);

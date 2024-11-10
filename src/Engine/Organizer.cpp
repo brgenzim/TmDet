@@ -55,12 +55,18 @@ namespace Tmdet::Engine {
 
     unsigned int Organizer::selectChain(Tmdet::ValueObjects::Chain& chain) {
         int nr = 0;
+        int nb = 0;
         for (const auto& residue : chain.residues) {
             if (chain.selected) {
                 nr += (residue.hasAllSideChainAtoms()?1:0);
+                nb += (residue.hasOnlyBackBoneAtoms()?1:0);
             }
         }
-        if (nr < std::stoi(environment.get("TMDET_MIN_NUMBER_OF_RESIDUES_IN_CHAIN",DEFAULT_TMDET_MIN_NUMBER_OF_RESIDUES_IN_CHAIN))) {
+        if (nb > nr) {
+            chain.type = Tmdet::Types::ChainType::LOW_RES;
+            DEBUG_LOG("Low Resolution chain: {}",chain.id);
+        }
+        if (nr+nb < std::stoi(environment.get("TMDET_MIN_NUMBER_OF_RESIDUES_IN_CHAIN",DEFAULT_TMDET_MIN_NUMBER_OF_RESIDUES_IN_CHAIN))) {
             chain.selected = false;
         }
         return chain.selected?1:0;

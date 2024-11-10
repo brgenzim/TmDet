@@ -81,6 +81,8 @@ namespace Tmdet::System {
                     }
                     else {
                         this->_setValue(name,argv[++i]);
+                        commandLine += argv[i];
+                        commandLine += " ";
                     }
                 }
             }

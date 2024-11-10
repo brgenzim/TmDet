@@ -28,31 +28,31 @@
 #define LOG_LEVEL_OFF_STR off
 
 #if defined TMDET_LOG_LEVEL && TMDET_LOG_LEVEL == LOG_LEVEL_TRACE_STR
-#define TRACE_LOG(...) logger.trace(__VA_ARGS__)
+#define TRACE_LOG(...) logger.trace("{}.{}: ",__FILE__,__LINE__); logger.trace(__VA_ARGS__)
 #else
 #define TRACE_LOG(...)
 #endif
 
 #if defined TMDET_LOG_LEVEL && TMDET_LOG_LEVEL == LOG_LEVEL_DEBUG_STR
-#define DEBUG_LOG(...) logger.debug(__VA_ARGS__)
+#define DEBUG_LOG(...) logger.debug("{}.{}: ",__FILE__,__LINE__); logger.debug(__VA_ARGS__)
 #else
 #define DEBUG_LOG(...)
 #endif
 
 #if defined TMDET_LOG_LEVEL && TMDET_LOG_LEVEL == LOG_LEVEL_INFO_STR
-#define INFO_LOG(...) logger.info(__VA_ARGS__)
+#define INFO_LOG(...) logger.debug("{}.{}: ",__FILE__,__LINE__); logger.info(__VA_ARGS__)
 #else
 #define INFO_LOG(...)
 #endif
 
 #if defined TMDET_LOG_LEVEL && TMDET_LOG_LEVEL == LOG_LEVEL_WARN_STR
-#define WARN_LOG(...) logger.warn(__VA_ARGS__)
+#define WARN_LOG(...) logger.debug("{}.{}: ",__FILE__,__LINE__); logger.warn(__VA_ARGS__)
 #else
 #define WARN_LOG(...)
 #endif
 
 #if defined TMDET_LOG_LEVEL && TMDET_LOG_LEVEL == LOG_LEVEL_ERROR_STR
-#define ERROR_LOG(...) logger.error(__VA_ARGS__)
+#define ERROR_LOG(...) logger.debug("{}.{}: ",__FILE__,__LINE__); logger.error(__VA_ARGS__)
 #else
 #define ERROR_LOG(...)
 #endif

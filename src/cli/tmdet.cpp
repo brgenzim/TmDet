@@ -14,6 +14,7 @@
 #include <Helpers/Pymol.hpp>
 #include <Services/ChemicalComponentDirectoryService.hpp>
 #include <System/Arguments.hpp>
+#include <System/Date.hpp>
 #include <System/Environment.hpp>
 #include <System/FilePaths.hpp>
 #include <System/Logger.hpp>
@@ -38,6 +39,7 @@ Tmdet::System::Arguments getArguments(int argc, char *argv[]) {
     args.define(false,"nc","no_cache","Do not use cached data","bool","false");
     args.define(false,"s","show","Show annotated structure by pymol","bool","false");
     args.define(false,"na","no_annotation","Do not make annotation","bool","false");
+    args.define(false,"fa","force_nodel_antibody","Do not unselect antibodies in the structure","bool","false");
     args.define(false,"tm","force_transmembrane","Set type to transmembrane without making decision using Q value","bool","false");
     args.set(argc,argv);
     args.check();
@@ -97,35 +99,44 @@ int main(int argc, char *argv[], char **envp) {
         exit(EXIT_FAILURE);
     }
     auto protein = Tmdet::DTOs::Protein::get(pdbInputPath);
-    
-    //if xml input is given then read it's content
-    if (xmlInputPath != "") {
-        xml.read(xmlInputPath, protein);
+    bool na = args.getValueAsBool("na");
+
+    //unselect antibodies if not prevented
+    if (bool fa = args.getValueAsBool("fa"); !fa) {
+        Tmdet::DTOs::Protein::unselectPolymers(protein);
     }
-    
+
     //do the membrane region determination and annotation
     if (bool r = args.getValueAsBool("r"); r) {
         auto organizer = Tmdet::Engine::Organizer(protein, args);
-    }
+        protein.version = Tmdet::version();
+        protein.date = Tmdet::System::Date::get();
 
-    //write xml output if required
-    if (xmlOutputPath != "") {
-        xml.write(xmlOutputPath, protein);
-    }
+        //write xml output if required
+        if (xmlOutputPath != "" && !na) {
+            xml.write(xmlOutputPath, protein);
+        }
 
-    //write transformed pdb file if required
-    if (pdbOutputPath != "") {
-        Tmdet::DTOs::Protein::writeCif(protein,pdbOutputPath);
+        //write transformed pdb file if required and protein is tmp
+        if (pdbOutputPath != "" && protein.tmp && !na) {
+            Tmdet::DTOs::Protein::writeCif(protein,pdbOutputPath);
+        }
+    }
+    else {
+        //if xml input is given then read it's content
+        if (xmlInputPath != "" && !na) {
+            xml.read(xmlInputPath, protein);
+        }    
     }
 
     //show protein by pymol if required
-    if (bool s = args.getValueAsBool("s"); s) {
+    if (bool s = args.getValueAsBool("s"); s && protein.tmp) {
         auto pymol = Tmdet::Helpers::Pymol(protein);
         pymol.show();
     }
 
     //if no annotation flag is given, just witeout tm / not tm info
-    if (bool na = args.getValueAsBool("na"); na) {
+    if (na) {
        std::cout << protein.code << " " << (protein.tmp?"yes":"no") << " " << protein.qValue  << std::endl;
     }
 }

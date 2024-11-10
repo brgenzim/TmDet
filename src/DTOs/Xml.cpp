@@ -12,6 +12,7 @@ namespace Tmdet::DTOs {
 
         void Xml::fromProtein(const Tmdet::ValueObjects::Protein& protein) {
             xmlData.code = protein.code;
+            DEBUG_LOG("fromProtein(): code: >>{}<<",protein.code);
             xmlData.tmp = protein.tmp;
             xmlData.date = protein.date;
             xmlData.version = protein.version;
@@ -67,18 +68,22 @@ namespace Tmdet::DTOs {
             }
         }
 
-        void Xml::read(const std::string& xmlPath) {
+        bool Xml::read(const std::string& xmlPath) {
             if ( !Tmdet::System::FilePaths::fileExists(xmlPath) ) {
-                ERROR_LOG("file not found: {}",xmlPath);
-                exit(EXIT_FAILURE);
+                WARN_LOG("file not found: {}",xmlPath);
+                return false;
             }
-            Tmdet::DTOs::XmlRW::Reader reader;
-            reader.readXml(xmlData, xmlPath);
+            else {
+                Tmdet::DTOs::XmlRW::Reader reader;
+                reader.readXml(xmlData, xmlPath);
+            }
+            return true;
         }
 
         void Xml::read(const std::string& xmlPath, Tmdet::ValueObjects::Protein& protein) {
-            read(xmlPath);
-            toProtein(protein);
+            if (read(xmlPath)) {
+                toProtein(protein);
+            }
         }
 
         void Xml::write(const std::string& xmlPath) {

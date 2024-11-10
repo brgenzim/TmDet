@@ -78,6 +78,7 @@ namespace Tmdet::DTOs {
                     atomVO.surface = 0.0;
                     residueVO.atoms.emplace_back(atomVO);
                 }
+                residueVO.setNumberOfAtoms(); 
                 chainVO.residues.emplace_back(residueVO);
             }
             chainVO.length = residueIdx;
@@ -190,25 +191,41 @@ namespace Tmdet::DTOs {
 
     void Protein::transform(Tmdet::ValueObjects::Protein& protein) {
         for (auto& chain: protein.chains) {
-            for (auto& residue: chain.residues) {
-                for (auto& atom: residue.atoms) {
-                    atom.gemmi.pos.x += protein.tmatrix.trans.x;
-                    atom.gemmi.pos.y += protein.tmatrix.trans.y;
-                    atom.gemmi.pos.z += protein.tmatrix.trans.z;
-                    double x = atom.gemmi.pos.x * protein.tmatrix.rot[0][0]
-                                + atom.gemmi.pos.y * protein.tmatrix.rot[0][1]
-                                + atom.gemmi.pos.z * protein.tmatrix.rot[0][2];
-			        double y = atom.gemmi.pos.x * protein.tmatrix.rot[1][0]
-                                + atom.gemmi.pos.y * protein.tmatrix.rot[1][1]
-                                + atom.gemmi.pos.z * protein.tmatrix.rot[1][2];
-			        double z = atom.gemmi.pos.x * protein.tmatrix.rot[2][0]
-                                + atom.gemmi.pos.y * protein.tmatrix.rot[2][1]
-                                + atom.gemmi.pos.z * protein.tmatrix.rot[2][2];
-                    atom.gemmi.pos.x = x;
-                    atom.gemmi.pos.y = y;
-                    atom.gemmi.pos.z = z;
-                }
+            transformChain(chain, protein.tmatrix);
+        }
+        for (auto& vector: protein.vectors) {
+            transformSecStrVec(vector, protein.tmatrix);
+        }
+    }
+
+    void Protein::transformChain(Tmdet::ValueObjects::Chain& chain, Tmdet::ValueObjects::TMatrix& tmatrix) {
+        for (auto& residue: chain.residues) {
+            for (auto& atom: residue.atoms) {
+                transform(atom.gemmi.pos, tmatrix);
             }
         }
+    }
+
+    void Protein::transformSecStrVec(Tmdet::ValueObjects::SecStrVec& vector, Tmdet::ValueObjects::TMatrix& tmatrix) {
+        transform(vector.begin, tmatrix);
+        transform(vector.end, tmatrix);
+    }
+
+    void Protein::transform(gemmi::Vec3& vec, Tmdet::ValueObjects::TMatrix& tmatrix) {
+        vec.x += tmatrix.trans.x;
+        vec.y += tmatrix.trans.y;
+        vec.z += tmatrix.trans.z;
+        double x = vec.x * tmatrix.rot[0][0]
+                    + vec.y * tmatrix.rot[0][1]
+                    + vec.z * tmatrix.rot[0][2];
+        double y = vec.x * tmatrix.rot[1][0]
+                    + vec.y * tmatrix.rot[1][1]
+                    + vec.z * tmatrix.rot[1][2];
+        double z = vec.x * tmatrix.rot[2][0]
+                    + vec.y * tmatrix.rot[2][1]
+                    + vec.z * tmatrix.rot[2][2];
+        vec.x = x;
+        vec.y = y;
+        vec.z = z;
     }
 }

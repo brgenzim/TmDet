@@ -121,14 +121,22 @@ namespace Tmdet::Engine {
         else if (residue.ss.isTurn()) {
             slices[sliceIndex].numTurn++;
         }
-        for(const auto& atom: residue.atoms) {
-            slices[sliceIndex].surf +=  any_cast<double>(atom.temp.at("outside"));
-            if (residue.type.atoms.contains(atom.gemmi.name)) {
-                slices[sliceIndex].voronota += 
-                    (any_cast<double>(atom.temp.at("outside")) * ( 1-
-                    //"voronota frustration: it is small if residue does not like to be on surface"
-                        (residue.type.atoms.at(atom.gemmi.name).mean - Tmdet::Types::voronotaMeanMin) / 
-                            (Tmdet::Types::voronotaMeanMax - Tmdet::Types::voronotaMeanMin)));
+        if (residue.parentChain.type == Tmdet::Types::ChainType::LOW_RES) {
+            DEBUG_LOG("residueToSlice low resolution: {}",residue.idx);
+            slices[sliceIndex].surf += 1.0;
+            slices[sliceIndex].voronota += (residue.type.hsc + 12.3 ) / 16;
+        }
+        else {
+            for(const auto& atom: residue.atoms) {
+                slices[sliceIndex].surf +=  any_cast<double>(atom.temp.at("outside"));
+                if (residue.type.atoms.contains(atom.gemmi.name)) {
+                    slices[sliceIndex].voronota += 
+                        (any_cast<double>(atom.temp.at("outside")) * ( 1-
+                        //"voronota frustration: it is small if residue does not like to be on surface"
+                            (1 - residue.type.apol) * 
+                            (residue.type.atoms.at(atom.gemmi.name).mean - Tmdet::Types::voronotaMeanMin) / 
+                                (Tmdet::Types::voronotaMeanMax - Tmdet::Types::voronotaMeanMin)));
+                }
             }
         }
     }
@@ -136,9 +144,9 @@ namespace Tmdet::Engine {
     double Optimizer::getQValueForSlice(const _slice& s) const {
         double q = 0.0;
         if (s.numCA > 0 && s.surf >0 ) {
-            q += 38 * (double)s.numStraight / s.numCA;
+            q += 35 * (double)s.numStraight / s.numCA;
             q -= 50 * (double)s.numTurn / s.numCA;
-            q += 77 * s.voronota / s.surf;
+            q += 65 * s.voronota / s.surf;
             DEBUG_LOG("Slice: ca: {} nStr: {} nT: {} voronota: {} surf: {} q: {}",s.numCA,s.numStraight,s.numTurn,s.voronota,s.surf,q);
         }
         return q;
@@ -172,7 +180,7 @@ namespace Tmdet::Engine {
             q /= k;
             q=(q<1?1:q);
             slices[i].qValue = q;
-            if (q > maxQ) {
+            if (i>TMDET_MEMBRANE_MIN_HALFTHICKNESS && i< slices.size() - TMDET_MEMBRANE_MIN_HALFTHICKNESS && q > maxQ) {
                 maxQ = q;
                 bestSliceIndex = i;
             }
@@ -256,7 +264,7 @@ namespace Tmdet::Engine {
         DEBUG_LOG("Processing Optimizer::getMembrane()");
         unsigned long int bestZ = -1;
         double q = -1e30;
-        for (unsigned long int i = 0; i <slices.size(); i++) {
+        for (unsigned long int i = TMDET_MEMBRANE_MIN_HALFTHICKNESS; i <slices.size()-TMDET_MEMBRANE_MIN_HALFTHICKNESS; i++) {
             if (slices[i].qValue > q) {
                 q = slices[i].qValue;
                 bestZ = i;
@@ -267,12 +275,24 @@ namespace Tmdet::Engine {
             DEBUG_LOG(" Processed Optimizer::getMembrane({}): no more membrane",q);
             return false;
         }
-        
+
         unsigned long int minz = bestZ; 
-        while (minz>2 && slices[minz].qValue > TMDET_MEMBRANE_QVALUE && bestZ - minz < TMDET_MEMBRANE_MAX_HALFTHICKNESS) {
+        while (minz>2 && slices[minz].qValue > TMDET_MINIMUM_QVALUE && bestZ - minz < TMDET_MEMBRANE_MAX_HALFTHICKNESS) {
             minz--;
         }
         unsigned long int maxz = bestZ; 
+        while (maxz<slices.size()-2 && slices[maxz].qValue > TMDET_MINIMUM_QVALUE && maxz - bestZ < TMDET_MEMBRANE_MAX_HALFTHICKNESS) {
+            maxz++;
+        }
+        
+        if (maxz - minz < 7) {
+            DEBUG_LOG(" Processed Optimizer::getMembrane(): not transmembrane, membrane minQValue is small: {} {} {}",minz,bestZ,maxz);
+            return false;
+        }
+        
+        while (minz>2 && slices[minz].qValue > TMDET_MEMBRANE_QVALUE && bestZ - minz < TMDET_MEMBRANE_MAX_HALFTHICKNESS) {
+            minz--;
+        }
         while (maxz<slices.size()-2 && slices[maxz].qValue > TMDET_MEMBRANE_QVALUE && maxz - bestZ < TMDET_MEMBRANE_MAX_HALFTHICKNESS) {
             maxz++;
         }

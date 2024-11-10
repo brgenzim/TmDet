@@ -69,6 +69,16 @@ namespace Tmdet::ValueObjects {
         int idx;
 
         /**
+         * @brief number of backbone atoms
+         */
+        int nba = 0;
+
+        /**
+         * @brief number of side chain atoms
+         */
+        int nsa = 0;
+
+        /**
          * @brief chain index of gemmi chain object
          * 
          */
@@ -126,6 +136,10 @@ namespace Tmdet::ValueObjects {
          * @return false 
          */
         bool hasAllAtoms() const;
+
+        void setNumberOfAtoms();
+
+        bool hasOnlyBackBoneAtoms() const;
 
         gemmi::Vec3 centre();
     };

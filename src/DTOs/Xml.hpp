@@ -34,7 +34,7 @@ namespace Tmdet::DTOs {
              * 
              * @param xmlPath 
              */
-            void read(const std::string& xmlPath);
+            bool read(const std::string& xmlPath);
 
             /**
              * @brief read xml file and copy data into protein value object

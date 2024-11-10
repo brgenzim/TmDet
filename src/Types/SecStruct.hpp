@@ -20,7 +20,7 @@ namespace Tmdet::Types {
         }
 
         bool isAlpha() const {
-            return (code == 'H' || code == 'G' || code == 'I' || code == 'T');
+            return (code == 'H' || code == 'G' || code == 'I' || code == 'T' || code == 'S');
         }
 
         bool isBeta() const {
@@ -28,7 +28,7 @@ namespace Tmdet::Types {
         }
 
         bool isTurn() const {
-            return (code == 'T' || code == 'B' || code == 'S');
+            return (code == 'T' || code == 'B' );
         }
 
         bool same(const SecStruct &other) const {

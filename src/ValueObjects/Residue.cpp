@@ -8,15 +8,25 @@ namespace Tmdet::ValueObjects {
         return gemmi.seqid.num.value;
     }
 
+    void Residue::setNumberOfAtoms() {
+        for(auto& atom: atoms) {
+            if (type.atoms.contains(atom.gemmi.name)) {
+                if (type.atoms.at(atom.gemmi.name).bb) {
+                    nba++;
+                }
+                else {
+                    nsa++;
+                }
+            }
+        }
+    }
+
     bool Residue::hasAllSideChainAtoms() const {
-        if (gemmi.name == "GLY") {
-            return true;
-        }
-        unsigned int numSideChainAtoms = 0;
-        for(const auto& [key,data]: type.atoms) {
-            numSideChainAtoms += (data.bb?0:1);
-        }
-        return numSideChainAtoms >= (type.atoms.size() - 5);
+        return (nsa == type.nsa);
+    }
+
+    bool Residue::hasOnlyBackBoneAtoms() const {
+        return (nsa == 0 && nba > 0);
     }
 
     bool Residue::hasAllAtoms() const {

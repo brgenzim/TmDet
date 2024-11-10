@@ -124,15 +124,15 @@ namespace Tmdet::DTOs::XmlRW {
 
     std::vector<Tmdet::ValueObjects::XmlChain> Reader3::getChains() {
         std::vector<Tmdet::ValueObjects::XmlChain> xmlChains;
-        for (pugi::xml_node c_node = _root.child(XML3_NODE_CHAIN); c_node; c_node = c_node.next_sibling(XML3_NODE_CHAIN)) {
-            auto type = c_node.attribute(XML3_ATTR_TYPE).as_string();
+        for (pugi::xml_node chainNode: _root.children(XML3_NODE_CHAIN)) {
+            auto type = chainNode.attribute(XML3_ATTR_TYPE).value();
             xmlChains.emplace_back(
-                c_node.attribute(XML3_ATTR_ID).as_string(), //id
-                c_node.attribute(XML3_ATTR_ID).as_string(), //labId
+                chainNode.attribute(XML3_ATTR_CHAINID).value(), //id
+                chainNode.attribute(XML3_ATTR_CHAINID).value(), //labId
                 true, //selected
-                c_node.attribute(XML3_ATTR_NUM_TM).as_int(), //numtm
-                c_node.child(XML3_NODE_SEQ).text().get(), //seq
-                getRegions(c_node), //regions
+                chainNode.attribute(XML3_ATTR_NUM_TM).as_int(), //numtm
+                chainNode.child(XML3_NODE_SEQ).text().get(), //seq
+                getRegions(chainNode), //regions
                 Tmdet::Types::Chains.at(type) //type
             );
         }
@@ -143,13 +143,16 @@ namespace Tmdet::DTOs::XmlRW {
         std::vector<Tmdet::ValueObjects::Region> regions;
         for (pugi::xml_node r_node = cnode.child(XML3_NODE_REGION); r_node; r_node = r_node.next_sibling(XML3_NODE_REGION)) {
             char type = r_node.attribute(XML3_ATTR_type).value()[0];
+            if (type=='I') {
+                type = 'N';
+            }
             regions.emplace_back(r_node.attribute(XML3_ATTR_SEQ_BEG).as_int(),
                 r_node.attribute(XML3_ATTR_PDB_BEG).as_int(),
-                (r_node.attribute(XML3_ATTR_PDB_BEGI)?r_node.attribute(XML3_ATTR_PDB_BEGI).as_string()[0]:' '),
+                (r_node.attribute(XML3_ATTR_PDB_BEGI)?r_node.attribute(XML3_ATTR_PDB_BEGI).value()[0]:' '),
                 r_node.attribute(XML3_ATTR_PDB_BEG).as_int(),
                 r_node.attribute(XML3_ATTR_SEQ_END).as_int(),
                 r_node.attribute(XML3_ATTR_PDB_END).as_int(),
-                (r_node.attribute(XML3_ATTR_PDB_ENDI)?r_node.attribute(XML3_ATTR_PDB_ENDI).as_string()[0]:' '),
+                (r_node.attribute(XML3_ATTR_PDB_ENDI)?r_node.attribute(XML3_ATTR_PDB_ENDI).value()[0]:' '),
                 r_node.attribute(XML3_ATTR_PDB_END).as_int(),
                 Tmdet::Types::Regions.at(type));
         }

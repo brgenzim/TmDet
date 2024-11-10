@@ -26,6 +26,8 @@ namespace Tmdet::Helpers {
                 "pink", //MEMBINS
                 "teal", //INTERMEMB
                 "grey80", //UNK
+                "red", //INSIDE
+                "blue" //OUTSIDE
             };
 
             void head();
