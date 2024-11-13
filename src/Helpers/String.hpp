@@ -6,8 +6,7 @@
 
 namespace Tmdet::Helpers::String {
 
-    static void toLower(std::string& data) {
-        std::transform(data.begin(), data.end(), data.begin(),
-            [](unsigned char c){ return std::tolower(c); });
-    }
+    extern void toLower(std::string& data);
+
+    extern std::vector<std::string> explode(const std::string& delimiter, std::string source);
 }

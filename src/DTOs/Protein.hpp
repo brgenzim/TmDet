@@ -85,5 +85,13 @@ namespace Tmdet::DTOs {
          * @brief Unselect polymer chains based on their name and the given string set in TMDET_POLYMER_FILTER_FILE.
          */
         static void unselectPolymers(Tmdet::ValueObjects::Protein& protein);
+
+        /**
+         * @brief unselect chains
+         * 
+         * @param chainList
+         * @param protein
+         */
+        static void unselectChains(const std::string& chainList, Tmdet::ValueObjects::Protein& protein);
     };
 }

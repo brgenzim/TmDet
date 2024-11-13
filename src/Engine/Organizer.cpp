@@ -47,7 +47,9 @@ namespace Tmdet::Engine {
         DEBUG_LOG("Processing Organizer::selectChains()");
         unsigned int ret = 0;
         for (auto& chain : protein.chains) {
-            ret += selectChain(chain);
+            if (chain.selected) {
+                ret += selectChain(chain);
+            }
         }
         DEBUG_LOG(" Processed Organizer::selectChains(). Return: {}",ret);
         return ret;
@@ -57,10 +59,8 @@ namespace Tmdet::Engine {
         int nr = 0;
         int nb = 0;
         for (const auto& residue : chain.residues) {
-            if (chain.selected) {
-                nr += (residue.hasAllSideChainAtoms()?1:0);
-                nb += (residue.hasOnlyBackBoneAtoms()?1:0);
-            }
+            nr += (residue.hasAllSideChainAtoms()?1:0);
+            nb += (residue.hasOnlyBackBoneAtoms()?1:0);
         }
         if (nb > nr) {
             chain.type = Tmdet::Types::ChainType::LOW_RES;
@@ -76,7 +76,9 @@ namespace Tmdet::Engine {
         DEBUG_LOG("Processing Organizer::dssp()");
         auto dssp = Tmdet::Utils::Dssp(protein);
         for (auto& chain : protein.chains) {
-            DEBUG_LOG(" DSSP: {}: {}",chain.id,dssp.getSecStructAsString(chain));
+            if (chain.selected) {
+                DEBUG_LOG(" DSSP: {}: {}",chain.id,dssp.getSecStructAsString(chain));
+            }
         }
         DEBUG_LOG(" Processed Organizer::dssp()");
     }

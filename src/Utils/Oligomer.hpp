@@ -19,7 +19,7 @@ namespace Tmdet {
 
         struct Oligomer {
 
-            static std::vector<gemmi::Entity> getPolimerEntities(const gemmi::Structure& structure) {
+            static std::vector<gemmi::Entity> getPolymerEntities(const gemmi::Structure& structure) {
                 std::vector<gemmi::Entity> ret;
                 for (const auto& entity : structure.entities) {
                     if (entity.entity_type == gemmi::EntityType::Polymer) {
@@ -31,7 +31,7 @@ namespace Tmdet {
             }
 
             static std::vector<gemmi::Entity> getHomoOligomerEntities(const gemmi::Structure& structure) {
-                auto entities = getPolimerEntities(structure);
+                auto entities = getPolymerEntities(structure);
                 std::vector<gemmi::Entity> result;
                 for (auto& entity : entities) {
                     if (entity.subchains.size() > 1) {
@@ -84,7 +84,7 @@ namespace Tmdet {
 
             static Tmdet::Types::Oligomer getOligomerType(gemmi::Structure& structure) {
                 Tmdet::Types::Oligomer ret = Tmdet::Types::OligomerType::HETERO_OLIGOMER;
-                const auto& entities = getPolimerEntities(structure);
+                const auto& entities = getPolymerEntities(structure);
                 if (isMonomer(entities)) {
                     ret = Tmdet::Types::OligomerType::MONOMER;
                 }

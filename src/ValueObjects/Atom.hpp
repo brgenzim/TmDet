@@ -5,8 +5,6 @@
 #include <any>
 #include <unordered_map>
 #include <gemmi/model.hpp>
-#include <ValueObjects/Chain.hpp>
-#include <ValueObjects/Residue.hpp>
 
 /**
  * @brief namespace for value objects
@@ -15,16 +13,6 @@
  */
 namespace Tmdet::ValueObjects {
 
-    /**
-     * @brief forward declaration of Chain
-     */
-    struct Chain;
-
-    /**
-     * @brief forward declaration of Residue
-     */
-    struct Residue;
-    
     /**
      * @brief description of an atom
      */
@@ -55,16 +43,6 @@ namespace Tmdet::ValueObjects {
         int residueIdx;
 
         /**
-         * @brief parent chain as Tmdet Value Object Chain
-         */
-        Chain& parentChain;
-
-        /**
-         * @brief parent residue as Tmdet Value Object Residue
-         */
-        Residue& parentResidue;
-
-        /**
          * @brief temporary container for claculating various
          *        properties for the atom
          */
@@ -77,15 +55,8 @@ namespace Tmdet::ValueObjects {
          * @param residueVO 
          * @param chainVO 
          */
-        explicit Atom(gemmi::Atom& _gemmi, Residue& residueVO, Chain& chainVO) :
-            gemmi(_gemmi),
-            parentChain(chainVO),
-            parentResidue(residueVO) {}
+        explicit Atom(gemmi::Atom& _gemmi) :
+            gemmi(_gemmi) {}
 
-        /**
-         * @brief Destroy the Atom object
-         * 
-         */
-        ~Atom()=default;
     };
 }

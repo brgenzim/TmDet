@@ -8,7 +8,6 @@
 #include <Types/Residue.hpp>
 #include <Types/SecStruct.hpp>
 #include <ValueObjects/Atom.hpp>
-#include <ValueObjects/Chain.hpp>
 #include <ValueObjects/HBond.hpp>
 #include <gemmi/model.hpp>
 
@@ -16,11 +15,6 @@
  * @brief namespace for value objects
  */
 namespace Tmdet::ValueObjects {
-
-    /**
-     * @brief forward declaration of Chain
-     */
-    struct Chain;
 
     /**
      * @brief description of a Residue structure value objects
@@ -85,11 +79,6 @@ namespace Tmdet::ValueObjects {
         int chainIdx;
 
         /**
-         * @brief Chain structure value object the the residue belongs to
-         */
-        Chain& parentChain;
-
-        /**
          * @brief temporary container for claculating various
          *        properties for the residue
          */
@@ -101,18 +90,12 @@ namespace Tmdet::ValueObjects {
          * @param _gemmi 
          * @param chainVO 
          */
-        explicit Residue(gemmi::Residue& _gemmi, Chain& chainVO) : 
-            gemmi(_gemmi),
-            parentChain(chainVO) {
+        explicit Residue(gemmi::Residue& _gemmi) : 
+            gemmi(_gemmi) {
                 if (Tmdet::Types::Residues.contains(_gemmi.name)) {
                     type = Tmdet::Types::Residues.at(_gemmi.name);
                 }
         }
-
-        /**
-         * @brief Destroy the Residue object
-         */
-        ~Residue()=default;
 
         /**
          * @brief pdb sequence number of the residue
@@ -141,6 +124,6 @@ namespace Tmdet::ValueObjects {
 
         bool hasOnlyBackBoneAtoms() const;
 
-        gemmi::Vec3 centre();
+        gemmi::Vec3 centre() const;
     };
 }

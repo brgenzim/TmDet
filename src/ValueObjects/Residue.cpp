@@ -9,7 +9,7 @@ namespace Tmdet::ValueObjects {
     }
 
     void Residue::setNumberOfAtoms() {
-        for(auto& atom: atoms) {
+        for(const auto& atom: atoms) {
             if (type.atoms.contains(atom.gemmi.name)) {
                 if (type.atoms.at(atom.gemmi.name).bb) {
                     nba++;
@@ -33,12 +33,12 @@ namespace Tmdet::ValueObjects {
         return atoms.size() >= (type.atoms.size() - 1);
     }
 
-    gemmi::Vec3 Residue::centre() {
-            gemmi::Vec3 ret(0,0,0);
-            for(const auto& atom: atoms) {
-                ret += atom.gemmi.pos;
-            }
-            ret /= atoms.size();
-            return ret;
+    gemmi::Vec3 Residue::centre() const {
+        gemmi::Vec3 ret(0,0,0);
+        for(const auto& atom: atoms) {
+            ret += atom.gemmi.pos;
         }
+        ret /= (double)atoms.size();
+        return ret;
+    }
 }

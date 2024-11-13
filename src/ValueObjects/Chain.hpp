@@ -83,11 +83,6 @@ namespace Tmdet::ValueObjects {
 
         void addStructure(const gemmi::Chain& _gemmi);
 
-        /**
-         * @brief Destroy the Chain object
-         */
-        ~Chain()=default;
-
         gemmi::Vec3 centre();
     };
 }

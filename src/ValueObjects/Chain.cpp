@@ -1,6 +1,7 @@
 #include <string>
 #include <vector>
 #include <Types/Chain.hpp>
+#include <ValueObjects/Chain.hpp>
 #include <ValueObjects/Residue.hpp>
 #include <ValueObjects/Region.hpp>
 #include <gemmi/model.hpp>

@@ -38,6 +38,7 @@ Tmdet::System::Arguments getArguments(int argc, char *argv[]) {
     args.define(false,"n","not","Set transmembrane='not' in the xml file","bool","false");
     args.define(false,"nc","no_cache","Do not use cached data","bool","false");
     args.define(false,"s","show","Show annotated structure by pymol","bool","false");
+    args.define(false,"uc","unselect_chains","Unselect proteins chains","string","");
     args.define(false,"na","no_annotation","Do not make annotation","bool","false");
     args.define(false,"fa","force_nodel_antibody","Do not unselect antibodies in the structure","bool","false");
     args.define(false,"tm","force_transmembrane","Set type to transmembrane without making decision using Q value","bool","false");
@@ -104,6 +105,11 @@ int main(int argc, char *argv[], char **envp) {
     //unselect antibodies if not prevented
     if (bool fa = args.getValueAsBool("fa"); !fa) {
         Tmdet::DTOs::Protein::unselectPolymers(protein);
+    }
+
+    //unselect chains given in the command line argument
+    if (std::string uc = args.getValueAsString("uc"); uc != "") {
+        Tmdet::DTOs::Protein::unselectChains(uc, protein);
     }
 
     //do the membrane region determination and annotation

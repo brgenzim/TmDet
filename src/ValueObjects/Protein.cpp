@@ -76,21 +76,21 @@ namespace Tmdet::ValueObjects {
 
     int Protein::searchChainById(const std::string& id) const {
         for (auto& c: chains) {
-            if (c.id == id) {
+            if (c.selected && c.id == id) {
                 return c.idx;
             }
         }
-        logger.error("Chain {} not found",id);
+        logger.error("Chain {} not found, or not selected",id);
         return -1;
     }
 
     int Protein::searchChainByLabId(const std::string& id) const {
         for (auto& c: chains) {
-            if (c.labId == id) {
+            if (c.selected && c.labId == id) {
                 return c.idx;
             }
         }
-        logger.error("Chain {} not found",id);
+        logger.error("Chain {} not found, or not selected",id);
         return -1;
     }
 
@@ -108,4 +108,21 @@ namespace Tmdet::ValueObjects {
         }
         return ret;
     }
+
+    template<typename T>
+    void Protein::eachChain(T* obj, void (T::*func)(Tmdet::ValueObjects::Chain& chain)) {
+        for(auto& chain: chains) {
+            (obj->*func)(chain);
+        }
+    }
+
+    template<typename T>
+    void Protein::eachSelectedChain(T* obj, void (T::*func)(Tmdet::ValueObjects::Chain& chain)) {
+        for(auto& chain: chains) {
+            if (chain.selected) {
+                (obj->*func)(chain);
+            }
+        }
+    }
+
 }

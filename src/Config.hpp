@@ -6,8 +6,8 @@
 #define DEFAULT_PDB_STATUS_DIR "/home/data/wwPDB/status"
 #define DEFAULT_PDB_DATA_DIR "/home/data/wwPDB/data"
 #define DEFAULT_PDB_ENT_DIR "/home/data/wwPDB/data/structures/divided/pdb"
-#define DEFAULT_PDB_CIF_DIR "/home/data/wwPDB/data/structures/divided/updated_mmcif"
-#define DEFAULT_PDB_CIF_EXT "_updated.cif.gz"
+#define DEFAULT_PDB_CIF_DIR "/home/data/wwPDB/data/assemblies/divided/mmCIF"
+#define DEFAULT_PDB_CIF_EXT ".cif.gz"
 
 #define DEFAULT_TMDET_DATA_ROOT "/tmp/TmDet/data"
 #define DEFAULT_TMDET_CACHE_ROOT "/tmp/TmDet/cache"
@@ -29,9 +29,9 @@
 #define DEFAULT_TMDET_SURF_ZSLICE "0.05"
 #define DEFAULT_TMDET_SURF_DIST "0.1"
 #define TMDET_TINY 1e-10
-#define TMDET_MINIMUM_QVALUE 70
+#define TMDET_MINIMUM_QVALUE 65
 #define TMDET_MEMBRANE_QVALUE 50
-#define TMDET_MEMBRANE_MIN_HALFTHICKNESS 8
+#define TMDET_MEMBRANE_MIN_HALFTHICKNESS 9
 #define TMDET_MEMBRANE_MAX_HALFTHICKNESS 17
 #define TMDET_SECSTRVEC_MERGE_DIST 6.0
 #define TMDET_SECSTRVEC_MERGE_ANGLE 15.0

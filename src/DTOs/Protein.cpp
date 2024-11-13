@@ -56,35 +56,35 @@ namespace Tmdet::DTOs {
         Tmdet::Utils::Alignment::alignResidues(protein);
         int chainIdx = 0;
         for(auto& chain: protein.gemmi.models[0].chains) {
-            Tmdet::ValueObjects::Chain chainVO;
-            chainVO.addStructure(chain);
-            chainVO.idx = chainIdx++;
-            auto poly = chain.get_polymer();
-            chainVO.labId = (poly?poly.subchain_id():chainVO.id);
-            logger.debug("Loading chain auth_asym_id: {} label_asym_id: {}",chainVO.id,chainVO.labId);
-            int residueIdx = 0;
-            for( auto& residue: chain.residues) {
-                auto residueVO = Tmdet::ValueObjects::Residue(residue,chainVO);
-                residueVO.chainIdx = chainVO.idx;
-                residueVO.idx = residueIdx++;
-                residueVO.surface = 0.0;
-                chainVO.seq += residueVO.type.a1;
-                int atomIdx = 0;
-                for( auto& atom: residue.atoms) {
-                    auto atomVO = Tmdet::ValueObjects::Atom(atom,residueVO,chainVO);
-                    atomVO.chainIdx = chainVO.idx;
-                    atomVO.residueIdx = residueVO.idx;
-                    atomVO.idx = atomIdx++;
-                    atomVO.surface = 0.0;
-                    residueVO.atoms.emplace_back(atomVO);
+            if (auto poly = chain.get_polymer(); poly) {
+                Tmdet::ValueObjects::Chain chainVO;
+                chainVO.addStructure(chain);
+                chainVO.idx = chainIdx++;
+                chainVO.labId = poly.subchain_id();
+                logger.debug("Loading chain auth_asym_id: {} label_asym_id: {}",chainVO.id,chainVO.labId);
+                int residueIdx = 0;
+                for( auto& residue: chain.residues) {
+                    auto residueVO = Tmdet::ValueObjects::Residue(residue);
+                    residueVO.chainIdx = chainVO.idx;
+                    residueVO.idx = residueIdx++;
+                    residueVO.surface = 0.0;
+                    chainVO.seq += residueVO.type.a1;
+                    int atomIdx = 0;
+                    for( auto& atom: residue.atoms) {
+                        auto atomVO = Tmdet::ValueObjects::Atom(atom);
+                        atomVO.chainIdx = chainVO.idx;
+                        atomVO.residueIdx = residueVO.idx;
+                        atomVO.idx = atomIdx++;
+                        atomVO.surface = 0.0;
+                        residueVO.atoms.emplace_back(atomVO);
+                    }
+                    residueVO.setNumberOfAtoms();
+                    chainVO.residues.push_back(residueVO);
                 }
-                residueVO.setNumberOfAtoms(); 
-                chainVO.residues.emplace_back(residueVO);
+                chainVO.length = residueIdx;
+                protein.chains.push_back(chainVO);
             }
-            chainVO.length = residueIdx;
-            protein.chains.emplace_back(chainVO);
         }
-
         protein.neighbors = gemmi::NeighborSearch(protein.gemmi.models[0], protein.gemmi.cell, 9);
         protein.neighbors.populate();
         logger.debug(" Processed Protein::get()");
@@ -125,9 +125,19 @@ namespace Tmdet::DTOs {
             auto name = protein.polymerNames[chain.entityId];
             for (auto& filter : nameSet) {
                 if (toUpper(name).find(toUpper(filter)) != name.npos) {
+                    DEBUG_LOG("Unselecting Ab chain: {}",chain.id);
                     chain.selected = false;
                     break;
                 }
+            }
+        }
+    }
+
+    void Protein::unselectChains(const std::string& chainList, Tmdet::ValueObjects::Protein& protein) {
+        for(auto chain: Tmdet::Helpers::String::explode(",",chainList)) {
+            if (int chainIdx = protein.searchChainById(chain); chainIdx != -1) {
+                protein.chains[chainIdx].selected = false;
+                DEBUG_LOG("Unselecting chain: {}",chain);
             }
         }
     }
@@ -139,15 +149,15 @@ namespace Tmdet::DTOs {
     }
 
     void Protein::printChain(std::ostream& os, const Tmdet::ValueObjects::Chain& chainVO) {
+        os << "CHAIN " << chainVO.gemmi.name << " " << chainVO.length << std::endl;
         for(const auto& residueVO: chainVO.residues) {
-            os << "CHAIN " << chainVO.gemmi.name << " " << chainVO.length << std::endl;
             printResidue(os, residueVO);
         }
     }
 
     void Protein::printResidue(std::ostream& os, const Tmdet::ValueObjects::Residue& residueVO) {
         os << "\tRESIDUE " << residueVO.idx << ":" << residueVO.resn() << "(" << residueVO.gemmi.name << ") ";
-        os << residueVO.surface << " " << residueVO.ss.code << std::endl;
+        os << residueVO.surface << " ss:" << residueVO.ss.code << std::endl;
         if ( residueVO.temp.contains("fragment") ) {
             os << "\t\tTEMP: fragment: " << any_cast<int>(residueVO.temp.at("fragment")) << std::endl;
         }
@@ -159,14 +169,6 @@ namespace Tmdet::DTOs {
     void Protein::printAtom(std::ostream& os, const Tmdet::ValueObjects::Atom& atomVO) {
         os << "\t\tATOM " << atomVO.idx << ": " << atomVO.gemmi.name << " ";
         os << atomVO.gemmi.pos.x << " " << atomVO.gemmi.pos.y << " " << atomVO.gemmi.pos.z << " ";
-        Tmdet::Types::Residue residueType = Tmdet::Types::ResidueType::getResidue(atomVO.parentResidue.gemmi.name);
-        double vdw = 0.0;
-        if (residueType.atoms.contains(atomVO.gemmi.name)) {
-            vdw = residueType.atoms.at(atomVO.gemmi.name).atom.vdw;
-        } else {
-            vdw = Types::AtomType::DEFAULT_VDW;
-        }
-        os << atomVO.surface << " " << vdw;
         if (atomVO.temp.contains("outside")) {
             os << " out: " << any_cast<double>(atomVO.temp.at("outside"));
         }

@@ -34,7 +34,7 @@ namespace Tmdet::System {
          */
         static std::string xml(const std::string& code, const bool createDir = false) {
             std::string path = std::format("{}/{}",
-                    environment.get("TMDET_DATA_ROOT",DEFAULT_TMDET_DATA_ROOT),
+                    environment.get("PDBTM_DATA_ROOT",DEFAULT_TMDET_DATA_ROOT),
                     code.substr(1,2));
             if (createDir) {
                 std::filesystem::create_directories(path);
@@ -76,7 +76,7 @@ namespace Tmdet::System {
          */
         static std::string pdbOut(const std::string& code) {
             return std::format("{}/{}/{}_updated_tr.cif.gz",
-                    environment.get("TMDET_DATA_ROOT",DEFAULT_TMDET_DATA_ROOT),
+                    environment.get("PDBTM_DATA_ROOT",DEFAULT_TMDET_DATA_ROOT),
                     code.substr(1,2),code);
         }
 

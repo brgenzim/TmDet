@@ -19,8 +19,10 @@ namespace Tmdet::Utils {
 #define DSSP_HBHIGH -500
 
     void Dssp::exec() {
-        for (StructVO::Chain& chain : _proteinVO.chains) {
-            calcDsspOnChain(chain);
+        for (auto& chain : _proteinVO.chains) {
+            if (chain.selected) {
+                calcDsspOnChain(chain);
+            }
         }
     }
 

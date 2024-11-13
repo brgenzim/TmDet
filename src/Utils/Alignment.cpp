@@ -344,15 +344,13 @@ namespace Tmdet::Utils::Alignment {
 
     void alignResidues(Tmdet::ValueObjects::Protein& proteinVO) {
 
-        for(auto& chain: proteinVO.gemmi.models[0].chains) {
+        for(auto& chain: proteinVO.chains) {
+            if (chain.selected) {
+                auto sequence = Tmdet::DTOs::Protein::getChainSequence(proteinVO, chain.gemmi);
 
-            auto sequence = Tmdet::DTOs::Protein::getChainSequence(proteinVO, chain);
-
-            if (sequence.empty() || chain.residues.empty()) {
-                // no supporting information to do gap fix
-                // or there is no residues for the iteration
-                continue;
-            }
+                if (sequence.empty() || chain.residues.empty()) {
+                    continue;
+                }
 
 #ifdef __ALIGNMENT_DBG
             currentCode = proteinVO.gemmi.name;
@@ -361,7 +359,8 @@ namespace Tmdet::Utils::Alignment {
             }
 #endif
 
-            alignSequences(chain, sequence);
+                alignSequences(chain.gemmi, sequence);
+            }
         }
     }
 

@@ -19,9 +19,14 @@ namespace Tmdet::Engine {
     struct _slice {
         
         /**
-         * @brief number of crossing straight secondary structure elements
+         * @brief number of crossing alpha helices
          */
-        int numStraight = 0;
+        int numAlpha = 0;
+
+        /**
+         * @brief number of crossing beta strands
+         */
+        int numBeta = 0;
 
         /**
          * @brief number of turns in the slice
@@ -112,6 +117,8 @@ namespace Tmdet::Engine {
              * @brief initialize the algorithm
              */
             void init();
+
+            void initChain(Tmdet::ValueObjects::Chain& chain);
 
             /**
              * @brief end and clean of the algorithm

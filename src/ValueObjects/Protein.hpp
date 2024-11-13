@@ -15,6 +15,7 @@
 #include <ValueObjects/Membrane.hpp>
 #include <ValueObjects/SecStrVec.hpp>
 
+#define EACH_SELECTED_CHAIN(protein) for( auto& chain: protein.chains) if (chain.selected)
 /**
  * @brief namespace for value objects
  */
@@ -126,6 +127,11 @@ namespace Tmdet::ValueObjects {
         std::map<std::string, std::string> polymerNames;
 
         /**
+         * @brief vectors constructed from secondary structrure elements
+         */
+        std::vector<Tmdet::ValueObjects::SecStrVec> vectors;
+
+        /**
          * @brief set transmembrane to no and clear data
          */
         void notTransmembrane();
@@ -163,8 +169,17 @@ namespace Tmdet::ValueObjects {
          */
         int searchChainByLabId(const std::string& id) const;
 
-        std::vector<Tmdet::ValueObjects::SecStrVec> vectors;
-
+        /**
+         * @brief calculate the mass centre of the protein
+         * 
+         * @return gemmi::Vec3 
+         */
         gemmi::Vec3 centre();
+
+        template<typename T>
+        void eachChain(T* obj, void (T::*func)(Tmdet::ValueObjects::Chain& chain));
+
+        template<typename T>
+        void eachSelectedChain(T* obj, void (T::*func)(Tmdet::ValueObjects::Chain& chain));
     };
 }

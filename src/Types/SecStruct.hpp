@@ -19,6 +19,10 @@ namespace Tmdet::Types {
             return (code != other.code);
         }
 
+        bool isStrictAlpha() const {
+            return (code == 'H' || code == 'G' || code == 'I');
+        }
+
         bool isAlpha() const {
             return (code == 'H' || code == 'G' || code == 'I' || code == 'T' || code == 'S');
         }
@@ -29,6 +33,10 @@ namespace Tmdet::Types {
 
         bool isTurn() const {
             return (code == 'T' || code == 'B' );
+        }
+
+        bool isStrictTurn() const {
+            return (code == 'T' || code == 'B' || code == 'S');
         }
 
         bool same(const SecStruct &other) const {

@@ -320,6 +320,17 @@ namespace Tmdet::Types {
                 {"OXT", {AtomType::O, true, 0, 0}}
             }
         };
+        const Residue UNK = {
+            "UNK", 'X', 0, 0, 5,
+            {
+                {"N", {AtomType::N, true, -0.395839, 0.270795}},
+                {"CA", {AtomType::C_ALI, true, -0.397171, 0.266279}},
+                {"C", {AtomType::C_CAR, true, -0.394996, 0.277939}},
+                {"O", {AtomType::O, true, -0.392777, 0.260632}},
+                {"CB", {AtomType::C_ALI, false, -0.424335, 0.262804}},
+                {"OXT", {AtomType::O, true, 0, 0}}
+            }
+        };
         extern std::map<std::string, Residue, std::less<>> ChemicalCompoundDictionary;
 
         extern Residue getResidue(const std::string& threeLetterCode);
@@ -345,7 +356,8 @@ namespace Tmdet::Types {
         {"THR", ResidueType::THR},
         {"VAL", ResidueType::VAL},
         {"TRP", ResidueType::TRP},
-        {"TYR", ResidueType::TYR}
+        {"TYR", ResidueType::TYR},
+        {"UNK", ResidueType::UNK}
     };
     
 }
