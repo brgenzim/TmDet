@@ -1,6 +1,7 @@
 #include <string>
 
 #include <ValueObjects/Residue.hpp>
+#include <gemmi/elem.hpp>
 
 namespace Tmdet::ValueObjects {
 
@@ -26,7 +27,7 @@ namespace Tmdet::ValueObjects {
     }
 
     bool Residue::hasOnlyBackBoneAtoms() const {
-        return (nsa == 0 && nba > 0);
+        return (nsa < type.nsa && nba > 0);
     }
 
     bool Residue::hasAllAtoms() const {
@@ -35,10 +36,28 @@ namespace Tmdet::ValueObjects {
 
     gemmi::Vec3 Residue::centre() const {
         gemmi::Vec3 ret(0,0,0);
+        int na = 0;
         for(const auto& atom: atoms) {
             ret += atom.gemmi.pos;
+            na++;
         }
-        ret /= (double)atoms.size();
+        if (na>0) {
+            ret /= na;
+        }
         return ret;
+    }
+
+    const gemmi::Atom* Residue::getCa() const {
+        const gemmi::Atom* ca = gemmi.get_ca();
+        if (ca == nullptr) {
+            ca = gemmi.find_atom("CB", '*', gemmi::El::C);
+        }
+        if (ca == nullptr) {
+            ca = gemmi.get_c();
+        }
+        if (ca == nullptr) {
+            ca = gemmi.get_n();
+        }
+        return ca;
     }
 }

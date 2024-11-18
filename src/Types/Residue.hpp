@@ -34,7 +34,7 @@ namespace Tmdet::Types {
 
     namespace ResidueType {
         const Residue ALA = {
-            "ALA", 'A', 0, 1.6, 1,
+            "ALA", 'A', 0.8, 1.6, 1,
             {
                 {"N", {AtomType::N, true, -0.366099, 0.260687}},
                 {"CA", {AtomType::C_ALI, true, -0.345553, 0.267743}},
@@ -86,7 +86,7 @@ namespace Tmdet::Types {
             }
         };
         const Residue PHE = {
-            "PHE", 'F', 1, 3.7, 7,
+            "PHE", 'F', 1.2, 3.7, 7,
             {
                 {"N", {AtomType::N, true, -0.414952, 0.27603}},
                 {"CA", {AtomType::C_ALI, true, -0.4315, 0.282044}},
@@ -129,7 +129,7 @@ namespace Tmdet::Types {
             }
         };
         const Residue ILE = {
-            "ILE", 'I', 1, 3.1, 4,
+            "ILE", 'I', 1.2, 3.1, 4,
             {
                 {"N", {AtomType::N, true, -0.461542, 0.287267}},
                 {"CA", {AtomType::C_ALI, true, -0.479819, 0.309649}},
@@ -158,7 +158,7 @@ namespace Tmdet::Types {
             }
         };
         const Residue LEU = {
-            "LEU", 'L', 1, 2.8, 4,
+            "LEU", 'L', 1.2, 2.8, 4,
             {
                 {"N", {AtomType::N, true, -0.430719, 0.273607}},
                 {"CA", {AtomType::C_ALI, true, -0.433988, 0.288229}},
@@ -321,7 +321,7 @@ namespace Tmdet::Types {
             }
         };
         const Residue UNK = {
-            "UNK", 'X', 0, 0, 5,
+            "UNK", 'X', 0.5, -4.3, 5,
             {
                 {"N", {AtomType::N, true, -0.395839, 0.270795}},
                 {"CA", {AtomType::C_ALI, true, -0.397171, 0.266279}},

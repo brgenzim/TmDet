@@ -3,6 +3,7 @@
 #include <Config.hpp>
 #include <System/Logger.hpp>
 #include <gemmi/model.hpp>
+#include <Helpers/Vector.hpp>
 
 namespace Tmdet::Helpers::Vector {
 
@@ -93,6 +94,10 @@ namespace Tmdet::Helpers::Vector {
     }
 
     double angle(const gemmi::Vec3& a, const gemmi::Vec3& b) {
-        return acos(a.dot(b) / (a.length() * b.length()) ) * 180.0 / M_PI;
+        return acos(cosAngle(a,b)) * 180.0 / M_PI;
+    }
+
+    double cosAngle(const gemmi::Vec3& a, const gemmi::Vec3& b) {
+        return (a.dot(b) / (a.length() * b.length()) );
     }
 }

@@ -177,9 +177,41 @@ namespace Tmdet::ValueObjects {
         gemmi::Vec3 centre();
 
         template<typename T>
-        void eachChain(T* obj, void (T::*func)(Tmdet::ValueObjects::Chain& chain));
+        void eachChain(T func) {
+            for(auto& chain: chains) {
+                func(chain);
+            }
+        }
 
         template<typename T>
-        void eachSelectedChain(T* obj, void (T::*func)(Tmdet::ValueObjects::Chain& chain));
+        void eachSelectedChain(T func) {
+            for(auto& chain: chains) {
+                if (chain.selected) {
+                    func(chain);
+                }
+            }
+        }
+
+        template<typename T>
+        void eachResidue(T func) {
+            for(auto& chain: chains) {
+                for(auto& residue: chain.residues) {
+                    func(residue);
+                }
+            }
+        }
+
+        template<typename T>
+        void eachSelectedResidue(T func) {
+            for(auto& chain: chains) {
+                if (chain.selected) {
+                    for(auto& residue: chain.residues) {
+                        if (residue.selected) {
+                            func(residue);
+                        }
+                    }
+                }
+            }
+        }
     };
 }

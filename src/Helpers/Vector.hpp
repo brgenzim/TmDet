@@ -71,4 +71,6 @@ namespace Tmdet::Helpers::Vector {
     extern double distanceFromLine(const gemmi::Vec3& a, const gemmi::Vec3& b, const gemmi::Vec3& c);
 
     extern double angle(const gemmi::Vec3& a, const gemmi::Vec3& b);
+
+    extern double cosAngle(const gemmi::Vec3& a, const gemmi::Vec3& b);
 }

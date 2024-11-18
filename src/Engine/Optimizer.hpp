@@ -13,31 +13,17 @@
  */
 namespace Tmdet::Engine {
 
+#define RES(res,a) (protein.chains[res.chainIdx].residues[res.idx + a])
+
     /**
      * @brief description of a slice
      */
     struct _slice {
         
         /**
-         * @brief number of crossing alpha helices
+         * @brief apolar surface
          */
-        int numAlpha = 0;
-
-        /**
-         * @brief number of crossing beta strands
-         */
-        int numBeta = 0;
-
-        /**
-         * @brief number of turns in the slice
-         * 
-         */
-        int numTurn = 0;
-
-        /**
-         * @brief number of all residues (C alpha atoms) in the slice
-         */
-        int numCA = 0;
+        double apol = 0.0;
 
         /**
          * @brief outside water accessible surface of the atoms in the slice
@@ -45,9 +31,50 @@ namespace Tmdet::Engine {
         double surf = 0.0;
 
         /**
+         * @brief turn ratio in the slice
+         * 
+         */
+        double turn = 0.0;
+
+        /**
+         * @brief surface of residues being in turn
+         */
+        double tSurf = 0.0;
+
+        /**
+         * @brief ratio of straight element in the slice
+         */
+        double straight = 0.0;
+
+        /**
+         * @brief hidrophob ratio in the slice
+         */
+        double hydrophobicity = 0.0;
+
+        /**
          * @brief sum up voromqa_v1_energy_means producted with atom surface
          */
         double voronota = 0.0;
+
+        /**
+         * @brief ratio of chain ends in the slice
+         */
+        double chainEnd = 0.0;
+
+        /**
+         * @brief number of C alpha atoms in the slice
+         */
+        int numCa = 0;
+
+        /**
+         * @brief number of all residues in the slice
+         */
+        int numAtom = 0;
+        
+        /**
+         * @brief number of hydrophob residues in the slice
+         */
+        int numHyd = 0;
 
         /**
          * @brief calculated qValue for the slice
@@ -111,14 +138,18 @@ namespace Tmdet::Engine {
              */
             gemmi::Vec3 bestNormal;
 
+            /**
+             * @brief best slices
+             */
+            std::vector<_slice> bestSlices;
+
+
             double lastO = 0;
 
             /**
              * @brief initialize the algorithm
              */
             void init();
-
-            void initChain(Tmdet::ValueObjects::Chain& chain);
 
             /**
              * @brief end and clean of the algorithm
@@ -131,11 +162,9 @@ namespace Tmdet::Engine {
             void setDistances();
 
             /**
-             * @brief calculate the distance of the atom from the centre of membrane plane
-             * 
-             * @param residue 
+             * @brief Set the straightness of a residue
              */
-            void setAtomDistances(Tmdet::ValueObjects::Residue& residue) const;
+            void setStraight();
 
             /**
              * @brief Set the box containing the protein
@@ -143,16 +172,23 @@ namespace Tmdet::Engine {
             void setBoundaries();
 
             /**
+             * @brief smoothin apolar surface values
+             */
+            void smoothSurf();
+
+            /**
              * @brief sumup slice properties
              */
             void sumupSlices();
 
             /**
-             * @brief add contribution of the residue to the appropriate slice
+             * @brief helper function to divide two numbers
              * 
-             * @param residue 
+             * @param numerator 
+             * @param denominator 
+             * @return double 
              */
-            void residueToSlice(Tmdet::ValueObjects::Residue& residue);
+            double divide(double numerator, double denominator);
 
             /**
              * @brief calculate the value of the objective function for one slice
@@ -160,7 +196,7 @@ namespace Tmdet::Engine {
              * @param s 
              * @return double 
              */
-            double getQValueForSlice(const _slice& s) const;
+            double getQValueForSlice(const _slice& s);
 
             /**
              * @brief calculate the value of the objective function for each slice

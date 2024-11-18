@@ -36,12 +36,16 @@ namespace Tmdet::Utils {
                 begin = end;
             }
         }
-        for(auto& vector: protein.vectors) {
-            DEBUG_LOG("{}",Tmdet::DTOs::SecStrVec::print(vector));
-        }
         checkAlphaVectorsForSplitting();
         if (protein.vectors.size()>1) {
             checkAlphaVectorsForMerging();
+        }
+        for(unsigned long int i=0; auto& vector: protein.vectors) {
+            DEBUG_LOG("{}",Tmdet::DTOs::SecStrVec::print(vector));
+            for (int j=vector.begResIdx; j<=vector.endResIdx; j++) {
+                protein.chains[vector.chainIdx].residues[j].secStrVecIdx = (int)i;
+            }
+            i++;
         }
         DEBUG_LOG(" Processed SecStrVec::define(#vectors: {})",protein.vectors.size());
     }

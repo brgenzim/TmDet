@@ -100,6 +100,9 @@ int main(int argc, char *argv[], char **envp) {
         exit(EXIT_FAILURE);
     }
     auto protein = Tmdet::DTOs::Protein::get(pdbInputPath);
+    if (code != "") {
+	protein.code = code;
+    }
     bool na = args.getValueAsBool("na");
 
     //unselect antibodies if not prevented

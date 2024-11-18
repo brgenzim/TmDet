@@ -75,12 +75,6 @@ namespace Tmdet::Engine {
             void findMembrane();
 
             /**
-             * @brief annotate the molecule (i.e. set regions and type of the regions for
-             *        the given membrane definition)
-             */
-            void annotate();
-
-            /**
              * @brief run the process
              */
             void run();

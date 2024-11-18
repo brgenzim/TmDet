@@ -64,18 +64,25 @@ namespace Tmdet::Engine {
             std::vector<Tmdet::ValueObjects::SecStrVec> getCrossingBetas(Tmdet::ValueObjects::Membrane& membrane);
             bool checkCross(Tmdet::ValueObjects::SecStrVec& vec, Tmdet::ValueObjects::Membrane& membrane) const;
             bool checkParallel(Tmdet::ValueObjects::SecStrVec& vec, Tmdet::ValueObjects::Membrane& membrane) const;
-            
-
-        public:
             void detectSides();
             void detectAlphaHelices();
             void detectBarrel();
             void detectLoops();
             void detectInterfacialHelices();
             void getRegions();
+            void detectReEntrantLoops();
+            void finalize();
+            void run();
+
+            
+
+        public:
+            
 
             explicit Annotator(Tmdet::ValueObjects::Protein& protein) :
-                protein(protein) {}
+                protein(protein) {
+                    run();
+            }
             ~Annotator()=default;
     };
 }

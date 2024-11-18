@@ -84,5 +84,21 @@ namespace Tmdet::ValueObjects {
         void addStructure(const gemmi::Chain& _gemmi);
 
         gemmi::Vec3 centre();
+
+        template<typename T>
+        void eachResidue(T func) {
+            for(auto& residue: residues) {
+                func(residue);
+            }
+        }
+
+        template<typename T>
+        void eachSelectedResidue(T func) {
+            for(auto& residue: residues) {
+                if (residue.selected) {
+                    func(residue);
+                }
+            }
+        }
     };
 }

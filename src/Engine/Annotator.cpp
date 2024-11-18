@@ -9,13 +9,25 @@
 
 namespace Tmdet::Engine {
 
+    void Annotator::run() {
+        DEBUG_LOG("Processing Annotator::run()");
+        detectSides();
+        detectAlphaHelices();
+        detectBarrel();
+        detectInterfacialHelices();
+        detectReEntrantLoops();
+        finalize();
+        getRegions();
+        DEBUG_LOG(" Processed Annotator::run()");
+    }
+
     void Annotator::detectSides() {
         DEBUG_LOG("Processing: Annotator::detectSides()");
         doubleMembrane = (protein.membranes.size() == 2);
         setZs();
         for(auto& chain: protein.chains) {
             for(auto& residue: chain.residues) {
-                if (auto atom = residue.gemmi.get_ca(); atom != nullptr) {
+                if (auto atom = residue.getCa(); atom != nullptr) {
                     residue.temp.try_emplace("type",std::any(getSideByZ(atom->pos.z)));
                 }
             }
@@ -167,6 +179,29 @@ namespace Tmdet::Engine {
             DEBUG_LOG(" #alphaVecs: {}",alphaVecs.size());
         }
         DEBUG_LOG(" Processed Annotator::detectInterfacialHelices()");
+    }
+
+    void Annotator::detectReEntrantLoops() {
+        protein.eachSelectedChain(
+            [&](Tmdet::ValueObjects::Chain& chain) -> void {
+                int begin = 0;
+                int end = 0;
+                while(getNextRegion(chain,begin,end)) {
+                    if (end - begin > TMDET_REENTRANT_LOOP_MIN_LENGTH 
+                        && begin > 1
+                        && end < chain.length -1
+                        && any_cast<Tmdet::Types::Region>(chain.residues[begin].temp.at("type")) == Tmdet::Types::RegionType::MEMB
+                        ) {
+
+                    }
+                    begin = end;
+                }
+            }
+        );
+    }
+        
+    void Annotator::finalize() {
+
     }
 
     void Annotator::replaceRegion(const Tmdet::ValueObjects::SecStrVec& vector, Tmdet::Types::Region regionType) {

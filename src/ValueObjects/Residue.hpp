@@ -32,19 +32,24 @@ namespace Tmdet::ValueObjects {
         std::vector<Atom> atoms;
 
         /**
+         * @brief flag for selection
+         */
+        bool selected = true;
+
+        /**
          * @brief solvent accessible surface of the residue
          */
-        double surface;
+        double surface = 0.0;
 
         /**
          * @brief type of the residue
          */
-        Tmdet::Types::Residue type;
+        Tmdet::Types::Residue type = Tmdet::Types::ResidueType::UNK;
 
         /**
          * @brief secondary structure of the residue
          */
-        Tmdet::Types::SecStruct ss = Tmdet::Types::SecStructs.at('-');
+        Tmdet::Types::SecStruct ss = Tmdet::Types::SecStructType::U;
 
         /**
          * @brief lowest energy back chain hydrogen bond of the residue
@@ -77,6 +82,11 @@ namespace Tmdet::ValueObjects {
          * 
          */
         int chainIdx;
+
+        /**
+         * @brief secondary structure vector index
+         */
+        int secStrVecIdx = -1;
 
         /**
          * @brief temporary container for claculating various
@@ -125,5 +135,7 @@ namespace Tmdet::ValueObjects {
         bool hasOnlyBackBoneAtoms() const;
 
         gemmi::Vec3 centre() const;
+
+        const gemmi::Atom* getCa() const;
     };
 }

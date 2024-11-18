@@ -18,11 +18,12 @@ namespace Tmdet::Engine {
     void Organizer::run() {
         DEBUG_LOG("Processing Organizer::run()");
         if (selectChains()) {
-            auto optimizer = Optimizer(protein);
             dssp();
             surface();
-            checkSymmetry(optimizer);
             auto ssVec = Tmdet::Utils::SecStrVec(protein);
+            auto optimizer = Optimizer(protein);
+            checkSymmetry(optimizer);
+
             if (!protein.tmp) {
                 searchForOneTm();
             }
@@ -31,7 +32,8 @@ namespace Tmdet::Engine {
                 optimizer.setMembranesToProtein();
             }
             if (bool na = args.getValueAsBool("na"); !na && protein.tmp) {
-                annotate();
+                Tmdet::DTOs::Protein::transform(protein);
+                auto annotator = Tmdet::Engine::Annotator(protein);
             }
         }
         else {
@@ -62,6 +64,7 @@ namespace Tmdet::Engine {
             nr += (residue.hasAllSideChainAtoms()?1:0);
             nb += (residue.hasOnlyBackBoneAtoms()?1:0);
         }
+        DEBUG_LOG("selectChain: id:{} nr:{} nb:{}",chain.id,nr,nb);
         if (nb > nr) {
             chain.type = Tmdet::Types::ChainType::LOW_RES;
             DEBUG_LOG("Low Resolution chain: {}",chain.id);
@@ -112,16 +115,4 @@ namespace Tmdet::Engine {
         DEBUG_LOG(" Processed Organizer::searchForOneTm()");
     }
 
-    void Organizer::annotate() {
-        DEBUG_LOG("Processing Organizer::annotate({})",protein.tmp);
-        Tmdet::DTOs::Protein::transform(protein);
-        auto annotator = Tmdet::Engine::Annotator(protein);
-        annotator.detectSides();
-        annotator.detectAlphaHelices();
-        annotator.detectBarrel();
-        annotator.detectInterfacialHelices();
-        //TODO
-        annotator.getRegions();
-        DEBUG_LOG(" Processed Organizer::annotate()");
-    }
 }

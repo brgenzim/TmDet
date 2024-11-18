@@ -80,7 +80,7 @@ namespace Tmdet::ValueObjects {
                 return c.idx;
             }
         }
-        logger.error("Chain {} not found, or not selected",id);
+        WARN_LOG("Chain {} not found, or not selected",id);
         return -1;
     }
 
@@ -90,7 +90,7 @@ namespace Tmdet::ValueObjects {
                 return c.idx;
             }
         }
-        logger.error("Chain {} not found, or not selected",id);
+        WARN_LOG("Chain {} not found, or not selected",id);
         return -1;
     }
 
@@ -99,30 +99,21 @@ namespace Tmdet::ValueObjects {
         int n = 0;
         for(auto& chain: chains) {
             if (chain.selected) {
-                ret += chain.centre();
-                n++;
+                for (auto& residue: chain.residues) {
+                    if (residue.selected) {
+                        for (auto& atom: residue.atoms) {
+                            ret+=atom.gemmi.pos;
+                            n++;
+                        }
+                    }
+                }
             }
         }
         if (n>0) {
             ret /= n;
         }
+        DEBUG_LOG("Mass centre: {}:{}:{}",ret.x,ret.y,ret.z);
         return ret;
-    }
-
-    template<typename T>
-    void Protein::eachChain(T* obj, void (T::*func)(Tmdet::ValueObjects::Chain& chain)) {
-        for(auto& chain: chains) {
-            (obj->*func)(chain);
-        }
-    }
-
-    template<typename T>
-    void Protein::eachSelectedChain(T* obj, void (T::*func)(Tmdet::ValueObjects::Chain& chain)) {
-        for(auto& chain: chains) {
-            if (chain.selected) {
-                (obj->*func)(chain);
-            }
-        }
     }
 
 }

@@ -320,10 +320,12 @@ namespace Tmdet::Utils {
         DEBUG_LOG("Processing Symmetry::getAverageAxes(). Sim size: {}",sim.size());
         _symmetryData ret;
         int n=0;
+        gemmi::Vec3 f = sim[0].axis;
         for(const auto& s: sim) {
-            if (s.good) {
+            if (s.good && f.dist(s.axis) < TMDET_TINY) {
                 ret.origo += s.origo;
                 ret.axis += s.axis;
+                DEBUG_LOG("symmetryAxes: {}:{}:{}",s.axis.x,s.axis.y,s.axis.z);
                 n++;
             }
         }
