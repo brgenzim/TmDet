@@ -107,7 +107,7 @@ int main(int argc, char *argv[], char **envp) {
 
     //unselect antibodies if not prevented
     if (bool fa = args.getValueAsBool("fa"); !fa) {
-        Tmdet::DTOs::Protein::unselectPolymers(protein);
+        Tmdet::DTOs::Protein::unselectAntiBodyChains(protein);
     }
 
     //unselect chains given in the command line argument

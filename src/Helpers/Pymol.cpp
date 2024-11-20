@@ -28,7 +28,9 @@ namespace Tmdet::Helpers {
         for (const auto& chain: protein.chains) {
             for (const auto& region: chain.regions) {
                 os << std::format("cmd.do(\'color {}, (chain {} and resi {}:{})\')\n",
-                        colors[region.type.id],chain.id,region.beg_auth_seq_id,region.end_auth_seq_id);
+                        colors[region.type.id],chain.id,
+                        chain.residues[region.beg].authId,
+                        chain.residues[region.end].authId);
             }
         }
     }
@@ -41,7 +43,7 @@ namespace Tmdet::Helpers {
 
     void Pymol::dumpSecStrVec(std::string color) {
         int counter = 1;
-        for (auto& vector : protein.vectors) {
+        for (auto& vector : protein.secStrVecs) {
             os << std::format("cgo_arrow [ {}, {}, {}], [ {}, {}, {}], color={}, name={}{}\n",
                     vector.begin.x, vector.begin.y, vector.begin.z,
                     vector.end.x, vector.end.y, vector.end.z,

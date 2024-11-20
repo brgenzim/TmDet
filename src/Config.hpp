@@ -48,3 +48,16 @@
 extern Tmdet::System::Environment environment;
 extern Tmdet::System::Logger logger;
 
+namespace Tmdet {
+    static std::vector<std::string> ANTIBODY_NAMES = {
+        "ANTIBODY",
+        "NANOBODY",
+        "MEGABODY",
+        "MONOBODY",
+        "PROMACROBODY",
+        "SYBODY",
+        "FAB",
+        "LIGHT CHAIN",
+        "HEAVY CHAIN",
+    };
+}

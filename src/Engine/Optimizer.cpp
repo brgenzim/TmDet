@@ -101,7 +101,7 @@ namespace Tmdet::Engine {
                 }
                 if (residue.secStrVecIdx != -1) {
                     residue.temp.at("straight") =
-                            std::abs(Tmdet::Helpers::Vector::cosAngle(normal,protein.vectors[residue.secStrVecIdx].end - protein.vectors[residue.secStrVecIdx].begin));
+                            std::abs(Tmdet::Helpers::Vector::cosAngle(normal,protein.secStrVecs[residue.secStrVecIdx].end - protein.secStrVecs[residue.secStrVecIdx].begin));
                 }
                 
                 DEBUG_LOG("Straight: {} {}: {}",protein.chains[residue.chainIdx].id,residue.idx,any_cast<double>(residue.temp.at("straight")));

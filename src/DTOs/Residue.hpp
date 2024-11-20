@@ -1,0 +1,46 @@
+#pragma once
+
+#include <string>
+#include <gemmi/model.hpp>
+#include <ValueObjects/Residue.hpp>
+
+/**
+ * @brief namespace for data transfer objects
+ * @namespace Tmdet
+ * @namespace DTOs
+ */
+namespace Tmdet::DTOs {
+
+    /**
+     * @brief reading and writing residue data and parsing
+     *        it to Residue Value Object
+     */
+    struct Residue {
+
+        /**
+         * @brief get data from gemmi residue
+         * 
+         * @param residue 
+         * @param chainIdx 
+         * @param residueIdx 
+         * @return Tmdet::ValueObjects::Residue 
+         */
+        static Tmdet::ValueObjects::Residue get(gemmi::Residue& residue, int chainIdx, int residueIdx);
+
+        /**
+         * @brief generate an unknown residue
+         * 
+         * @param chainIdx 
+         * @param residueIdx 
+         * @return Tmdet::ValueObjects::Residue 
+         */
+        static Tmdet::ValueObjects::Residue unk(int chainIdx, int residueIdx, std::string name);
+
+        /**
+         * @brief string representation of the residue
+         * 
+         * @param residueVO 
+         */
+        static std::string toString(const Tmdet::ValueObjects::Residue& residueVO);
+    };
+}

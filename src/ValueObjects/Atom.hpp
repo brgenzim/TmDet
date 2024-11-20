@@ -5,6 +5,7 @@
 #include <any>
 #include <unordered_map>
 #include <gemmi/model.hpp>
+#include <ValueObjects/TMatrix.hpp>
 
 /**
  * @brief namespace for value objects
@@ -58,5 +59,13 @@ namespace Tmdet::ValueObjects {
         explicit Atom(gemmi::Atom& _gemmi) :
             gemmi(_gemmi) {}
 
+        /**
+         * @brief transform atom coordinates using transformation matrix tmatrix
+         * 
+         * @param tmatrix 
+         */
+        void transform(Tmdet::ValueObjects::TMatrix& tmatrix) {
+            tmatrix.transform(gemmi.pos);
+        }
     };
 }

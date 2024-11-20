@@ -99,8 +99,8 @@ namespace Tmdet::DTOs::XmlRW {
         for (pugi::xml_node chainNode: pnode.children(XML_NODE_CHAIN)) {
             auto type = chainNode.attribute(XML_ATTR_TYPE).as_string();
             xmlChains.emplace_back(
-                chainNode.attribute(XML_ATTR_AUTH_ASYM_ID).as_string(),
-                chainNode.attribute(XML_ATTR_LABEL_ASYM_ID).as_string(),
+                chainNode.attribute(XML_ATTR_AUTH_ID).as_string(),
+                chainNode.attribute(XML_ATTR_LABEL_ID).as_string(),
                 (type != Tmdet::Types::ChainType::NOT_SELECTED.name),
                 chainNode.attribute(XML_ATTR_NUM_TM).as_int(),
                 chainNode.child(XML_NODE_SEQENCE).text().get(),
@@ -113,24 +113,16 @@ namespace Tmdet::DTOs::XmlRW {
 
     std::vector<Tmdet::ValueObjects::Region> Reader4::getRegions(const pugi::xml_node& pnode) const {
         std::vector<Tmdet::ValueObjects::Region> regions;
-        for(pugi::xml_node regionNode: pnode.children(XML_NODE_REGION)) {
-            pugi::xml_node startNode = regionNode.child(XML_NODE_START);
-            pugi::xml_node endNode = regionNode.child(XML_NODE_END);
+        
+        for(pugi::xml_node node: pnode.child(XML_NODE_REGIONS).children(XML_NODE_REGION)) {
             regions.emplace_back(
-                startNode.attribute(XML_ATTR_SEQ).as_int(),
-                startNode.attribute(XML_ATTR_AUTH_SEQ_ID).as_int(),
-                (startNode.attribute(XML_ATTR_AUTH_SEQ_ICODE)?
-                    startNode.attribute(XML_ATTR_AUTH_SEQ_ICODE).as_string()[0]:' '),
-                startNode.attribute(XML_ATTR_LABEL_SEQ_ID).as_int(),
-                endNode.attribute(XML_ATTR_SEQ).as_int(),
-                endNode.attribute(XML_ATTR_AUTH_SEQ_ID).as_int(),
-                (endNode.attribute(XML_ATTR_AUTH_SEQ_ICODE)?endNode.attribute(XML_ATTR_AUTH_SEQ_ICODE).as_string()[0]:' '),
-                endNode.attribute(XML_ATTR_LABEL_SEQ_ID).as_int(),
-                Tmdet::Types::Regions.at(regionNode.attribute(XML_ATTR_TYPE).as_string()[0])
+                node.attribute(XML_ATTR_START_AUTH_ID).as_int()-1,
+                node.attribute(XML_ATTR_END_AUTH_ID).as_int()-1,
+                Tmdet::Types::Regions.at(node.attribute(XML_ATTR_TYPE).as_string()[0])
             );
         }
         for(auto& region: regions) {
-            DEBUG_LOG("{}",Tmdet::DTOs::Region::print(region));
+            DEBUG_LOG("{}",Tmdet::DTOs::Region::toString(region));
         }
         return regions;
     }

@@ -26,7 +26,7 @@ namespace Tmdet::DTOs {
             xmlData.tmatrix = protein.tmatrix;
             for(const auto& chain: protein.chains) {
                 xmlData.chains.emplace_back(chain.id,
-                    chain.labId,
+                    chain.labelId,
                     chain.selected,
                     chain.numtm,
                     chain.seq,

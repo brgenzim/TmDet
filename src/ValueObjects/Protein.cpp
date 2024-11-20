@@ -86,7 +86,7 @@ namespace Tmdet::ValueObjects {
 
     int Protein::searchChainByLabId(const std::string& id) const {
         for (auto& c: chains) {
-            if (c.selected && c.labId == id) {
+            if (c.selected && c.labelId == id) {
                 return c.idx;
             }
         }
@@ -114,6 +114,19 @@ namespace Tmdet::ValueObjects {
         }
         DEBUG_LOG("Mass centre: {}:{}:{}",ret.x,ret.y,ret.z);
         return ret;
+    }
+
+    void Protein::transform() {
+        eachSelectedChain(
+            [&](Tmdet::ValueObjects::Chain& chain) -> void {
+                chain.transform(tmatrix);
+            }
+        );
+        for(auto& ssVec: secStrVecs) {
+            tmatrix.transform(ssVec.begin);
+            tmatrix.transform(ssVec.end);
+        }
+    
     }
 
 }

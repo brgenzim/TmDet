@@ -74,7 +74,7 @@ link_directories(${CMAKE_INSTALL_PREFIX_LIB})
 
 # Compiler settings
   ADD_DEFINITIONS( "-Wall -pedantic -ggdb3 -DDEBUG -Wno-variadic-macros -std=c++20")
-  ADD_DEFINITIONS(-DTMDET_LOG_LEVEL=off)
+  ADD_DEFINITIONS(-DTMDET_LOG_LEVEL=debug)
 
 # Subdirectories
   ADD_SUBDIRECTORY ( src )

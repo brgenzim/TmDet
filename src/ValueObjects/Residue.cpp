@@ -5,11 +5,10 @@
 
 namespace Tmdet::ValueObjects {
 
-    int Residue::resn() const {
-        return gemmi.seqid.num.value;
-    }
-
-    void Residue::setNumberOfAtoms() {
+    void Residue::setProperties(std::string name) {
+        if (Tmdet::Types::Residues.contains(name)) {
+            type = Tmdet::Types::Residues.at(name);
+        }
         for(const auto& atom: atoms) {
             if (type.atoms.contains(atom.gemmi.name)) {
                 if (type.atoms.at(atom.gemmi.name).bb) {
@@ -34,19 +33,6 @@ namespace Tmdet::ValueObjects {
         return atoms.size() >= (type.atoms.size() - 1);
     }
 
-    gemmi::Vec3 Residue::centre() const {
-        gemmi::Vec3 ret(0,0,0);
-        int na = 0;
-        for(const auto& atom: atoms) {
-            ret += atom.gemmi.pos;
-            na++;
-        }
-        if (na>0) {
-            ret /= na;
-        }
-        return ret;
-    }
-
     const gemmi::Atom* Residue::getCa() const {
         const gemmi::Atom* ca = gemmi.get_ca();
         if (ca == nullptr) {
@@ -59,5 +45,15 @@ namespace Tmdet::ValueObjects {
             ca = gemmi.get_n();
         }
         return ca;
+    }
+
+    void Residue::transform(Tmdet::ValueObjects::TMatrix& tmatrix) {
+        for(auto& atom: atoms) {
+            atom.transform(tmatrix);
+        }
+    }
+
+    bool Residue::isGap() const {
+        return (atoms.size() > 0);
     }
 }

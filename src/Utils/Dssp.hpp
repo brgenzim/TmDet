@@ -4,43 +4,62 @@
 #include <gemmi/model.hpp>
 #include <ValueObjects/Protein.hpp>
 
-namespace StructVO = Tmdet::ValueObjects;
-
-// #define __DSSP_DEBUG 1
-
 namespace Tmdet::Utils {
+
+    /**
+     * @brief simple representation of a hydrogen bond
+     */
+    struct HBond {
+
+        /**
+         * @brief calculated energy of the hydrogen bond
+         */
+        double energy = 1e30;
+
+        /**
+         * @brief chain index of the akceptor residue
+         */
+        int toChainIdx = -1;
+
+        /**
+         * @brief residue index of the akceptor
+         */
+        int toResIdx = -1;
+    };
 
     class Dssp {
         private:
-            StructVO::Protein& _proteinVO;
-            void calcDsspOnChain(StructVO::Chain& chain);
-            void writeDsspOnChain(StructVO::Chain& chain);
-            void createHydrogenBonds(StructVO::Chain& chain);
-            void scanNeighbors(StructVO::Chain& chain, int r1, const gemmi::Atom* CA, const gemmi::Atom* N, gemmi::Position hcoord);
-            void setHydrogenBond(StructVO::Residue& donor, StructVO::Residue& akceptor, double energy);
-            void detectTurns(StructVO::Chain& chain, int d, std::string key);
-            bool checkHbond1(StructVO::Residue& res, int d);
-            bool checkHbond2(StructVO::Residue& res, int d);
-            void initPbs(StructVO::Chain& chain);
-            void detectSecStructH(StructVO::Chain& chain,std::string key);
-            void detectSecStructG(StructVO::Chain& chain,std::string key);
-            void detectSecStructI(StructVO::Chain& chain,std::string key);
-            void detectSecStructT(StructVO::Chain& chain);
-            void detectSecStructS(StructVO::Chain& chain);
-            void detectSecStructBE(StructVO::Chain& chain);
-            bool checkPb(StructVO::Chain& chain, int i, int j);
-            bool checkApb(StructVO::Chain& chain, int i, int j);
-            bool checkIfAreOther(StructVO::Chain& chain, Tmdet::Types::SecStruct ss,int i, int d);
-            bool checkIfTurn(StructVO::Chain& chain,int pos, int r, std::string key);
+            Tmdet::ValueObjects::Protein& protein;
+            void calcDsspOnChain(Tmdet::ValueObjects::Chain& chain);
+            void writeDsspOnChain(Tmdet::ValueObjects::Chain& chain);
+            void createHydrogenBonds(Tmdet::ValueObjects::Chain& chain);
+            void scanNeighbors(Tmdet::ValueObjects::Chain& chain, int r1, const gemmi::Atom* CA, const gemmi::Atom* N, gemmi::Position hcoord);
+            void setHydrogenBond(Tmdet::ValueObjects::Residue& donor, Tmdet::ValueObjects::Residue& akceptor, double energy);
+            void detectTurns(Tmdet::ValueObjects::Chain& chain, int d, std::string key);
+            bool checkHbond1(Tmdet::ValueObjects::Residue& res, int d);
+            bool checkHbond2(Tmdet::ValueObjects::Residue& res, int d);
+            void initPbs(Tmdet::ValueObjects::Chain& chain);
+            void detectSecStructH(Tmdet::ValueObjects::Chain& chain,std::string key);
+            void detectSecStructG(Tmdet::ValueObjects::Chain& chain,std::string key);
+            void detectSecStructI(Tmdet::ValueObjects::Chain& chain,std::string key);
+            void detectSecStructT(Tmdet::ValueObjects::Chain& chain);
+            void detectSecStructS(Tmdet::ValueObjects::Chain& chain);
+            void detectSecStructBE(Tmdet::ValueObjects::Chain& chain);
+            bool checkPb(Tmdet::ValueObjects::Chain& chain, int i, int j);
+            bool checkApb(Tmdet::ValueObjects::Chain& chain, int i, int j);
+            bool checkIfAreOther(Tmdet::ValueObjects::Chain& chain, Tmdet::Types::SecStruct ss,int i, int d);
+            bool checkIfTurn(Tmdet::ValueObjects::Chain& chain,int pos, int r, std::string key);
+            void exec();
+            void init();
+            void end();
 
         public:
-            explicit Dssp(StructVO::Protein& proteinVO) : 
-                _proteinVO(proteinVO) {
+            explicit Dssp(Tmdet::ValueObjects::Protein& protein) : 
+                protein(protein) {
                     exec();
             } ;
             ~Dssp()=default;
 
-            void exec();
-            static std::string getSecStructAsString(StructVO::Chain& chain);
+            static std::string getSecStructAsString(Tmdet::ValueObjects::Chain& chain);
     };
 }

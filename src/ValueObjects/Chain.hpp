@@ -5,18 +5,16 @@
 #include <Types/Chain.hpp>
 #include <ValueObjects/Residue.hpp>
 #include <ValueObjects/Region.hpp>
+#include <ValueObjects/SecStrVec.hpp>
 #include <gemmi/model.hpp>
 
 /**
  * @brief namespace for value objects
+ * @namespace Tmdet
+ * @namespace ValueObjects
  */
 namespace Tmdet::ValueObjects {
 
-    /**
-     * @brief forward definition of Residue
-     */
-    struct Residue;
-    
     /**
      * @brief chain in the protein
      */
@@ -27,14 +25,19 @@ namespace Tmdet::ValueObjects {
         std::string id;
 
         /**
-         * @brief chain identifier (label_sym_id in cif)
+         * @brief chain label
          */
-        std::string labId;
+        std::string labelId;
 
         /**
-         * @brief entity identifier in cif file
+         * @brief entity identifier in cif file (same as label_entity_id in ATOM lines)
          */
         std::string entityId;
+
+        /**
+         * @brief entity index in gemmi structrue entities vector
+         */
+        int entityIdx;
 
         /**
          * @brief flag for selection
@@ -52,19 +55,19 @@ namespace Tmdet::ValueObjects {
         std::string seq;
 
         /**
-         * @brief gemmi chain
-         */
-        gemmi::Chain gemmi;
-
-        /**
          * @brief list of Tmdet ValueObjects Residues in the chain
          */
         std::vector<Residue> residues;
 
         /**
-         * @brief chain index in gemmi Model
+         * @brief chain index in Tmdet ValueObject protein.chains
          */
         int idx = 0;
+
+        /**
+         * @brief Residue indeces in gemmi structure.chain.residues
+         */
+        std::vector<int> gemmiResidueIndeces;
 
         /**
          * @brief length of the chain in residues
@@ -81,9 +84,12 @@ namespace Tmdet::ValueObjects {
          */
         Tmdet::Types::Chain type = Tmdet::Types::ChainType::UNK;
 
-        void addStructure(const gemmi::Chain& _gemmi);
-
-        gemmi::Vec3 centre();
+        /**
+         * @brief transform atom coordinates in the chain
+         * 
+         * @param tmatrix 
+         */
+        void transform(Tmdet::ValueObjects::TMatrix& tmatrix);
 
         template<typename T>
         void eachResidue(T func) {
@@ -94,11 +100,14 @@ namespace Tmdet::ValueObjects {
 
         template<typename T>
         void eachSelectedResidue(T func) {
-            for(auto& residue: residues) {
-                if (residue.selected) {
-                    func(residue);
+            if (selected) {
+                for(auto& residue: residues) {
+                    if (residue.selected) {
+                        func(residue);
+                    }
                 }
             }
         }
+
     };
 }

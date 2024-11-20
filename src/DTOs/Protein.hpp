@@ -10,6 +10,8 @@
 
 /**
  * @brief namespace for data transfer objects
+ * @namespace Tmdet
+ * @namespace DTOs
  */
 namespace Tmdet::DTOs {
 
@@ -35,56 +37,11 @@ namespace Tmdet::DTOs {
         static Tmdet::ValueObjects::Protein get(const std::string& inputPath);
 
         /**
-         * @brief print the TmdetStruct Value Object into an out stream
-         * 
-         * @param os 
-         * @param protein 
+         * @brief Unselect antibody chains
+         *
+         * @param protein
          */
-        static void print(std::ostream& os, const Tmdet::ValueObjects::Protein& protein);
-        
-        /**
-         * @brief print the Tmdet Chain Value Object into an out stream
-         * 
-         * @param os 
-         * @param chainVO 
-         */
-        static void printChain(std::ostream& os, const Tmdet::ValueObjects::Chain& chainVO);
-        
-        /**
-         * @brief print the Tmdet Residue Value Object into an out stream
-         * 
-         * @param os 
-         * @param residueVO 
-         */
-        static void printResidue(std::ostream& os, const Tmdet::ValueObjects::Residue& residueVO);
-        
-        /**
-         * @brief print the Tmdet Atom Value Object into an out stream
-         * 
-         * @param os 
-         * @param atomVO 
-         */
-        static void printAtom(std::ostream& os, const Tmdet::ValueObjects::Atom& atomVO);
-
-        /**
-         * @brief Get the amino acid sequence of a chain
-         * 
-         * @param protein 
-         * @param chainVO 
-         * @return std::vector<std::string> 
-         */
-        static std::vector<std::string> getChainSequence(const Tmdet::ValueObjects::Protein& protein,
-            const gemmi::Chain& chainVO);
-
-        static void transform(Tmdet::ValueObjects::Protein& protein);
-        static void transformChain(Tmdet::ValueObjects::Chain& protein, Tmdet::ValueObjects::TMatrix& tmatrix);
-        static void transformSecStrVec(Tmdet::ValueObjects::SecStrVec& vector, Tmdet::ValueObjects::TMatrix& tmatrix);
-        static void transform(gemmi::Vec3& vec, Tmdet::ValueObjects::TMatrix& tmatrix);
-
-        /**
-         * @brief Unselect polymer chains based on their name and the given string set in TMDET_POLYMER_FILTER_FILE.
-         */
-        static void unselectPolymers(Tmdet::ValueObjects::Protein& protein);
+        static void unselectAntiBodyChains(Tmdet::ValueObjects::Protein& protein);
 
         /**
          * @brief unselect chains
@@ -93,5 +50,13 @@ namespace Tmdet::DTOs {
          * @param protein
          */
         static void unselectChains(const std::string& chainList, Tmdet::ValueObjects::Protein& protein);
+
+        /**
+         * @brief string representation of the protein
+         * 
+         * @param protein 
+         * @return std::string 
+         */
+        std::string toString(const Tmdet::ValueObjects::Protein& protein);
     };
 }

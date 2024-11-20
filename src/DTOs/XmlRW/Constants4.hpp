@@ -9,18 +9,21 @@
  */
 namespace Tmdet::DTOs::XmlRW {
             
-    inline const char* XML_ATTR_AUTH_ASYM_ID="pdbAuthAsymId";
-    inline const char* XML_ATTR_AUTH_SEQ_ID="pdbAuthSeqId";
-    inline const char* XML_ATTR_AUTH_SEQ_ICODE="pdbAuthSeqIcode";
+    inline const char* XML_ATTR_AUTH_ID="authId";
+    inline const char* XML_ATTR_END_AUTH_ID="endAuthId";
+    inline const char* XML_ATTR_END_AUTH_ICODE="endAuthIcode";
+    inline const char* XML_ATTR_END_LABEL_ID="endLabelId";
     inline const char* XML_ATTR_DATE="date";
     inline const char* XML_ATTR_HALF_THICKNESS="halfThickness";
-    inline const char* XML_ATTR_LABEL_ASYM_ID="pdbLabelAsymId";
-    inline const char* XML_ATTR_LABEL_SEQ_ID="pdbLabelSeqId";
+    inline const char* XML_ATTR_LABEL_ID="labelId";
     inline const char* XML_ATTR_PDB_CODE="pdbCode";
     inline const char* XML_ATTR_NUM_TM="numTM";
     inline const char* XML_ATTR_SEQ="seq";
     inline const char* XML_ATTR_SIZE="size";
     inline const char* XML_ATTR_SPHERE_RADIUS="sphereRadius";
+    inline const char* XML_ATTR_START_AUTH_ID="startAuthId";
+    inline const char* XML_ATTR_START_AUTH_ICODE="startAuthIcode";
+    inline const char* XML_ATTR_START_LABEL_ID="startLabelId";
     inline const char* XML_ATTR_TRANSMEMBRANE="transmembrane";
     inline const char* XML_ATTR_TYPE="type";
     inline const char* XML_ATTR_X="x";
@@ -32,7 +35,6 @@ namespace Tmdet::DTOs::XmlRW {
     inline const char* XML_NODE_CHAIN="chain";
     inline const char* XML_NODE_CHAINS="chains";
     inline const char* XML_NODE_CREATED="created";
-    inline const char* XML_NODE_END="end";
     inline const char* XML_NODE_MEMBRANE="membrane";
     inline const char* XML_NODE_MEMBRANES="membranes";
     inline const char* XML_NODE_MODIFICATION="modification";
@@ -40,12 +42,12 @@ namespace Tmdet::DTOs::XmlRW {
     inline const char* XML_NODE_ROOT="pdbtm";
     inline const char* XML_NODE_RAWDATA="rawData";
     inline const char* XML_NODE_REGION="region";
+    inline const char* XML_NODE_REGIONS="regions";
     inline const char* XML_NODE_ROTATE="rotate";
     inline const char* XML_NODE_ROWX="rowX";
     inline const char* XML_NODE_ROWY="rowY";
     inline const char* XML_NODE_ROWZ="rowZ";
     inline const char* XML_NODE_SEQENCE="sequence";
-    inline const char* XML_NODE_START="start";
     inline const char* XML_NODE_TRANSFORMATION="transformation";
     inline const char* XML_NODE_TRANSLATE="translate";
     inline const char* XML_NODE_QVALUE="qValue";

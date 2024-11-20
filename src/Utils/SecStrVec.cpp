@@ -25,29 +25,29 @@ namespace Tmdet::Utils {
     
     void SecStrVec::define() {
         DEBUG_LOG("Processing SecStrVec::define()");
-        protein.vectors.clear();
+        protein.secStrVecs.clear();
         for(auto& chain: protein.chains) {
             int begin = 0;
             int end = 0;
             while(getNextRegion(chain, begin, end)) {
                 if (end - begin > 4) {
-                    protein.vectors.push_back(getVector(chain, begin, end - 1));
+                    protein.secStrVecs.push_back(getVector(chain, begin, end - 1));
                 }
                 begin = end;
             }
         }
         checkAlphaVectorsForSplitting();
-        if (protein.vectors.size()>1) {
+        if (protein.secStrVecs.size()>1) {
             checkAlphaVectorsForMerging();
         }
-        for(unsigned long int i=0; auto& vector: protein.vectors) {
+        for(unsigned long int i=0; auto& vector: protein.secStrVecs) {
             DEBUG_LOG("{}",Tmdet::DTOs::SecStrVec::print(vector));
             for (int j=vector.begResIdx; j<=vector.endResIdx; j++) {
                 protein.chains[vector.chainIdx].residues[j].secStrVecIdx = (int)i;
             }
             i++;
         }
-        DEBUG_LOG(" Processed SecStrVec::define(#vectors: {})",protein.vectors.size());
+        DEBUG_LOG(" Processed SecStrVec::define(#vectors: {})",protein.secStrVecs.size());
     }
 
     
@@ -140,16 +140,16 @@ namespace Tmdet::Utils {
     }
 
     void SecStrVec::checkAlphaVectorsForSplitting() {
-        auto vectors = protein.vectors;
-        protein.vectors.clear();
+        auto vectors = protein.secStrVecs;
+        protein.secStrVecs.clear();
         for(auto& vector: vectors) {
             if (vector.type.isAlpha() && !checkAlphaVectorForSplitting(vector)) {
                 for (auto part: splitAlphaVector(vector)) {
-                    protein.vectors.emplace_back(part);
+                    protein.secStrVecs.emplace_back(part);
                 }
             }
             else {
-                protein.vectors.emplace_back(vector);
+                protein.secStrVecs.emplace_back(vector);
             }
         }
     }
@@ -211,23 +211,23 @@ namespace Tmdet::Utils {
     }
 
     void SecStrVec::checkAlphaVectorsForMerging() {
-        auto vectors = protein.vectors;
-        protein.vectors.clear();
+        auto vectors = protein.secStrVecs;
+        protein.secStrVecs.clear();
         unsigned long int i = 0;
         unsigned long step = 1;
         while (i<vectors.size()-1) {
             if (vectors[i].type.isAlpha() && vectors[i+1].type.isAlpha() && checkAlphaVectorForMerging(vectors[i],vectors[i+1])) {
-                protein.vectors.emplace_back(mergeVectors(vectors[i],vectors[i+1]));
+                protein.secStrVecs.emplace_back(mergeVectors(vectors[i],vectors[i+1]));
                 step = 2;
             }
             else {
-                protein.vectors.emplace_back(vectors[i]);
+                protein.secStrVecs.emplace_back(vectors[i]);
                 step = 1;
             }
             i+=step;
         }
         if (step == 1) {
-            protein.vectors.emplace_back(vectors[i]);
+            protein.secStrVecs.emplace_back(vectors[i]);
         }
     }
 

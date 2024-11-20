@@ -91,18 +91,18 @@ namespace Tmdet::Utils {
     void Fragment::writeBackFragmentInfoToStructure(std::vector<std::vector<int>> clusters, std::vector<_cr> crs) {
         int cl_idx = 0;
         for (auto& cluster: clusters) {
-            std::cout << "select cl" << cl_idx << ", (";
-            bool first = true;
+            //std::cout << "select cl" << cl_idx << ", (";
+            //bool first = true;
             for(auto& nodeIdx: cluster) {
                 proteinVO.chains[crs[nodeIdx].chain_idx].residues[crs[nodeIdx].residue_idx].temp.insert({"fragment",std::any_cast<int>(cl_idx)});
-                if (!first) {
+               /* if (!first) {
                     std::cout << " | ";
                 }
                 std::cout << "(c. " << proteinVO.chains[crs[nodeIdx].chain_idx].id << " & ";
                 std::cout << "i. " << proteinVO.chains[crs[nodeIdx].chain_idx].residues[crs[nodeIdx].residue_idx].resn() << ")";
-                first = false;
+                first = false;*/
             }
-            std::cout << ")" << std::endl;
+            //std::cout << ")" << std::endl;
             cl_idx++;
         }
     }

@@ -22,7 +22,7 @@ namespace Tmdet::Helpers {
                 "red", //SIDE1
                 "blue", //SIDE2
                 "orange", //LOOP
-                "green", //IFH
+                "purpleblue", //IFH
                 "pink", //MEMBINS
                 "teal", //INTERMEMB
                 "grey80", //UNK

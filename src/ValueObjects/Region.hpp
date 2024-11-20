@@ -14,44 +14,14 @@ namespace Tmdet::ValueObjects {
     struct Region {
 
         /**
-         * @brief start of the region in sequence position
+         * @brief start of the region in Tmdet ValueObject Chain
          */
-        int beg = 0;
+        unsigned int beg = 0;
 
         /**
-         * @brief start of the region in PDB by auth
+         * @brief end of the region in Tmdet ValueObject Chain
          */
-        int beg_auth_seq_id = 0;
-
-        /**
-         * @brief insertion code of start residue
-         */
-        char beg_auth_seq_icode = ' ';
-
-        /**
-         * @brief start of the region in PDB by label
-         */
-        int beg_label_seq_id = 0;
-
-        /**
-         * @brief end of the region in sequence position
-         */
-        int end = 0;
-        
-        /**
-         * @brief end of the region in PDB by auth
-         */
-        int end_auth_seq_id = 0;
-        
-        /**
-         * @brief insertion code of start residue
-         */
-        char end_auth_seq_icode = ' ';
-
-        /**
-         * @brief end of the region in PDB by label
-         */
-        int end_label_seq_id = 0;
+        unsigned int end = 0;
         
         /**
          * @brief region type

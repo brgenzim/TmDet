@@ -80,21 +80,6 @@ namespace Tmdet::Engine {
         return r;
     }
 
-    void Annotator::storeRegion(Tmdet::ValueObjects::Chain& chain,unsigned int beg, unsigned int end) const {
-        
-        chain.regions.emplace_back(
-            (int)(beg+1),
-            (int)chain.residues[beg].gemmi.seqid.num,
-            chain.residues[beg].gemmi.seqid.icode,
-            (int)chain.residues[beg].gemmi.label_seq,
-            (int)(end+1),
-            (int)chain.residues[end].gemmi.seqid.num,
-            chain.residues[end].gemmi.seqid.icode,
-            (int)chain.residues[end].gemmi.label_seq,
-            std::any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("type"))
-        );
-    }
-
     void Annotator::getRegions() {
         DEBUG_LOG("Processing: Annotator::getRegions()");
         for(auto& chain: protein.chains) {
@@ -103,7 +88,7 @@ namespace Tmdet::Engine {
                 int end = 0;
                 while(getNextRegion(chain,begin,end)) {
                     if (end - begin > 1) {
-                        storeRegion(chain,begin,end-1);
+                        chain.regions.emplace_back(begin,end-1,std::any_cast<Tmdet::Types::Region>(chain.residues[begin].temp.at("type")));
                     }
                     begin = end;
                 }
@@ -187,19 +172,52 @@ namespace Tmdet::Engine {
                 int begin = 0;
                 int end = 0;
                 while(getNextRegion(chain,begin,end)) {
+                    DEBUG_LOG("detectReEntrantLoops: {} {} {}",chain.id,begin,end);
                     if (end - begin > TMDET_REENTRANT_LOOP_MIN_LENGTH 
                         && begin > 1
                         && end < chain.length -1
                         && any_cast<Tmdet::Types::Region>(chain.residues[begin].temp.at("type")) == Tmdet::Types::RegionType::MEMB
+                        && checkLoopEnds(chain,begin,end)
+                        && hasOneHelix(chain,begin,end)
                         ) {
-
+                            DEBUG_LOG("Loop found: {} {} {}",chain.id,begin,end);
+                            for (int i = begin; i<= end; i++) {
+                                chain.residues[i].temp.at("type") = std::any(Tmdet::Types::RegionType::LOOP);
+                            }
+                    }
+                    else {
+                        DEBUG_LOG("Not loop: {} {} {}",chain.id,begin,end);
                     }
                     begin = end;
                 }
             }
         );
     }
+
+    bool Annotator::checkLoopEnds(Tmdet::ValueObjects::Chain& chain, int begin, int end) {
+        auto ca1 = chain.residues[begin].getCa();
+        auto ca2 = chain.residues[end].getCa();
+        DEBUG_LOG("checkLoopEnds: {} {}",ca1->pos.z,ca2->pos.z);
+        return (std::abs(ca1->pos.z-ca2->pos.z) < 6 
+                    && ca1->pos.z * ca2->pos.z > 0
+                    && std::abs(ca1->pos.z) > TMDET_MEMBRANE_MIN_HALFTHICKNESS);
+    }
         
+    bool Annotator::hasOneHelix(Tmdet::ValueObjects::Chain& chain, int begin, int end) {
+        bool hasHelix = false;
+        bool hasNoSS = false;
+        for(int i=begin; i<=end; i++) {
+            if (chain.residues[i].secStrVecIdx ==-1) {
+                hasNoSS = true;
+            }
+            else if (protein.secStrVecs[chain.residues[i].secStrVecIdx].type == Tmdet::Types::SecStructType::H) {
+                hasHelix = true;
+            }
+        }
+        DEBUG_LOG("hasOneHelix: {} {} {}: {} {}",chain.id,begin,end,(hasHelix?"Yes":"No"),(hasNoSS?"Yes":"No"));
+        return hasHelix && hasNoSS;
+    }
+
     void Annotator::finalize() {
 
     }
@@ -217,7 +235,7 @@ namespace Tmdet::Engine {
 
     std::vector<Tmdet::ValueObjects::SecStrVec> Annotator::getCrossingAlphas(Tmdet::ValueObjects::Membrane& membrane) {
         std::vector<Tmdet::ValueObjects::SecStrVec> ret;
-        for (auto& vector : protein.vectors) {
+        for (auto& vector : protein.secStrVecs) {
             if (vector.type.isAlpha() && checkCross(vector, membrane)) {
                 ret.emplace_back(vector);
             }
@@ -227,7 +245,7 @@ namespace Tmdet::Engine {
 
     std::vector<Tmdet::ValueObjects::SecStrVec> Annotator::getParallelAlphas(Tmdet::ValueObjects::Membrane& membrane) {
         std::vector<Tmdet::ValueObjects::SecStrVec> ret;
-        for (auto& vector : protein.vectors) {
+        for (auto& vector : protein.secStrVecs) {
             if (vector.type.isAlpha() && checkParallel(vector, membrane)) {
                 ret.emplace_back(vector);
             }
@@ -237,7 +255,7 @@ namespace Tmdet::Engine {
 
     std::vector<Tmdet::ValueObjects::SecStrVec> Annotator::getCrossingBetas(Tmdet::ValueObjects::Membrane& membrane) {
         std::vector<Tmdet::ValueObjects::SecStrVec> ret;
-        for (auto& vector : protein.vectors) {
+        for (auto& vector : protein.secStrVecs) {
             if (vector.type.isBeta() && checkCross(vector, membrane)) {
                 ret.emplace_back(vector);
             }

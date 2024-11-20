@@ -8,7 +8,6 @@
 #include <Types/Residue.hpp>
 #include <Types/SecStruct.hpp>
 #include <ValueObjects/Atom.hpp>
-#include <ValueObjects/HBond.hpp>
 #include <gemmi/model.hpp>
 
 /**
@@ -22,8 +21,26 @@ namespace Tmdet::ValueObjects {
     struct Residue {
 
         /**
-         * @brief the gemmi residue object
+         * @brief auth_id in cif file
          */
+        int authId;
+
+        /**
+         * @brief label_id in cif file
+         */
+        int labelId;
+
+        /**
+         * @brief order of residues after alignment
+         *        Use this to measure residues distance in the sequence
+         */
+        int idx;
+
+        /**
+         * @brief insertion code
+         */
+        char authIcode = ' ';
+
         gemmi::Residue& gemmi;
 
         /**
@@ -52,22 +69,6 @@ namespace Tmdet::ValueObjects {
         Tmdet::Types::SecStruct ss = Tmdet::Types::SecStructType::U;
 
         /**
-         * @brief lowest energy back chain hydrogen bond of the residue
-         */
-        HBond hbond1;
-
-        /**
-         * @brief second lowest energy back chain hydrogen bond of the residue
-         */
-        HBond hbond2;
-        
-        /**
-         * @brief order of residues after alignment
-         *        Use this to measure residues distance in the sequence
-         */
-        int idx;
-
-        /**
          * @brief number of backbone atoms
          */
         int nba = 0;
@@ -94,26 +95,9 @@ namespace Tmdet::ValueObjects {
          */
         std::unordered_map<std::string,std::any> temp;
 
-        /**
-         * @brief Construct a new Residue object
-         * 
-         * @param _gemmi 
-         * @param chainVO 
-         */
-        explicit Residue(gemmi::Residue& _gemmi) : 
-            gemmi(_gemmi) {
-                if (Tmdet::Types::Residues.contains(_gemmi.name)) {
-                    type = Tmdet::Types::Residues.at(_gemmi.name);
-                }
-        }
+        explicit Residue(gemmi::Residue residue) :
+            gemmi(residue) {}
 
-        /**
-         * @brief pdb sequence number of the residue
-         * 
-         * @return int 
-         */
-        int resn() const;
-        
         /**
          * @brief check if residue has all side chain atoms
          * 
@@ -130,12 +114,34 @@ namespace Tmdet::ValueObjects {
          */
         bool hasAllAtoms() const;
 
-        void setNumberOfAtoms();
+        /**
+         * @brief Set the Number Of sidechain and backbone atoms 
+         *        according to the residue type
+         * 
+         */
+        void setProperties(std::string name);
 
+        /**
+         * @brief check if the residue has only backbone atoms
+         * 
+         * @return true 
+         * @return false 
+         */
         bool hasOnlyBackBoneAtoms() const;
 
-        gemmi::Vec3 centre() const;
-
+        /**
+         * @brief Get the C alpha or C beta or N or C atom
+         * 
+         * @return const gemmi::Atom* 
+         */
         const gemmi::Atom* getCa() const;
+
+        /**
+         * @brief check if residue is a gap (i.e. has no any atoms in the 
+         *         gemmi structure)
+         */
+        bool isGap() const;
+
+        void transform(Tmdet::ValueObjects::TMatrix& tmatrix);
     };
 }

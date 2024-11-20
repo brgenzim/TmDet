@@ -7,6 +7,7 @@
 #include <DTOs/XmlRW/Constants4.hpp>
 #include <DTOs/XmlRW/Writer.hpp>
 #include <Exceptions/SyntaxErrorException.hpp>
+#include <Helpers/String.hpp>
 #include <System/Logger.hpp>
 #include <ValueObjects/Membrane.hpp>
 #include <ValueObjects/TMatrix.hpp>
@@ -85,36 +86,32 @@ namespace Tmdet::DTOs::XmlRW {
         auto pnode = _root.insert_child_after(XML_NODE_CHAINS, _root.child(XML_NODE_MEMBRANES));
         for(const auto& chain: chains) {
             pugi::xml_node node = pnode.append_child(XML_NODE_CHAIN);
-            node.append_attribute(XML_ATTR_AUTH_ASYM_ID) = chain.id.c_str();
-            node.append_attribute(XML_ATTR_LABEL_ASYM_ID) = chain.labId.c_str();
+            node.append_attribute(XML_ATTR_AUTH_ID) = chain.id.c_str();
+            node.append_attribute(XML_ATTR_LABEL_ID) = chain.labId.c_str();
             node.append_attribute(XML_ATTR_NUM_TM) = std::to_string(chain.numtm).c_str();
             node.append_attribute(XML_ATTR_TYPE) = chain.type.name.c_str();
             pugi::xml_node seqNode = node.append_child(XML_NODE_SEQENCE);
-            seqNode.text() = chain.seq.c_str(); //TODO format sequence
+            seqNode.text() = Tmdet::Helpers::String::formatSequence(chain.seq).c_str();
             if (chain.selected && !chain.regions.empty()) {
-                setRegions(node,chain.regions);
+                //TODO setRegions(node, chain.regions, chain.residues);
             }
         }
     }
 
-    void Writer::setRegions(pugi::xml_node& pnode, const std::vector<Tmdet::ValueObjects::Region>& regions) const {
+    void Writer::setRegions(pugi::xml_node& pnode, const std::vector<Tmdet::ValueObjects::Region>& regions, const std::vector<Tmdet::ValueObjects::Residue>& residues) const {
+        pugi::xml_node regions_node = pnode.append_child(XML_NODE_REGIONS);
         for(const auto& r: regions) {
-            pugi::xml_node node = pnode.append_child(XML_NODE_REGION);
-            pugi::xml_node startNode = node.append_child(XML_NODE_START);
-            pugi::xml_node endNode = node.append_child(XML_NODE_END);
-            startNode.append_attribute(XML_ATTR_SEQ) = std::to_string(r.beg).c_str();
-            startNode.append_attribute(XML_ATTR_AUTH_SEQ_ID) = std::to_string(r.beg_auth_seq_id).c_str();
-            if (r.beg_auth_seq_icode != ' ') {
-                startNode.append_attribute(XML_ATTR_AUTH_SEQ_ICODE) = std::to_string(r.beg_auth_seq_icode).c_str();
+            pugi::xml_node node = regions_node.append_child(XML_NODE_REGION);
+            node.append_attribute(XML_ATTR_START_AUTH_ID) = std::to_string(residues[r.beg].authId).c_str();
+            if (residues[r.beg].authIcode != ' ') {
+                node.append_attribute(XML_ATTR_START_AUTH_ICODE) = std::to_string(residues[r.beg].authIcode).c_str();
             }
-            startNode.append_attribute(XML_ATTR_LABEL_SEQ_ID) = std::to_string(r.beg_label_seq_id).c_str();
-            endNode.append_attribute(XML_ATTR_SEQ) = std::to_string(r.end).c_str();
-            endNode.append_attribute(XML_ATTR_AUTH_SEQ_ID) = std::to_string(r.end_auth_seq_id).c_str();
-            if (r.end_auth_seq_icode !=  ' ')  {
-                endNode.append_attribute(XML_ATTR_AUTH_SEQ_ID) = std::to_string(r.end_auth_seq_icode).c_str();
+            node.append_attribute(XML_ATTR_START_LABEL_ID) = std::to_string(residues[r.beg].labelId).c_str();
+            node.append_attribute(XML_ATTR_END_AUTH_ID) = std::to_string(residues[r.end].authId).c_str();
+            if (residues[r.end].authIcode !=  ' ')  {
+                node.append_attribute(XML_ATTR_END_AUTH_ICODE) = std::to_string(residues[r.end].authIcode).c_str();
             }
-            endNode.append_attribute(XML_ATTR_LABEL_SEQ_ID) = std::to_string(r.end_label_seq_id).c_str();
-
+            node.append_attribute(XML_ATTR_END_LABEL_ID) = std::to_string(residues[r.end].labelId).c_str();
             node.append_attribute(XML_ATTR_TYPE) = std::format("{}",r.type.code).c_str();
         }
     }

@@ -26,10 +26,10 @@
     </rotate>
   </transformation>
   <membranes>
-    <membrane halfThickness="17.50" type="Plain" z="0.0">
+    <membrane halfThickness="17.50" type="Plain" z="0.0"/>
   </membranes>
   <chains>
-    <chain pdb_auth_asym_id="A" pdb_label_asym_id="A" numTM="7" type="alpha">
+    <chain authId="A" labelId="A" numTM="7" type="alpha">
       <sequence>
         TGRPEWIWLA LGTALMGLGT LYFLVKGMGV SDPDAKKFYA ITTLVPAIAF 
         TMYLSMLLGY GLTMVPFGGE QNPIYWARYA DWLFTTPLLL LDLALLVDAD 
@@ -37,12 +37,13 @@
         GFTSKAESMR PEVASTFKVL RNVTVVLWSA YPVVWLIGSE GAGIVPLNIE 
         TLLFMVLDVS AKVGFGLILL RSRAIFGE
       </sequence>
-      <region>
-        <start seq="1" pdb_label_seq_id="5"/>
-        <end seq="7" pdb_label_seq_id="11"/>
-      </region>
+      <regions>
+        <region startAuthId="1" startLabelId="7" endAuthId="12" endLabelId="18" type="1"/>
+        <region startAuthId="13" startLabelId="19" endAuthId="32" endLabelId="38" type="H"/>
+        <region startAuthId="33" startLabelId="39" endAuthId="228" endLabelId="234" type="2"/>
+      </regions>
     </chain>
-    <chain pdb_auth_asym_id="B" pdb_label_asym_id="A-2" numTM="7" type="alpha">
+    <chain authId="B" labelId="A-2" numTM="7" type="alpha">
       <sequence>
         TGRPEWIWLA LGTALMGLGT LYFLVKGMGV SDPDAKKFYA ITTLVPAIAF 
         TMYLSMLLGY GLTMVPFGGE QNPIYWARYA DWLFTTPLLL LDLALLVDAD 
@@ -50,10 +51,11 @@
         GFTSKAESMR PEVASTFKVL RNVTVVLWSA YPVVWLIGSE GAGIVPLNIE 
         TLLFMVLDVS AKVGFGLILL RSRAIFGE
       </sequence>
-      <region type="1">
-        <start seq="1" pdb_auth_seq_id="5" pdb_auth_seq_icode="A" pdb_label_seq_id="1"/>
-        <end seq="7" pdb_auth_seq_id="11" pdb_auth_seq_icode="A" pdb_label_seq_id="7"/>
-      </region>
+      <regions>
+        <region startAuthId="1" startLabelId="7" endAuthId="12" endLabelId="18" type="1"/>
+        <region startAuthId="13" startLabelId="19" endAuthId="32" endLabelId="38" type="H"/>
+        <region startAuthId="33" startLabelId="39" endAuthId="228" endLabelId="234" type="2"/>
+      </regions>
     </chain>
     <chain pdb_auth_asym_id="C" pdb_label_asym_id="A-3" type="notSelected"/>
   </chains>

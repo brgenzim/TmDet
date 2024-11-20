@@ -32,7 +32,7 @@ namespace Tmdet::Engine {
                 optimizer.setMembranesToProtein();
             }
             if (bool na = args.getValueAsBool("na"); !na && protein.tmp) {
-                Tmdet::DTOs::Protein::transform(protein);
+                protein.transform();
                 auto annotator = Tmdet::Engine::Annotator(protein);
             }
         }

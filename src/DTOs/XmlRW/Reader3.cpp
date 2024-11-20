@@ -146,14 +146,8 @@ namespace Tmdet::DTOs::XmlRW {
             if (type=='I') {
                 type = 'N';
             }
-            regions.emplace_back(r_node.attribute(XML3_ATTR_SEQ_BEG).as_int(),
-                r_node.attribute(XML3_ATTR_PDB_BEG).as_int(),
-                (r_node.attribute(XML3_ATTR_PDB_BEGI)?r_node.attribute(XML3_ATTR_PDB_BEGI).value()[0]:' '),
-                r_node.attribute(XML3_ATTR_PDB_BEG).as_int(),
-                r_node.attribute(XML3_ATTR_SEQ_END).as_int(),
-                r_node.attribute(XML3_ATTR_PDB_END).as_int(),
-                (r_node.attribute(XML3_ATTR_PDB_ENDI)?r_node.attribute(XML3_ATTR_PDB_ENDI).value()[0]:' '),
-                r_node.attribute(XML3_ATTR_PDB_END).as_int(),
+            regions.emplace_back(r_node.attribute(XML3_ATTR_SEQ_BEG).as_int()-1,
+                r_node.attribute(XML3_ATTR_SEQ_END).as_int()-1,
                 Tmdet::Types::Regions.at(type));
         }
         return regions;

@@ -28,5 +28,24 @@ namespace Tmdet::ValueObjects {
          * @brief translation
          */
         gemmi::Vec3 trans = {0.0,0.0,0.0};
+
+        void transform(gemmi::Vec3& vec) {
+            vec.x += trans.x;
+            vec.y += trans.y;
+            vec.z += trans.z;
+            double x = vec.x * rot[0][0]
+                        + vec.y * rot[0][1]
+                        + vec.z * rot[0][2];
+            double y = vec.x * rot[1][0]
+                        + vec.y * rot[1][1]
+                        + vec.z * rot[1][2];
+            double z = vec.x * rot[2][0]
+                        + vec.y * rot[2][1]
+                        + vec.z * rot[2][2];
+            vec.x = x;
+            vec.y = y;
+            vec.z = z;
+
+        }
     };
 }

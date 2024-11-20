@@ -127,9 +127,14 @@ namespace Tmdet::ValueObjects {
         std::map<std::string, std::string> polymerNames;
 
         /**
+         * @brief Chain indeces in gemmi structure.chains
+         */
+        std::vector<int> gemmiChainIndeces;
+
+        /**
          * @brief vectors constructed from secondary structrure elements
          */
-        std::vector<Tmdet::ValueObjects::SecStrVec> vectors;
+        std::vector<Tmdet::ValueObjects::SecStrVec> secStrVecs;
 
         /**
          * @brief set transmembrane to no and clear data
@@ -175,6 +180,11 @@ namespace Tmdet::ValueObjects {
          * @return gemmi::Vec3 
          */
         gemmi::Vec3 centre();
+
+        /**
+         * @brief transform protein's atom coordinates by tmatrix
+         */
+        void transform();
 
         template<typename T>
         void eachChain(T func) {

@@ -71,6 +71,8 @@ namespace Tmdet::Engine {
             void detectInterfacialHelices();
             void getRegions();
             void detectReEntrantLoops();
+            bool checkLoopEnds(Tmdet::ValueObjects::Chain& chain, int begin, int end);
+            bool hasOneHelix(Tmdet::ValueObjects::Chain& chain, int begin, int end);
             void finalize();
             void run();
 
