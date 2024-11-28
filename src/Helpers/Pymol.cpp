@@ -29,8 +29,8 @@ namespace Tmdet::Helpers {
             for (const auto& region: chain.regions) {
                 os << std::format("cmd.do(\'color {}, (chain {} and resi {}:{})\')\n",
                         colors[region.type.id],chain.id,
-                        chain.residues[region.beg].authId,
-                        chain.residues[region.end].authId);
+                        region.beg.authId,
+                        region.end.authId);
             }
         }
     }

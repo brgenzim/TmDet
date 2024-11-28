@@ -1,9 +1,13 @@
-#ifndef __TMDET_TYPES_PROTEIN__
-#define __TMDET_TYPES_PROTEIN__
+#pragma once
 
 #include <unordered_map>
 #include <string>
 
+/**
+ * @brief namespace of types
+ * @namespace Tmdet
+ * @namespace Types
+ */
 namespace Tmdet::Types {
 
     struct Protein {
@@ -66,5 +70,3 @@ namespace Tmdet::Types {
         { "Noprotein", ProteinType::NOPROTEIN}
     };
 }
-
-#endif

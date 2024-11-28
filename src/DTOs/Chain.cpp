@@ -17,30 +17,34 @@
 
 namespace Tmdet::DTOs {
     
-    Tmdet::ValueObjects::Chain Chain::get(gemmi::Structure& protein, gemmi::Chain& chain, std::string entityId, int chainIdx) {
+    Tmdet::ValueObjects::Chain Chain::get(gemmi::Structure& protein, gemmi::Chain& chain, int chainIdx, int entityIdx) {
         Tmdet::ValueObjects::Chain chainVO;
         chainVO.id = chain.name;
-        chainVO.entityId = entityId;
-        chainVO.entityIdx = getEntityIdx(protein.entities,entityId);
+        chainVO.entityId = chain.residues[0].entity_id;
+        chainVO.entityIdx = entityIdx;
         auto sequence = protein.entities[chainVO.entityIdx].full_sequence;
         chainVO.seq = gemmi::one_letter_code(sequence);
         chainVO.idx = chainIdx;
         auto poly = chain.get_polymer();
-        auto alignRes = gemmi::align_sequence_to_polymer(
-                    sequence,
-                    poly,
-                    protein.entities[chainVO.entityIdx].polymer_type);
-        chainVO.length = alignRes.match_string.length();
-        chainVO.labelId = poly.subchain_id();
-        int residueIdx = 0;
-        for (auto i=0; i<chainVO.length; i++) {
-            if (alignRes.match_string[i] == '|') {
-                chainVO.gemmiResidueIndeces.push_back(residueIdx);
-                chainVO.residues.emplace_back(Tmdet::DTOs::Residue::get(chain.residues[residueIdx++],chainIdx,i));
+        if (poly) {
+            auto alignRes = gemmi::align_sequence_to_polymer(
+                        sequence,
+                        poly,
+                        protein.entities[chainVO.entityIdx].polymer_type);
+            DEBUG_LOG("ALIGN Seq: {}",alignRes.add_gaps(chainVO.seq, 1));
+            DEBUG_LOG("ALIGN Mdl: {}",alignRes.match_string);
+            DEBUG_LOG("ALIGN Str: {}",alignRes.add_gaps(gemmi::one_letter_code(poly.extract_sequence()), 2));
+            chainVO.length = poly.length();
+            chainVO.labelId = poly.subchain_id();
+            int residueIdx = 0;
+            for (unsigned long int i=0; i<alignRes.match_string.length(); i++) {
+                if (alignRes.match_string[i] == '|') {
+                    chainVO.residues.emplace_back(Tmdet::DTOs::Residue::get(chain.residues[residueIdx++],chainIdx,i));
+                }
             }
-            else {
-                chainVO.residues.emplace_back(Tmdet::DTOs::Residue::unk(chainIdx,i,sequence[i]));
-            }
+        }
+        else {
+            chainVO.selected = false;
         }
         return chainVO;
     }
@@ -51,14 +55,16 @@ namespace Tmdet::DTOs {
             residues += Tmdet::DTOs::Residue::toString(residue);
         }
         return std::format(R"(
-CHAIN id: {} entityId: {} entityIdx: {} length: {} selected: {}
-    Sequence: {}
-    Secondary structure: {}
+CHAIN idx:{} authId:{} labelId:{} entityId:{} entityIdx:{} length:{} selected:{}
+    Sequence: 
+{}
+    Secondary structure:
+{}
 {})",
-            chain.id, chain.entityId, chain.entityIdx, chain.length,
-            (chain.selected?"True":"False"),
-            Tmdet::Helpers::String::formatSequence(chain.seq, 50, 10),
-            Tmdet::Helpers::String::formatSequence(Tmdet::DTOs::Dssp::getSecondaryStructure(chain), 50, 10),
+            chain.idx, chain.id, chain.labelId, chain.entityId,
+            chain.entityIdx, chain.length,(chain.selected?"True":"False"),
+            Tmdet::Helpers::String::formatSequence(chain.seq, 50, 10,"\t\t"),
+            Tmdet::Helpers::String::formatSequence(Tmdet::DTOs::Dssp::getSecondaryStructure(chain), 50, 10,"\t\t"),
             residues
         );
     }

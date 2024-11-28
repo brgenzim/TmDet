@@ -53,7 +53,4 @@ namespace Tmdet::ValueObjects {
         }
     }
 
-    bool Residue::isGap() const {
-        return (atoms.size() > 0);
-    }
 }

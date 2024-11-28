@@ -1,5 +1,4 @@
-#ifndef __TMDET_TYPES_RESIDUE__
-#define __TMDET_TYPES_RESIDUE__
+#pragma once
 
 #include <unordered_map>
 #include <map>
@@ -7,6 +6,11 @@
 #include <functional>
 #include <Types/Atom.hpp>
 
+/**
+ * @brief namespace of types
+ * @namespace Tmdet
+ * @namespace Types
+ */
 namespace Tmdet::Types {
 
     const double voronotaMeanMin = -0.567174;
@@ -361,5 +365,3 @@ namespace Tmdet::Types {
     };
     
 }
-
-#endif

@@ -156,6 +156,8 @@ namespace Tmdet::Engine {
              */
             void end();
 
+            double distance(gemmi::Vec3& vec);
+
             /**
              * @brief Set the distances from the centre of membrane plane
              */
@@ -271,7 +273,7 @@ namespace Tmdet::Engine {
             /**
              * @brief 
              */
-            void setProteinTMatrix(gemmi::Vec3& origo, gemmi::Vec3& normal) const;
+            void setProteinTMatrix(gemmi::Vec3& origo) const;
 
             void clear();
     };

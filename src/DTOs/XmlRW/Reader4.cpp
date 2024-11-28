@@ -1,7 +1,5 @@
 #include <string>
 #include <vector>
-#include <iostream>
-#include <format>
 #include <pugixml.hpp>
 #include <Config.hpp>
 #include <DTOs/Region.hpp>
@@ -115,13 +113,22 @@ namespace Tmdet::DTOs::XmlRW {
         std::vector<Tmdet::ValueObjects::Region> regions;
         
         for(pugi::xml_node node: pnode.child(XML_NODE_REGIONS).children(XML_NODE_REGION)) {
-            regions.emplace_back(
-                node.attribute(XML_ATTR_START_AUTH_ID).as_int()-1,
-                node.attribute(XML_ATTR_END_AUTH_ID).as_int()-1,
+            Tmdet::ValueObjects::Region region = {
+                {
+                    node.attribute(XML_ATTR_START_AUTH_ID).as_int(),
+                    (node.attribute(XML_ATTR_START_AUTH_ICODE)?node.attribute(XML_ATTR_START_AUTH_ICODE).as_string()[0]:' '),
+                    node.attribute(XML_ATTR_START_LABEL_ID).as_int()
+                },
+                {
+                    node.attribute(XML_ATTR_END_AUTH_ID).as_int(),
+                    (node.attribute(XML_ATTR_END_AUTH_ICODE)?node.attribute(XML_ATTR_END_AUTH_ICODE).as_string()[0]:' '),
+                    node.attribute(XML_ATTR_END_LABEL_ID).as_int()
+                },
                 Tmdet::Types::Regions.at(node.attribute(XML_ATTR_TYPE).as_string()[0])
-            );
+            };
+            regions.push_back(region);
         }
-        for(auto& region: regions) {
+        for(const auto& region: regions) {
             DEBUG_LOG("{}",Tmdet::DTOs::Region::toString(region));
         }
         return regions;

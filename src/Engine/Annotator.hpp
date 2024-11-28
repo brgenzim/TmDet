@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <gemmi/model.hpp>
+#include <Engine/RegionHandler.hpp>
 #include <Types/Region.hpp>
 #include <Utils/SecStrVec.hpp>
 #include <ValueObjects/Protein.hpp>
@@ -17,72 +18,37 @@ namespace Tmdet::Engine {
 
     class Annotator {
         private:
-            /**
-             * @brief the protein value object
-             */
             Tmdet::ValueObjects::Protein& protein;
+            Tmdet::Engine::SideDetector sideDetector;
+            Tmdet::Engine::RegionHandler regionHandler;
 
-            /**
-             * @brief membrane planes
-             *
-             * for one membrane:
-             *              side1
-             *        z1 -------------
-             *             membrane
-             *        z4 ------------- 
-             *              side2
-             *
-             * for two membranes:
-             *              side1
-             *        z1 ------------- top
-             *             membrane
-             *        z2 ------------- bottom of upper membrane
-             *
-             *           intermembrane
-             *           (or periplasm)
-             *
-             *        z3 ------------- top
-             *             membrane
-             *        z4 ------------- bottom of lower membrane
-             *               side2
-             */
-            double z1;
-            double z2;
-            double z3;
-            double z4;
-            bool doubleMembrane = false;
-            
-            void setZs();
-             Tmdet::Types::Region getSideByZ(double z) const;
-            void storeRegion(Tmdet::ValueObjects::Chain& chain, unsigned int beg, unsigned int end) const;
-            void replaceRegion(const Tmdet::ValueObjects::SecStrVec& vector, Tmdet::Types::Region regionType);
-            bool getNextRegion(Tmdet::ValueObjects::Chain& chain, int& begin, int& end) const;
-            bool getNextDefined(Tmdet::ValueObjects::Chain& chain, int& begin) const;
-            bool getNextSame(Tmdet::ValueObjects::Chain& chain, const int& begin, int& end) const;
-            std::vector<Tmdet::ValueObjects::SecStrVec> getCrossingAlphas(Tmdet::ValueObjects::Membrane& membrane);
-            std::vector<Tmdet::ValueObjects::SecStrVec> getParallelAlphas(Tmdet::ValueObjects::Membrane& membrane);
-            std::vector<Tmdet::ValueObjects::SecStrVec> getCrossingBetas(Tmdet::ValueObjects::Membrane& membrane);
-            bool checkCross(Tmdet::ValueObjects::SecStrVec& vec, Tmdet::ValueObjects::Membrane& membrane) const;
-            bool checkParallel(Tmdet::ValueObjects::SecStrVec& vec, Tmdet::ValueObjects::Membrane& membrane) const;
-            void detectSides();
-            void detectAlphaHelices();
-            void detectBarrel();
-            void detectLoops();
-            void detectInterfacialHelices();
-            void getRegions();
-            void detectReEntrantLoops();
-            bool checkLoopEnds(Tmdet::ValueObjects::Chain& chain, int begin, int end);
-            bool hasOneHelix(Tmdet::ValueObjects::Chain& chain, int begin, int end);
-            void finalize();
             void run();
-
+            void setChainsType();
+            void annotateChains();
+            void smoothRegions(Tmdet::ValueObjects::Chain& chain, std::string what);
+            void detectLoops(Tmdet::ValueObjects::Chain& chain);
+            void detectLoop(Tmdet::ValueObjects::Chain& chain, int beg, int end);
+            void detectInterfacialHelices();
+            void detectReEntrantLoops(Tmdet::ValueObjects::Chain& chain);
+            bool hasHelixLoop(Tmdet::ValueObjects::Chain& chain, int begin, int end);
+            void detectTransmembraneHelices(Tmdet::ValueObjects::Chain& chain);
+            //bool isOnOneSide(Tmdet::ValueObjects::Chain& chain, int beg, int end);
+            //void extendRegions(Tmdet::Engine::RegionHandler& regionHandler);
+            //std::vector<std::array<int,2>> getNumCross(Tmdet::ValueObjects::Chain& chain, int beg, int end);
+            bool sameSide(Tmdet::ValueObjects::Chain& chain, int beg, int end);
+            //int getTurnResidue(Tmdet::ValueObjects::Chain& chain, int beg, int end);
+            //void setTurnResidues(Tmdet::ValueObjects::Chain& chain, std::vector<std::array<int,2>>& numCross);
+            //void extendRegion(Tmdet::ValueObjects::Chain& chain, int beg, int end, Tmdet::Engine::RegionHandler& regionHandler);
+            std::vector<Tmdet::ValueObjects::SecStrVec> getParallelAlphas(Tmdet::ValueObjects::Membrane& membrane);
+            bool checkParallel(Tmdet::ValueObjects::SecStrVec& vec, Tmdet::ValueObjects::Membrane& membrane) const;    
             
-
         public:
             
 
             explicit Annotator(Tmdet::ValueObjects::Protein& protein) :
-                protein(protein) {
+                protein(protein),
+                sideDetector(Tmdet::Engine::SideDetector(protein)),
+                regionHandler(Tmdet::Engine::RegionHandler(protein)) {
                     run();
             }
             ~Annotator()=default;

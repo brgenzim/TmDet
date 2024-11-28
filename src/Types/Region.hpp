@@ -1,9 +1,13 @@
-#ifndef __TMDET_TYPES_REGION__
-#define __TMDET_TYPES_REGION__
+#pragma once
 
 #include <unordered_map>
 #include <string>
 
+/**
+ * @brief namespace of types
+ * @namespace Tmdet
+ * @namespace Types
+ */
 namespace Tmdet::Types {
 
     struct Region {
@@ -14,6 +18,18 @@ namespace Tmdet::Types {
 
         bool operator == (const Region& other) const {
             return id == other.id;
+        }
+
+        bool isAnnotatedTransMembraneType() const {
+            return code == 'H' || code == 'B';
+        }
+
+        bool isAnnotatedMembraneType() const {
+            return code == 'H' || code == 'B' || code == 'L' || code =='F';
+        }
+
+        bool isNotMembrane() const {
+            return code == '1' || code == '2' || code == '3';
         }
     };
 
@@ -127,5 +143,3 @@ namespace Tmdet::Types {
         { "Periplasm", RegionType::PERIPLASM },
     };
 }
-
-#endif

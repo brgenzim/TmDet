@@ -26,9 +26,10 @@ namespace Tmdet::DTOs {
          * @param chain 
          * @param entityId 
          * @param chainIdx 
+         * @param entityIdx
          * @return Tmdet::ValueObjects::Chain 
          */
-        static Tmdet::ValueObjects::Chain get(gemmi::Structure& protein, gemmi::Chain& chain, std::string entityId, int chainIdx);
+        static Tmdet::ValueObjects::Chain get(gemmi::Structure& protein, gemmi::Chain& chain, int chainIdx, int entityIdx);
 
         /**
          * @brief string representation of the chain

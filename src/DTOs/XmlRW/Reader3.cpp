@@ -146,9 +146,12 @@ namespace Tmdet::DTOs::XmlRW {
             if (type=='I') {
                 type = 'N';
             }
-            regions.emplace_back(r_node.attribute(XML3_ATTR_SEQ_BEG).as_int()-1,
-                r_node.attribute(XML3_ATTR_SEQ_END).as_int()-1,
-                Tmdet::Types::Regions.at(type));
+            Tmdet::ValueObjects::Region region = {
+                {r_node.attribute(XML3_ATTR_SEQ_BEG).as_int(),' ',r_node.attribute(XML3_ATTR_PDB_BEG).as_int()},
+                {r_node.attribute(XML3_ATTR_SEQ_END).as_int(),' ',r_node.attribute(XML3_ATTR_PDB_END).as_int()},
+                Tmdet::Types::Regions.at(type)
+            };
+            regions.push_back(region);
         }
         return regions;
     }

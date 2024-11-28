@@ -10,6 +10,7 @@ lib/
 .vscode/
 data/ccd/
 .env
+.cache/
 Doc/
 tests/archive/
 tests/issue_*

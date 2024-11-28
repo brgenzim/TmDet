@@ -58,6 +58,11 @@ namespace Tmdet::ValueObjects {
          */
         double surface = 0.0;
 
+                /**
+         * @brief outside water accessible surface of the residue
+         */
+        double outSurface = 0.0;
+
         /**
          * @brief type of the residue
          */
@@ -95,7 +100,7 @@ namespace Tmdet::ValueObjects {
          */
         std::unordered_map<std::string,std::any> temp;
 
-        explicit Residue(gemmi::Residue residue) :
+        explicit Residue(gemmi::Residue& residue) :
             gemmi(residue) {}
 
         /**

@@ -1,12 +1,17 @@
 #pragma once
 
-#include <string>
 #include <Types/Region.hpp>
 
 /**
  * @brief namespace for value objects
  */
 namespace Tmdet::ValueObjects {
+
+    struct SeqPosition {
+        int authId;
+        char authIcode;
+        int labelId;
+    };
 
     /**
      * @brief description of a region in sequence
@@ -16,12 +21,12 @@ namespace Tmdet::ValueObjects {
         /**
          * @brief start of the region in Tmdet ValueObject Chain
          */
-        unsigned int beg = 0;
+        SeqPosition beg;
 
         /**
          * @brief end of the region in Tmdet ValueObject Chain
          */
-        unsigned int end = 0;
+        SeqPosition end;
         
         /**
          * @brief region type

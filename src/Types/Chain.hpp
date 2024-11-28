@@ -1,11 +1,18 @@
-#ifndef __TMDET_TYPES_CHAIN__
-#define __TMDET_TYPES_CHAIN__
+#pragma once
 
 #include <unordered_map>
 #include <string>
 
+/**
+ * @brief namespace of types
+ * @namespace Tmdet
+ * @namespace Types
+ */
 namespace Tmdet::Types {
 
+    /**
+     * @brief description of a chain type
+     */
     struct Chain {
         std::string name;
         std::string description;
@@ -52,5 +59,3 @@ namespace Tmdet::Types {
     };
 
 }
-
-#endif

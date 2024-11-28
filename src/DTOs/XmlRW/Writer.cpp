@@ -91,27 +91,27 @@ namespace Tmdet::DTOs::XmlRW {
             node.append_attribute(XML_ATTR_NUM_TM) = std::to_string(chain.numtm).c_str();
             node.append_attribute(XML_ATTR_TYPE) = chain.type.name.c_str();
             pugi::xml_node seqNode = node.append_child(XML_NODE_SEQENCE);
-            seqNode.text() = Tmdet::Helpers::String::formatSequence(chain.seq).c_str();
+            seqNode.text() = ((std::string)"\n"+Tmdet::Helpers::String::formatSequence(chain.seq,50,10,"        ")+(std::string)"\n      ").c_str();
             if (chain.selected && !chain.regions.empty()) {
-                //TODO setRegions(node, chain.regions, chain.residues);
+                setRegions(node, chain.regions);
             }
         }
     }
 
-    void Writer::setRegions(pugi::xml_node& pnode, const std::vector<Tmdet::ValueObjects::Region>& regions, const std::vector<Tmdet::ValueObjects::Residue>& residues) const {
+    void Writer::setRegions(pugi::xml_node& pnode, const std::vector<Tmdet::ValueObjects::Region>& regions) const {
         pugi::xml_node regions_node = pnode.append_child(XML_NODE_REGIONS);
         for(const auto& r: regions) {
             pugi::xml_node node = regions_node.append_child(XML_NODE_REGION);
-            node.append_attribute(XML_ATTR_START_AUTH_ID) = std::to_string(residues[r.beg].authId).c_str();
-            if (residues[r.beg].authIcode != ' ') {
-                node.append_attribute(XML_ATTR_START_AUTH_ICODE) = std::to_string(residues[r.beg].authIcode).c_str();
+            node.append_attribute(XML_ATTR_START_AUTH_ID) = std::to_string(r.beg.authId).c_str();
+            if (r.beg.authIcode != ' ') {
+                node.append_attribute(XML_ATTR_START_AUTH_ICODE) = std::to_string(r.beg.authIcode).c_str();
             }
-            node.append_attribute(XML_ATTR_START_LABEL_ID) = std::to_string(residues[r.beg].labelId).c_str();
-            node.append_attribute(XML_ATTR_END_AUTH_ID) = std::to_string(residues[r.end].authId).c_str();
-            if (residues[r.end].authIcode !=  ' ')  {
-                node.append_attribute(XML_ATTR_END_AUTH_ICODE) = std::to_string(residues[r.end].authIcode).c_str();
+            node.append_attribute(XML_ATTR_START_LABEL_ID) = std::to_string(r.beg.labelId).c_str();
+            node.append_attribute(XML_ATTR_END_AUTH_ID) = std::to_string(r.end.authId).c_str();
+            if (r.end.authIcode !=  ' ')  {
+                node.append_attribute(XML_ATTR_END_AUTH_ICODE) = std::to_string(r.end.authIcode).c_str();
             }
-            node.append_attribute(XML_ATTR_END_LABEL_ID) = std::to_string(residues[r.end].labelId).c_str();
+            node.append_attribute(XML_ATTR_END_LABEL_ID) = std::to_string(r.end.labelId).c_str();
             node.append_attribute(XML_ATTR_TYPE) = std::format("{}",r.type.code).c_str();
         }
     }

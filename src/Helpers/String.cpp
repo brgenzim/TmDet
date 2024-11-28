@@ -31,14 +31,15 @@ namespace Tmdet::Helpers::String {
         return tokens;
     }
 
-    std::string formatSequence(std::string sequence, int lineLength, int strLength) {
-        std::string ret ="";
+    std::string formatSequence(std::string sequence, int lineLength, int strLength, std::string preprend) {
+        std::string ret = preprend;
         for (unsigned long int i = 0; i<sequence.length(); i++) {
             ret += sequence[i];
-            if ((i+1)%lineLength) {
+            if ((i+1)%lineLength == 0) {
                 ret += '\n';
+                ret += preprend;
             }
-            else if ((i+1)%strLength) {
+            else if ((i+1)%strLength == 0) {
                 ret += ' ';
             }
         }

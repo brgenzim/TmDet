@@ -1,17 +1,27 @@
-#ifndef __TMDET_TYPES_ATOM__
-#define __TMDET_TYPES_ATOM__
+#pragma once
 
 #include <unordered_map>
 #include <string>
 #include <functional>
 
+/**
+ * @brief namespace of types
+ * @namespace Tmdet
+ * @namespace Types
+ */
 namespace Tmdet::Types {
 
+    /**
+     * @brief description of an atom type
+     */
     struct Atom {
         std::string name;
         double vdw;
     };
 
+    /**
+     * @brief list of atom types
+     */
     namespace AtomType {
         const double DEFAULT_VDW = 1.8;
 
@@ -121,5 +131,3 @@ namespace Tmdet::Types {
     };
 
 }
-
-#endif

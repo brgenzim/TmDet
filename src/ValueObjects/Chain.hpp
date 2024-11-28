@@ -65,11 +65,6 @@ namespace Tmdet::ValueObjects {
         int idx = 0;
 
         /**
-         * @brief Residue indeces in gemmi structure.chain.residues
-         */
-        std::vector<int> gemmiResidueIndeces;
-
-        /**
          * @brief length of the chain in residues
          */
         int length = 0;

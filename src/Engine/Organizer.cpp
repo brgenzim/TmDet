@@ -2,6 +2,7 @@
 #include <string>
 
 #include <Config.hpp>
+#include <DTOs/Dssp.hpp>
 #include <DTOs/Protein.hpp>
 #include <Engine/Annotator.hpp>
 #include <Engine/Organizer.hpp>
@@ -80,7 +81,7 @@ namespace Tmdet::Engine {
         auto dssp = Tmdet::Utils::Dssp(protein);
         for (auto& chain : protein.chains) {
             if (chain.selected) {
-                DEBUG_LOG(" DSSP: {}: {}",chain.id,dssp.getSecStructAsString(chain));
+                DEBUG_LOG(" DSSP: {}: {}",chain.id,Tmdet::DTOs::Dssp::getSecondaryStructure(chain));
             }
         }
         DEBUG_LOG(" Processed Organizer::dssp()");

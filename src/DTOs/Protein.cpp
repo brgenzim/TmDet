@@ -5,8 +5,9 @@
 #include <gemmi/to_cif.hpp>
 #include <gemmi/to_mmcif.hpp>
 #include <Config.hpp>
-#include <DTOs/Protein.hpp>
 #include <DTOs/Chain.hpp>
+#include <DTOs/SecStrVec.hpp>
+#include <DTOs/Protein.hpp>
 #include <Helpers/Gzip.hpp>
 #include <Helpers/String.hpp>
 #include <System/FilePaths.hpp>
@@ -55,16 +56,13 @@ namespace Tmdet::DTOs {
 
         int chainIdx = 0;
         for(auto& chain: protein.gemmi.models[0].chains) {
-            if (auto poly = chain.get_polymer(); poly) {
-                protein.chains.emplace_back(Tmdet::DTOs::Chain::get(protein.gemmi,chain,poly.subchain_id(),chainIdx));
-                protein.gemmiChainIndeces.push_back(chainIdx++);
-            }
-            else {
-                protein.gemmiChainIndeces.push_back(-1);
+            if (int entityIdx = Tmdet::DTOs::Chain::getEntityIdx(protein.gemmi.entities,chain.residues[0].entity_id); entityIdx != -1) {
+                protein.chains.emplace_back(Tmdet::DTOs::Chain::get(protein.gemmi,chain,chainIdx++,entityIdx));
             }
         }
         protein.neighbors = gemmi::NeighborSearch(protein.gemmi.models[0], protein.gemmi.cell, 9);
         protein.neighbors.populate();
+        DEBUG_LOG("{}",Tmdet::DTOs::Protein::toString(protein));
         DEBUG_LOG(" Processed Protein::get()");
         return protein;
     }
@@ -101,6 +99,9 @@ namespace Tmdet::DTOs {
         std::string ret = "";
         for(const auto& chain: protein.chains) {
             ret += Tmdet::DTOs::Chain::toString(chain);
+        }
+        for (const auto& secStrVec: protein.secStrVecs) {
+            ret += Tmdet::DTOs::SecStrVec::toString(secStrVec);
         }
         return ret;
     }

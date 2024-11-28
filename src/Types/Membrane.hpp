@@ -3,6 +3,11 @@
 #include <unordered_map>
 #include <string>
 
+/**
+ * @brief namespace of types
+ * @namespace Tmdet
+ * @namespace Types
+ */
 namespace Tmdet::Types {
 
     struct Membrane {

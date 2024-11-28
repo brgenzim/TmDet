@@ -57,6 +57,6 @@ namespace Tmdet::DTOs {
          * @param protein 
          * @return std::string 
          */
-        std::string toString(const Tmdet::ValueObjects::Protein& protein);
+        static std::string toString(const Tmdet::ValueObjects::Protein& protein);
     };
 }

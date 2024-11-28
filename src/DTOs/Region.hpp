@@ -14,6 +14,6 @@ namespace Tmdet::DTOs {
         /**
          * @brief print value object content of the region
          */
-        static std::string toString(Tmdet::ValueObjects::Region& region);
+        static std::string toString(const Tmdet::ValueObjects::Region& region);
     };
 }

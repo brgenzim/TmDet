@@ -134,7 +134,7 @@ namespace Tmdet::DTOs::XmlRW {
              * @param pnode 
              * @param regions 
              */
-            void setRegions(pugi::xml_node& pnode, const std::vector<Tmdet::ValueObjects::Region>& regions, const std::vector<Tmdet::ValueObjects::Residue>& residues) const;
+            void setRegions(pugi::xml_node& pnode, const std::vector<Tmdet::ValueObjects::Region>& regions) const;
           public:
             void writeXml(Tmdet::ValueObjects::Xml& xmlData, const std::string& path);
     };

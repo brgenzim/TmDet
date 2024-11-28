@@ -12,9 +12,9 @@ namespace Tmdet::DTOs {
         auto residueVO = Tmdet::ValueObjects::Residue(residue);
         residueVO.chainIdx = chainIdx;
         residueVO.idx = residueIdx;
-        residueVO.authId = 0; //todo
-        residueVO.labelId = 0; //todo
-        residueVO.authIcode = ' '; //todo
+        residueVO.authId = (int)residue.seqid.num;
+        residueVO.labelId = (int)residue.label_seq;
+        residueVO.authIcode = residue.seqid.icode;
         int atomIdx = 0;
         for( auto& atom: residue.atoms) {
             auto atomVO = Tmdet::ValueObjects::Atom(atom);
@@ -44,10 +44,15 @@ namespace Tmdet::DTOs {
         for(const auto& atom: residue.atoms) {
             atoms += Tmdet::DTOs::Atom::toString(atom);
         }
+        /*std::string temp = "";
+        for(const auto &[key,value]: residue.temp) {
+            temp += std::format(R"(
+        TEMP key: {} value: {}
+            )",key,any_cast<double>(value));
+        }*/
         return std::format(R"(
-    RESIDUE authId: {} labelId{} a3: {} a1: {} ss: {} surface: {}
-{})", 
-            residue.authId, residue.labelId, residue.type.name, residue.type.a1,
-            residue.ss.code, residue.surface, atoms);
+    RESIDUE idx:{} authId:{} labelId:{} a3:{} a1:{} ss:{} surface:{}{})", 
+            residue.idx,residue.authId, residue.labelId, residue.type.name, 
+            residue.type.a1, residue.ss.code, residue.surface, atoms);
     }
 }

@@ -15,14 +15,10 @@ namespace Tmdet::DTOs {
         /**
          * @brief print value object content for debugging purpose
          */
-        static std::string print(Tmdet::ValueObjects::SecStrVec& vec) {
-            return std::format(R"(Tmdet::ValueObjects::SecStrVec(
-    type: {}
-    begin: [{}, {}, {}]
-    end: [{}, {}, {}]
-    chainIdx: {}
-    begResIdx: {}
-    endResIdx: {})",
+        static std::string toString(const Tmdet::ValueObjects::SecStrVec& vec) {
+            return std::format(R"(
+    SecStrVec type: {} begin: [{}, {}, {}] end: [{}, {}, {}] chainIdx: {} begResIdx: {} endResIdx: {}
+)",
                 vec.type.name,vec.begin.x,vec.begin.y,vec.begin.z,
                 vec.end.x, vec.end.y, vec.end.z,
                 vec.chainIdx,vec.begResIdx,vec.endResIdx);

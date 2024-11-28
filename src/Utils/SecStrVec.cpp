@@ -41,7 +41,7 @@ namespace Tmdet::Utils {
             checkAlphaVectorsForMerging();
         }
         for(unsigned long int i=0; auto& vector: protein.secStrVecs) {
-            DEBUG_LOG("{}",Tmdet::DTOs::SecStrVec::print(vector));
+            DEBUG_LOG("{}",Tmdet::DTOs::SecStrVec::toString(vector));
             for (int j=vector.begResIdx; j<=vector.endResIdx; j++) {
                 protein.chains[vector.chainIdx].residues[j].secStrVecIdx = (int)i;
             }
@@ -160,7 +160,7 @@ namespace Tmdet::Utils {
         }
         for (int i = vector.begResIdx; i<= vector.endResIdx; i++) {
             if (auto ca = protein.chains[vector.chainIdx].residues[i].gemmi.get_ca(); ca != nullptr 
-                && Tmdet::Helpers::Vector::distanceFromLine(vector.begin, vector.end, ca->pos) > 10.0) {
+                && Tmdet::Helpers::Vector::distanceFromLine(vector.begin, vector.end, ca->pos) > 7.0) {
                     return false;
             }
         }

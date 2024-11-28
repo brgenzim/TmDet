@@ -127,11 +127,6 @@ namespace Tmdet::ValueObjects {
         std::map<std::string, std::string> polymerNames;
 
         /**
-         * @brief Chain indeces in gemmi structure.chains
-         */
-        std::vector<int> gemmiChainIndeces;
-
-        /**
          * @brief vectors constructed from secondary structrure elements
          */
         std::vector<Tmdet::ValueObjects::SecStrVec> secStrVecs;
@@ -145,7 +140,7 @@ namespace Tmdet::ValueObjects {
          * @brief clear/update the content of the tmdetVO
          */
         void clear();
-    
+
         /**
         * @brief helper for fetching and parsing a new protein object from a cif file
         *        and stroring the gemmi structure as well as the cif document

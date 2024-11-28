@@ -239,7 +239,6 @@ namespace Tmdet::Utils {
                 protein(protein),
                 noCache(noCache) {
                     run();
-                    setOutsideSurface();
             }
             
             /**

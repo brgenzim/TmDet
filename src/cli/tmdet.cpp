@@ -38,6 +38,7 @@ Tmdet::System::Arguments getArguments(int argc, char *argv[]) {
     args.define(false,"n","not","Set transmembrane='not' in the xml file","bool","false");
     args.define(false,"nc","no_cache","Do not use cached data","bool","false");
     args.define(false,"s","show","Show annotated structure by pymol","bool","false");
+    args.define(false,"sp","show","Show parsed structure in the console","bool","false");
     args.define(false,"uc","unselect_chains","Unselect proteins chains","string","");
     args.define(false,"na","no_annotation","Do not make annotation","bool","false");
     args.define(false,"fa","force_nodel_antibody","Do not unselect antibodies in the structure","bool","false");
@@ -144,6 +145,11 @@ int main(int argc, char *argv[], char **envp) {
         pymol.show();
     }
 
+    //print out protein structrure and properties
+    if (bool sp = args.getValueAsBool("sp"); sp) {
+        std::cout << Tmdet::DTOs::Protein::toString(protein) << std::endl;
+    }
+    
     //if no annotation flag is given, just witeout tm / not tm info
     if (na) {
        std::cout << protein.code << " " << (protein.tmp?"yes":"no") << " " << protein.qValue  << std::endl;

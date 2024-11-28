@@ -50,6 +50,12 @@ namespace Tmdet::Engine {
         DEBUG_LOG(" Processed: Optimizer::end()");
     }
 
+    double Optimizer::distance(gemmi::Vec3& vec) {
+        return normal.x * (vec.x - massCentre.x)
+                + normal.y * (vec.y - massCentre.y)
+                + normal.z * (vec.z - massCentre.z);
+    }
+
     void Optimizer::setDistances() {
         DEBUG_LOG("Processing: Optimizer::setDistances()");
         protein.eachSelectedResidue(
@@ -58,9 +64,7 @@ namespace Tmdet::Engine {
                 double d = 0.0;
                 gemmi::Vec3 ca;
                 for(auto& atom: residue.atoms) {
-                    d = normal.x * (atom.gemmi.pos.x - massCentre.x);
-                    d += normal.y * (atom.gemmi.pos.y - massCentre.y);
-                    d += normal.z * (atom.gemmi.pos.z - massCentre.z);
+                    d = distance(atom.gemmi.pos);
                     atom.temp.at("dist") = std::any(d);
                     ca = atom.gemmi.pos;
                     if (atom.gemmi.name == "CA") {
@@ -132,11 +136,11 @@ namespace Tmdet::Engine {
         DEBUG_LOG("Processing: Optimizer::sumupSlices()");
         protein.eachSelectedResidue(
             [&](Tmdet::ValueObjects::Residue& residue) -> void {
-                double resSurf = (any_cast<double>(residue.temp.at("outside")));
+                double resSurf = residue.outSurface;
                 auto sliceIndex = (unsigned int)(any_cast<double>(residue.temp.at("dist")) - min);
                 DEBUG_LOG("in sumupSlices: {} {} {} {}",min,any_cast<double>(residue.temp.at("dist")),max,sliceIndex);
-                slices[sliceIndex].numCa++;
-                slices[sliceIndex].straight += any_cast<double>(residue.temp.at("straight")) ;//* (residue.ss.isBeta()?1.3:1.0);
+                //slices[sliceIndex].numCa++;
+                //slices[sliceIndex].straight += any_cast<double>(residue.temp.at("straight")) ;//* (residue.ss.isBeta()?1.3:1.0);
                 if (residue.idx == 0 || residue.idx == protein.chains[residue.chainIdx].length -1) {
                     slices[sliceIndex].chainEnd += 1.0;
                 }
@@ -150,9 +154,10 @@ namespace Tmdet::Engine {
                     slices[sliceIndex].turn += resSurf * any_cast<double>(residue.temp.at("turn"));
                     slices[sliceIndex].tSurf += resSurf;
                     for(const auto& atom: residue.atoms) {
-                        double atomSurf =  any_cast<double>(atom.temp.at("outside"));
+                        double atomSurf =  atom.outSurface;
                         slices[sliceIndex].numAtom++;
                         slices[sliceIndex].surf += atomSurf;
+                    //    slices[sliceIndex].straight += any_cast<double>(residue.temp.at("straight"));
                         if (residue.type.atoms.contains(atom.gemmi.name)) {
                             slices[sliceIndex].apol += residue.type.apol * atomSurf;
                             slices[sliceIndex].voronota += 
@@ -166,27 +171,43 @@ namespace Tmdet::Engine {
                 }
             }
         );
+        for (auto& vector: protein.secStrVecs) {
+            double cosAngle = std::abs(Tmdet::Helpers::Vector::cosAngle(
+                                normal,vector.end - vector.begin));
+            int d1 = distance(vector.begin);
+            int d2 = distance(vector.end);
+            int dbeg = (d1<d2?d1:d2) - min;
+            int dend = (d1>d2?d1:d2) - min;
+            for(int i=dbeg; i<= dend; i++) {
+                slices[i].straight+=cosAngle;
+                slices[i].numCa++;
+            }
+        }
         DEBUG_LOG(" Processed: Optimizer::sumupSlices()");
     }
 
     void Optimizer::smoothSurf() {
         auto s = slices.size();
         std::vector<double> apol(s,0.0);
+        std::vector<double> voronota(s,0.0);
         std::vector<double> surf(s,0.0);
         for(unsigned long int i = 0; i<s; i++) {
             int k=0;
             for (int j=-10; j<=10; j++) {
                 if (j+(int)i>=0 && j+i<s) {
                     apol[i] += slices[j+i].apol;
+                    voronota[i] += slices[j+i].voronota;
                     surf[i] += slices[j+i].surf;
                     k++;
                 }
             }
             apol[i] /= k;
+            voronota[i] /= k;
             surf[i] /= k;
         }
         for(unsigned long int i = 0; i<s; i++) {
             slices[i].apol = apol[i];
+            slices[i].voronota = voronota[i];
             slices[i].surf = surf[i];
         }
     }
@@ -200,14 +221,17 @@ namespace Tmdet::Engine {
         double chainEnd = 1.0 - divide(s.chainEnd, s.numCa);
         double turn = 1.0 - divide(s.turn, s.tSurf);
         double hydrophobicity = divide(s.hydrophobicity, s.numHyd);
-        //double apol = divide(s.apol, s.surf);
+        double apol = divide(s.apol, s.surf);
         double voronota = divide(s.voronota, s.surf);
+        DEBUG_LOG("Slice Straight:{} chainEnd:{} turn:{} hydr:{} apol:{} voro:{}",
+            straight, chainEnd, turn, hydrophobicity, apol, voronota);
         return 120.0
             * straight
             * (chainEnd==0.0?1.0:chainEnd)
             * (turn==0.0?1.0:turn)
             * (hydrophobicity==0.0?1.0:hydrophobicity)
-            * (s.surf>1?voronota:1.0);
+            * (s.surf>1?apol:1.0);
+        //    * (s.surf>1?voronota:1.0);
     }
 
     std::vector<double> Optimizer::getQValueForSlices() {
@@ -285,6 +309,9 @@ namespace Tmdet::Engine {
             bestQ = q;
             bestNormal = normal;
             bestSlices = slices;
+            DEBUG_LOG("bestQ: {}",bestQ);
+            DEBUG_LOG("bestSlices: {}",bestSlices[10].qValue);
+            DEBUG_LOG("bestnormal: [{}, {}, {}]",bestNormal.x, bestNormal.y, bestNormal.z);
         }
     }
 
@@ -301,6 +328,8 @@ namespace Tmdet::Engine {
             protein.tmp = false;
             return;
         }
+        normal = bestNormal;
+        testMembraneNormal();
         Tmdet::ValueObjects::Membrane membrane;
         protein.membranes.clear();
         while(getMembrane(membrane) && protein.membranes.size() < 2) {
@@ -308,7 +337,7 @@ namespace Tmdet::Engine {
         }
         if (!protein.membranes.empty()) {
             protein.tmp = true;
-            setProteinTMatrix(massCentre,bestNormal);
+            setProteinTMatrix(massCentre);
         }
         DEBUG_LOG(" Processed Optimizer::setMembranesToProtein()");
     }
@@ -322,6 +351,9 @@ namespace Tmdet::Engine {
 
     bool Optimizer::getMembrane(Tmdet::ValueObjects::Membrane& membrane) {
         DEBUG_LOG("Processing Optimizer::getMembrane()");
+        DEBUG_LOG("bestQ: {}",bestQ);
+        DEBUG_LOG("bestSlices: {}",bestSlices[10].qValue);
+        DEBUG_LOG("bestnormal: [{}, {}, {}]",bestNormal.x, bestNormal.y, bestNormal.z);
         unsigned long int bestZ = -1;
         double q = -1e30;
         for (unsigned long int i = 0; i <bestSlices.size(); i++) {
@@ -389,10 +421,12 @@ namespace Tmdet::Engine {
         return true;
     }
 
-    void Optimizer::setProteinTMatrix(gemmi::Vec3& origo, gemmi::Vec3& normal) const {
-        double x = normal.x;
-	    double y = normal.y;
-	    double z = normal.z;
+    void Optimizer::setProteinTMatrix(gemmi::Vec3& origo) const {
+        DEBUG_LOG("TMatrix - bestnormal: [{}, {}, {}]",bestNormal.x, bestNormal.y, bestNormal.z);
+        DEBUG_LOG("TMatrix - origo: [{}, {}, {}]",origo.x, origo.y, origo.z);
+        double x = bestNormal.x;
+	    double y = bestNormal.y;
+	    double z = bestNormal.z;
 	    if (double d = sqrt(y*y+z*z); d>1e-5) {
 		    double sa=z/d;
 		    double ca=y/d;

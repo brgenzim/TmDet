@@ -1,5 +1,6 @@
 #include <string>
 #include <format>
+#include <DTOs/Region.hpp>
 #include <ValueObjects/Region.hpp>
 
 /**
@@ -8,10 +9,12 @@
  */
 namespace Tmdet::DTOs {
 
-        std::string toString(Tmdet::ValueObjects::Region& region) {
+        std::string Region::toString(const Tmdet::ValueObjects::Region& region) {
             return std::format(R"(
-    REGION begin: {} end: {} type: {}
+    REGION begin: {}-{}-{} end: {}-{}-{} type: {}
 )",
-                region.beg,region.end,region.type.code);
+                region.beg.authId,region.beg.authIcode,region.beg.labelId,
+                region.end.authId,region.end.authIcode,region.end.labelId,
+                region.type.code);
         }
 }

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <string>
-#include <vector>
 #include <any>
 #include <unordered_map>
 #include <gemmi/model.hpp>
@@ -29,19 +28,24 @@ namespace Tmdet::ValueObjects {
         double surface = 0.0;
 
         /**
+         * @brief outside water accessible surface of the atom
+         */
+        double outSurface = 0.0;
+
+        /**
          * @brief atom index in gemmi residue atoms
          */
-        int idx;
+        int idx = 0;
 
         /**
          * @brief chain index in gemmi
          */
-        int chainIdx;
+        int chainIdx = 0;
 
         /**
          * @brief residue index in gemmi
          */
-        int residueIdx;
+        int residueIdx = 0;
 
         /**
          * @brief temporary container for claculating various

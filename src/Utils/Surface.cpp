@@ -30,9 +30,13 @@ namespace Tmdet::Utils {
     void surfaceCache::chainFromCache(Tmdet::ValueObjects::Chain& chain, unsigned int& index) {
         for (auto& r : chain.residues) {
             r.surface = 0.0;
+            r.outSurface = 0.0;
             for(auto& a : r.atoms) {
                 a.surface = cache[index];
                 r.surface += a.surface;
+                index++;
+                a.outSurface = cache[index];
+                r.outSurface += a.outSurface;
                 index++;
             }
         }
@@ -51,6 +55,7 @@ namespace Tmdet::Utils {
         for (const auto& r : chain.residues) {
             for(const auto& a : r.atoms) {
                 cache.push_back(a.surface);
+                cache.push_back(a.outSurface);
             }
         }
     }
@@ -100,6 +105,7 @@ namespace Tmdet::Utils {
         if (noCache || !cache.read(protein) ) {
             initTempData();
             setContacts();
+            setOutsideSurface();
             cache.write(protein);
         }
         DEBUG_LOG(" Processed Surface::run()");
@@ -172,10 +178,10 @@ namespace Tmdet::Utils {
         a_atom.surface = 0.0;
         const auto& a_gatom = a_atom.gemmi;
         double vdwa = VDW(a_atom);
-        for(double z=a_gatom.pos.z-vdwa+zSlice/2; z<a_gatom.pos.z+vdwa/*+SURF_ZSLICE/2*/; z+=zSlice) {
+        for(double z=a_gatom.pos.z-vdwa+zSlice/2; z<a_gatom.pos.z+vdwa+zSlice/2; z+=zSlice) {
             a_atom.surface += calcSumArcsOfAtom(a_atom,st,calcArcsOfAtom(a_atom,st,z)) * zSlice;
         }
-        a_atom.surface *= vdwa;
+        //a_atom.surface *= vdwa;
     }
 
     bool Surface::calcArcsOfAtom(Tmdet::ValueObjects::Atom& a_atom, surfTemp& st, double z) {
@@ -260,7 +266,7 @@ namespace Tmdet::Utils {
         for (int z=0; z<(box.zmax-box.zmin); z++) {
 	        for (int i=0; i<box.op; i++) {
 	            if (box.closestAtoms[z][i]!=NULL) {
-                    box.closestAtoms[z][i]->temp.at("outside") = any_cast<double>(box.closestAtoms[z][i]->surface);
+                    box.closestAtoms[z][i]->outSurface = box.closestAtoms[z][i]->surface;
                 }
             }
         }
@@ -269,9 +275,9 @@ namespace Tmdet::Utils {
                 for(auto& residue: chain.residues) {
                     double q = 0;
                     for(auto& atom: residue.atoms) {
-                        q += any_cast<double>(atom.temp.at("outside"));
+                        q += atom.outSurface;
                     }
-                    residue.temp.at("outside") = any_cast<double>(q);
+                    residue.outSurface = q;
                 }
             }
         }
@@ -342,19 +348,9 @@ namespace Tmdet::Utils {
         for(auto& chain: protein.chains) {
             if (chain.selected) {
                 for(auto& residue: chain.residues) {
-                    if ( !residue.temp.contains("outside")) {
-                        residue.temp.insert({"outside",any_cast<double>(0.0)});
-                    }
-                    else {
-                        residue.temp.at("outside") = any_cast<double>(0.0);
-                    }
+                    residue.outSurface = 0.0;
                     for(auto& atom: residue.atoms) {
-                        if ( !atom.temp.contains("outside")) {
-                            atom.temp.insert({"outside",any_cast<double>(0.0)});
-                        }
-                        else {
-                            atom.temp.at("outside") = any_cast<double>(0.0);
-                        }
+                        atom.outSurface = 0.0;
                         double x = floor(atom.gemmi.pos.x);
                         double y = floor(atom.gemmi.pos.y);  	    
                         int z = floor(atom.gemmi.pos.z) - box.zmin;
