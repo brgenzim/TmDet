@@ -31,50 +31,21 @@ namespace Tmdet::Engine {
         double surf = 0.0;
 
         /**
-         * @brief turn ratio in the slice
-         * 
-         */
-        double turn = 0.0;
-
-        /**
-         * @brief surface of residues being in turn
-         */
-        double tSurf = 0.0;
-
-        /**
          * @brief ratio of straight element in the slice
          */
         double straight = 0.0;
 
         /**
-         * @brief hidrophob ratio in the slice
-         */
-        double hydrophobicity = 0.0;
-
-        /**
-         * @brief sum up voromqa_v1_energy_means producted with atom surface
-         */
-        double voronota = 0.0;
-
-        /**
-         * @brief ratio of chain ends in the slice
-         */
-        double chainEnd = 0.0;
-
-        /**
          * @brief number of C alpha atoms in the slice
          */
         int numCa = 0;
-
-        /**
-         * @brief number of all residues in the slice
-         */
-        int numAtom = 0;
         
         /**
-         * @brief number of hydrophob residues in the slice
+         * @brief number of sec structure ends
          */
-        int numHyd = 0;
+        double ssEnd = 0;
+
+        double rawQ = 0.0;
 
         /**
          * @brief calculated qValue for the slice
@@ -129,11 +100,6 @@ namespace Tmdet::Engine {
             double bestQ = 0.0;
 
             /**
-             * @brief slice index of highest qValue
-             */
-            unsigned long int bestSliceIndex;
-
-            /**
              * @brief membrane normal belonging to the best qValue
              */
             gemmi::Vec3 bestNormal;
@@ -174,11 +140,6 @@ namespace Tmdet::Engine {
             void setBoundaries();
 
             /**
-             * @brief smoothin apolar surface values
-             */
-            void smoothSurf();
-
-            /**
              * @brief sumup slice properties
              */
             void sumupSlices();
@@ -193,27 +154,16 @@ namespace Tmdet::Engine {
             double divide(double numerator, double denominator);
 
             /**
-             * @brief calculate the value of the objective function for one slice
-             * 
-             * @param s 
-             * @return double 
+             * @brief smooth Q values 
              */
-            double getQValueForSlice(const _slice& s);
+            void smoothQValues();
 
             /**
-             * @brief calculate the value of the objective function for each slice
-             * 
-             * @return std::vector<double> 
+             * @brief Get the best qValue that has the apropriate membrane width
              */
-            std::vector<double> getQValueForSlices();
+            void checkBestSlice();
 
-            /**
-             * @brief smooth Q values and return the largest one
-             * 
-             * @param qs 
-             * @return double 
-             */
-            double smoothQValues(std::vector<double> qs);
+            double getWidth(const int z, int& minz, int& maxz);
 
             /**
              * @brief check if tests resulted valid membrane definition
@@ -227,7 +177,7 @@ namespace Tmdet::Engine {
              *        and the qValues of slices
              * @return bool
              */
-            bool getMembrane(Tmdet::ValueObjects::Membrane& membrane) ;
+            bool getMembrane(Tmdet::ValueObjects::Membrane& membrane, int count) ;
 
         public:
 
@@ -275,6 +225,10 @@ namespace Tmdet::Engine {
              */
             void setProteinTMatrix(gemmi::Vec3& origo) const;
 
+            /**
+             * @brief clear former results
+             */
             void clear();
+
     };
 }

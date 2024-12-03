@@ -20,6 +20,14 @@ namespace Tmdet::Types {
         bool operator == (const Chain& other) const {
             return name == other.name;
         }
+
+        bool isAlpha() const {
+            return name == "alpha";
+        }
+
+        bool isBeta() const {
+            return name == "beta";
+        }
     };
 
     namespace ChainType {

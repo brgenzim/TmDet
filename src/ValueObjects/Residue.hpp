@@ -148,5 +148,7 @@ namespace Tmdet::ValueObjects {
         bool isGap() const;
 
         void transform(Tmdet::ValueObjects::TMatrix& tmatrix);
+
+        bool isInside() const;
     };
 }

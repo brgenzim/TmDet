@@ -20,6 +20,18 @@ namespace Tmdet::Types {
         bool operator == (const Protein& other) const {
             return name == other.name;
         }
+
+        bool isAlpha() const {
+            return name == "Tm_Alpha" || name == "Tm_Mixed";
+        }
+
+        bool isBeta() const {
+            return name == "Tm_Beta" || name == "Tm_Mixed";
+        }
+
+        bool isMixed() const {
+            return name == "Tm_Mixed";
+        }
     };
 
     namespace ProteinType {

@@ -117,7 +117,7 @@ namespace Tmdet::ValueObjects {
     }
 
     void Protein::transform() {
-        eachSelectedChain(
+        eachChain(
             [&](Tmdet::ValueObjects::Chain& chain) -> void {
                 chain.transform(tmatrix);
             }

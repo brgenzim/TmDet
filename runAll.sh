@@ -2,7 +2,7 @@
 
 ROOT="/bigdisk/users/tusi/pdbtm"
 
-for code in `cat ../data/ids`
+for code in `cat ../data/beta.ids`
 #for code in `grep ' yes' ../data/pdbtm3.0.res | cut -d' ' -f 1`
 do
 	while [ "$(squeue | grep -c run.sh)" -gt 500 ]

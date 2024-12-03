@@ -21,5 +21,7 @@ namespace Tmdet::ValueObjects {
          * @brief residue index of the akceptor
          */
         int toResIdx = -1;
+
+        int fromResIdx = -1;
     };
 }

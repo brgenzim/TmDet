@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <numeric>
 #include <filesystem>
+#include <format>
 #include <gemmi/model.hpp>
 #include <gemmi/neighbor.hpp>
 #include <Config.hpp>
@@ -178,10 +179,10 @@ namespace Tmdet::Utils {
         a_atom.surface = 0.0;
         const auto& a_gatom = a_atom.gemmi;
         double vdwa = VDW(a_atom);
-        for(double z=a_gatom.pos.z-vdwa+zSlice/2; z<a_gatom.pos.z+vdwa+zSlice/2; z+=zSlice) {
+        for(double z=a_gatom.pos.z-vdwa+zSlice/2; z<a_gatom.pos.z+vdwa; z+=zSlice) {
             a_atom.surface += calcSumArcsOfAtom(a_atom,st,calcArcsOfAtom(a_atom,st,z)) * zSlice;
         }
-        //a_atom.surface *= vdwa;
+        a_atom.surface *= vdwa;
     }
 
     bool Surface::calcArcsOfAtom(Tmdet::ValueObjects::Atom& a_atom, surfTemp& st, double z) {
@@ -437,4 +438,43 @@ namespace Tmdet::Utils {
 			}	
 		}
  	}
+
+    std::string Surface::toString() {
+        std::string ret = "";
+        const double probSize = std::stof(environment.get("TMDET_SURF_PROBSIZE",DEFAULT_TMDET_SURF_PROBSIZE));
+        protein.eachSelectedChain(
+            [&](Tmdet::ValueObjects::Chain& chain) -> void {
+                int numAtom = 0;
+                int numRes = 0;
+                chain.eachResidue(
+                    [&](Tmdet::ValueObjects::Residue& residue) {
+                        numAtom += residue.atoms.size();
+                        numRes++;
+                    }
+                );
+                ret += std::format("{}_{} {} {}\n",
+                    protein.code,chain.id,numAtom, numRes);
+                int numLine = 1;
+                chain.eachResidue(
+                    [&](Tmdet::ValueObjects::Residue& residue) {
+                        for(const auto& atom: residue.atoms) {
+                            ret += std::format("{: >6d}{: >5} {} {}{:6d} _ {:8.2f} {:8.2f} {:10.3f} {:10.3f} {:10.3f} {:12.3f} {:6.2f}\n",
+                                numLine++,
+                                atom.gemmi.name,
+                                chain.id,
+                                residue.type.name,
+                                residue.authId,
+                                atom.gemmi.occ, atom.gemmi.b_iso,
+                                atom.gemmi.pos.x, atom.gemmi.pos.y, atom.gemmi.pos.z,
+                                atom.surface,
+                                (any_cast<double>(atom.temp.at("vdw")) - probSize)
+                            );
+                        }
+                        numRes++;
+                    }
+                );
+            }
+        );
+        return ret;
+    }
 }

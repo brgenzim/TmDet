@@ -245,5 +245,7 @@ namespace Tmdet::Utils {
              * @brief Destroy the Surface object
              */
             ~Surface()=default;
+
+            std::string toString();
     };
 }

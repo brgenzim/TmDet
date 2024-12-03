@@ -74,7 +74,6 @@ namespace Tmdet::Utils {
 
     void Dssp::createHydrogenBonds(Tmdet::ValueObjects::Chain& chain) {
         for(int i=1; i<chain.length; i++) {
-            DEBUG_LOG("hb: {}",Tmdet::DTOs::Residue::toString(chain.residues[i]));
             auto& gres = chain.residues[i].gemmi;
             auto const& prevGRes = chain.residues[i-1].gemmi;
             auto CA = gres.get_ca();

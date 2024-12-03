@@ -5,7 +5,7 @@
 namespace Tmdet::ValueObjects {
 
     void Chain::transform(Tmdet::ValueObjects::TMatrix& tmatrix) {
-        eachSelectedResidue(
+        eachResidue(
             [&](Tmdet::ValueObjects::Residue& residue) -> void {
                 residue.transform(tmatrix);
             }

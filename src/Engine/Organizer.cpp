@@ -1,6 +1,8 @@
 
 #include <string>
 
+#include <gemmi/metadata.hpp>
+
 #include <Config.hpp>
 #include <DTOs/Dssp.hpp>
 #include <DTOs/Protein.hpp>
@@ -38,7 +40,6 @@ namespace Tmdet::Engine {
             }
         }
         else {
-            //throw Tmdet::Exceptions::NoProteinStructureException(protein.code);
             protein.tmp = false;
             protein.qValue = 0;
             protein.type = Tmdet::Types::ProteinType::NOPROTEIN;
@@ -59,6 +60,10 @@ namespace Tmdet::Engine {
     }
 
     unsigned int Organizer::selectChain(Tmdet::ValueObjects::Chain& chain) {
+        if (protein.gemmi.entities[chain.entityIdx].polymer_type != gemmi::PolymerType::PeptideL ) {
+            chain.selected = false;
+            return 0;
+        }
         int nr = 0;
         int nb = 0;
         for (const auto& residue : chain.residues) {
@@ -90,6 +95,7 @@ namespace Tmdet::Engine {
     void Organizer::surface() {
         DEBUG_LOG("Processing Organizer::surface()");
         auto surf = Tmdet::Utils::Surface(protein,args.getValueAsBool("nc"));
+        DEBUG_LOG("{}",Tmdet::DTOs::Protein::toString(protein));
         DEBUG_LOG(" Processed Organizer::surface()");
     }
 

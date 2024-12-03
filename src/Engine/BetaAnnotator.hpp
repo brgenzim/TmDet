@@ -13,13 +13,17 @@ namespace Tmdet::Engine {
         private:
             Tmdet::ValueObjects::Chain& chain;
             Tmdet::Engine::RegionHandler& regionHandler;
+            std::vector<int> reIndex;
 
             void run();
             void init();
             void end();
             void detectBarrel();
+            double averageOutSurface(int beg, int end);
+            double averageBeta(int beg, int end);
+            double averageDirection(int beg, int end);
             int setCluster(int pos, int cluster, int count);
-            bool sameDirection(int p1, int p2);
+            void detectLoops();
             void detectBarrelInside();
         
         public:

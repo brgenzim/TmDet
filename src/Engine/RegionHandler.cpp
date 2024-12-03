@@ -46,13 +46,14 @@ namespace Tmdet::Engine {
                         == std::any_cast<Tmdet::Types::Region>(chain.residues[end].temp.at(what))) {
             end++;
         }
-        DEBUG_LOG("getNextSame: {} {} {}",chain.id,begin,end-1);
         return true;
     }
 
     void RegionHandler::replace(Tmdet::ValueObjects::Chain& chain, int beg, int end, Tmdet::Types::Region regionType, std::string what, bool check, Tmdet::Types::Region checkType) {
-        DEBUG_LOG("Processing RegionHandler::replace({} {} {} --> {})",
-            chain.id,beg,end,regionType.name);
+        DEBUG_LOG("Processing RegionHandler::replace({} {} {} {} --> {})",
+            chain.id,chain.residues[beg].authId,chain.residues[end].authId,
+            any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at(what)).name,
+            regionType.name);
         for (int i = beg; i<= end; i++) {
             if (!check || (check && std::any_cast<Tmdet::Types::Region>(chain.residues[i].temp.at(what)) == checkType)) {
                 chain.residues[i].temp.at(what) = std::any(regionType);
@@ -61,49 +62,54 @@ namespace Tmdet::Engine {
         DEBUG_LOG(" Processed RegionHandler::replace()");
     }
 
-    void RegionHandler::finalize() {
+    bool RegionHandler::sameDirection(Tmdet::ValueObjects::Chain& chain, int p1, int p2) {
+        if (!chain.residues[p1].temp.contains("direction") || !chain.residues[p2].temp.contains("direction")) {
+            return false;
+        }
+        double d1 = any_cast<double>(chain.residues[p1].temp.at("direction"));
+        double d2 = any_cast<double>(chain.residues[p2].temp.at("direction"));
+        return (d1*d2>0 && std::abs(d1)>8 && std::abs(d2)>8);
+    }
+
+    int RegionHandler::finalize() {
         DEBUG_LOG("Processing regionHandler::finalize()");
-        //todo rethink this function
-        /*protein.eachSelectedChain(
+        int ret = 0;
+        protein.eachSelectedChain(
             [&](Tmdet::ValueObjects::Chain& chain) -> void {
-                for(int i=1; i<chain.length-1; i++) {
-                    if (std::any_cast<Tmdet::Types::Region>(chain.residues[i].temp.at("type")) == Tmdet::Types::RegionType::MEMB) {
-                        int end=i;
-                        getNext(chain,i,end); end--;
-                        auto prev = std::any_cast<Tmdet::Types::Region>(chain.residues[i-1].temp.at("type"));
-                        auto next = std::any_cast<Tmdet::Types::Region>(chain.residues[end+1].temp.at("type"));
-                        DEBUG_LOG("Finalize MEMB: {}({}) - {}({})",i,prev.code,end,next.code);
-                        if (prev.isAnnotatedMembraneType() && next.isAnnotatedMembraneType()) {
-                            //1, 2 or 3 between two helices
-                            auto type = Tmdet::Engine::SiteDetector::getSideByZ(chain.residues[i].getCa()->pos.z * 2);
-                            replaceRegion(chain,i,end,type);
-                            DEBUG_LOG("\t\t==> {}",type.code);
-                        }
-                        else if (prev.isNotMembrane() && next.isAnnotatedMembraneType()) {
-                            //set type of next
-                            replaceRegion(chain,i,end,next);
-                            DEBUG_LOG("\t\t==> {}",next.code);
-                        }
-                        else if (prev.isAnnotatedMembraneType() && next.isNotMembrane()) {
-                            //set type of prev
-                            replaceRegion(chain,i,end,prev);
-                            DEBUG_LOG("\t\t==> {}",prev.code);
-                        }
-                        else if (prev.isNotMembrane() && next.isNotMembrane()) {
-                            //alpha or beta
-                            auto type = (chain.type==Tmdet::Types::ChainType::ALPHA?
-                                            (end-i>12?Tmdet::Types::RegionType::HELIX:prev):
-                                            (end-i>6?Tmdet::Types::RegionType::BETA:prev)
-                                        );
-                            
-                            replaceRegion(chain,i,end,type);
-                            DEBUG_LOG("\t\t==> {}",type.code);
+                int beg = 0;
+                int end = 0;
+                while(getNext(chain,beg,end,"type")) {
+                    if ((any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("type")).isAnnotatedTransMembraneType() 
+                            || any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("type")).isNotAnnotatedMembrane())
+                        && beg>0
+                        && end<chain.length-1
+                        && any_cast<Tmdet::Types::Region>(chain.residues[beg-1].temp.at("type")).isNotMembrane()
+                        && any_cast<Tmdet::Types::Region>(chain.residues[beg-1].temp.at("type")).code ==
+                            any_cast<Tmdet::Types::Region>(chain.residues[end].temp.at("type")).code) {
+                        replace(chain,beg,end-1,any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("ztype")));
+                    }
+                    if ((any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("type")).isAnnotatedTransMembraneType()
+                            || any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("type")).isNotAnnotatedMembrane())
+                        && (beg==0 || end == chain.length-1)
+                        && end-beg < 6) {
+                        replace(chain,beg,end-1,any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("ztype")));
+                    }
+                    if (any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("type")).isMembraneInside()
+                        && end - beg < 6) {
+                        replace(chain,beg,end-1,any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("ztype")));
+                    }
+                    if (any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("type")).isNotAnnotatedMembrane()) {
+                        replace(chain,beg,end-1,any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("ztype")));
+                        if (end-beg>4) {
+                            ret += (end-beg);
                         }
                     }
+                    beg = end;
                 }
             }
-        );*/
-        DEBUG_LOG(" Processed RegionHandler::finalize()");
+        );
+        return ret;
+        DEBUG_LOG(" Processed RegionHandler::finalize({})",ret);
     }
 
     void RegionHandler::store() {

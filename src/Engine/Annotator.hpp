@@ -41,6 +41,7 @@ namespace Tmdet::Engine {
             //void extendRegion(Tmdet::ValueObjects::Chain& chain, int beg, int end, Tmdet::Engine::RegionHandler& regionHandler);
             std::vector<Tmdet::ValueObjects::SecStrVec> getParallelAlphas(Tmdet::ValueObjects::Membrane& membrane);
             bool checkParallel(Tmdet::ValueObjects::SecStrVec& vec, Tmdet::ValueObjects::Membrane& membrane) const;    
+            void finalCheck();
             
         public:
             

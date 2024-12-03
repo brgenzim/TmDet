@@ -56,7 +56,7 @@ namespace Tmdet::Utils {
         }
         DEBUG_LOG("\t\tNumber of chains: {} Number of rotated chains: {}",numChains,numRotated);
         DEBUG_LOG(" Processed Symmetry::searchForRotatedChains({})",ids);
-        return numRotated == numChains;
+        return numRotated == numChains && numRotated !=0;
     }
 
     int Symmetry::calculateRotationalOperation(int cidx1, int cidx2) {

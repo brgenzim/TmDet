@@ -12,27 +12,63 @@
 namespace Tmdet::Engine {
 
     void BetaAnnotator::run() {
+        DEBUG_LOG("Processing BetaAnnotator::run()");
         init();
         detectBarrel();
         DEBUG_LOG("Barrel end: {}",regionHandler.toString("type"));
-        end();
+        detectLoops();
+        DEBUG_LOG("Loops end: {}",regionHandler.toString("type"));
         detectBarrelInside();
+        end();
+        DEBUG_LOG(" Processed BetaAnnotator::run()");
     }
 
     void BetaAnnotator::init() {
+        DEBUG_LOG("Processing BetaAnnotator::init()");
+        int max=0;
+        chain.eachResidue(
+            [&](Tmdet::ValueObjects::Residue& residue) -> void {
+                if (max<residue.idx) {
+                    max = residue.idx;
+                }
+            }
+        );
+        max++;
+        reIndex = std::vector<int>(max,-1);
+        int i=0;
         chain.eachResidue(
             [&](Tmdet::ValueObjects::Residue& residue) -> void {
                 residue.temp.try_emplace("cluster",std::any(-1));
+                residue.temp.try_emplace("from",std::any(-1));
+                residue.temp.try_emplace("to",std::any(-1));
+                reIndex[residue.idx] = i++;
             }
         );
+        i=0;
+        chain.eachResidue(
+            [&](Tmdet::ValueObjects::Residue& residue) -> void {
+                auto hbond = any_cast<Tmdet::ValueObjects::HBond>(residue.temp.at("hbond1"));
+                
+                if (hbond.toChainIdx == chain.idx && reIndex[hbond.toResIdx] != -1) {
+                    chain.residues[reIndex[hbond.toResIdx]].temp["from"] = std::any(i);
+                    residue.temp["to"] = std::any(reIndex[hbond.toResIdx]);
+                }
+                i++;
+            }
+        );
+        DEBUG_LOG(" Processed BetaAnnotator::init()");
     }
 
     void BetaAnnotator::end() {
+        DEBUG_LOG("Processing BetaAnnotator::end()");
         chain.eachResidue(
             [&](Tmdet::ValueObjects::Residue& residue) -> void {
                 residue.temp.erase("cluster");
+                residue.temp.erase("from");
+                residue.temp.erase("to");
             }
         );
+        DEBUG_LOG(" Processed BetaAnnotator::end()");
     }
 
     void BetaAnnotator::detectBarrel() {
@@ -48,79 +84,151 @@ namespace Tmdet::Engine {
                         maxCount = count;
                         maxCluster = cluster;
                     }
-                    DEBUG_LOG("detectBarrel: {} {}",cluster,count);
                     cluster++;
                 }
         }
         for(int i=0; i<chain.length; i++) {
             if (any_cast<int>(chain.residues[i].temp.at("cluster")) == maxCluster) {
                     chain.residues[i].temp.at("type") = std::any(Tmdet::Types::RegionType::BETA);
-                    DEBUG_LOG("Beta:: {} {}",chain.id,chain.residues[i].authId);
                 }
+        }
+        //secondary structure was not set because of inappropriate data
+        DEBUG_LOG("Max count: {}",maxCount);
+        if (maxCount<40) {
+            int beg=0;
+            int end=0;
+            while(regionHandler.getNext(chain,beg,end,"type")) {
+                if (any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("type")).isNotAnnotatedMembrane() 
+                    && end-beg < 13
+                    && end-beg > 5
+                    && std::abs(averageDirection(beg,end-1)) > 10
+                    && (averageOutSurface(beg,end-1) > 40 || averageBeta(beg,end-1) > 0.8)) {
+                    regionHandler.replace(chain,beg,end-1,Tmdet::Types::RegionType::BETA,"type");
+                }
+                beg=end;
+            }
         }
     }
 
+    double BetaAnnotator::averageOutSurface(int beg, int end) {
+        double surf = 0.0;
+        for(int i=beg; i<=end; i++) {
+            surf += chain.residues[i].outSurface;
+        }
+        surf /= (end-beg+1);
+        DEBUG_LOG("BetaAnnotator::averageOutSurface: {} {} {}: {}",chain.id,chain.residues[beg].authId,chain.residues[end].authId,surf);
+        return surf;
+    }
+
+    double BetaAnnotator::averageBeta(int beg, int end) {
+        double beta = 0.0;
+        for(int i=beg; i<=end; i++) {
+            beta += (chain.residues[i].ss.isBeta()?1.0:0.0);
+        }
+        beta /= (end-beg+1);
+        DEBUG_LOG("BetaAnnotator::averageBeta: {} {} {}: {}",chain.id,chain.residues[beg].authId,chain.residues[end].authId,beta);
+        return beta;
+    }
+
+    double BetaAnnotator::averageDirection(int beg, int end) {
+        double d = 0.0;
+        for(int i=beg; i<=end; i++) {
+            d += any_cast<double>(chain.residues[i].temp.at("direction"));
+        }
+        d /= (end-beg+1);
+        DEBUG_LOG("BetaAnnotator::averageDirection: {} {} {}: {}",chain.id,chain.residues[beg].authId,chain.residues[end].authId,d);
+        return d;
+    }
+
     int BetaAnnotator::setCluster(int pos, int cluster, int count) {
-        if (any_cast<int>(chain.residues[pos].temp.at("cluster")) != -1 
-            || any_cast<Tmdet::Types::Region>(chain.residues[pos].temp.at("type")) != Tmdet::Types::RegionType::MEMB) {
+        if (!chain.residues[pos].temp.contains("cluster") || any_cast<int>(chain.residues[pos].temp.at("cluster")) != -1
+            || any_cast<Tmdet::Types::Region>(chain.residues[pos].temp.at("type")) != Tmdet::Types::RegionType::MEMB
+            || chain.residues[pos].ss.isAlpha()) {
             return --count;
         }
-        DEBUG_LOG("setCluster: checking chain:{} pos:{} cluster:{}",chain.id,chain.residues[pos].authId,cluster);
         chain.residues[pos].temp.at("cluster") = std::any(cluster);
-        if (pos>0 && (chain.residues[pos-1].ss.isBeta() || sameDirection(pos-1,pos))) {
-            DEBUG_LOG("setCluster-: from {} to {}",chain.residues[pos].authId,chain.residues[pos-1].authId);
+        if (pos>0 && (chain.residues[pos-1].ss.isBeta() || regionHandler.sameDirection(chain,pos-1,pos))) {
             count = setCluster(pos-1,cluster,++count);
         }
-        if (pos<chain.length-1 && (chain.residues[pos+1].ss.isBeta() || sameDirection(pos,pos+1))) {
-            DEBUG_LOG("setCluster+: from {} to {}",chain.residues[pos].authId,chain.residues[pos+1].authId);
+        if (pos<chain.length-1 && (chain.residues[pos+1].ss.isBeta() || regionHandler.sameDirection(chain,pos,pos+1))) {
             count = setCluster(pos+1,cluster,++count);
         }
-        if (chain.residues[pos].temp.contains("hbond1")) {
-            auto to = any_cast<Tmdet::ValueObjects::HBond>(chain.residues[pos].temp.at("hbond1"));
-            if (to.toChainIdx == chain.idx && to.toResIdx != -1 && chain.residues[pos].ss.isBeta()) {
-                DEBUG_LOG("setCluster*: from {} to {}",chain.residues[pos].authId,chain.residues[to.toResIdx].authId);
-                count = setCluster(to.toResIdx,cluster,++count);
+        if (chain.residues[pos].ss.isBeta()) {
+            int other = any_cast<int>(chain.residues[pos].temp["to"]);
+            if (other != -1 ) {
+                count = setCluster(other,cluster,++count);
+            }
+            other = any_cast<int>(chain.residues[pos].temp["from"]);
+            if ( other != -1) {
+                count = setCluster(other,cluster,++count);
             }
         }
         return count;
     }
 
-    bool BetaAnnotator::sameDirection(int p1, int p2) {
-        double d1 = any_cast<double>(chain.residues[p1].temp.at("direction"));
-        double d2 = any_cast<double>(chain.residues[p2].temp.at("direction"));
-        DEBUG_LOG("sameDirection: {} {} {} {}",chain.residues[p1].authId,chain.residues[p2].authId,d1,d2);
-        return (d1*d2>0 && std::abs(d1)>8 && std::abs(d2)>8);
-    }
-
-    void BetaAnnotator::detectBarrelInside() {
-        chain.eachResidue(
-            [&](Tmdet::ValueObjects::Residue& residue) -> void {
-                if (any_cast<Tmdet::Types::Region>(residue.temp.at("type")) == Tmdet::Types::RegionType::MEMB) {
-                    residue.temp.at("type") = std::any(Tmdet::Types::RegionType::MEMBINS);
-                }
-            }
-        );
+    void BetaAnnotator::detectLoops() {
         int beg=0;
         int end=0;
         while(regionHandler.getNext(chain,beg,end,"type")) {
-            if (any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("type")).isNotMembrane() 
-                && end <= chain.length-1
-                && beg > 0
-                && end-beg < 4
-                && (any_cast<Tmdet::Types::Region>(chain.residues[beg-1].temp.at("type")) == Tmdet::Types::RegionType::MEMBINS
-                || any_cast<Tmdet::Types::Region>(chain.residues[end].temp.at("type")) == Tmdet::Types::RegionType::MEMBINS)) {
-                regionHandler.replace(chain,beg,end-1,Tmdet::Types::RegionType::MEMBINS,"type");
+            if (any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("type")).isBeta() 
+                && end-beg < 3) {
+                regionHandler.replace(chain,beg,end-1,Tmdet::Types::RegionType::MEMB,"type");
             }
             beg=end;
         }
         beg=0;
         end=0;
         while(regionHandler.getNext(chain,beg,end,"type")) {
-            if (any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("type")) == Tmdet::Types::RegionType::MEMBINS
-                && end - beg < 10) {
+            if (end <= chain.length-1
+                && beg > 0
+                && any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("type")).isNotAnnotatedMembrane() 
+                && (any_cast<Tmdet::Types::Region>(chain.residues[beg-1].temp.at("type")).isAnnotatedTransMembraneType()
+                    || any_cast<Tmdet::Types::Region>(chain.residues[end].temp.at("type")).isAnnotatedTransMembraneType())
+                && end-beg < 8) {
                 regionHandler.replace(chain,beg,end-1,any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("ztype")),"type");
             }
             beg=end;
         }
+    }
+
+    void BetaAnnotator::detectBarrelInside() {
+        chain.eachResidue(
+            [&](Tmdet::ValueObjects::Residue& residue) -> void {
+                if (any_cast<Tmdet::Types::Region>(residue.temp.at("type")).isNotAnnotatedMembrane() 
+                    && residue.isInside()) {
+                    residue.temp.at("type") = (any_cast<double>(residue.temp["hz"]) > 3 ? 
+                        std::any(Tmdet::Types::RegionType::MEMBINS) :
+                        std::any(residue.temp.at("ztype")));
+                }
+            }
+        );
+        DEBUG_LOG("Barrel inside1: {}",regionHandler.toString("type"));
+        int beg=0;
+        int end=0;
+        while(regionHandler.getNext(chain,beg,end,"type")) {
+            if (any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("type")).isNotAnnotatedMembrane()
+                && end <= chain.length-1
+                && beg > 0
+                && (any_cast<Tmdet::Types::Region>(chain.residues[beg-1].temp.at("type")).isMembraneInside()
+                    || any_cast<Tmdet::Types::Region>(chain.residues[end].temp.at("type")).isMembraneInside())) {
+                regionHandler.replace(chain,beg,end-1,Tmdet::Types::RegionType::MEMBINS,"type");
+            }
+            beg=end;
+        }
+        DEBUG_LOG("Barrel inside2: {}",regionHandler.toString("type"));
+        beg=0;
+        end=0;
+        while(regionHandler.getNext(chain,beg,end,"type")) {
+            if (any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("type")).isNotMembrane()
+                && end <= chain.length-1
+                && beg > 0
+                && end-beg < 10
+                && any_cast<Tmdet::Types::Region>(chain.residues[beg-1].temp.at("type")).isMembraneInside()
+                && any_cast<Tmdet::Types::Region>(chain.residues[end].temp.at("type")).isMembraneInside()) {
+                regionHandler.replace(chain,beg,end-1,Tmdet::Types::RegionType::MEMBINS,"type");
+            }
+            beg=end;
+        }
+        DEBUG_LOG("Barrel inside3: {}",regionHandler.toString("type"));
     }
 }

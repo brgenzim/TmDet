@@ -51,8 +51,8 @@ namespace Tmdet::DTOs {
             )",key,any_cast<double>(value));
         }*/
         return std::format(R"(
-    RESIDUE idx:{} authId:{} labelId:{} a3:{} a1:{} ss:{} surface:{}{})", 
+    RESIDUE idx:{: >6d} authId:{: >6d} labelId:{: >6d} a3:{} a1:{} ss:{} surface:{:8.3f} outSurface:{:8.3f}{})", 
             residue.idx,residue.authId, residue.labelId, residue.type.name, 
-            residue.type.a1, residue.ss.code, residue.surface, atoms);
+            residue.type.a1, residue.ss.code, residue.surface, residue.outSurface, atoms);
     }
 }

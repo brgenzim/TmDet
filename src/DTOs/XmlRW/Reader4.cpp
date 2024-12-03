@@ -128,9 +128,6 @@ namespace Tmdet::DTOs::XmlRW {
             };
             regions.push_back(region);
         }
-        for(const auto& region: regions) {
-            DEBUG_LOG("{}",Tmdet::DTOs::Region::toString(region));
-        }
         return regions;
     }
 }

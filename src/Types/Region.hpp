@@ -31,14 +31,29 @@ namespace Tmdet::Types {
         bool isNotMembrane() const {
             return code == '1' || code == '2' || code == '3';
         }
+
+        bool isNotAnnotatedMembrane() const {
+            return code == 'M';
+        }
+
+        bool isMembraneInside() const {
+            return code == 'N';
+        }
+
+        bool isAlpha() const {
+            return code == 'H';
+        }
+        bool isBeta() const {
+            return code == 'B';
+        }
     };
 
     namespace RegionType {
         const Region MEMB = {
             0,
-            "transmembrane", 
+            "membrane", 
             'M',
-            "Region crossing the membrane"
+            "Region within the membrane"
         };
         const Region HELIX = {
             1,

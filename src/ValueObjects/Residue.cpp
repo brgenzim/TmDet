@@ -53,4 +53,8 @@ namespace Tmdet::ValueObjects {
         }
     }
 
+    bool Residue::isInside() const {
+        return (outSurface / (surface + 0.1)) < 0.7;
+    }
+
 }

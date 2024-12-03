@@ -1,3 +1,3 @@
 #!/bin/bash
 
-./bin/tmdet -r -na -c $1
+./bin/tmdet -r -c $1

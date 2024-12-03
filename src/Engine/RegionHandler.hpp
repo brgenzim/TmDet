@@ -34,11 +34,6 @@ namespace Tmdet::Engine {
              */
             bool getNextSame(Tmdet::ValueObjects::Chain& chain, const int& begin, int& end, std::string what) const;
 
-            /**
-             * @brief finalize regions, remediate possible errors
-             */
-            void finalize();
-
         public:
             /**
              * @brief Construct a new Region Handler object
@@ -84,5 +79,12 @@ namespace Tmdet::Engine {
              * @brief store regions from residue type to chain regions
              */
             void store();
+
+            /**
+             * @brief finalize regions, remediate possible errors
+             */
+            int finalize();
+
+            bool sameDirection(Tmdet::ValueObjects::Chain& chain, int pos1, int pos2);
     };
 }

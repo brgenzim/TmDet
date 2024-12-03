@@ -7,8 +7,8 @@ namespace Tmdet::DTOs {
 
     std::string Atom::toString(const Tmdet::ValueObjects::Atom& atom) {
         return std::format(R"(
-        ATOM idx:{} name:{} x:{} y:{} z:{} surf:{} out:{})",
+        ATOM idx:{: >6d} name:{} x:{:8.3f} y:{:8.3f} z:{:8.3f} surf:{:8.3f} out:{:8.3f})",
             atom.idx, atom.gemmi.name, atom.gemmi.pos.x, atom.gemmi.pos.y, atom.gemmi.pos.z,
-            atom.surface, (atom.temp.contains("outside")?std::to_string(any_cast<double>(atom.temp.at("outside"))):""));
+            atom.surface, atom.outSurface);
     }
 }

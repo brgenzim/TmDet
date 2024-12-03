@@ -49,6 +49,7 @@ namespace Tmdet::DTOs {
         protein.getStructure(inputPath);
         protein.code = protein.gemmi.name;
         Tmdet::Helpers::String::toLower(protein.code);
+        DEBUG_LOG("Number of models: {}",protein.gemmi.models.size());
         remove_hydrogens(protein.gemmi.models[0]);
         remove_ligands_and_waters(protein.gemmi.models[0]);
         remove_alternative_conformations(protein.gemmi.models[0]);
@@ -62,7 +63,6 @@ namespace Tmdet::DTOs {
         }
         protein.neighbors = gemmi::NeighborSearch(protein.gemmi.models[0], protein.gemmi.cell, 9);
         protein.neighbors.populate();
-        DEBUG_LOG("{}",Tmdet::DTOs::Protein::toString(protein));
         DEBUG_LOG(" Processed Protein::get()");
         return protein;
     }
