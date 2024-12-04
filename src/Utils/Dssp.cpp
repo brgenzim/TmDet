@@ -118,7 +118,6 @@ namespace Tmdet::Utils {
     }
 
     void Dssp::setHydrogenBond(Tmdet::ValueObjects::Residue& donor, Tmdet::ValueObjects::Residue& akceptor, double energy) {
-
         if (energy < any_cast<Tmdet::ValueObjects::HBond>(donor.temp["hbond1"]).energy) {
             donor.temp["hbond2"] = donor.temp["hbond1"];
             donor.temp["hbond1"] = std::any(Tmdet::ValueObjects::HBond({energy, akceptor.chainIdx, akceptor.idx}));
@@ -199,8 +198,8 @@ namespace Tmdet::Utils {
                     any_cast<Tmdet::ValueObjects::HBond>(chain.residues[j].temp["hbond2"]).toResIdx == chain.residues[i].idx)) ||
                     ((any_cast<Tmdet::ValueObjects::HBond>(chain.residues[i-1].temp["hbond1"]).toResIdx == chain.residues[j+1].idx ||
                     any_cast<Tmdet::ValueObjects::HBond>(chain.residues[i-1].temp["hbond2"]).toResIdx == chain.residues[j+1].idx) &&
-                    (any_cast<Tmdet::ValueObjects::HBond>(chain.residues[j-1].temp["hbond1"]).toResIdx == chain.residues[i+1].idx ||
-                    any_cast<Tmdet::ValueObjects::HBond>(chain.residues[j-1].temp["hbond2"]).toResIdx == chain.residues[i+1].idx)));
+                    (any_cast<Tmdet::ValueObjects::HBond>(chain.residues[i+1].temp["hbond1"]).toResIdx == chain.residues[j-1].idx ||
+                    any_cast<Tmdet::ValueObjects::HBond>(chain.residues[i+1].temp["hbond2"]).toResIdx == chain.residues[j-1].idx)));
     }
 
     void Dssp::detectSecStructH(Tmdet::ValueObjects::Chain& chain,string key) {

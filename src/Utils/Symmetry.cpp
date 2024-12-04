@@ -76,7 +76,7 @@ namespace Tmdet::Utils {
         getSymmetryOperand( R, t1, t2, curSim);
         double distance = (t2 - t1).squaredNorm();
         DEBUG_LOG("results {} {} distance: {} rmsd: {}",cidx1,cidx2,distance,rmsd);
-        if (distance > 2.0 && rmsd < 5 ) {
+        if (distance > 2.0 && rmsd < 10 ) {
             curSim.good = true;
         }
         sim.emplace_back(curSim);

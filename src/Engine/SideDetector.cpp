@@ -147,8 +147,9 @@ namespace Tmdet::Engine {
                 chain.residues[chain.length-1].temp.try_emplace("direction",std::any(0.0));
                 for(int i=3; i<chain.length-3; i++) {
                     chain.residues[i].temp.try_emplace("direction",std::any(getResidueDirection(chain,i)));
-                    DEBUG_LOG("RES: chain:{} res:{} type:{} z:{} z1:{} hz:{} z4:{} direction:{}",chain.id,chain.residues[i].authId,
+                    DEBUG_LOG("RES: chain:{} res:{} type:{} ss:{} z:{} z1:{} hz:{} z4:{} direction:{}",chain.id,chain.residues[i].authId,
                         any_cast<Tmdet::Types::Region>(chain.residues[i].temp.at("type")).code,
+                        chain.residues[i].ss.code,
                         any_cast<double>(chain.residues[i].temp.at("z")),
                         z1,
                         any_cast<double>(chain.residues[i].temp.at("hz")),

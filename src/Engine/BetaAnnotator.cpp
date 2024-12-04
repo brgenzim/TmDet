@@ -14,6 +14,7 @@ namespace Tmdet::Engine {
     void BetaAnnotator::run() {
         DEBUG_LOG("Processing BetaAnnotator::run()");
         init();
+        DEBUG_LOG("Init: {}",regionHandler.toString("type"));
         detectBarrel();
         DEBUG_LOG("Barrel end: {}",regionHandler.toString("type"));
         detectLoops();
@@ -92,6 +93,29 @@ namespace Tmdet::Engine {
                     chain.residues[i].temp.at("type") = std::any(Tmdet::Types::RegionType::BETA);
                 }
         }
+        int beg=0;
+        int end=0;
+        while(regionHandler.getNext(chain,beg,end,"type")) {
+            if (any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("type")).isBeta() 
+                && end-beg < 5) {
+                    regionHandler.replace(chain,beg,end-1,Tmdet::Types::RegionType::MEMB,"type");
+            }
+            beg=end;
+        }
+        beg=0;
+        end=0;
+        while(regionHandler.getNext(chain,beg,end,"type")) {
+            if (any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("type")).isNotAnnotatedMembrane() 
+                && beg > 0
+                && end < chain.length-1
+                && end-beg < 3
+                && any_cast<Tmdet::Types::Region>(chain.residues[beg-1].temp.at("type")).isBeta()
+                && any_cast<Tmdet::Types::Region>(chain.residues[end].temp.at("type")).isBeta()
+                && regionHandler.sameDirection(chain,beg-1,end)) {
+                    regionHandler.replace(chain,beg,end-1,Tmdet::Types::RegionType::BETA,"type");
+            }
+            beg=end;
+        }
         //secondary structure was not set because of inappropriate data
         DEBUG_LOG("Max count: {}",maxCount);
         if (maxCount<40) {
@@ -103,7 +127,7 @@ namespace Tmdet::Engine {
                     && end-beg > 5
                     && std::abs(averageDirection(beg,end-1)) > 10
                     && (averageOutSurface(beg,end-1) > 40 || averageBeta(beg,end-1) > 0.8)) {
-                    regionHandler.replace(chain,beg,end-1,Tmdet::Types::RegionType::BETA,"type");
+                        regionHandler.replace(chain,beg,end-1,Tmdet::Types::RegionType::BETA,"type");
                 }
                 beg=end;
             }
@@ -143,7 +167,7 @@ namespace Tmdet::Engine {
     int BetaAnnotator::setCluster(int pos, int cluster, int count) {
         if (!chain.residues[pos].temp.contains("cluster") || any_cast<int>(chain.residues[pos].temp.at("cluster")) != -1
             || any_cast<Tmdet::Types::Region>(chain.residues[pos].temp.at("type")) != Tmdet::Types::RegionType::MEMB
-            || chain.residues[pos].ss.isAlpha()) {
+            || chain.residues[pos].ss.isStrictAlpha()) {
             return --count;
         }
         chain.residues[pos].temp.at("cluster") = std::any(cluster);

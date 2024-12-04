@@ -86,5 +86,7 @@ namespace Tmdet::Engine {
             int finalize();
 
             bool sameDirection(Tmdet::ValueObjects::Chain& chain, int pos1, int pos2);
+
+            bool notSameDirection(Tmdet::ValueObjects::Chain& chain, int pos1, int pos2);
     };
 }

@@ -68,7 +68,17 @@ namespace Tmdet::Engine {
         }
         double d1 = any_cast<double>(chain.residues[p1].temp.at("direction"));
         double d2 = any_cast<double>(chain.residues[p2].temp.at("direction"));
-        return (d1*d2>0 && std::abs(d1)>8 && std::abs(d2)>8);
+        
+        return (d1*d2>0 && std::abs(d1)>5 && std::abs(d2)>5);
+    }
+
+    bool RegionHandler::notSameDirection(Tmdet::ValueObjects::Chain& chain, int p1, int p2) {
+        if (!chain.residues[p1].temp.contains("direction") || !chain.residues[p2].temp.contains("direction")) {
+            return false;
+        }
+        double d1 = any_cast<double>(chain.residues[p1].temp.at("direction"));
+        double d2 = any_cast<double>(chain.residues[p2].temp.at("direction"));
+        return (d1*d2<0);
     }
 
     int RegionHandler::finalize() {
@@ -78,32 +88,34 @@ namespace Tmdet::Engine {
             [&](Tmdet::ValueObjects::Chain& chain) -> void {
                 int beg = 0;
                 int end = 0;
+                auto begType = any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("type"));
                 while(getNext(chain,beg,end,"type")) {
-                    if ((any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("type")).isAnnotatedTransMembraneType() 
-                            || any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("type")).isNotAnnotatedMembrane())
+                    if ((begType.isAnnotatedTransMembraneType() 
+                            || begType.isNotAnnotatedMembrane())
                         && beg>0
                         && end<chain.length-1
                         && any_cast<Tmdet::Types::Region>(chain.residues[beg-1].temp.at("type")).isNotMembrane()
                         && any_cast<Tmdet::Types::Region>(chain.residues[beg-1].temp.at("type")).code ==
                             any_cast<Tmdet::Types::Region>(chain.residues[end].temp.at("type")).code) {
-                        replace(chain,beg,end-1,any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("ztype")));
+                        replace(chain,beg,end-1,any_cast<Tmdet::Types::Region>(chain.residues[end].temp.at("ztype")));
                     }
-                    if ((any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("type")).isAnnotatedTransMembraneType()
-                            || any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("type")).isNotAnnotatedMembrane())
+                    if ((begType.isAnnotatedTransMembraneType()
+                            || begType.isNotAnnotatedMembrane())
                         && (beg==0 || end == chain.length-1)
-                        && end-beg < 6) {
-                        replace(chain,beg,end-1,any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("ztype")));
+                        && end-beg < (begType.isBeta()?5:10)) {
+                        replace(chain,beg,end-1,(beg==0?any_cast<Tmdet::Types::Region>(chain.residues[end].temp.at("ztype")):
+                                                    any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("ztype"))));
                     }
-                    if (any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("type")).isMembraneInside()
+                    if (begType.isMembraneInside()
                         && end - beg < 6) {
                         replace(chain,beg,end-1,any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("ztype")));
                     }
-                    if (any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("type")).isNotAnnotatedMembrane()) {
+                    /*if (any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("type")).isNotAnnotatedMembrane()) {
                         replace(chain,beg,end-1,any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("ztype")));
                         if (end-beg>4) {
                             ret += (end-beg);
                         }
-                    }
+                    }*/
                     beg = end;
                 }
             }

@@ -22,7 +22,9 @@ class Compare {
 
     public function proteinType() : array {
         $ret3 = $this->xml3->getProteinType();
+        $ret3 = ($ret3 == "Ca_Tm"?"Tm_Alpha":$ret3);
         $ret4 = $this->xml4->getProteinType();
+        $ret4 = ($ret4=="Tm_Mixed"?$ret3:$ret4);
         return [ $ret3 == $ret4, $ret3, $ret4];
     }
 

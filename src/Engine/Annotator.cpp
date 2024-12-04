@@ -45,17 +45,16 @@ namespace Tmdet::Engine {
                     int alpha=0;
                     int beta=0;
                     for(const auto& residue: chain.residues) {
-                        if (REGTTYPE(residue) == Tmdet::Types::RegionType::MEMB
-                            && !residue.isInside()) {
+                        if (REGTTYPE(residue) == Tmdet::Types::RegionType::MEMB) {
                             if (residue.ss.isAlpha()) {
                                 alpha++;
                             }
-                            if (residue.ss.isBeta()) {
+                            if (residue.ss.isBeta() && !residue.isInside()) {
                                 beta++;
                             }
                         }
                     }
-                    if (alpha>2*beta && alpha>0) {
+                    if (alpha>3*beta && alpha>0) {
                         chain.type = Tmdet::Types::ChainType::ALPHA;
                         protein.type = (protein.type==Tmdet::Types::ProteinType::TM_BETA?
                                 Tmdet::Types::ProteinType::TM_MIXED:
@@ -127,10 +126,11 @@ namespace Tmdet::Engine {
         for(int i=beg+5; i<end-5; i++) {
             if ( (!sameSide(chain,beg,i) || !sameSide(chain,i,end-1))
                 && std::abs(REGZ(chain.residues[i])) > 5.0
-                && !regionHandler.sameDirection(chain,i-1,i+1)
-                && !regionHandler.sameDirection(chain,i-2,i+2)
-                && !regionHandler.sameDirection(chain,i-3,i+3)) {
+                && regionHandler.notSameDirection(chain,i-1,i+1)
+                && regionHandler.notSameDirection(chain,i-2,i+2)
+                && regionHandler.notSameDirection(chain,i-3,i+3)) {
                     chain.residues[i].temp.at("type") = chain.residues[i].temp.at("ztype");
+                    DEBUG_LOG("detectLoop: {}:{}",chain.id, chain.residues[i].authId);
             }
         }
     }
@@ -221,7 +221,7 @@ namespace Tmdet::Engine {
     std::vector<Tmdet::ValueObjects::SecStrVec> Annotator::getParallelAlphas(Tmdet::ValueObjects::Membrane& membrane) {
         std::vector<Tmdet::ValueObjects::SecStrVec> ret;
         for (auto& vector : protein.secStrVecs) {
-            if (vector.type.isAlpha() && checkParallel(vector, membrane)) {
+            if (vector.type.isStrictAlpha() && checkParallel(vector, membrane)) {
                 DEBUG_LOG("\t===>parallel");
                 ret.emplace_back(vector);
             }
