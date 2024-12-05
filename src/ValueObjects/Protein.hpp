@@ -55,6 +55,12 @@ namespace Tmdet::ValueObjects {
         std::vector<Chain> chains;
 
         /**
+         * @brief gemmi chain index to tmdet chain value object index
+         * 
+         */
+        std::vector<int> g2tIndex;
+
+        /**
          * @brief flag if the protein is transmembrane or not
          */
         bool tmp = false;

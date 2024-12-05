@@ -162,8 +162,12 @@ namespace Tmdet::Engine {
                                     normal,vector.end - vector.begin));
                 int d1 = distance(vector.begin);
                 int d2 = distance(vector.end);
-                int dbeg = (d1<d2?d1:d2) - min; dbeg=(dbeg<0?0:dbeg);
-                int dend = (d1>d2?d1:d2) - min; dend=(dend>(int)slices.size()-1?dend=(int)slices.size()-1:dend);
+                int dbeg = (d1<d2?d1:d2) - min; 
+                dbeg=(dbeg<0?0:dbeg);
+                int dend = (d1>d2?d1:d2) - min; 
+                if (dend>=(int)slices.size()) {
+                    dend=(int)slices.size()-1;
+                }
                 for(int i=dbeg; i<= dend; i++) {
                     slices[i].straight+=cosAngle * (vector.type.isBeta()?1.5:1.0);
                     slices[i].numCa++;

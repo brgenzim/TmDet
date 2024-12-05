@@ -16,7 +16,7 @@ namespace Tmdet::DTOs {
         residueVO.labelId = (int)residue.label_seq;
         residueVO.authIcode = residue.seqid.icode;
         int atomIdx = 0;
-        for( auto& atom: residue.atoms) {
+        for(auto& atom: residue.atoms) {
             auto atomVO = Tmdet::ValueObjects::Atom(atom);
             atomVO.chainIdx = chainIdx;
             atomVO.residueIdx = residueIdx;
@@ -24,18 +24,6 @@ namespace Tmdet::DTOs {
             residueVO.atoms.emplace_back(atomVO);
         }
         residueVO.setProperties(residue.name);
-        return residueVO;
-    }
-
-    Tmdet::ValueObjects::Residue Residue::unk(int chainIdx, int residueIdx, std::string name) {
-        gemmi::Residue residue;
-        auto residueVO = Tmdet::ValueObjects::Residue(residue);
-        residueVO.chainIdx = chainIdx;
-        residueVO.idx = residueIdx;
-        residueVO.authId = -1;
-        residueVO.labelId = -1;
-        residueVO.authIcode = ' ';
-        residueVO.setProperties(name);
         return residueVO;
     }
 

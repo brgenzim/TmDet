@@ -25,6 +25,8 @@ namespace Tmdet::Engine {
             int setCluster(int pos, int cluster, int count);
             void detectLoops();
             void detectBarrelInside();
+            void detectOutside();
+            bool isOut(Tmdet::ValueObjects::Residue& residue);
         
         public:
             explicit BetaAnnotator(Tmdet::ValueObjects::Chain& chain, Tmdet::Engine::RegionHandler& regionHandler) :

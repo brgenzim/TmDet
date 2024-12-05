@@ -28,15 +28,6 @@ namespace Tmdet::DTOs {
         static Tmdet::ValueObjects::Residue get(gemmi::Residue& residue, int chainIdx, int residueIdx);
 
         /**
-         * @brief generate an unknown residue
-         * 
-         * @param chainIdx 
-         * @param residueIdx 
-         * @return Tmdet::ValueObjects::Residue 
-         */
-        static Tmdet::ValueObjects::Residue unk(int chainIdx, int residueIdx, std::string name);
-
-        /**
          * @brief string representation of the residue
          * 
          * @param residueVO 

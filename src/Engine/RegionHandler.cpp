@@ -88,8 +88,9 @@ namespace Tmdet::Engine {
             [&](Tmdet::ValueObjects::Chain& chain) -> void {
                 int beg = 0;
                 int end = 0;
-                auto begType = any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("type"));
                 while(getNext(chain,beg,end,"type")) {
+                    auto begType = any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("type"));
+                    DEBUG_LOG("Finalize checks: {}:{}-{}:{}",chain.id,chain.residues[beg].authId,chain.residues[end-1].authId,begType.code);
                     if ((begType.isAnnotatedTransMembraneType() 
                             || begType.isNotAnnotatedMembrane())
                         && beg>0
@@ -106,10 +107,10 @@ namespace Tmdet::Engine {
                         replace(chain,beg,end-1,(beg==0?any_cast<Tmdet::Types::Region>(chain.residues[end].temp.at("ztype")):
                                                     any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("ztype"))));
                     }
-                    if (begType.isMembraneInside()
+                    /*if (begType.isMembraneInside()
                         && end - beg < 6) {
                         replace(chain,beg,end-1,any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("ztype")));
-                    }
+                    }*/
                     /*if (any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("type")).isNotAnnotatedMembrane()) {
                         replace(chain,beg,end-1,any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("ztype")));
                         if (end-beg>4) {
@@ -144,6 +145,9 @@ namespace Tmdet::Engine {
                         chain.regions.push_back(region);
                     }
                     begin = end;
+                }
+                if (chain.numtm == 0) {
+                    chain.type = Tmdet::Types::ChainType::NON_TM;
                 }
             }
         );

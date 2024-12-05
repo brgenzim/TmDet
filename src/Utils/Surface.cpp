@@ -115,46 +115,43 @@ namespace Tmdet::Utils {
     void Surface::initTempData() {
         DEBUG_LOG("Processing Surface::initTempData()");
         const double probSize = std::stof(environment.get("TMDET_SURF_PROBSIZE",DEFAULT_TMDET_SURF_PROBSIZE));
-        for(auto& chain: protein.chains) {
-            if (chain.selected) {
-                for(auto& residue: chain.residues) {
-                    for(auto& atom: residue.atoms) {
-                        Tmdet::Types::Residue residueType = Tmdet::Types::ResidueType::getResidue(residue.gemmi.name);
-                        double vdw = probSize;
-                        if (residueType.atoms.contains(atom.gemmi.name)) {
-                            vdw += residueType.atoms.at(atom.gemmi.name).atom.vdw;
-                        } else {
-                            vdw += Types::AtomType::DEFAULT_VDW;
-                        }
-                        atom.temp.insert({"vdw",any_cast<double>(vdw)});
+        protein.eachSelectedResidue(
+            [&](Tmdet::ValueObjects::Residue& residue) -> void {
+                for(auto& atom: residue.atoms) {
+                    Tmdet::Types::Residue residueType = Tmdet::Types::ResidueType::getResidue(residue.gemmi.name);
+                    double vdw = probSize;
+                    if (residueType.atoms.contains(atom.gemmi.name)) {
+                        vdw += residueType.atoms.at(atom.gemmi.name).atom.vdw;
+                    } else {
+                        vdw += Types::AtomType::DEFAULT_VDW;
                     }
+                    atom.temp.insert({"vdw",any_cast<double>(vdw)});
                 }
             }
-        }
+        );
         DEBUG_LOG(" Processed Surface::initTempData()");
     }
 
     void Surface::setContacts() {
         DEBUG_LOG("Processing Surface::setContacts()");
-        for(auto& chain: protein.chains) {
-            if (chain.selected) {
-                for(auto& residue: chain.residues) {
-                    residue.surface = 0.0;
-                    for(auto& atom: residue.atoms) {
-                        setContactsOfAtom(atom);
-                        residue.surface += atom.surface;
-                    }
+        protein.eachSelectedResidue(
+            [&](Tmdet::ValueObjects::Residue& residue) -> void {
+                residue.surface = 0.0;
+                for(auto& atom: residue.atoms) {
+                    setContactsOfAtom(atom);
+                    residue.surface += atom.surface;
                 }
             }
-        }
+        );
         DEBUG_LOG(" Processed Surface::setContacts()");
     }
 
     void Surface::setContactsOfAtom(Tmdet::ValueObjects::Atom& a_atom) {
         surfTemp st;
         for(auto m : protein.neighbors.find_neighbors(a_atom.gemmi, 0.1, 7.0)) {
-            if (protein.chains[m->chain_idx].selected) {
-                auto& b_atom = protein.chains[m->chain_idx].residues[m->residue_idx].atoms[m->atom_idx];
+            int chainIdx = protein.g2tIndex[m->chain_idx];
+            if (chainIdx != -1 && protein.chains[chainIdx].selected) {
+                auto& b_atom = protein.chains[chainIdx].residues[m->residue_idx].atoms[m->atom_idx];
                 double dist = a_atom.gemmi.pos.dist(b_atom.gemmi.pos);
                 if ( dist < VDW(a_atom) + VDW(b_atom)) {
                     setNeighbor(a_atom,b_atom,st);
@@ -271,17 +268,15 @@ namespace Tmdet::Utils {
                 }
             }
         }
-        for(auto& chain: protein.chains) {
-            if (chain.selected) {
-                for(auto& residue: chain.residues) {
-                    double q = 0;
-                    for(auto& atom: residue.atoms) {
-                        q += atom.outSurface;
-                    }
-                    residue.outSurface = q;
+        protein.eachSelectedResidue(
+            [&](Tmdet::ValueObjects::Residue& residue) -> void {
+                double q = 0;
+                for(auto& atom: residue.atoms) {
+                    q += atom.outSurface;
                 }
+                residue.outSurface = q;
             }
-        }
+        );
 	}
 
     void Surface::setBoundingBox(boundingBox& box) const {
@@ -289,20 +284,18 @@ namespace Tmdet::Utils {
 	    box.ymin=10000; box.ymax=-10000;        
         box.zmin=10000; box.zmax=-10000;        
 	    
-        for(const auto& chain: protein.chains) {
-            if (chain.selected) {
-                for(const auto& residue: chain.residues) {
-                    for(const auto& atom: residue.atoms) {
-                        box.xmin = MIN(box.xmin,atom.gemmi.pos.x);
-                        box.xmax = MAX(box.xmax,atom.gemmi.pos.x);
-                        box.ymin = MIN(box.ymin,atom.gemmi.pos.y);
-                        box.ymax = MAX(box.ymax,atom.gemmi.pos.y);
-                        box.zmin = MIN(box.zmin,atom.gemmi.pos.z);
-                        box.zmax = MAX(box.zmax,atom.gemmi.pos.z);
-                    }
+        protein.eachSelectedResidue(
+            [&](Tmdet::ValueObjects::Residue& residue) -> void {
+                for(const auto& atom: residue.atoms) {
+                    box.xmin = MIN(box.xmin,atom.gemmi.pos.x);
+                    box.xmax = MAX(box.xmax,atom.gemmi.pos.x);
+                    box.ymin = MIN(box.ymin,atom.gemmi.pos.y);
+                    box.ymax = MAX(box.ymax,atom.gemmi.pos.y);
+                    box.zmin = MIN(box.zmin,atom.gemmi.pos.z);
+                    box.zmax = MAX(box.zmax,atom.gemmi.pos.z);
                 }
             }
-        }
+        );
 	    box.xmin=ceil(box.xmin-1)-2; box.xmax=ceil(box.xmax)+2;
 	    box.ymin=ceil(box.ymin-1)-2; box.ymax=ceil(box.ymax)+2;
         box.zmin=ceil(box.zmin-1)-2; box.zmax=ceil(box.zmax)+2;
@@ -346,37 +339,35 @@ namespace Tmdet::Utils {
     }
 
     void Surface::setFrame(boundingBox& box) {
-        for(auto& chain: protein.chains) {
-            if (chain.selected) {
-                for(auto& residue: chain.residues) {
-                    residue.outSurface = 0.0;
-                    for(auto& atom: residue.atoms) {
-                        atom.outSurface = 0.0;
-                        double x = floor(atom.gemmi.pos.x);
-                        double y = floor(atom.gemmi.pos.y);  	    
-                        int z = floor(atom.gemmi.pos.z) - box.zmin;
+        protein.eachSelectedResidue(
+            [&](Tmdet::ValueObjects::Residue& residue) -> void {
+                residue.outSurface = 0.0;
+                for(auto& atom: residue.atoms) {
+                    atom.outSurface = 0.0;
+                    double x = floor(atom.gemmi.pos.x);
+                    double y = floor(atom.gemmi.pos.y);  	    
+                    int z = floor(atom.gemmi.pos.z) - box.zmin;
+                
+                    int k= (int)(x-box.xmin);
+                    box.frame[z][k].x = x;
+                    box.frame[z][k].y = MIN(box.frame[z][k].y,y-2);
+                    box.frame[z][k].z = (int)(atom.gemmi.pos.z); 
                     
-                        int k= (int)(x-box.xmin);
-                        box.frame[z][k].x = x;
-                        box.frame[z][k].y = MIN(box.frame[z][k].y,y-2);
-                        box.frame[z][k].z = (int)(atom.gemmi.pos.z); 
-                        
-                        box.frame[z][k+box.l1].x = x;
-                        box.frame[z][k+box.l1].y = MAX(box.frame[z][k+box.l1].y,y+2);
-                        box.frame[z][k+box.l1].z = (int)(atom.gemmi.pos.z);
-                        
-                        k=(int)(y-box.ymin);
-                        box.frame[z][k+box.l2].x = MIN(box.frame[z][k+box.l2].x, x-2);
-                        box.frame[z][k+box.l2].y = y;
-                        box.frame[z][k+box.l2].z = (int)(atom.gemmi.pos.z);
-                        
-                        box.frame[z][k+box.l3].x = MAX(box.frame[z][k+box.l3].x, x+2);
-                        box.frame[z][k+box.l3].y = y;
-                        box.frame[z][k+box.l3].z = (int)(atom.gemmi.pos.z);
-                    }
+                    box.frame[z][k+box.l1].x = x;
+                    box.frame[z][k+box.l1].y = MAX(box.frame[z][k+box.l1].y,y+2);
+                    box.frame[z][k+box.l1].z = (int)(atom.gemmi.pos.z);
+                    
+                    k=(int)(y-box.ymin);
+                    box.frame[z][k+box.l2].x = MIN(box.frame[z][k+box.l2].x, x-2);
+                    box.frame[z][k+box.l2].y = y;
+                    box.frame[z][k+box.l2].z = (int)(atom.gemmi.pos.z);
+                    
+                    box.frame[z][k+box.l3].x = MAX(box.frame[z][k+box.l3].x, x+2);
+                    box.frame[z][k+box.l3].y = y;
+                    box.frame[z][k+box.l3].z = (int)(atom.gemmi.pos.z);
                 }
             }
-        }
+        );
     }
 
     void Surface::smoothFrame(boundingBox& box) {
@@ -418,63 +409,22 @@ namespace Tmdet::Utils {
 		    for (int j=0; j<box.zmax-box.zmin; j++) {
 			    box.closestDist[j] = 10000000;
             }
-            for(auto& chain: protein.chains) {
-                if (chain.selected) {
-                    for(auto& residue: chain.residues) {
-                        for(auto& atom: residue.atoms) {
-                            int z = (int)(atom.gemmi.pos.z-box.zmin);
-                            double dist = 
-                                (atom.gemmi.pos.x - box.frame[z][i].x) * 
-                                (atom.gemmi.pos.x - box.frame[z][i].x) +
-                                (atom.gemmi.pos.y - box.frame[z][i].y) *
-                                (atom.gemmi.pos.y - box.frame[z][i].y);
-                            if (dist < box.closestDist[z]) {
-                                box.closestAtoms[z][i] = &atom;
-                                box.closestDist[z]=dist;
-                            }
+            protein.eachSelectedResidue(
+                [&](Tmdet::ValueObjects::Residue& residue) -> void {
+                    for(auto& atom: residue.atoms) {
+                        int z = (int)(atom.gemmi.pos.z-box.zmin);
+                        double dist = 
+                            (atom.gemmi.pos.x - box.frame[z][i].x) * 
+                            (atom.gemmi.pos.x - box.frame[z][i].x) +
+                            (atom.gemmi.pos.y - box.frame[z][i].y) *
+                            (atom.gemmi.pos.y - box.frame[z][i].y);
+                        if (dist < box.closestDist[z]) {
+                            box.closestAtoms[z][i] = &atom;
+                            box.closestDist[z]=dist;
                         }
                     }
                 }
-			}	
+            );
 		}
  	}
-
-    std::string Surface::toString() {
-        std::string ret = "";
-        const double probSize = std::stof(environment.get("TMDET_SURF_PROBSIZE",DEFAULT_TMDET_SURF_PROBSIZE));
-        protein.eachSelectedChain(
-            [&](Tmdet::ValueObjects::Chain& chain) -> void {
-                int numAtom = 0;
-                int numRes = 0;
-                chain.eachResidue(
-                    [&](Tmdet::ValueObjects::Residue& residue) {
-                        numAtom += residue.atoms.size();
-                        numRes++;
-                    }
-                );
-                ret += std::format("{}_{} {} {}\n",
-                    protein.code,chain.id,numAtom, numRes);
-                int numLine = 1;
-                chain.eachResidue(
-                    [&](Tmdet::ValueObjects::Residue& residue) {
-                        for(const auto& atom: residue.atoms) {
-                            ret += std::format("{: >6d}{: >5} {} {}{:6d} _ {:8.2f} {:8.2f} {:10.3f} {:10.3f} {:10.3f} {:12.3f} {:6.2f}\n",
-                                numLine++,
-                                atom.gemmi.name,
-                                chain.id,
-                                residue.type.name,
-                                residue.authId,
-                                atom.gemmi.occ, atom.gemmi.b_iso,
-                                atom.gemmi.pos.x, atom.gemmi.pos.y, atom.gemmi.pos.z,
-                                atom.surface,
-                                (any_cast<double>(atom.temp.at("vdw")) - probSize)
-                            );
-                        }
-                        numRes++;
-                    }
-                );
-            }
-        );
-        return ret;
-    }
 }

@@ -2,6 +2,8 @@
 
 #include <string>
 #include <vector>
+#include <Config.hpp>
+#include <System/Logger.hpp>
 #include <Types/Chain.hpp>
 #include <ValueObjects/Residue.hpp>
 #include <ValueObjects/Region.hpp>
@@ -60,6 +62,11 @@ namespace Tmdet::ValueObjects {
         std::vector<Residue> residues;
 
         /**
+         * @brief gemmi chain index to tmdet value object chain index
+         */
+        std::vector<int> g2tIndex;
+
+        /**
          * @brief chain index in Tmdet ValueObject protein.chains
          */
         int idx = 0;
@@ -102,6 +109,14 @@ namespace Tmdet::ValueObjects {
                     }
                 }
             }
+        }
+
+        int orderDistance(int r1, int r2) {
+            int ret=0;
+            if (r1>=0 && r2>=0 && r1<length && r2<length) {
+                ret = residues[r2].labelId - residues[r1].labelId;
+            }
+            return ret;
         }
 
     };

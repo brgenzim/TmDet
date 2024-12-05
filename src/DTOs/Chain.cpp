@@ -27,21 +27,12 @@ namespace Tmdet::DTOs {
         chainVO.idx = chainIdx;
         auto poly = chain.get_polymer();
         if (poly) {
-            auto alignRes = gemmi::align_sequence_to_polymer(
-                        sequence,
-                        poly,
-                        protein.entities[chainVO.entityIdx].polymer_type);
-            DEBUG_LOG("ALIGN Seq: {}",alignRes.add_gaps(chainVO.seq, 1));
-            DEBUG_LOG("ALIGN Mdl: {}",alignRes.match_string);
-            DEBUG_LOG("ALIGN Str: {}",alignRes.add_gaps(gemmi::one_letter_code(poly.extract_sequence()), 2));
-            chainVO.length = poly.length();
             chainVO.labelId = poly.subchain_id();
             int residueIdx = 0;
-            for (unsigned long int i=0; i<alignRes.match_string.length(); i++) {
-                if (alignRes.match_string[i] == '|') {
-                    chainVO.residues.emplace_back(Tmdet::DTOs::Residue::get(chain.residues[residueIdx++],chainIdx,i));
-                }
+            for(auto& residue: chain.residues) {
+                chainVO.residues.emplace_back(Tmdet::DTOs::Residue::get(residue,chainIdx,residueIdx++));
             }
+            chainVO.length = residueIdx;
         }
         else {
             chainVO.selected = false;

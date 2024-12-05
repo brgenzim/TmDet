@@ -15,8 +15,8 @@ namespace Tmdet::Utils {
             void scanNeighbors(Tmdet::ValueObjects::Chain& chain, int r1, const gemmi::Atom* CA, const gemmi::Atom* N, gemmi::Position hcoord);
             void setHydrogenBond(Tmdet::ValueObjects::Residue& donor, Tmdet::ValueObjects::Residue& akceptor, double energy);
             void detectTurns(Tmdet::ValueObjects::Chain& chain, int d, std::string key);
-            bool checkHbond1(Tmdet::ValueObjects::Residue& res, int d);
-            bool checkHbond2(Tmdet::ValueObjects::Residue& res, int d);
+            bool checkHbond1(Tmdet::ValueObjects::Chain& chain, Tmdet::ValueObjects::Residue& res, int d);
+            bool checkHbond2(Tmdet::ValueObjects::Chain& chain, Tmdet::ValueObjects::Residue& res, int d);
             void initPbs(Tmdet::ValueObjects::Chain& chain);
             void detectSecStructH(Tmdet::ValueObjects::Chain& chain,std::string key);
             void detectSecStructG(Tmdet::ValueObjects::Chain& chain,std::string key);

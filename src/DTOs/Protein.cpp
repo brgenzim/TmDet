@@ -58,7 +58,12 @@ namespace Tmdet::DTOs {
         int chainIdx = 0;
         for(auto& chain: protein.gemmi.models[0].chains) {
             if (int entityIdx = Tmdet::DTOs::Chain::getEntityIdx(protein.gemmi.entities,chain.residues[0].entity_id); entityIdx != -1) {
-                protein.chains.emplace_back(Tmdet::DTOs::Chain::get(protein.gemmi,chain,chainIdx++,entityIdx));
+                protein.chains.emplace_back(Tmdet::DTOs::Chain::get(protein.gemmi,chain,chainIdx,entityIdx));
+                protein.g2tIndex.push_back(chainIdx);
+                chainIdx++;
+            }
+            else {
+                protein.g2tIndex.push_back(-1);
             }
         }
         protein.neighbors = gemmi::NeighborSearch(protein.gemmi.models[0], protein.gemmi.cell, 9);

@@ -31,10 +31,14 @@ namespace Tmdet::ValueObjects {
         int labelId;
 
         /**
-         * @brief order of residues after alignment
-         *        Use this to measure residues distance in the sequence
+         * @brief residue index in Tmdet ValueObject protein.chains[].residues
          */
         int idx;
+
+        /**
+         * @brief residue index in gemmi structure (protein.gemmi.chains[].residues)
+         */
+        int gemmiIdx = -1;
 
         /**
          * @brief insertion code
