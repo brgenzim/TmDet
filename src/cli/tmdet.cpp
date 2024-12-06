@@ -29,7 +29,7 @@ Tmdet::System::Arguments getArguments(int argc, char *argv[]) {
     Tmdet::System::Arguments args;
     args.define(false,"e","env","Path for environment variable file","string",".env");
     args.define(false,"r","run","Run the tmdet algorithm on the protein structure","bool","false");
-    args.define(false,"pi","pdb_input","Input PDB file full path (in cif format)","string","");
+    args.define(false,"pi","pdb_input","Input PDB file full path (in ent or cif format)","string","");
     args.define(false,"c","code","Input PDB code (c or pi is mandatory)","string","");
     args.define(false,"x","xml","Input/Output xml file path","string","");
     args.define(false,"xi","xml_input","Input xml file path","string","");

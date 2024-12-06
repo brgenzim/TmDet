@@ -149,9 +149,8 @@ namespace Tmdet::Utils {
     void Surface::setContactsOfAtom(Tmdet::ValueObjects::Atom& a_atom) {
         surfTemp st;
         for(auto m : protein.neighbors.find_neighbors(a_atom.gemmi, 0.1, 7.0)) {
-            int chainIdx = protein.g2tIndex[m->chain_idx];
-            if (chainIdx != -1 && protein.chains[chainIdx].selected) {
-                auto& b_atom = protein.chains[chainIdx].residues[m->residue_idx].atoms[m->atom_idx];
+            if (protein.chains[m->chain_idx].selected) {
+                auto& b_atom = protein.chains[m->chain_idx].residues[m->residue_idx].atoms[m->atom_idx];
                 double dist = a_atom.gemmi.pos.dist(b_atom.gemmi.pos);
                 if ( dist < VDW(a_atom) + VDW(b_atom)) {
                     setNeighbor(a_atom,b_atom,st);

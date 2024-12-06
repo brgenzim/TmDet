@@ -91,5 +91,15 @@ namespace Tmdet::System {
                     environment.get("TMDET_CACHE_ROOT",DEFAULT_TMDET_CACHE_ROOT),
                     hash.substr(0,2), hash.substr(2,2), hash.substr(4,2));
         }
+
+        /**
+         * @brief check if a file contains cif document
+         *
+         * @param path
+         * @return bool
+         */
+        static bool isCif(const std::string& path) {
+            return (path.substr(path.size()-4) == ".cif" || path.substr(path.size()-7) == ".cif.gz");
+        }
     };
 }

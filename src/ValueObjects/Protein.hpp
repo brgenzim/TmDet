@@ -55,12 +55,6 @@ namespace Tmdet::ValueObjects {
         std::vector<Chain> chains;
 
         /**
-         * @brief gemmi chain index to tmdet chain value object index
-         * 
-         */
-        std::vector<int> g2tIndex;
-
-        /**
          * @brief flag if the protein is transmembrane or not
          */
         bool tmp = false;
@@ -148,12 +142,30 @@ namespace Tmdet::ValueObjects {
         void clear();
 
         /**
+        * @brief helper for fetching and parsing a new protein object from a pdb file
+        *        and stroring the gemmi structure
+        * 
+        * @param inputPath 
+        */
+        void getStructure(const std::string& inputPath);
+
+        /**
         * @brief helper for fetching and parsing a new protein object from a cif file
         *        and stroring the gemmi structure as well as the cif document
         * 
         * @param inputPath 
         */
-        void getStructure(const std::string& inputPath);
+        void getCifStructure(const std::string& inputPath);
+
+        /**
+        * @brief helper for fetching and parsing a new protein object from an ent file
+        *        and stroring the gemmi structure as well as create a cif document
+        * 
+        * @param inputPath 
+        */
+        void getEntStructure(const std::string& inputPath);
+
+        void setupPolymerNames();
 
         /**
          * @brief Create a hash for structure that unique for each structure

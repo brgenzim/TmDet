@@ -4,11 +4,18 @@
 #include <gemmi/gz.hpp>
 #include <gemmi/cif.hpp>
 #include <gemmi/mmcif.hpp>
+#include <gemmi/to_mmcif.hpp>
+#include <gemmi/to_cif.hpp>
+#include <gemmi/mmread.hpp>
 #include <gemmi/model.hpp>
 #include <gemmi/cifdoc.hpp>
+#include <gemmi/polyheur.hpp>
+#include <gemmi/align.hpp>
 #include <Version.hpp>
 #include <Config.hpp>
+#include <System/FilePaths.hpp>
 #include <System/Date.hpp>
+#include <System/Logger.hpp>
 #include <Types/Protein.hpp>
 #include <ValueObjects/Protein.hpp>
 #include <Utils/Md5.hpp>
@@ -16,9 +23,26 @@
 namespace Tmdet::ValueObjects {
 
     void Protein::getStructure(const std::string& inputPath) {
+
+        Tmdet::System::FilePaths::isCif(inputPath)?getCifStructure(inputPath):getEntStructure(inputPath);
+    }
+
+    void Protein::getEntStructure(const std::string& inputPath) {
+        gemmi = gemmi::read_pdb(gemmi::MaybeGzipped(inputPath));
+
+        gemmi::setup_entities(gemmi);
+        gemmi::assign_label_seq_id(gemmi,true);
+        document = gemmi::make_mmcif_document(gemmi);
+        setupPolymerNames();
+    }
+
+    void Protein::getCifStructure(const std::string& inputPath) {
         document = gemmi::cif::read(gemmi::MaybeGzipped(inputPath));
         gemmi = gemmi::make_structure(std::move(document));
+        setupPolymerNames();
+    }
 
+    void Protein::setupPolymerNames() {
         for (auto& entity : gemmi.entities) {
             if (entity.entity_type == gemmi::EntityType::Polymer) {
                 polymerNames[entity.name] = "DESCRIPTION: N/A";
@@ -29,7 +53,6 @@ namespace Tmdet::ValueObjects {
                 polymerNames[entity[0]] = entity[1];
             }
         }
-      
     }
 
     void Protein::notTransmembrane() {
