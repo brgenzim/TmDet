@@ -3,9 +3,9 @@
 #include <Config.hpp>
 #include <System/Date.hpp>
 #include <Types/Protein.hpp>
-#include <ValueObjects/Xml.hpp>
+#include <VOs/Xml.hpp>
 
-namespace Tmdet::ValueObjects {
+namespace Tmdet::VOs {
 
     void Xml::notTransmembrane() {
         tmp = false;

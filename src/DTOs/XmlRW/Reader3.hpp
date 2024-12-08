@@ -4,11 +4,11 @@
 #include <vector>
 #include <pugixml.hpp>
 #include <DTOs/XmlRW/BaseReader.hpp>
-#include <ValueObjects/Membrane.hpp>
-#include <ValueObjects/BioMatrix.hpp>
-#include <ValueObjects/Modification.hpp>
-#include <ValueObjects/TMatrix.hpp>
-#include <ValueObjects/Xml.hpp>
+#include <VOs/Membrane.hpp>
+#include <VOs/BioMatrix.hpp>
+#include <VOs/Modification.hpp>
+#include <VOs/TMatrix.hpp>
+#include <VOs/Xml.hpp>
 
 /**
  * @brief namespace for tmdet xml data transfer objects
@@ -41,32 +41,32 @@ namespace Tmdet::DTOs::XmlRW {
             /**
              * @brief Get the content of BIOMATRIX node
              * 
-             * @return Tmdet::ValueObjects::BioMatrix 
+             * @return Tmdet::VOs::BioMatrix 
              */
-            Tmdet::ValueObjects::BioMatrix getBioMatrix() const;
+            Tmdet::VOs::BioMatrix getBioMatrix() const;
 
             /**
              * @brief Get the content of MODIFICATIONS node
              * 
-             * @return std::vector<Tmdet::ValueObjects::Modification> 
+             * @return std::vector<Tmdet::VOs::Modification> 
              */
-            std::vector<Tmdet::ValueObjects::Modification> getModifications() const;
+            std::vector<Tmdet::VOs::Modification> getModifications() const;
 
 
         protected:
-            Tmdet::ValueObjects::TMatrix getTMatrix(const pugi::xml_node& node) const final;
+            Tmdet::VOs::TMatrix getTMatrix(const pugi::xml_node& node) const final;
             bool getTmp() const;
             std::string getCode() const;
             std::string getCreateDate() const;
             double getQvalue() const;
             std::string getTmtype() const;
-            std::vector<Tmdet::ValueObjects::Membrane> getMembranes() const;
-            std::vector<Tmdet::ValueObjects::XmlChain> getChains();
-            std::vector<Tmdet::ValueObjects::Region> getRegions(const pugi::xml_node& cnode) const;
+            std::vector<Tmdet::VOs::Membrane> getMembranes() const;
+            std::vector<Tmdet::VOs::XmlChain> getChains();
+            std::vector<Tmdet::VOs::Region> getRegions(const pugi::xml_node& cnode) const;
 
         public:
 
-            void readXml(Tmdet::ValueObjects::Xml& xmlData);
+            void readXml(Tmdet::VOs::Xml& xmlData);
             void setRoot(const pugi::xml_document& doc);
             
     };

@@ -1,13 +1,13 @@
 #pragma once
 
 #include <string>
-#include <ValueObjects/Chain.hpp>
+#include <VOs/Chain.hpp>
 
 
 namespace Tmdet::DTOs {
 
     struct Dssp {
 
-        static std::string getSecondaryStructure(const Tmdet::ValueObjects::Chain& chain);
+        static std::string getSecondaryStructure(const Tmdet::VOs::Chain& chain);
     };
 }

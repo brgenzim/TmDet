@@ -7,8 +7,8 @@
 #include <Config.hpp>
 #include <DTOs/Residue.hpp>
 #include <System/Logger.hpp>
-#include <ValueObjects/Protein.hpp>
-#include <ValueObjects/HBond.hpp>
+#include <VOs/Protein.hpp>
+#include <VOs/HBond.hpp>
 #include <Utils/Dssp.hpp>
 
 using namespace std;
@@ -24,7 +24,7 @@ namespace Tmdet::Utils {
     void Dssp::exec() {
         init();
         protein.eachSelectedChain(
-            [&](Tmdet::ValueObjects::Chain& chain) -> void {
+            [&](Tmdet::VOs::Chain& chain) -> void {
                 calcDsspOnChain(chain);
             }
         );
@@ -33,9 +33,9 @@ namespace Tmdet::Utils {
 
     void Dssp::init() {
         protein.eachResidue(
-            [](Tmdet::ValueObjects::Residue& residue) -> void {
-                residue.temp.try_emplace("hbond1",std::any(Tmdet::ValueObjects::HBond()));
-                residue.temp.try_emplace("hbond2",std::any(Tmdet::ValueObjects::HBond()));
+            [](Tmdet::VOs::Residue& residue) -> void {
+                residue.temp.try_emplace("hbond1",std::any(Tmdet::VOs::HBond()));
+                residue.temp.try_emplace("hbond2",std::any(Tmdet::VOs::HBond()));
                 residue.temp.try_emplace("t3",std::any(' '));
                 residue.temp.try_emplace("t4",std::any(' '));
                 residue.temp.try_emplace("t5",std::any(' '));
@@ -47,7 +47,7 @@ namespace Tmdet::Utils {
 
     void Dssp::end() {
         protein.eachResidue(
-            [](Tmdet::ValueObjects::Residue& residue) -> void {
+            [](Tmdet::VOs::Residue& residue) -> void {
                 residue.temp.erase("hbond2");
                 residue.temp.erase("t3");
                 residue.temp.erase("t4");
@@ -58,7 +58,7 @@ namespace Tmdet::Utils {
         );
     }
 
-    void Dssp::calcDsspOnChain(Tmdet::ValueObjects::Chain& chain) {
+    void Dssp::calcDsspOnChain(Tmdet::VOs::Chain& chain) {
         createHydrogenBonds(chain);
         detectTurns(chain,3,"t3");
         detectTurns(chain,4,"t4");
@@ -72,7 +72,7 @@ namespace Tmdet::Utils {
         detectSecStructBE(chain);
     }
 
-    void Dssp::createHydrogenBonds(Tmdet::ValueObjects::Chain& chain) {
+    void Dssp::createHydrogenBonds(Tmdet::VOs::Chain& chain) {
         for(int i=1; i<chain.length; i++) {
             if (chain.orderDistance(i-1,i) == 1) {
                 auto& gres = chain.residues[i].gemmi;
@@ -94,7 +94,7 @@ namespace Tmdet::Utils {
         }
     }
 
-    void Dssp::scanNeighbors(Tmdet::ValueObjects::Chain& chain, int r1, const gemmi::Atom* CA, const gemmi::Atom* N, gemmi::Position hcoord) {
+    void Dssp::scanNeighbors(Tmdet::VOs::Chain& chain, int r1, const gemmi::Atom* CA, const gemmi::Atom* N, gemmi::Position hcoord) {
         for(int r2=0; r2<chain.length; r2++) {
             if (std::abs(chain.orderDistance(r1,r2)) > 1) {
                 auto CB = chain.residues[r2].gemmi.get_ca();
@@ -119,18 +119,17 @@ namespace Tmdet::Utils {
         }
     }
 
-    void Dssp::setHydrogenBond(Tmdet::ValueObjects::Residue& donor, Tmdet::ValueObjects::Residue& akceptor, double energy) {
-        DEBUG_LOG("Hydrogen bond: {}->{} {}",donor.authId,akceptor.authId,energy);
-        if (energy < any_cast<Tmdet::ValueObjects::HBond>(donor.temp["hbond1"]).energy) {
+    void Dssp::setHydrogenBond(Tmdet::VOs::Residue& donor, Tmdet::VOs::Residue& akceptor, double energy) {
+        if (energy < any_cast<Tmdet::VOs::HBond>(donor.temp["hbond1"]).energy) {
             donor.temp["hbond2"] = donor.temp["hbond1"];
-            donor.temp["hbond1"] = std::any(Tmdet::ValueObjects::HBond({energy, akceptor.chainIdx, akceptor.idx}));
+            donor.temp["hbond1"] = std::any(Tmdet::VOs::HBond({energy, akceptor.chainIdx, akceptor.idx}));
         }
-        else if (energy< any_cast<Tmdet::ValueObjects::HBond>(donor.temp["hbond2"]).energy) {
-            donor.temp["hbond2"] = std::any(Tmdet::ValueObjects::HBond({energy, akceptor.chainIdx, akceptor.idx}));
+        else if (energy< any_cast<Tmdet::VOs::HBond>(donor.temp["hbond2"]).energy) {
+            donor.temp["hbond2"] = std::any(Tmdet::VOs::HBond({energy, akceptor.chainIdx, akceptor.idx}));
         }
     }
 
-    void Dssp::detectTurns(Tmdet::ValueObjects::Chain& chain, int d, string key) {
+    void Dssp::detectTurns(Tmdet::VOs::Chain& chain, int d, string key) {
         for(auto i=0; i<chain.length-d; i++) {
             if (chain.orderDistance(i+d,i) == d &&
                 (checkHbond1(chain, chain.residues[i],d) || checkHbond2(chain, chain.residues[i],d))) {
@@ -159,17 +158,17 @@ namespace Tmdet::Utils {
         }
     }
 
-    bool Dssp::checkHbond1(Tmdet::ValueObjects::Chain& chain, Tmdet::ValueObjects::Residue& res, int d) {
-        return (res.chainIdx == any_cast<Tmdet::ValueObjects::HBond>(res.temp["hbond1"]).toChainIdx && 
-            chain.orderDistance(res.idx, any_cast<Tmdet::ValueObjects::HBond>(res.temp["hbond1"]).toResIdx) == d);
+    bool Dssp::checkHbond1(Tmdet::VOs::Chain& chain, Tmdet::VOs::Residue& res, int d) {
+        return (res.chainIdx == any_cast<Tmdet::VOs::HBond>(res.temp["hbond1"]).toChainIdx && 
+            chain.orderDistance(res.idx, any_cast<Tmdet::VOs::HBond>(res.temp["hbond1"]).toResIdx) == d);
     }
 
-    bool Dssp::checkHbond2(Tmdet::ValueObjects::Chain& chain, Tmdet::ValueObjects::Residue& res, int d) {
-        return (res.chainIdx == any_cast<Tmdet::ValueObjects::HBond>(res.temp["hbond2"]).toChainIdx && 
-            chain.orderDistance(res.idx, any_cast<Tmdet::ValueObjects::HBond>(res.temp["hbond2"]).toResIdx) == d);
+    bool Dssp::checkHbond2(Tmdet::VOs::Chain& chain, Tmdet::VOs::Residue& res, int d) {
+        return (res.chainIdx == any_cast<Tmdet::VOs::HBond>(res.temp["hbond2"]).toChainIdx && 
+            chain.orderDistance(res.idx, any_cast<Tmdet::VOs::HBond>(res.temp["hbond2"]).toResIdx) == d);
     }
 
-    void Dssp::initPbs(Tmdet::ValueObjects::Chain& chain) {
+    void Dssp::initPbs(Tmdet::VOs::Chain& chain) {
         int n = chain.length;
         for(int i=1; i<n-1; i++) {
             for(int j=1; j<n-1; j++) {
@@ -185,29 +184,29 @@ namespace Tmdet::Utils {
         }
     }
 
-    bool Dssp::checkPb(Tmdet::ValueObjects::Chain& chain, int i, int j) {
-        return (((any_cast<Tmdet::ValueObjects::HBond>(chain.residues[i-1].temp["hbond1"]).toResIdx == chain.residues[j].idx ||
-                any_cast<Tmdet::ValueObjects::HBond>(chain.residues[i-1].temp["hbond2"]).toResIdx == chain.residues[j].idx) &&
-                (any_cast<Tmdet::ValueObjects::HBond>(chain.residues[j].temp["hbond1"]).toResIdx == chain.residues[i+1].idx ||
-                any_cast<Tmdet::ValueObjects::HBond>(chain.residues[j].temp["hbond2"]).toResIdx == chain.residues[i+1].idx)) ||
-                ((any_cast<Tmdet::ValueObjects::HBond>(chain.residues[j-1].temp["hbond1"]).toResIdx == chain.residues[i].idx || 
-                any_cast<Tmdet::ValueObjects::HBond>(chain.residues[j-1].temp["hbond2"]).toResIdx == chain.residues[i].idx) &&
-                (any_cast<Tmdet::ValueObjects::HBond>(chain.residues[i].temp["hbond1"]).toResIdx == chain.residues[j+1].idx ||
-                any_cast<Tmdet::ValueObjects::HBond>(chain.residues[i].temp["hbond2"]).toResIdx == chain.residues[j+1].idx)));
+    bool Dssp::checkPb(Tmdet::VOs::Chain& chain, int i, int j) {
+        return (((any_cast<Tmdet::VOs::HBond>(chain.residues[i-1].temp["hbond1"]).toResIdx == chain.residues[j].idx ||
+                any_cast<Tmdet::VOs::HBond>(chain.residues[i-1].temp["hbond2"]).toResIdx == chain.residues[j].idx) &&
+                (any_cast<Tmdet::VOs::HBond>(chain.residues[j].temp["hbond1"]).toResIdx == chain.residues[i+1].idx ||
+                any_cast<Tmdet::VOs::HBond>(chain.residues[j].temp["hbond2"]).toResIdx == chain.residues[i+1].idx)) ||
+                ((any_cast<Tmdet::VOs::HBond>(chain.residues[j-1].temp["hbond1"]).toResIdx == chain.residues[i].idx || 
+                any_cast<Tmdet::VOs::HBond>(chain.residues[j-1].temp["hbond2"]).toResIdx == chain.residues[i].idx) &&
+                (any_cast<Tmdet::VOs::HBond>(chain.residues[i].temp["hbond1"]).toResIdx == chain.residues[j+1].idx ||
+                any_cast<Tmdet::VOs::HBond>(chain.residues[i].temp["hbond2"]).toResIdx == chain.residues[j+1].idx)));
     }
 
-    bool Dssp::checkApb(Tmdet::ValueObjects::Chain& chain, int i, int j) {
-        return  (((any_cast<Tmdet::ValueObjects::HBond>(chain.residues[i].temp["hbond1"]).toResIdx == chain.residues[j].idx ||
-                    any_cast<Tmdet::ValueObjects::HBond>(chain.residues[i].temp["hbond2"]).toResIdx == chain.residues[j].idx) &&
-                    (any_cast<Tmdet::ValueObjects::HBond>(chain.residues[j].temp["hbond1"]).toResIdx == chain.residues[i].idx ||
-                    any_cast<Tmdet::ValueObjects::HBond>(chain.residues[j].temp["hbond2"]).toResIdx == chain.residues[i].idx)) ||
-                    ((any_cast<Tmdet::ValueObjects::HBond>(chain.residues[i-1].temp["hbond1"]).toResIdx == chain.residues[j+1].idx ||
-                    any_cast<Tmdet::ValueObjects::HBond>(chain.residues[i-1].temp["hbond2"]).toResIdx == chain.residues[j+1].idx) &&
-                    (any_cast<Tmdet::ValueObjects::HBond>(chain.residues[i+1].temp["hbond1"]).toResIdx == chain.residues[j-1].idx ||
-                    any_cast<Tmdet::ValueObjects::HBond>(chain.residues[i+1].temp["hbond2"]).toResIdx == chain.residues[j-1].idx)));
+    bool Dssp::checkApb(Tmdet::VOs::Chain& chain, int i, int j) {
+        return  (((any_cast<Tmdet::VOs::HBond>(chain.residues[i].temp["hbond1"]).toResIdx == chain.residues[j].idx ||
+                    any_cast<Tmdet::VOs::HBond>(chain.residues[i].temp["hbond2"]).toResIdx == chain.residues[j].idx) &&
+                    (any_cast<Tmdet::VOs::HBond>(chain.residues[j].temp["hbond1"]).toResIdx == chain.residues[i].idx ||
+                    any_cast<Tmdet::VOs::HBond>(chain.residues[j].temp["hbond2"]).toResIdx == chain.residues[i].idx)) ||
+                    ((any_cast<Tmdet::VOs::HBond>(chain.residues[i-1].temp["hbond1"]).toResIdx == chain.residues[j+1].idx ||
+                    any_cast<Tmdet::VOs::HBond>(chain.residues[i-1].temp["hbond2"]).toResIdx == chain.residues[j+1].idx) &&
+                    (any_cast<Tmdet::VOs::HBond>(chain.residues[i+1].temp["hbond1"]).toResIdx == chain.residues[j-1].idx ||
+                    any_cast<Tmdet::VOs::HBond>(chain.residues[i+1].temp["hbond2"]).toResIdx == chain.residues[j-1].idx)));
     }
 
-    void Dssp::detectSecStructH(Tmdet::ValueObjects::Chain& chain,string key) {
+    void Dssp::detectSecStructH(Tmdet::VOs::Chain& chain,string key) {
         for( int i=1; i<chain.length-4; i++) {
             if (((any_cast<char>(chain.residues[i].temp[key])=='>') || 
                 (any_cast<char>(chain.residues[i].temp[key])=='x')) &&
@@ -220,7 +219,7 @@ namespace Tmdet::Utils {
         }
     }
 
-    void Dssp::detectSecStructG(Tmdet::ValueObjects::Chain& chain,string key) {
+    void Dssp::detectSecStructG(Tmdet::VOs::Chain& chain,string key) {
         for( int i=1; i<chain.length-3; i++) {
             if (((any_cast<char>(chain.residues[i].temp[key])=='>') || 
                 (any_cast<char>(chain.residues[i].temp[key])=='x')) &&
@@ -234,7 +233,7 @@ namespace Tmdet::Utils {
         }
     }
 
-    void Dssp::detectSecStructI(Tmdet::ValueObjects::Chain& chain,string key) {
+    void Dssp::detectSecStructI(Tmdet::VOs::Chain& chain,string key) {
         for( int i=1; i<chain.length-5; i++) {
             if (((any_cast<char>(chain.residues[i].temp[key])=='>') || 
                 (any_cast<char>(chain.residues[i].temp[key])=='x')) &&
@@ -248,7 +247,7 @@ namespace Tmdet::Utils {
         }
     }
 
-    bool Dssp::checkIfAreOther(Tmdet::ValueObjects::Chain& chain, Tmdet::Types::SecStruct what,int pos, int r) {
+    bool Dssp::checkIfAreOther(Tmdet::VOs::Chain& chain, Tmdet::Types::SecStruct what,int pos, int r) {
         for( int i=0; i<r; i++) {
             if (chain.residues[pos+i].ss != what and
                 chain.residues[pos+i].ss != Tmdet::Types::SecStructType::U) {
@@ -258,7 +257,7 @@ namespace Tmdet::Utils {
         return true;
     }
 
-    void Dssp::detectSecStructT(Tmdet::ValueObjects::Chain& chain) {
+    void Dssp::detectSecStructT(Tmdet::VOs::Chain& chain) {
         for(int i=4; i<chain.length; i++) {
             if (chain.residues[i].ss == Tmdet::Types::SecStructType::U &&
                 (checkIfTurn(chain,i,3,"t3") ||
@@ -269,7 +268,7 @@ namespace Tmdet::Utils {
         }
     }
 
-    bool Dssp::checkIfTurn(Tmdet::ValueObjects::Chain& chain,int pos, int r, string key) {
+    bool Dssp::checkIfTurn(Tmdet::VOs::Chain& chain,int pos, int r, string key) {
         for(int i =1; i<r; i++) {
             if (any_cast<char>(chain.residues[pos-i].temp[key]) == '>' || 
                 any_cast<char>(chain.residues[pos-i].temp[key]) == 'x') {
@@ -279,7 +278,7 @@ namespace Tmdet::Utils {
         return false;
     }
 
-    void Dssp::detectSecStructS(Tmdet::ValueObjects::Chain& chain) {
+    void Dssp::detectSecStructS(Tmdet::VOs::Chain& chain) {
         for(int i=2; i<chain.length-2; i++) {
             if (chain.residues[i].ss.code == Tmdet::Types::SecStructs.at('-').code) {
                 auto prev_ca_atom = chain.residues[i-2].gemmi.get_ca();
@@ -317,7 +316,7 @@ namespace Tmdet::Utils {
         }
     }
 
-    void Dssp::detectSecStructBE(Tmdet::ValueObjects::Chain& chain) {
+    void Dssp::detectSecStructBE(Tmdet::VOs::Chain& chain) {
         for(int i=1; i<chain.length-1; i++) {
             if (chain.orderDistance(i-1,i) == 1 && chain.orderDistance(i,i+1) == 1) {
                 if (any_cast<int>(chain.residues[i].temp["pb"]) >= 0) {

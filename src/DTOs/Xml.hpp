@@ -1,8 +1,8 @@
 #pragma once
 
 #include <string>
-#include <ValueObjects/Protein.hpp>
-#include <ValueObjects/Xml.hpp>
+#include <VOs/Protein.hpp>
+#include <VOs/Xml.hpp>
 
 namespace Tmdet::DTOs {
 
@@ -11,21 +11,21 @@ namespace Tmdet::DTOs {
             /**
              * @brief tmdet xml value object
              */
-            Tmdet::ValueObjects::Xml xmlData;
+            Tmdet::VOs::Xml xmlData;
 
             /**
              * @brief copy data from protein value object to xml value object
              * 
              * @param protein 
              */
-            void fromProtein(const Tmdet::ValueObjects::Protein& protein);
+            void fromProtein(const Tmdet::VOs::Protein& protein);
 
             /**
              * @brief copy data from xml value object to protein value object
              * 
              * @param protein 
              */
-            void toProtein(Tmdet::ValueObjects::Protein& protein) const;
+            void toProtein(Tmdet::VOs::Protein& protein) const;
 
         public:
 
@@ -42,7 +42,7 @@ namespace Tmdet::DTOs {
              * @param xmlPath 
              * @param protein 
              */
-            void read(const std::string& xmlPath, Tmdet::ValueObjects::Protein& protein);
+            void read(const std::string& xmlPath, Tmdet::VOs::Protein& protein);
 
             /**
              * @brief write xml value object to file
@@ -57,7 +57,7 @@ namespace Tmdet::DTOs {
              * @param xmlPath 
              * @param protein 
              */
-            void write(const std::string& xmlPath, const Tmdet::ValueObjects::Protein& protein);
+            void write(const std::string& xmlPath, const Tmdet::VOs::Protein& protein);
 
             /**
              * @brief change xml file to not transmembrane protein

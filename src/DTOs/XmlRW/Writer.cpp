@@ -9,10 +9,10 @@
 #include <Exceptions/SyntaxErrorException.hpp>
 #include <Helpers/String.hpp>
 #include <System/Logger.hpp>
-#include <ValueObjects/Membrane.hpp>
-#include <ValueObjects/TMatrix.hpp>
-#include <ValueObjects/Chain.hpp>
-#include <ValueObjects/Xml.hpp>
+#include <VOs/Membrane.hpp>
+#include <VOs/TMatrix.hpp>
+#include <VOs/Chain.hpp>
+#include <VOs/Xml.hpp>
 
 namespace Tmdet::DTOs::XmlRW {
 
@@ -50,7 +50,7 @@ namespace Tmdet::DTOs::XmlRW {
         _root.child(XML_NODE_RAWDATA).child(XML_NODE_TMTYPE).text() = ptype.c_str();
     }
 
-    void Writer::setTMatrix(Tmdet::ValueObjects::TMatrix& tmatrix) {
+    void Writer::setTMatrix(Tmdet::VOs::TMatrix& tmatrix) {
         auto pnode = _root.insert_child_after(XML_NODE_TRANSFORMATION, _root.child(XML_NODE_RAWDATA));
         pugi::xml_node node = pnode.append_child(XML_NODE_TRANSLATE);
         node.append_attribute(XML_ATTR_X) = std::format("{:.6f}",tmatrix.trans.x).c_str();
@@ -71,7 +71,7 @@ namespace Tmdet::DTOs::XmlRW {
         rowNode.append_attribute(XML_ATTR_Z) = std::format("{:.6f}",tmatrix.rot[2][2]).c_str();
     }
 
-    void Writer::setMembranes(std::vector<Tmdet::ValueObjects::Membrane>& membranes) {
+    void Writer::setMembranes(std::vector<Tmdet::VOs::Membrane>& membranes) {
         auto pnode = _root.insert_child_after(XML_NODE_MEMBRANES, _root.child(XML_NODE_TRANSFORMATION));
         for(auto& membrane : membranes) {
             pugi::xml_node node = pnode.append_child(XML_NODE_MEMBRANE);
@@ -82,7 +82,7 @@ namespace Tmdet::DTOs::XmlRW {
         }
     }
 
-    void Writer::setChains(const std::vector<Tmdet::ValueObjects::XmlChain>& chains) {
+    void Writer::setChains(const std::vector<Tmdet::VOs::XmlChain>& chains) {
         auto pnode = _root.insert_child_after(XML_NODE_CHAINS, _root.child(XML_NODE_MEMBRANES));
         for(const auto& chain: chains) {
             pugi::xml_node node = pnode.append_child(XML_NODE_CHAIN);
@@ -98,7 +98,7 @@ namespace Tmdet::DTOs::XmlRW {
         }
     }
 
-    void Writer::setRegions(pugi::xml_node& pnode, const std::vector<Tmdet::ValueObjects::Region>& regions) const {
+    void Writer::setRegions(pugi::xml_node& pnode, const std::vector<Tmdet::VOs::Region>& regions) const {
         pugi::xml_node regions_node = pnode.append_child(XML_NODE_REGIONS);
         for(const auto& r: regions) {
             pugi::xml_node node = regions_node.append_child(XML_NODE_REGION);
@@ -116,7 +116,7 @@ namespace Tmdet::DTOs::XmlRW {
         }
     }
             
-    void Writer::writeXml(Tmdet::ValueObjects::Xml& xmlData, const std::string& path) {
+    void Writer::writeXml(Tmdet::VOs::Xml& xmlData, const std::string& path) {
         DEBUG_LOG("Processing: Writer::writeXml({})",path);
         create();
         setTmp(xmlData.tmp);

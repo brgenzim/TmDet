@@ -18,7 +18,7 @@ AUX_SOURCE_DIRECTORY( Services ServicesSources )
 AUX_SOURCE_DIRECTORY( System SystemSources )
 AUX_SOURCE_DIRECTORY( Types TypesSources )
 AUX_SOURCE_DIRECTORY( Utils UtilsSources )
-AUX_SOURCE_DIRECTORY( ValueObjects ValueObjectsSources )
+AUX_SOURCE_DIRECTORY( VOs VOsSources )
 AUX_SOURCE_DIRECTORY( "${PROJECT_SOURCE_DIR}/../contrib/pugixml/src/" PugiSources)
 
 LIST (APPEND FULL_SRC
@@ -32,7 +32,7 @@ LIST (APPEND FULL_SRC
      ${SystemSources}
      ${TypesSources}
      ${UtilsSources}
-     ${ValueObjectsSources}
+     ${VOsSources}
      ${XmlSources}
      ${PugiSources}
 )

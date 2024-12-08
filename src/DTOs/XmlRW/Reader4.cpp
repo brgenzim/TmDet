@@ -6,11 +6,11 @@
 #include <DTOs/XmlRW/Constants4.hpp>
 #include <DTOs/XmlRW/Reader4.hpp>
 #include <System/Logger.hpp>
-#include <ValueObjects/Membrane.hpp>
-#include <ValueObjects/BioMatrix.hpp>
-#include <ValueObjects/Modification.hpp>
-#include <ValueObjects/TMatrix.hpp>
-#include <ValueObjects/Xml.hpp>
+#include <VOs/Membrane.hpp>
+#include <VOs/BioMatrix.hpp>
+#include <VOs/Modification.hpp>
+#include <VOs/TMatrix.hpp>
+#include <VOs/Xml.hpp>
 
 namespace Tmdet::DTOs::XmlRW {
 
@@ -18,7 +18,7 @@ namespace Tmdet::DTOs::XmlRW {
         _root = doc.child(XML_NODE_ROOT);
     }
 
-    void Reader4::readXml(Tmdet::ValueObjects::Xml& xmlData) {
+    void Reader4::readXml(Tmdet::VOs::Xml& xmlData) {
         xmlData.tmp = getTmp();
         xmlData.code = getCode();
         xmlData.date = getCreateDate();
@@ -53,8 +53,8 @@ namespace Tmdet::DTOs::XmlRW {
         return _root.child(XML_NODE_RAWDATA).child(XML_NODE_TMTYPE).text().get();
     }
 
-    Tmdet::ValueObjects::TMatrix Reader4::getTMatrix(const pugi::xml_node& pnode) const {
-        Tmdet::ValueObjects::TMatrix tmatrix;
+    Tmdet::VOs::TMatrix Reader4::getTMatrix(const pugi::xml_node& pnode) const {
+        Tmdet::VOs::TMatrix tmatrix;
         pugi::xml_node node = pnode.child(XML_NODE_TRANSLATE);
         tmatrix.trans.x = node.attribute(XML_ATTR_X).as_double();
         tmatrix.trans.y = node.attribute(XML_ATTR_Y).as_double();
@@ -75,9 +75,9 @@ namespace Tmdet::DTOs::XmlRW {
         return tmatrix;
     }
 
-    std::vector<Tmdet::ValueObjects::Membrane> Reader4::getMembranes() const {
+    std::vector<Tmdet::VOs::Membrane> Reader4::getMembranes() const {
         auto pnode = _root.child(XML_NODE_MEMBRANES);
-        std::vector<Tmdet::ValueObjects::Membrane> membranes;
+        std::vector<Tmdet::VOs::Membrane> membranes;
         for (pugi::xml_node membraneNode: pnode.children(XML_NODE_MEMBRANE)) {
             membranes.emplace_back(
                 membraneNode.attribute(XML_ATTR_Z).as_double(),
@@ -91,8 +91,8 @@ namespace Tmdet::DTOs::XmlRW {
         return membranes;
     }
 
-    std::vector<Tmdet::ValueObjects::XmlChain> Reader4::getChains() {
-        std::vector<Tmdet::ValueObjects::XmlChain> xmlChains;
+    std::vector<Tmdet::VOs::XmlChain> Reader4::getChains() {
+        std::vector<Tmdet::VOs::XmlChain> xmlChains;
         auto pnode = _root.child(XML_NODE_CHAINS);
         for (pugi::xml_node chainNode: pnode.children(XML_NODE_CHAIN)) {
             auto type = chainNode.attribute(XML_ATTR_TYPE).as_string();
@@ -109,11 +109,11 @@ namespace Tmdet::DTOs::XmlRW {
         return xmlChains;
     }
 
-    std::vector<Tmdet::ValueObjects::Region> Reader4::getRegions(const pugi::xml_node& pnode) const {
-        std::vector<Tmdet::ValueObjects::Region> regions;
+    std::vector<Tmdet::VOs::Region> Reader4::getRegions(const pugi::xml_node& pnode) const {
+        std::vector<Tmdet::VOs::Region> regions;
         
         for(pugi::xml_node node: pnode.child(XML_NODE_REGIONS).children(XML_NODE_REGION)) {
-            Tmdet::ValueObjects::Region region = {
+            Tmdet::VOs::Region region = {
                 {
                     node.attribute(XML_ATTR_START_AUTH_ID).as_int(),
                     (node.attribute(XML_ATTR_START_AUTH_ICODE)?node.attribute(XML_ATTR_START_AUTH_ICODE).as_string()[0]:' '),

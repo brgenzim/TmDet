@@ -5,17 +5,17 @@
 #include <Config.hpp>
 #include <System/Logger.hpp>
 #include <Types/Chain.hpp>
-#include <ValueObjects/Residue.hpp>
-#include <ValueObjects/Region.hpp>
-#include <ValueObjects/SecStrVec.hpp>
+#include <VOs/Residue.hpp>
+#include <VOs/Region.hpp>
+#include <VOs/SecStrVec.hpp>
 #include <gemmi/model.hpp>
 
 /**
  * @brief namespace for value objects
  * @namespace Tmdet
- * @namespace ValueObjects
+ * @namespace VOs
  */
-namespace Tmdet::ValueObjects {
+namespace Tmdet::VOs {
 
     /**
      * @brief chain in the protein
@@ -57,7 +57,7 @@ namespace Tmdet::ValueObjects {
         std::string seq;
 
         /**
-         * @brief list of Tmdet ValueObjects Residues in the chain
+         * @brief list of Tmdet VOs Residues in the chain
          */
         std::vector<Residue> residues;
 
@@ -91,7 +91,7 @@ namespace Tmdet::ValueObjects {
          * 
          * @param tmatrix 
          */
-        void transform(Tmdet::ValueObjects::TMatrix& tmatrix);
+        void transform(Tmdet::VOs::TMatrix& tmatrix);
 
         template<typename T>
         void eachResidue(T func) {

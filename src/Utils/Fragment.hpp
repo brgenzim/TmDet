@@ -1,10 +1,10 @@
 #pragma once
 #include <vector>
 #include <gemmi/model.hpp>
-#include <ValueObjects/Protein.hpp>
-#include <ValueObjects/Residue.hpp>
+#include <VOs/Protein.hpp>
+#include <VOs/Residue.hpp>
 
-namespace StructVO = Tmdet::ValueObjects;
+namespace StructVO = Tmdet::VOs;
 
 #define CA_DIST 8.0
 #define MAX_DIST 10000000

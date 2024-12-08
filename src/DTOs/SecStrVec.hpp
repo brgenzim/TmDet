@@ -2,7 +2,7 @@
 
 #include <string>
 #include <format>
-#include <ValueObjects/SecStrVec.hpp>
+#include <VOs/SecStrVec.hpp>
 
 /**
  * @namespace Tmdet
@@ -15,7 +15,7 @@ namespace Tmdet::DTOs {
         /**
          * @brief print value object content for debugging purpose
          */
-        static std::string toString(const Tmdet::ValueObjects::SecStrVec& vec) {
+        static std::string toString(const Tmdet::VOs::SecStrVec& vec) {
             return std::format(R"(
     SecStrVec type: {} begin: [{}, {}, {}] end: [{}, {}, {}] chainIdx: {} begResIdx: {} endResIdx: {}
 )",

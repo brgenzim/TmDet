@@ -11,15 +11,15 @@
 #include <System/Logger.hpp>
 #include <System/FilePaths.hpp>
 #include <Types/Residue.hpp>
-#include <ValueObjects/Protein.hpp>
+#include <VOs/Protein.hpp>
 #include <Utils/Surface.hpp>
 
 using namespace std;
-namespace StructVO = Tmdet::ValueObjects;
+namespace StructVO = Tmdet::VOs;
 
 namespace Tmdet::Utils {
 
-    void surfaceCache::proteinFromCache(Tmdet::ValueObjects::Protein& protein) {
+    void surfaceCache::proteinFromCache(Tmdet::VOs::Protein& protein) {
         unsigned int i =0;
         for(auto& c : protein.chains) {
             if (c.selected) {
@@ -28,7 +28,7 @@ namespace Tmdet::Utils {
         }
     }
 
-    void surfaceCache::chainFromCache(Tmdet::ValueObjects::Chain& chain, unsigned int& index) {
+    void surfaceCache::chainFromCache(Tmdet::VOs::Chain& chain, unsigned int& index) {
         for (auto& r : chain.residues) {
             r.surface = 0.0;
             r.outSurface = 0.0;
@@ -43,7 +43,7 @@ namespace Tmdet::Utils {
         }
     }
 
-    void surfaceCache::proteinToCache(const Tmdet::ValueObjects::Protein& protein) {
+    void surfaceCache::proteinToCache(const Tmdet::VOs::Protein& protein) {
         cache.clear();
         for( const auto& c : protein.chains) {
             if (c.selected) {
@@ -52,7 +52,7 @@ namespace Tmdet::Utils {
         }
     }
 
-    void surfaceCache::chainToCache(const Tmdet::ValueObjects::Chain& chain) {
+    void surfaceCache::chainToCache(const Tmdet::VOs::Chain& chain) {
         for (const auto& r : chain.residues) {
             for(const auto& a : r.atoms) {
                 cache.push_back(a.surface);
@@ -61,7 +61,7 @@ namespace Tmdet::Utils {
         }
     }
 
-    bool surfaceCache::read(Tmdet::ValueObjects::Protein& protein) {
+    bool surfaceCache::read(Tmdet::VOs::Protein& protein) {
         DEBUG_LOG("Processing surfaceCache::read()");
         std::string hash = protein.hash();
         std::string dir = Tmdet::System::FilePaths::cache(hash);
@@ -81,7 +81,7 @@ namespace Tmdet::Utils {
         return true;
     }
 
-    void surfaceCache::write(const Tmdet::ValueObjects::Protein& protein) {
+    void surfaceCache::write(const Tmdet::VOs::Protein& protein) {
         DEBUG_LOG("Processing surfaceCache::write()");
         proteinToCache(protein);
         std::string hash = protein.hash();
@@ -116,7 +116,7 @@ namespace Tmdet::Utils {
         DEBUG_LOG("Processing Surface::initTempData()");
         const double probSize = std::stof(environment.get("TMDET_SURF_PROBSIZE",DEFAULT_TMDET_SURF_PROBSIZE));
         protein.eachSelectedResidue(
-            [&](Tmdet::ValueObjects::Residue& residue) -> void {
+            [&](Tmdet::VOs::Residue& residue) -> void {
                 for(auto& atom: residue.atoms) {
                     Tmdet::Types::Residue residueType = Tmdet::Types::ResidueType::getResidue(residue.gemmi.name);
                     double vdw = probSize;
@@ -135,7 +135,7 @@ namespace Tmdet::Utils {
     void Surface::setContacts() {
         DEBUG_LOG("Processing Surface::setContacts()");
         protein.eachSelectedResidue(
-            [&](Tmdet::ValueObjects::Residue& residue) -> void {
+            [&](Tmdet::VOs::Residue& residue) -> void {
                 residue.surface = 0.0;
                 for(auto& atom: residue.atoms) {
                     setContactsOfAtom(atom);
@@ -146,7 +146,7 @@ namespace Tmdet::Utils {
         DEBUG_LOG(" Processed Surface::setContacts()");
     }
 
-    void Surface::setContactsOfAtom(Tmdet::ValueObjects::Atom& a_atom) {
+    void Surface::setContactsOfAtom(Tmdet::VOs::Atom& a_atom) {
         surfTemp st;
         for(auto m : protein.neighbors.find_neighbors(a_atom.gemmi, 0.1, 7.0)) {
             if (protein.chains[m->chain_idx].selected) {
@@ -160,7 +160,7 @@ namespace Tmdet::Utils {
         calcSurfaceOfAtom(a_atom, st);
     }
 
-    void Surface::setNeighbor(const Tmdet::ValueObjects::Atom& a_atom, const Tmdet::ValueObjects::Atom& b_atom, surfTemp& st) {
+    void Surface::setNeighbor(const Tmdet::VOs::Atom& a_atom, const Tmdet::VOs::Atom& b_atom, surfTemp& st) {
         double dx=a_atom.gemmi.pos.x-b_atom.gemmi.pos.x;
         double dy=a_atom.gemmi.pos.y-b_atom.gemmi.pos.y;
         double d2 = (dx*dx)+(dy*dy);
@@ -170,7 +170,7 @@ namespace Tmdet::Utils {
         st.neighbors.emplace_back(sn);
     }
 
-    void Surface::calcSurfaceOfAtom(Tmdet::ValueObjects::Atom& a_atom, surfTemp& st) {
+    void Surface::calcSurfaceOfAtom(Tmdet::VOs::Atom& a_atom, surfTemp& st) {
         const double zSlice = std::stof(environment.get("TMDET_SURF_ZSLICE",DEFAULT_TMDET_SURF_ZSLICE));
         a_atom.surface = 0.0;
         const auto& a_gatom = a_atom.gemmi;
@@ -181,7 +181,7 @@ namespace Tmdet::Utils {
         a_atom.surface *= vdwa;
     }
 
-    bool Surface::calcArcsOfAtom(Tmdet::ValueObjects::Atom& a_atom, surfTemp& st, double z) {
+    bool Surface::calcArcsOfAtom(Tmdet::VOs::Atom& a_atom, surfTemp& st, double z) {
         double vdwa = VDW(a_atom);
         double ra2 = vdwa * vdwa - (a_atom.gemmi.pos.z - z) * (a_atom.gemmi.pos.z - z);
         double ra = sqrt(ra2);
@@ -228,7 +228,7 @@ namespace Tmdet::Utils {
         return ss;
     }
 
-    double Surface::calcSumArcsOfAtom(const Tmdet::ValueObjects::Atom& atom, surfTemp& st, bool ss) const {
+    double Surface::calcSumArcsOfAtom(const Tmdet::VOs::Atom& atom, surfTemp& st, bool ss) const {
         double arcsum = (ss?2.0*M_PI:0.0);
         int n = (int)(st.arc1.size());
         if (ss && n>0) {
@@ -268,7 +268,7 @@ namespace Tmdet::Utils {
             }
         }
         protein.eachSelectedResidue(
-            [&](Tmdet::ValueObjects::Residue& residue) -> void {
+            [&](Tmdet::VOs::Residue& residue) -> void {
                 double q = 0;
                 for(auto& atom: residue.atoms) {
                     q += atom.outSurface;
@@ -284,7 +284,7 @@ namespace Tmdet::Utils {
         box.zmin=10000; box.zmax=-10000;        
 	    
         protein.eachSelectedResidue(
-            [&](Tmdet::ValueObjects::Residue& residue) -> void {
+            [&](Tmdet::VOs::Residue& residue) -> void {
                 for(const auto& atom: residue.atoms) {
                     box.xmin = MIN(box.xmin,atom.gemmi.pos.x);
                     box.xmax = MAX(box.xmax,atom.gemmi.pos.x);
@@ -307,7 +307,7 @@ namespace Tmdet::Utils {
 
     void Surface::initFrame(boundingBox& box) {
         for (int i=0; i<(box.zmax-box.zmin)+1; i++) {
-            box.closestAtoms.emplace_back(vector<Tmdet::ValueObjects::Atom *>(box.op));
+            box.closestAtoms.emplace_back(vector<Tmdet::VOs::Atom *>(box.op));
             box.frame.emplace_back(vector<gemmi::Position>(box.op));
         }
         box.closestDist = vector<double>(box.zmax-box.zmin+1);
@@ -339,7 +339,7 @@ namespace Tmdet::Utils {
 
     void Surface::setFrame(boundingBox& box) {
         protein.eachSelectedResidue(
-            [&](Tmdet::ValueObjects::Residue& residue) -> void {
+            [&](Tmdet::VOs::Residue& residue) -> void {
                 residue.outSurface = 0.0;
                 for(auto& atom: residue.atoms) {
                     atom.outSurface = 0.0;
@@ -409,7 +409,7 @@ namespace Tmdet::Utils {
 			    box.closestDist[j] = 10000000;
             }
             protein.eachSelectedResidue(
-                [&](Tmdet::ValueObjects::Residue& residue) -> void {
+                [&](Tmdet::VOs::Residue& residue) -> void {
                     for(auto& atom: residue.atoms) {
                         int z = (int)(atom.gemmi.pos.z-box.zmin);
                         double dist = 

@@ -5,8 +5,8 @@
 #include <iostream>
 #include <fstream>
 #include <System/FilePaths.hpp>
-#include <ValueObjects/SecStrVec.hpp>
-#include <ValueObjects/Protein.hpp>
+#include <VOs/SecStrVec.hpp>
+#include <VOs/Protein.hpp>
 
 namespace Tmdet::Helpers {
 
@@ -14,7 +14,7 @@ namespace Tmdet::Helpers {
         private:
             std::string pmlFileName;
             std::ofstream os;
-            const Tmdet::ValueObjects::Protein& protein;
+            const Tmdet::VOs::Protein& protein;
             const std::vector<std::string> colors = {
                 "limon", //MEMB
                 "yellow", //HELIX
@@ -38,7 +38,7 @@ namespace Tmdet::Helpers {
 
         public:
 
-            explicit Pymol(const Tmdet::ValueObjects::Protein& protein) :
+            explicit Pymol(const Tmdet::VOs::Protein& protein) :
                 protein(protein) {}
 
             void show();

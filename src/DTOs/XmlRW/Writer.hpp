@@ -3,11 +3,11 @@
 #include <string>
 #include <vector>
 #include <pugixml.hpp>
-#include <ValueObjects/Chain.hpp>
-#include <ValueObjects/Membrane.hpp>
-#include <ValueObjects/Protein.hpp>
-#include <ValueObjects/TMatrix.hpp>
-#include <ValueObjects/Xml.hpp>
+#include <VOs/Chain.hpp>
+#include <VOs/Membrane.hpp>
+#include <VOs/Protein.hpp>
+#include <VOs/TMatrix.hpp>
+#include <VOs/Xml.hpp>
 
 /**
  * @brief namespace for tmdet xml data transfer objects
@@ -112,21 +112,21 @@ namespace Tmdet::DTOs::XmlRW {
              * 
              * @param tmatrix 
              */
-            void setTMatrix(Tmdet::ValueObjects::TMatrix& tmatrix);
+            void setTMatrix(Tmdet::VOs::TMatrix& tmatrix);
 
             /**
              * @brief Set the content of MEMBRANE node
              * 
              * @param membranes 
              */
-            void setMembranes(std::vector<Tmdet::ValueObjects::Membrane>& membranes);
+            void setMembranes(std::vector<Tmdet::VOs::Membrane>& membranes);
 
             /**
              * @brief Set the content of CHAIN node
              * 
              * @param chains 
              */
-            void setChains(const std::vector<Tmdet::ValueObjects::XmlChain>& chains);
+            void setChains(const std::vector<Tmdet::VOs::XmlChain>& chains);
 
             /**
              * @brief Set the content of REGION node
@@ -134,8 +134,8 @@ namespace Tmdet::DTOs::XmlRW {
              * @param pnode 
              * @param regions 
              */
-            void setRegions(pugi::xml_node& pnode, const std::vector<Tmdet::ValueObjects::Region>& regions) const;
+            void setRegions(pugi::xml_node& pnode, const std::vector<Tmdet::VOs::Region>& regions) const;
           public:
-            void writeXml(Tmdet::ValueObjects::Xml& xmlData, const std::string& path);
+            void writeXml(Tmdet::VOs::Xml& xmlData, const std::string& path);
     };
 }

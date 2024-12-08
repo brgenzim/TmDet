@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include <ValueObjects/Region.hpp>
+#include <VOs/Region.hpp>
 
 /**
  * @namespace Tmdet
@@ -14,6 +14,6 @@ namespace Tmdet::DTOs {
         /**
          * @brief print value object content of the region
          */
-        static std::string toString(const Tmdet::ValueObjects::Region& region);
+        static std::string toString(const Tmdet::VOs::Region& region);
     };
 }

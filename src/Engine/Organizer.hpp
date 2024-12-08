@@ -3,12 +3,13 @@
 #include <vector>
 #include <map>
 #include <set>
+#include <memory>
 
 #include <Engine/Optimizer.hpp>
 #include <System/Arguments.hpp>
-#include <ValueObjects/Protein.hpp>
-#include <ValueObjects/Chain.hpp>
-#include <ValueObjects/Protein.hpp>
+#include <VOs/Protein.hpp>
+#include <VOs/Chain.hpp>
+#include <VOs/Protein.hpp>
 
 /**
  * @brief name space for tmdet engine
@@ -25,7 +26,7 @@ namespace Tmdet::Engine {
             /**
              * @brief structure and tmdet data containing value object
              */
-            Tmdet::ValueObjects::Protein& protein;
+            Tmdet::VOs::Protein& protein;
 
             /**
              * @brief command line arguments
@@ -48,7 +49,7 @@ namespace Tmdet::Engine {
              * @param chainVO 
              * @return unsigned int 
              */
-            unsigned int selectChain(Tmdet::ValueObjects::Chain& chainVO);
+            unsigned int selectChain(Tmdet::VOs::Chain& chainVO);
 
             /**
              * @brief calculate the secondary structure of selected chains
@@ -66,7 +67,7 @@ namespace Tmdet::Engine {
              *        is that and the rotational axes for that part and check if
              *        the rotational axes can be the membrane normal
              */
-            void checkSymmetry(Tmdet::Engine::Optimizer& optimizer);
+            void checkSymmetry(std::unique_ptr<Tmdet::Engine::Optimizer>& optimizer);
 
             /**
              * @brief if no symmetry in the molecule or it can not be the membrane plane
@@ -88,7 +89,7 @@ namespace Tmdet::Engine {
              * @param protein the protein structure
              * @param args    command line arguments
              */
-            explicit Organizer(Tmdet::ValueObjects::Protein& protein, Tmdet::System::Arguments& args) :
+            explicit Organizer(Tmdet::VOs::Protein& protein, Tmdet::System::Arguments& args) :
                 protein(protein),
                 args(args) {
                     run();

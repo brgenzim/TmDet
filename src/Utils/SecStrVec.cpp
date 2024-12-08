@@ -15,9 +15,9 @@
 #include <Types/Residue.hpp>
 #include <Utils/Surface.hpp>
 #include <Utils/SecStrVec.hpp>
-#include <ValueObjects/Protein.hpp>
-#include <ValueObjects/Chain.hpp>
-#include <ValueObjects/SecStrVec.hpp>
+#include <VOs/Protein.hpp>
+#include <VOs/Chain.hpp>
+#include <VOs/SecStrVec.hpp>
 
 using namespace std;
 
@@ -51,18 +51,18 @@ namespace Tmdet::Utils {
     }
 
     
-    bool SecStrVec::getNextRegion(Tmdet::ValueObjects::Chain& chain, int& begin, int& end) const {
+    bool SecStrVec::getNextRegion(Tmdet::VOs::Chain& chain, int& begin, int& end) const {
         return (getNextNotUnkown(chain, begin) && getNextSame(chain, begin, end));
     }
 
-    bool SecStrVec::getNextNotUnkown(Tmdet::ValueObjects::Chain& chain, int& begin) const {
+    bool SecStrVec::getNextNotUnkown(Tmdet::VOs::Chain& chain, int& begin) const {
         while(begin < (int)chain.residues.size() && chain.residues[begin].ss == Tmdet::Types::SecStructType::U) {
             begin++;
         }
         return (begin < (int)chain.residues.size());
     }
 
-    bool SecStrVec::getNextSame(Tmdet::ValueObjects::Chain& chain, const int& begin, int& end) const {
+    bool SecStrVec::getNextSame(Tmdet::VOs::Chain& chain, const int& begin, int& end) const {
         end = begin+1;
         while(end < (int)chain.residues.size() && chain.residues[begin].ss.same(chain.residues[end].ss)) {
             end++;
@@ -70,26 +70,26 @@ namespace Tmdet::Utils {
         return true;
     }
 
-    Tmdet::ValueObjects::SecStrVec SecStrVec::getVector(Tmdet::ValueObjects::Chain& chain, int begin, int end) const {
+    Tmdet::VOs::SecStrVec SecStrVec::getVector(Tmdet::VOs::Chain& chain, int begin, int end) const {
         DEBUG_LOG("SecStrVec defined: {}-{}-{}",chain.id,begin,end);
         return (chain.residues[begin].ss.isAlpha()?
                     getAlphaVector(chain, begin, end):
                     getBetaVector(chain,begin,end));
     }
 
-    Tmdet::ValueObjects::SecStrVec SecStrVec::getAlphaVector(Tmdet::ValueObjects::Chain& chain, int begin, int end) const {
+    Tmdet::VOs::SecStrVec SecStrVec::getAlphaVector(Tmdet::VOs::Chain& chain, int begin, int end) const {
         auto b = getMeanPosition(chain,begin);
         auto e = getMeanPosition(chain,end-3);
         auto v = (e -b).normalized();
         b -= 2 * v;
         e += 4 * v;
-        return Tmdet::ValueObjects::SecStrVec({
+        return Tmdet::VOs::SecStrVec({
             Tmdet::Types::SecStructType::H,
             b, e, chain.idx, begin, end
         });
     }
 
-    gemmi::Vec3 SecStrVec::getMeanPosition(Tmdet::ValueObjects::Chain& chain, int pos) const {
+    gemmi::Vec3 SecStrVec::getMeanPosition(Tmdet::VOs::Chain& chain, int pos) const {
         gemmi::Vec3 vec(0,0,0);
         int i = 0;
         int j = 0;
@@ -106,7 +106,7 @@ namespace Tmdet::Utils {
         return vec;
     }
 
-    Tmdet::ValueObjects::SecStrVec SecStrVec::getBetaVector(Tmdet::ValueObjects::Chain& chain, int begin, int end) const {
+    Tmdet::VOs::SecStrVec SecStrVec::getBetaVector(Tmdet::VOs::Chain& chain, int begin, int end) const {
         auto ca = getCa(chain,begin,end);
         auto b = gemmi::Vec3(ca->pos);
         ca = getCa(chain,end,begin);
@@ -114,13 +114,13 @@ namespace Tmdet::Utils {
         auto v = (e -b).normalized();
         b -= v;
         e += v;
-        return Tmdet::ValueObjects::SecStrVec({
+        return Tmdet::VOs::SecStrVec({
             Tmdet::Types::SecStructType::E,
             b, e, chain.idx, begin, end
         });
     }
 
-    const gemmi::Atom* SecStrVec::getCa(Tmdet::ValueObjects::Chain& chain, int begin, int end) const {
+    const gemmi::Atom* SecStrVec::getCa(Tmdet::VOs::Chain& chain, int begin, int end) const {
         int direction = (end-begin) / std::abs(end-begin);
         auto i = begin;
         while((direction == 1 && i<end) || (direction == -1 && i>end)) {
@@ -154,7 +154,7 @@ namespace Tmdet::Utils {
         }
     }
 
-    bool SecStrVec::checkAlphaVectorForSplitting(const Tmdet::ValueObjects::SecStrVec& vector) {
+    bool SecStrVec::checkAlphaVectorForSplitting(const Tmdet::VOs::SecStrVec& vector) {
         if (vector.endResIdx - vector.begResIdx < 15) {
             return true;
         }
@@ -167,10 +167,10 @@ namespace Tmdet::Utils {
         return true;
     }
 
-    std::vector<Tmdet::ValueObjects::SecStrVec> SecStrVec::splitAlphaVector(const Tmdet::ValueObjects::SecStrVec& vector) {
-        std::vector<Tmdet::ValueObjects::SecStrVec> ret;
+    std::vector<Tmdet::VOs::SecStrVec> SecStrVec::splitAlphaVector(const Tmdet::VOs::SecStrVec& vector) {
+        std::vector<Tmdet::VOs::SecStrVec> ret;
         int begResIdx = vector.begResIdx;
-        Tmdet::ValueObjects::SecStrVec straightVec;
+        Tmdet::VOs::SecStrVec straightVec;
         while(begResIdx < vector.endResIdx) {
             if (getStraightVector(vector.chainIdx,begResIdx, vector.endResIdx, straightVec)) {
                 ret.emplace_back(straightVec);
@@ -180,7 +180,7 @@ namespace Tmdet::Utils {
         return ret;
     }
 
-    bool SecStrVec::getStraightVector(int chainIdx, int begResIdx, int endResIdxAll, Tmdet::ValueObjects::SecStrVec& vec) {
+    bool SecStrVec::getStraightVector(int chainIdx, int begResIdx, int endResIdxAll, Tmdet::VOs::SecStrVec& vec) {
         int p1=begResIdx;
         bool ok = true;
         while (ok) {
@@ -231,7 +231,7 @@ namespace Tmdet::Utils {
         }
     }
 
-    bool SecStrVec::checkAlphaVectorForMerging(const Tmdet::ValueObjects::SecStrVec& v1, const Tmdet::ValueObjects::SecStrVec& v2) const {
+    bool SecStrVec::checkAlphaVectorForMerging(const Tmdet::VOs::SecStrVec& v1, const Tmdet::VOs::SecStrVec& v2) const {
         double d = v1.end.dist(v2.begin);
         auto vv1 = v1.end - v1.begin;
         auto vv2 = v2.end - v2.begin;
@@ -244,9 +244,9 @@ namespace Tmdet::Utils {
         );
     }
 
-    Tmdet::ValueObjects::SecStrVec SecStrVec::mergeVectors(const Tmdet::ValueObjects::SecStrVec& v1, const Tmdet::ValueObjects::SecStrVec& v2) const {
+    Tmdet::VOs::SecStrVec SecStrVec::mergeVectors(const Tmdet::VOs::SecStrVec& v1, const Tmdet::VOs::SecStrVec& v2) const {
         DEBUG_LOG("merge");
-        return Tmdet::ValueObjects::SecStrVec({
+        return Tmdet::VOs::SecStrVec({
             v1.type,v1.begin,v2.end,v1.chainIdx,v1.begResIdx,v2.endResIdx
         });
     }

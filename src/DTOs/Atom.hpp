@@ -2,7 +2,7 @@
 
 #include <string>
 #include <gemmi/model.hpp>
-#include <ValueObjects/Atom.hpp>
+#include <VOs/Atom.hpp>
 
 /**
  * @brief namespace for data transfer objects
@@ -21,6 +21,6 @@ namespace Tmdet::DTOs {
          * 
          * @param atom
          */
-        static std::string toString(const Tmdet::ValueObjects::Atom& atom);
+        static std::string toString(const Tmdet::VOs::Atom& atom);
     };
 }

@@ -1,12 +1,12 @@
 #pragma once
 
 #include <string>
-#include <ValueObjects/TMatrix.hpp>
+#include <VOs/TMatrix.hpp>
 
 /**
  * @brief namespace for value objects
  */
-namespace Tmdet::ValueObjects {
+namespace Tmdet::VOs {
 
     /**
      * @brief transformation matrix and source chain identifiers

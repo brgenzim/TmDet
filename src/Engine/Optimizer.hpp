@@ -1,12 +1,13 @@
 #pragma once
 
-#include <array>
 #include <string>
 #include <vector>
 #include <gemmi/model.hpp>
-#include <ValueObjects/Protein.hpp>
-#include <ValueObjects/Residue.hpp>
-#include <ValueObjects/Membrane.hpp>
+#include <VOs/Protein.hpp>
+#include <VOs/Residue.hpp>
+#include <VOs/Membrane.hpp>
+#include <VOs/Slice.hpp>
+
 
 /**
  * @brief namespace for tmdet engine
@@ -15,69 +16,20 @@ namespace Tmdet::Engine {
 
 #define RES(res,a) (protein.chains[res.chainIdx].residues[res.idx + a])
 
-    /**
-     * @brief description of a slice
-     */
-    struct _slice {
-        
-        /**
-         * @brief apolar surface
-         */
-        double apol = 0.0;
-
-        /**
-         * @brief outside water accessible surface of the atoms in the slice
-         */
-        double surf = 0.0;
-
-        /**
-         * @brief ratio of straight element in the slice
-         */
-        double straight = 0.0;
-
-        /**
-         * @brief number of C alpha atoms in the slice
-         */
-        int numCa = 0;
-        
-        /**
-         * @brief number of sec structure ends
-         */
-        double ssEnd = 0;
-
-        double rawQ = 0.0;
-
-        /**
-         * @brief calculated qValue for the slice
-         */
-        double qValue = 0.0;
-    };
+    
 
     /**
      * @brief class for searching for membrane plane
      */
     class Optimizer {
-        private:
+        protected:
 
-            /**
-             * @brief flag for running (i.e. temporary containers are set)
-             */
-            bool run = false;
-
-            /**
-             * @brief minimum on z axes for the given normal vector
-             */
-            double min = 1e30;
-
-            /**
-             * @brief maximum on z axes for the given normal vector
-             */
-            double max = -1e30;
+            std::string type = "";
 
             /**
              * @brief 1 Angstrom wide slices of the protein along the z axes
              */
-            std::vector<_slice> slices;
+            std::vector<Tmdet::VOs::Slice> slices;
 
             /**
              * @brief the actual membrane normal
@@ -85,14 +37,9 @@ namespace Tmdet::Engine {
             gemmi::Vec3 normal;
 
             /**
-             * @brief the mass centre of the protein
-             */
-            gemmi::Vec3 massCentre;
-
-            /**
              * @brief the protein structure in Protein Value Object
              */
-            Tmdet::ValueObjects::Protein& protein;
+            Tmdet::VOs::Protein& protein;
 
             /**
              * @brief best qValue
@@ -107,10 +54,27 @@ namespace Tmdet::Engine {
             /**
              * @brief best slices
              */
-            std::vector<_slice> bestSlices;
+            std::vector<Tmdet::VOs::Slice> bestSlices;
 
+            /**
+             * @brief minimum on z axes for the given normal vector
+             */
+            double minZ = 1e30;
+
+            /**
+             * @brief maximum on z axes for the given normal vector
+             */
+            double maxZ = -1e30;
+
+            /**
+             * @brief the mass centre of the protein
+             */
+            gemmi::Vec3 massCentre;
 
             double lastO = 0;
+
+            double bestOrigo = 0;
+
 
             /**
              * @brief initialize the algorithm
@@ -122,7 +86,7 @@ namespace Tmdet::Engine {
              */
             void end();
 
-            double distance(gemmi::Vec3& vec);
+            virtual double distance(gemmi::Vec3& vec) = 0;
 
             /**
              * @brief Set the distances from the centre of membrane plane
@@ -165,6 +129,8 @@ namespace Tmdet::Engine {
 
             double getWidth(const int z, int& minz, int& maxz);
 
+            void testMembraneNormalOne();
+
             /**
              * @brief check if tests resulted valid membrane definition
              *
@@ -172,12 +138,19 @@ namespace Tmdet::Engine {
              */
             bool isTransmembrane() const;
 
+            virtual void setBestOrigo(double minz, double maxz) = 0;
+
             /**
              * @brief set membrane width using the best membrane definition
              *        and the qValues of slices
              * @return bool
              */
-            bool getMembrane(Tmdet::ValueObjects::Membrane& membrane, int count) ;
+            bool getMembrane(Tmdet::VOs::Membrane& membrane, int count);
+
+            /**
+             * @brief set membrane origo
+             */
+            virtual void setMembraneOrigo(Tmdet::VOs::Membrane& membrane, double minz, double maxz) = 0;
 
         public:
 
@@ -186,8 +159,10 @@ namespace Tmdet::Engine {
              * 
              * @param protein
              */
-            explicit Optimizer(Tmdet::ValueObjects::Protein& protein) : 
-                protein(protein) {}
+            explicit Optimizer(Tmdet::VOs::Protein& protein) : 
+                protein(protein) {
+                    init();
+                }
 
             /**
              * @brief Destroy the Optim object
@@ -207,7 +182,7 @@ namespace Tmdet::Engine {
             /**
              * @brief calculate Q value for a given normal
              */
-            void testMembraneNormal();
+            virtual void testMembraneNormal() = 0;
 
             /**
              * @brief copy membrane definition to the protein value object

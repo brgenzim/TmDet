@@ -2,7 +2,7 @@
 
 #include <string>
 #include <gemmi/model.hpp>
-#include <ValueObjects/Residue.hpp>
+#include <VOs/Residue.hpp>
 
 /**
  * @brief namespace for data transfer objects
@@ -23,15 +23,15 @@ namespace Tmdet::DTOs {
          * @param residue 
          * @param chainIdx 
          * @param residueIdx 
-         * @return Tmdet::ValueObjects::Residue 
+         * @return Tmdet::VOs::Residue 
          */
-        static Tmdet::ValueObjects::Residue get(gemmi::Residue& residue, int chainIdx, int residueIdx);
+        static Tmdet::VOs::Residue get(gemmi::Residue& residue, int chainIdx, int residueIdx);
 
         /**
          * @brief string representation of the residue
          * 
          * @param residueVO 
          */
-        static std::string toString(const Tmdet::ValueObjects::Residue& residueVO);
+        static std::string toString(const Tmdet::VOs::Residue& residueVO);
     };
 }

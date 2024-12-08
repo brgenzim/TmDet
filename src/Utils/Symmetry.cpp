@@ -10,7 +10,7 @@
 #include <Config.hpp>
 #include <System/Logger.hpp>
 #include <Types/Residue.hpp>
-#include <ValueObjects/Protein.hpp>
+#include <VOs/Protein.hpp>
 #include <Utils/Symmetry.hpp>
 #include <Utils/Oligomer.hpp>
 

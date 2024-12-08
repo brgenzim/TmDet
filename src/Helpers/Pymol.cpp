@@ -7,8 +7,8 @@
 #include <unistd.h>
 #include <System/Command.hpp>
 #include <System/FilePaths.hpp>
-#include <ValueObjects/SecStrVec.hpp>
-#include <ValueObjects/Protein.hpp>
+#include <VOs/SecStrVec.hpp>
+#include <VOs/Protein.hpp>
 #include <Helpers/Pymol.hpp>
 
 namespace Tmdet::Helpers {

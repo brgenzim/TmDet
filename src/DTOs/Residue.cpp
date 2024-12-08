@@ -3,13 +3,13 @@
 #include <gemmi/model.hpp>
 #include <DTOs/Atom.hpp>
 #include <DTOs/Residue.hpp>
-#include <ValueObjects/Atom.hpp>
-#include <ValueObjects/Residue.hpp>
+#include <VOs/Atom.hpp>
+#include <VOs/Residue.hpp>
 
 namespace Tmdet::DTOs {
 
-    Tmdet::ValueObjects::Residue Residue::get(gemmi::Residue& residue, int chainIdx, int residueIdx) {
-        auto residueVO = Tmdet::ValueObjects::Residue(residue);
+    Tmdet::VOs::Residue Residue::get(gemmi::Residue& residue, int chainIdx, int residueIdx) {
+        auto residueVO = Tmdet::VOs::Residue(residue);
         residueVO.chainIdx = chainIdx;
         residueVO.idx = residueIdx;
         residueVO.authId = (int)residue.seqid.num;
@@ -17,7 +17,7 @@ namespace Tmdet::DTOs {
         residueVO.authIcode = residue.seqid.icode;
         int atomIdx = 0;
         for(auto& atom: residue.atoms) {
-            auto atomVO = Tmdet::ValueObjects::Atom(atom);
+            auto atomVO = Tmdet::VOs::Atom(atom);
             atomVO.chainIdx = chainIdx;
             atomVO.residueIdx = residueIdx;
             atomVO.idx = atomIdx++;
@@ -27,7 +27,7 @@ namespace Tmdet::DTOs {
         return residueVO;
     }
 
-    std::string Residue::toString(const Tmdet::ValueObjects::Residue& residue) {
+    std::string Residue::toString(const Tmdet::VOs::Residue& residue) {
         std::string atoms = "";
         for(const auto& atom: residue.atoms) {
             atoms += Tmdet::DTOs::Atom::toString(atom);

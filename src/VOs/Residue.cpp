@@ -1,9 +1,9 @@
 #include <string>
 
-#include <ValueObjects/Residue.hpp>
+#include <VOs/Residue.hpp>
 #include <gemmi/elem.hpp>
 
-namespace Tmdet::ValueObjects {
+namespace Tmdet::VOs {
 
     void Residue::setProperties(std::string name) {
         if (Tmdet::Types::Residues.contains(name)) {
@@ -47,7 +47,7 @@ namespace Tmdet::ValueObjects {
         return ca;
     }
 
-    void Residue::transform(Tmdet::ValueObjects::TMatrix& tmatrix) {
+    void Residue::transform(Tmdet::VOs::TMatrix& tmatrix) {
         for(auto& atom: atoms) {
             atom.transform(tmatrix);
         }

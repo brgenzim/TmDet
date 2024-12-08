@@ -12,14 +12,14 @@
 #include <Helpers/String.hpp>
 #include <System/FilePaths.hpp>
 #include <System/Logger.hpp>
-#include <ValueObjects/Protein.hpp>
-#include <ValueObjects/Chain.hpp>
-#include <ValueObjects/Residue.hpp>
-#include <ValueObjects/Atom.hpp>
+#include <VOs/Protein.hpp>
+#include <VOs/Chain.hpp>
+#include <VOs/Residue.hpp>
+#include <VOs/Atom.hpp>
 
 namespace Tmdet::DTOs {
 
-    void Protein::writeCif(const Tmdet::ValueObjects::Protein& protein, const std::string& path) {
+    void Protein::writeCif(const Tmdet::VOs::Protein& protein, const std::string& path) {
         gemmi::cif::Document document = make_mmcif_document(protein.gemmi);
 
         // correction of _chem_comp
@@ -43,13 +43,12 @@ namespace Tmdet::DTOs {
         }
     }
 
-    Tmdet::ValueObjects::Protein Protein::get(const std::string& inputPath) {
+    Tmdet::VOs::Protein Protein::get(const std::string& inputPath) {
         DEBUG_LOG("Processing Protein::get()");
-        Tmdet::ValueObjects::Protein protein;
+        Tmdet::VOs::Protein protein;
         protein.getStructure(inputPath);
         protein.code = protein.gemmi.name;
         Tmdet::Helpers::String::toLower(protein.code);
-        DEBUG_LOG("Number of models: {}",protein.gemmi.models.size());
         remove_hydrogens(protein.gemmi.models[0]);
         remove_ligands_and_waters(protein.gemmi.models[0]);
         remove_alternative_conformations(protein.gemmi.models[0]);
@@ -62,11 +61,11 @@ namespace Tmdet::DTOs {
         }
         protein.neighbors = gemmi::NeighborSearch(protein.gemmi.models[0], protein.gemmi.cell, 9);
         protein.neighbors.populate();
-        DEBUG_LOG(" Processed Protein::get({})",toString(protein));
+        DEBUG_LOG(" Processed Protein::get()");
         return protein;
     }
 
-    void Protein::unselectAntiBodyChains(Tmdet::ValueObjects::Protein& protein) {
+    void Protein::unselectAntiBodyChains(Tmdet::VOs::Protein& protein) {
         for (auto& chain : protein.chains) {
             if (!protein.polymerNames.contains(chain.entityId)) {
                 continue;
@@ -82,7 +81,7 @@ namespace Tmdet::DTOs {
         }
     }
 
-    void Protein::unselectChains(const std::string& chainIds, Tmdet::ValueObjects::Protein& protein) {
+    void Protein::unselectChains(const std::string& chainIds, Tmdet::VOs::Protein& protein) {
         for(auto chainId: Tmdet::Helpers::String::explode(",",chainIds)) {
             if (int chainIdx = protein.searchChainById(chainId); chainIdx != -1) {
                 protein.chains[chainIdx].selected = false;
@@ -94,7 +93,7 @@ namespace Tmdet::DTOs {
         }
     }
 
-    std::string Protein::toString(const Tmdet::ValueObjects::Protein& protein) {
+    std::string Protein::toString(const Tmdet::VOs::Protein& protein) {
         std::string ret = "";
         for(const auto& chain: protein.chains) {
             ret += Tmdet::DTOs::Chain::toString(chain);
@@ -103,5 +102,30 @@ namespace Tmdet::DTOs {
             ret += Tmdet::DTOs::SecStrVec::toString(secStrVec);
         }
         return ret;
+    }
+
+    void Protein::addMembraneAtoms(Tmdet::VOs::Protein& protein) {
+        for (const auto& membrane: protein.membranes) {
+            if (membrane.type.isPlane()) {
+                addPlaneMembraneAtoms(protein, membrane);
+            }
+            else {
+                addBlendedMembraneAtoms(protein, membrane);
+            }
+        }
+    }
+
+    void Protein::addPlaneMembraneAtoms(Tmdet::VOs::Protein& protein, const Tmdet::VOs::Membrane& membrane) {
+        for (double x=-membrane.membraneRadius; x<=membrane.membraneRadius; x+=3) {
+            for (double y=-membrane.membraneRadius; y<=membrane.membraneRadius; y+=3) {
+                if (sqrt(x*x+y*y) < membrane.membraneRadius) {
+                    // todo add atoms to gemmi structure, but how???
+                }
+            }
+        }
+    }
+
+    void Protein::addBlendedMembraneAtoms(Tmdet::VOs::Protein& protein, const Tmdet::VOs::Membrane& membrane) {
+        
     }
 }

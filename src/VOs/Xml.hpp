@@ -4,13 +4,13 @@
 #include <vector>
 #include <Types/Chain.hpp>
 #include <Types/Protein.hpp>
-#include <ValueObjects/BioMatrix.hpp>
-#include <ValueObjects/Membrane.hpp>
-#include <ValueObjects/Modification.hpp>
-#include <ValueObjects/Region.hpp>
-#include <ValueObjects/TMatrix.hpp>
+#include <VOs/BioMatrix.hpp>
+#include <VOs/Membrane.hpp>
+#include <VOs/Modification.hpp>
+#include <VOs/Region.hpp>
+#include <VOs/TMatrix.hpp>
 
-namespace Tmdet::ValueObjects {
+namespace Tmdet::VOs {
 
     struct XmlChain {
 

@@ -7,7 +7,7 @@
 /**
  * @brief namespace for value objects
  */
-namespace Tmdet::ValueObjects {
+namespace Tmdet::VOs {
 
     /**
      * @brief description of a secondary structure vector

@@ -7,13 +7,13 @@
 #include <unordered_map>
 #include <Types/Residue.hpp>
 #include <Types/SecStruct.hpp>
-#include <ValueObjects/Atom.hpp>
+#include <VOs/Atom.hpp>
 #include <gemmi/model.hpp>
 
 /**
  * @brief namespace for value objects
  */
-namespace Tmdet::ValueObjects {
+namespace Tmdet::VOs {
 
     /**
      * @brief description of a Residue structure value objects
@@ -151,7 +151,7 @@ namespace Tmdet::ValueObjects {
          */
         bool isGap() const;
 
-        void transform(Tmdet::ValueObjects::TMatrix& tmatrix);
+        void transform(Tmdet::VOs::TMatrix& tmatrix);
 
         bool isInside() const;
     };

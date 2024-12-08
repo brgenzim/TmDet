@@ -17,10 +17,10 @@
 #include <System/Date.hpp>
 #include <System/Logger.hpp>
 #include <Types/Protein.hpp>
-#include <ValueObjects/Protein.hpp>
+#include <VOs/Protein.hpp>
 #include <Utils/Md5.hpp>
 
-namespace Tmdet::ValueObjects {
+namespace Tmdet::VOs {
 
     void Protein::getStructure(const std::string& inputPath) {
 
@@ -141,7 +141,7 @@ namespace Tmdet::ValueObjects {
 
     void Protein::transform() {
         eachChain(
-            [&](Tmdet::ValueObjects::Chain& chain) -> void {
+            [&](Tmdet::VOs::Chain& chain) -> void {
                 chain.transform(tmatrix);
             }
         );

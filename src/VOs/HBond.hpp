@@ -1,6 +1,6 @@
 #pragma once
 
-namespace Tmdet::ValueObjects {
+namespace Tmdet::VOs {
 
     /**
      * @brief simple representation of a hydrogen bond

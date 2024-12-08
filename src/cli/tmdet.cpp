@@ -18,7 +18,7 @@
 #include <System/Environment.hpp>
 #include <System/FilePaths.hpp>
 #include <System/Logger.hpp>
-#include <ValueObjects/Protein.hpp>
+#include <VOs/Protein.hpp>
 
 using namespace std;
 
@@ -36,6 +36,7 @@ Tmdet::System::Arguments getArguments(int argc, char *argv[]) {
     args.define(false,"xo","xml_output","Output xml file path","string","");
     args.define(false,"po","pdb_output","Output pdb file path","string","");
     args.define(false,"n","not","Set transmembrane='not' in the xml file","bool","false");
+    args.define(false,"bm","blended_membrane","Search for blended membrane","bool","false");
     args.define(false,"nc","no_cache","Do not use cached data","bool","false");
     args.define(false,"s","show","Show annotated structure by pymol","bool","false");
     args.define(false,"sp","show","Show parsed structure in the console","bool","false");

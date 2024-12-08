@@ -1,7 +1,7 @@
 #include <string>
 #include <format>
 #include <DTOs/Region.hpp>
-#include <ValueObjects/Region.hpp>
+#include <VOs/Region.hpp>
 
 /**
  * @namespace Tmdet
@@ -9,7 +9,7 @@
  */
 namespace Tmdet::DTOs {
 
-        std::string Region::toString(const Tmdet::ValueObjects::Region& region) {
+        std::string Region::toString(const Tmdet::VOs::Region& region) {
             return std::format(R"(
     REGION begin: {}-{}-{} end: {}-{}-{} type: {}
 )",

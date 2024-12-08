@@ -2,7 +2,7 @@
 
 #include <gemmi/model.hpp>
 #include <Engine/RegionHandler.hpp>
-#include <ValueObjects/Chain.hpp>
+#include <VOs/Chain.hpp>
 
 /**
  * @brief namespace for tmdet engine
@@ -11,7 +11,7 @@ namespace Tmdet::Engine {
 
     class BetaAnnotator {
         private:
-            Tmdet::ValueObjects::Chain& chain;
+            Tmdet::VOs::Chain& chain;
             Tmdet::Engine::RegionHandler& regionHandler;
             std::vector<int> reIndex;
 
@@ -19,17 +19,16 @@ namespace Tmdet::Engine {
             void init();
             void end();
             void detectBarrel();
+            int otherConnection(int beg, int end);
             double averageOutSurface(int beg, int end);
             double averageBeta(int beg, int end);
             double averageDirection(int beg, int end);
             int setCluster(int pos, int cluster, int count);
             void detectLoops();
             void detectBarrelInside();
-            void detectOutside();
-            bool isOut(Tmdet::ValueObjects::Residue& residue);
-        
+            
         public:
-            explicit BetaAnnotator(Tmdet::ValueObjects::Chain& chain, Tmdet::Engine::RegionHandler& regionHandler) :
+            explicit BetaAnnotator(Tmdet::VOs::Chain& chain, Tmdet::Engine::RegionHandler& regionHandler) :
                 chain(chain),
                 regionHandler(regionHandler) {
                     run();

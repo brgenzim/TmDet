@@ -3,12 +3,12 @@
 #include <string>
 #include <vector>
 #include <pugixml.hpp>
-#include <ValueObjects/Membrane.hpp>
-#include <ValueObjects/Modification.hpp>
-#include <ValueObjects/TMatrix.hpp>
-#include <ValueObjects/Chain.hpp>
-#include <ValueObjects/Protein.hpp>
-#include <ValueObjects/Xml.hpp>
+#include <VOs/Membrane.hpp>
+#include <VOs/Modification.hpp>
+#include <VOs/TMatrix.hpp>
+#include <VOs/Chain.hpp>
+#include <VOs/Protein.hpp>
+#include <VOs/Xml.hpp>
 
 /**
  * @brief namespace for tmdet xml data transfer objects
@@ -34,9 +34,9 @@ namespace Tmdet::DTOs::XmlRW {
              * @brief read transformation matrix from xml document object
              * 
              * @param node 
-             * @return Tmdet::ValueObjects::TMatrix 
+             * @return Tmdet::VOs::TMatrix 
              */
-            virtual Tmdet::ValueObjects::TMatrix getTMatrix(const pugi::xml_node& node) const = 0;
+            virtual Tmdet::VOs::TMatrix getTMatrix(const pugi::xml_node& node) const = 0;
 
             /**
              * @brief Get the value of tmp attribute
@@ -77,24 +77,24 @@ namespace Tmdet::DTOs::XmlRW {
             /**
              * @brief Get the content of MEMBRANE node
              * 
-             * @return std::vector<Tmdet::ValueObjects::Membrane> 
+             * @return std::vector<Tmdet::VOs::Membrane> 
              */
-            virtual std::vector<Tmdet::ValueObjects::Membrane> getMembranes() const = 0;
+            virtual std::vector<Tmdet::VOs::Membrane> getMembranes() const = 0;
 
             /**
              * @brief Get the content of CHAIN node
              * 
-             * @return std::vector<Tmdet::ValueObjects::XmlChain>
+             * @return std::vector<Tmdet::VOs::XmlChain>
              */
-            virtual std::vector<Tmdet::ValueObjects::XmlChain> getChains() = 0;
+            virtual std::vector<Tmdet::VOs::XmlChain> getChains() = 0;
 
             /**
              * @brief Get the content of REGION node
              * 
              * @param cnode 
-             * @return std::vector<Tmdet::ValueObjects::Region> 
+             * @return std::vector<Tmdet::VOs::Region> 
              */
-            virtual std::vector<Tmdet::ValueObjects::Region> getRegions(const pugi::xml_node& cnode) const = 0;
+            virtual std::vector<Tmdet::VOs::Region> getRegions(const pugi::xml_node& cnode) const = 0;
 
 
         public:
@@ -102,10 +102,10 @@ namespace Tmdet::DTOs::XmlRW {
             /**
              * @brief read tmdet xml file into Protein Value Object
              * 
-             * @param Tmdet::ValueObjects::Xml& xmlData
+             * @param Tmdet::VOs::Xml& xmlData
              * @param path 
              */
-            virtual void readXml(Tmdet::ValueObjects::Xml& xmlData) = 0;
+            virtual void readXml(Tmdet::VOs::Xml& xmlData) = 0;
 
             virtual ~BaseReader()=default;
 

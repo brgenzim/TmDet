@@ -16,7 +16,7 @@ namespace Tmdet::DTOs::XmlRW {
         return (root.child(XML_NODE_RAWDATA)?true:false);
     }
 
-    void Reader::readXml(Tmdet::ValueObjects::Xml& xmlData, const std::string& path) {
+    void Reader::readXml(Tmdet::VOs::Xml& xmlData, const std::string& path) {
         read(path);
         if (isVersion4()) {
             reader4.setRoot(doc);

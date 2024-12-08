@@ -5,12 +5,12 @@
 #include <cmath>
 #include <limits>
 #include <gemmi/model.hpp>
-#include <ValueObjects/Protein.hpp>
-#include <ValueObjects/Residue.hpp>
+#include <VOs/Protein.hpp>
+#include <VOs/Residue.hpp>
 #include <Utils/Fragment.hpp>
 #include <Utils/Graph.hpp>
 
-namespace StructVO = Tmdet::ValueObjects;
+namespace StructVO = Tmdet::VOs;
 
 namespace Tmdet::Utils {
 

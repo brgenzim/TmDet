@@ -1,9 +1,9 @@
 #pragma once
 
 #include <Types/Region.hpp>
-#include <ValueObjects/Membrane.hpp>
-#include <ValueObjects/Protein.hpp>
-#include <ValueObjects/Residue.hpp>
+#include <VOs/Membrane.hpp>
+#include <VOs/Protein.hpp>
+#include <VOs/Residue.hpp>
 
 /**
  * @brief namespace for tmdet engine
@@ -11,11 +11,11 @@
 namespace Tmdet::Engine {
 
     class SideDetector {
-        private:
+        protected:
             /**
              * @brief the protein value object
              */
-            Tmdet::ValueObjects::Protein& protein;
+            Tmdet::VOs::Protein& protein;
 
             /**
              * @brief membrane planes
@@ -47,19 +47,20 @@ namespace Tmdet::Engine {
             double z4;
             double o1;
             double o2;
+            std::string type="";
             
             void run();
             void end();
-            void setType(std::string typeName, const std::vector<Tmdet::ValueObjects::Membrane>& membranes);
-            void setZs(const std::vector<Tmdet::ValueObjects::Membrane>& membranes);
-            Tmdet::Types::Region getSideByZ(Tmdet::ValueObjects::Residue& residue, double z) const;
+            void setType(std::string typeName, const std::vector<Tmdet::VOs::Membrane>& membranes);
+            virtual double getDistance(const gemmi::Vec3& vec) = 0;
+            virtual void setZs(const std::vector<Tmdet::VOs::Membrane>& membranes) = 0;
+            Tmdet::Types::Region getSideByZ(Tmdet::VOs::Residue& residue, double z) const;
             void setDirection();
-            double getResidueDirection(Tmdet::ValueObjects::Chain& chain, int pos);
+            double getResidueDirection(Tmdet::VOs::Chain& chain, int pos);
             
         public:
-            explicit SideDetector(Tmdet::ValueObjects::Protein& protein) :
+            explicit SideDetector(Tmdet::VOs::Protein& protein) :
                 protein(protein) {
-                    run();
             }
             ~SideDetector() {
                 end();

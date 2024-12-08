@@ -11,14 +11,14 @@
 #include <DTOs/Residue.hpp>
 #include <Helpers/String.hpp>
 #include <System/Logger.hpp>
-#include <ValueObjects/Protein.hpp>
-#include <ValueObjects/Chain.hpp>
-#include <ValueObjects/Residue.hpp>
+#include <VOs/Protein.hpp>
+#include <VOs/Chain.hpp>
+#include <VOs/Residue.hpp>
 
 namespace Tmdet::DTOs {
     
-    Tmdet::ValueObjects::Chain Chain::get(gemmi::Structure& protein, gemmi::Chain& chain, int chainIdx) {
-        Tmdet::ValueObjects::Chain chainVO;
+    Tmdet::VOs::Chain Chain::get(gemmi::Structure& protein, gemmi::Chain& chain, int chainIdx) {
+        Tmdet::VOs::Chain chainVO;
         chainVO.id = chain.name;
         chainVO.selected = false;
         auto poly = chain.get_polymer();
@@ -43,7 +43,7 @@ namespace Tmdet::DTOs {
         return chainVO;
     }
 
-    std::string Chain::toString(const Tmdet::ValueObjects::Chain& chain) {
+    std::string Chain::toString(const Tmdet::VOs::Chain& chain) {
         std::string residues = "";
         for(const auto& residue: chain.residues) {
             residues += Tmdet::DTOs::Residue::toString(residue);

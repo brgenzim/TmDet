@@ -5,7 +5,7 @@
 /**
  * @brief namespace for value objects
  */
-namespace Tmdet::ValueObjects {
+namespace Tmdet::VOs {
 
     struct SeqPosition {
         int authId;

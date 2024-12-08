@@ -7,7 +7,7 @@
 #include <iostream>
 #include <eigen3/Eigen/Dense>
 #include <gemmi/model.hpp>
-#include <ValueObjects/Protein.hpp>
+#include <VOs/Protein.hpp>
 
 // #define __SYM_DBG 1 // to enable debug messages of this feature
 
@@ -56,7 +56,7 @@ namespace Tmdet {
                 /**
                  * @brief the structure in protein value object
                  */
-                Tmdet::ValueObjects::Protein& protein;
+                Tmdet::VOs::Protein& protein;
 
                 /**
                  * @brief calculated symmetry operation between
@@ -64,7 +64,7 @@ namespace Tmdet {
                  */
                 std::vector<_symmetryData> sim;
 
-                std::vector<Tmdet::ValueObjects::Membrane> run();
+                std::vector<Tmdet::VOs::Membrane> run();
                 std::vector<_symmetryData> getRotationalAxes();
                 bool searchForRotatedChains(const std::vector<std::string>& chainIds);
                 int calculateRotationalOperation(int cidx1, int cidx2);
@@ -82,7 +82,7 @@ namespace Tmdet {
                  * 
                  * @param protein 
                  */
-                explicit Symmetry(Tmdet::ValueObjects::Protein& protein) :
+                explicit Symmetry(Tmdet::VOs::Protein& protein) :
                     protein(protein) {}
                 
                 /**

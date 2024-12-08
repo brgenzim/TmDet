@@ -9,17 +9,17 @@
 #include <gemmi/model.hpp>
 #include <gemmi/neighbor.hpp>
 #include <Types/Protein.hpp>
-#include <ValueObjects/Chain.hpp>
-#include <ValueObjects/Modification.hpp>
-#include <ValueObjects/BioMatrix.hpp>
-#include <ValueObjects/Membrane.hpp>
-#include <ValueObjects/SecStrVec.hpp>
+#include <VOs/Chain.hpp>
+#include <VOs/Modification.hpp>
+#include <VOs/BioMatrix.hpp>
+#include <VOs/Membrane.hpp>
+#include <VOs/SecStrVec.hpp>
 
 #define EACH_SELECTED_CHAIN(protein) for( auto& chain: protein.chains) if (chain.selected)
 /**
  * @brief namespace for value objects
  */
-namespace Tmdet::ValueObjects {
+namespace Tmdet::VOs {
     
     /**
      * @brief Protein contains both gemmi structure 
@@ -50,7 +50,7 @@ namespace Tmdet::ValueObjects {
         gemmi::NeighborSearch neighbors;
 
         /**
-         * @brief list of Tmdet ValueObjects Chains in the protein
+         * @brief list of Tmdet VOs Chains in the protein
          */
         std::vector<Chain> chains;
 
@@ -129,7 +129,7 @@ namespace Tmdet::ValueObjects {
         /**
          * @brief vectors constructed from secondary structrure elements
          */
-        std::vector<Tmdet::ValueObjects::SecStrVec> secStrVecs;
+        std::vector<Tmdet::VOs::SecStrVec> secStrVecs;
 
         /**
          * @brief set transmembrane to no and clear data

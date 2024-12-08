@@ -4,7 +4,7 @@
 #include <pugixml.hpp>
 #include <DTOs/XmlRW/Reader3.hpp>
 #include <DTOs/XmlRW/Reader4.hpp>
-#include <ValueObjects/Protein.hpp>
+#include <VOs/Protein.hpp>
 
 namespace Tmdet::DTOs::XmlRW {
 
@@ -46,7 +46,7 @@ namespace Tmdet::DTOs::XmlRW {
              * @param xml
              * @param path 
              */
-            void readXml(Tmdet::ValueObjects::Xml& xmlData, const std::string& path);
+            void readXml(Tmdet::VOs::Xml& xmlData, const std::string& path);
 
             /**
              * @brief check the version of the xml file is above 4.0

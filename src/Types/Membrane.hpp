@@ -17,22 +17,26 @@ namespace Tmdet::Types {
         bool operator==(Membrane other) {
             return name == other.name;
         }
+
+        bool isPlane() const {
+            return name == "Plane";
+        }
     };
 
     namespace MembraneType {
-        const Membrane PLAIN = {
-            "Plain", 
+        const Membrane PLANE = {
+            "Plane", 
             "Simple plain membrane used most of membrane proteins"
         };
-        const Membrane CURVED = {
-            "Curved",
-            "Curved membrane represented by a radius"
+        const Membrane BLENDED = {
+            "Blended",
+            "Blended membrane represented by one radius"
         };
     }
 
     const std::unordered_map<std::string, const Membrane> Membranes = {
-        { "Plain", MembraneType::PLAIN },
-        { "Curved", MembraneType::CURVED }
+        { "Plane", MembraneType::PLANE },
+        { "Blended", MembraneType::BLENDED }
     };
 
 }

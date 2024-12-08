@@ -3,12 +3,12 @@
 #include <gemmi/unitcell.hpp>
 #include <gemmi/math.hpp>
 #include <Types/Membrane.hpp>
-#include <ValueObjects/TMatrix.hpp>
+#include <VOs/TMatrix.hpp>
 
 /**
  * @brief namespace for value objects
  */
-namespace Tmdet::ValueObjects {
+namespace Tmdet::VOs {
 
     /**
      * @brief representation of a membrane
@@ -19,7 +19,7 @@ namespace Tmdet::ValueObjects {
          * @brief centre of the membrane after tarnsformation 
          *        for the firs membrane it is always zero
          *
-         *        For curved membrane the origo is the centre of the
+         *        For blended membrane the origo is the centre of the
          *        sphere and the membrane is between sphereRadius -
          *        halfThickness and sphereRadius + halThickness
          */
@@ -44,8 +44,8 @@ namespace Tmdet::ValueObjects {
         double membraneRadius = 10.0;
 
         /**
-         * @brief type of the membrane (plain or curved)
+         * @brief type of the membrane (plain or blended)
          */
-        Tmdet::Types::Membrane type = Tmdet::Types::MembraneType::PLAIN;
+        Tmdet::Types::Membrane type = Tmdet::Types::MembraneType::PLANE;
     };
 }

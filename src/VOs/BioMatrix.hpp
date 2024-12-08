@@ -2,12 +2,12 @@
 
 #include <string>
 #include <vector>
-#include <ValueObjects/Matrix.hpp>
+#include <VOs/Matrix.hpp>
 
 /**
  * @brief namespace for value objects
  */
-namespace Tmdet::ValueObjects {
+namespace Tmdet::VOs {
 
     /**
      * @brief the assembly in the membrane

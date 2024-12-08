@@ -5,12 +5,12 @@
 #include <Engine/SideDetector.hpp>
 #include <System/Logger.hpp>
 #include <Types/Region.hpp>
-#include <ValueObjects/Membrane.hpp>
+#include <VOs/Membrane.hpp>
 
 namespace Tmdet::Engine {
 
     void SideDetector::run() {
-        DEBUG_LOG("Processing: SideDetector::run()");
+        DEBUG_LOG("Processing: SideDetector::run({})",type);
         auto membranes = protein.membranes;
         for(auto& membrane: membranes){
             membrane.halfThickness = 4.0;
@@ -27,7 +27,7 @@ namespace Tmdet::Engine {
 
     void SideDetector::end() {
         protein.eachSelectedResidue(
-            [&](Tmdet::ValueObjects::Residue& residue) -> void {
+            [&](Tmdet::VOs::Residue& residue) -> void {
                 residue.temp.erase("type");
                 residue.temp.erase("ttype");
                 residue.temp.erase("ztype");
@@ -37,12 +37,12 @@ namespace Tmdet::Engine {
         );
     }
 
-    void SideDetector::setType(std::string typeName, const std::vector<Tmdet::ValueObjects::Membrane>& membranes) {
+    void SideDetector::setType(std::string typeName, const std::vector<Tmdet::VOs::Membrane>& membranes) {
         setZs(membranes);
         protein.eachSelectedResidue(
-            [&](Tmdet::ValueObjects::Residue& residue) -> void {
+            [&](Tmdet::VOs::Residue& residue) -> void {
                 if (auto atom = residue.getCa(); atom != nullptr) {
-                    residue.temp.try_emplace(typeName,std::any(getSideByZ(residue, atom->pos.z)));
+                    residue.temp.try_emplace(typeName,std::any(getSideByZ(residue, getDistance(atom->pos))));
                 }
                 else {
                     residue.temp.try_emplace(typeName,std::any(Tmdet::Types::RegionType::UNK));
@@ -55,33 +55,7 @@ namespace Tmdet::Engine {
         );
     }
 
-    void SideDetector::setZs(const std::vector<Tmdet::ValueObjects::Membrane>& membranes) {
-        if (membranes.size() == 2) {
-            if (membranes[1].origo < 0) {
-                z1 = membranes[0].halfThickness;
-                z2 = -membranes[0].halfThickness;
-                z3 = membranes[1].origo+membranes[1].halfThickness;
-                z4 = membranes[1].origo-membranes[1].halfThickness;
-                o1 = membranes[0].origo;
-                o2 = membranes[1].origo;
-            }
-            else {
-                z1 = membranes[1].origo+membranes[1].halfThickness;
-                z2 = membranes[1].origo-membranes[1].halfThickness;
-                z3 = membranes[0].halfThickness;
-                z4 = -membranes[0].halfThickness;
-                o1 = membranes[1].origo;
-                o2 = membranes[0].origo;
-            }
-        }
-        else {
-            z1 = membranes[0].halfThickness;
-            z4 = -membranes[0].halfThickness;
-            o1 = o2 = membranes[0].origo;
-        }
-    }
-
-    Tmdet::Types::Region SideDetector::getSideByZ(Tmdet::ValueObjects::Residue& residue, double z) const {
+    Tmdet::Types::Region SideDetector::getSideByZ(Tmdet::VOs::Residue& residue, double z) const {
         Tmdet::Types::Region r;
         double rz; //relativ z coordinate from membrane central plane
         double hz=0; //distance from closest membrane surface
@@ -138,7 +112,7 @@ namespace Tmdet::Engine {
 
     void SideDetector::setDirection() {
         protein.eachSelectedChain(
-            [&](Tmdet::ValueObjects::Chain& chain) -> void {
+            [&](Tmdet::VOs::Chain& chain) -> void {
                 chain.residues[0].temp.try_emplace("direction",std::any(0.0));
                 chain.residues[1].temp.try_emplace("direction",std::any(0.0));
                 chain.residues[2].temp.try_emplace("direction",std::any(0.0));
@@ -162,7 +136,7 @@ namespace Tmdet::Engine {
         );
     }
 
-    double SideDetector::getResidueDirection(Tmdet::ValueObjects::Chain& chain, int pos) {
+    double SideDetector::getResidueDirection(Tmdet::VOs::Chain& chain, int pos) {
         return any_cast<double>(chain.residues[pos+3].temp.at("z"))
                 + any_cast<double>(chain.residues[pos+2].temp.at("z"))
                 + any_cast<double>(chain.residues[pos+1].temp.at("z"))

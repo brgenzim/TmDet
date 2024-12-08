@@ -5,12 +5,12 @@
 #include <DTOs/XmlRW/Writer.hpp>
 #include <System/Logger.hpp>
 #include <System/FilePaths.hpp>
-#include <ValueObjects/Protein.hpp>
-#include <ValueObjects/Xml.hpp>
+#include <VOs/Protein.hpp>
+#include <VOs/Xml.hpp>
 
 namespace Tmdet::DTOs {
 
-        void Xml::fromProtein(const Tmdet::ValueObjects::Protein& protein) {
+        void Xml::fromProtein(const Tmdet::VOs::Protein& protein) {
             xmlData.code = protein.code;
             DEBUG_LOG("fromProtein(): code: >>{}<<",protein.code);
             xmlData.tmp = protein.tmp;
@@ -35,7 +35,7 @@ namespace Tmdet::DTOs {
             }
         }
 
-        void Xml::toProtein(Tmdet::ValueObjects::Protein& protein) const {
+        void Xml::toProtein(Tmdet::VOs::Protein& protein) const {
             protein.code = xmlData.code;
             protein.tmp = xmlData.tmp;
             protein.date = xmlData.date;
@@ -80,7 +80,7 @@ namespace Tmdet::DTOs {
             return true;
         }
 
-        void Xml::read(const std::string& xmlPath, Tmdet::ValueObjects::Protein& protein) {
+        void Xml::read(const std::string& xmlPath, Tmdet::VOs::Protein& protein) {
             if (read(xmlPath)) {
                 toProtein(protein);
             }
@@ -91,7 +91,7 @@ namespace Tmdet::DTOs {
             writer.writeXml(xmlData, xmlPath);
         }
 
-        void Xml::write(const std::string& xmlPath, const Tmdet::ValueObjects::Protein& protein) {
+        void Xml::write(const std::string& xmlPath, const Tmdet::VOs::Protein& protein) {
             fromProtein(protein);
             write(xmlPath);
         }

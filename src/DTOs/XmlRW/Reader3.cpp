@@ -7,11 +7,11 @@
 #include <System/Logger.hpp>
 #include <DTOs/XmlRW/Constants3.hpp>
 #include <DTOs/XmlRW/Reader3.hpp>
-#include <ValueObjects/Membrane.hpp>
-#include <ValueObjects/BioMatrix.hpp>
-#include <ValueObjects/Modification.hpp>
-#include <ValueObjects/TMatrix.hpp>
-#include <ValueObjects/Xml.hpp>
+#include <VOs/Membrane.hpp>
+#include <VOs/BioMatrix.hpp>
+#include <VOs/Modification.hpp>
+#include <VOs/TMatrix.hpp>
+#include <VOs/Xml.hpp>
 
 namespace Tmdet::DTOs::XmlRW {
 
@@ -19,7 +19,7 @@ namespace Tmdet::DTOs::XmlRW {
         _root = doc.child(XML3_NODE_ROOT);
     }
 
-    void Reader3::readXml(Tmdet::ValueObjects::Xml& xmlData) {
+    void Reader3::readXml(Tmdet::VOs::Xml& xmlData) {
         xmlData.tmp = getTmp();
         DEBUG_LOG("tmp: {}",(xmlData.tmp?"yes":"no"));
         xmlData.code = getCode();
@@ -50,8 +50,8 @@ namespace Tmdet::DTOs::XmlRW {
         return _root.child(XML3_NODE_CREATE_DATE).text().get();
     }
 
-    std::vector<Tmdet::ValueObjects::Modification> Reader3::getModifications() const {
-        std::vector<Tmdet::ValueObjects::Modification> mods;
+    std::vector<Tmdet::VOs::Modification> Reader3::getModifications() const {
+        std::vector<Tmdet::VOs::Modification> mods;
         for (pugi::xml_node mod = _root.child(XML3_NODE_MODIFICATION); mod; mod = mod.next_sibling(XML3_NODE_MODIFICATION)) {
             mods.emplace_back(mod.child(XML3_NODE_DATE).text().get(),mod.child(XML3_NODE_DESCR).text().get());
         }
@@ -76,8 +76,8 @@ namespace Tmdet::DTOs::XmlRW {
                     _root.child(XML3_NODE_RAWRES).child(XML3_NODE_PDBKWRES).text().get():(std::string)"";
     }
 
-    Tmdet::ValueObjects::TMatrix Reader3::getTMatrix(const pugi::xml_node& node) const {
-        Tmdet::ValueObjects::TMatrix tmatrix;
+    Tmdet::VOs::TMatrix Reader3::getTMatrix(const pugi::xml_node& node) const {
+        Tmdet::VOs::TMatrix tmatrix;
         tmatrix.rot[0][0] = node.child(XML3_NODE_ROWX).attribute(XML3_ATTR_X).as_double();
         tmatrix.rot[0][1] = node.child(XML3_NODE_ROWX).attribute(XML3_ATTR_Y).as_double();
         tmatrix.rot[0][2] = node.child(XML3_NODE_ROWX).attribute(XML3_ATTR_Z).as_double();
@@ -93,8 +93,8 @@ namespace Tmdet::DTOs::XmlRW {
         return tmatrix;
     }
 
-    Tmdet::ValueObjects::BioMatrix Reader3::getBioMatrix() const {
-        Tmdet::ValueObjects::BioMatrix bioMatrix;
+    Tmdet::VOs::BioMatrix Reader3::getBioMatrix() const {
+        Tmdet::VOs::BioMatrix bioMatrix;
         pugi::xml_node node = _root.child(XML3_NODE_BIOMATRIX);
         for (pugi::xml_node matrix = node.child(XML3_NODE_MATRIX); matrix; matrix = matrix.next_sibling(XML3_NODE_MATRIX)) {
             pugi::xml_node tnode = matrix.child(XML3_NODE_TMATRIX);
@@ -108,8 +108,8 @@ namespace Tmdet::DTOs::XmlRW {
         return bioMatrix;
     }
 
-    std::vector<Tmdet::ValueObjects::Membrane> Reader3::getMembranes() const {
-        std::vector<Tmdet::ValueObjects::Membrane> membranes;
+    std::vector<Tmdet::VOs::Membrane> Reader3::getMembranes() const {
+        std::vector<Tmdet::VOs::Membrane> membranes;
         for (pugi::xml_node m_node = _root.child(XML3_NODE_MEMBRANE); m_node; m_node = m_node.next_sibling(XML3_NODE_MEMBRANE)) {
             membranes.emplace_back(
                 0.0, //todo get origo
@@ -122,8 +122,8 @@ namespace Tmdet::DTOs::XmlRW {
         return membranes;
     }
 
-    std::vector<Tmdet::ValueObjects::XmlChain> Reader3::getChains() {
-        std::vector<Tmdet::ValueObjects::XmlChain> xmlChains;
+    std::vector<Tmdet::VOs::XmlChain> Reader3::getChains() {
+        std::vector<Tmdet::VOs::XmlChain> xmlChains;
         for (pugi::xml_node chainNode: _root.children(XML3_NODE_CHAIN)) {
             auto type = chainNode.attribute(XML3_ATTR_TYPE).value();
             xmlChains.emplace_back(
@@ -139,14 +139,14 @@ namespace Tmdet::DTOs::XmlRW {
         return xmlChains;
     }
 
-    std::vector<Tmdet::ValueObjects::Region> Reader3::getRegions(const pugi::xml_node& cnode) const {
-        std::vector<Tmdet::ValueObjects::Region> regions;
+    std::vector<Tmdet::VOs::Region> Reader3::getRegions(const pugi::xml_node& cnode) const {
+        std::vector<Tmdet::VOs::Region> regions;
         for (pugi::xml_node r_node = cnode.child(XML3_NODE_REGION); r_node; r_node = r_node.next_sibling(XML3_NODE_REGION)) {
             char type = r_node.attribute(XML3_ATTR_type).value()[0];
             if (type=='I') {
                 type = 'N';
             }
-            Tmdet::ValueObjects::Region region = {
+            Tmdet::VOs::Region region = {
                 {r_node.attribute(XML3_ATTR_SEQ_BEG).as_int(),' ',r_node.attribute(XML3_ATTR_PDB_BEG).as_int()},
                 {r_node.attribute(XML3_ATTR_SEQ_END).as_int(),' ',r_node.attribute(XML3_ATTR_PDB_END).as_int()},
                 Tmdet::Types::Regions.at(type)

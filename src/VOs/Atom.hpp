@@ -4,14 +4,14 @@
 #include <any>
 #include <unordered_map>
 #include <gemmi/model.hpp>
-#include <ValueObjects/TMatrix.hpp>
+#include <VOs/TMatrix.hpp>
 
 /**
  * @brief namespace for value objects
  * @namespace Tmdet
- * @namespace ValueObjects
+ * @namespace VOs
  */
-namespace Tmdet::ValueObjects {
+namespace Tmdet::VOs {
 
     /**
      * @brief description of an atom
@@ -68,7 +68,7 @@ namespace Tmdet::ValueObjects {
          * 
          * @param tmatrix 
          */
-        void transform(Tmdet::ValueObjects::TMatrix& tmatrix) {
+        void transform(Tmdet::VOs::TMatrix& tmatrix) {
             tmatrix.transform(gemmi.pos);
         }
     };

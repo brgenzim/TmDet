@@ -13,7 +13,7 @@ namespace Tmdet::Engine {
 
     class RegionHandler {
         private:
-            Tmdet::ValueObjects::Protein& protein;
+            Tmdet::VOs::Protein& protein;
 
             /**
              * @brief get next residue that has defined region
@@ -22,7 +22,7 @@ namespace Tmdet::Engine {
              * @param what 
              * @return bool
              */
-            bool getNextDefined(Tmdet::ValueObjects::Chain& chain, int& begin, std::string what) const;
+            bool getNextDefined(Tmdet::VOs::Chain& chain, int& begin, std::string what) const;
 
             /**
              * @brief get next region that has the same type than the first one
@@ -32,14 +32,14 @@ namespace Tmdet::Engine {
              * @param what 
              * @return bool
              */
-            bool getNextSame(Tmdet::ValueObjects::Chain& chain, const int& begin, int& end, std::string what) const;
+            bool getNextSame(Tmdet::VOs::Chain& chain, const int& begin, int& end, std::string what) const;
 
         public:
             /**
              * @brief Construct a new Region Handler object
              * @param protein 
              */
-            explicit RegionHandler(Tmdet::ValueObjects::Protein& protein) :
+            explicit RegionHandler(Tmdet::VOs::Protein& protein) :
                 protein(protein) {}
 
             /**
@@ -62,7 +62,7 @@ namespace Tmdet::Engine {
              * @param what 
              * @return bool
              */
-            bool getNext(Tmdet::ValueObjects::Chain& chain, int& begin, int& end, std::string what) const;
+            bool getNext(Tmdet::VOs::Chain& chain, int& begin, int& end, std::string what) const;
 
             /**
              * @brief replace type of a region
@@ -73,7 +73,7 @@ namespace Tmdet::Engine {
              * @param check 
              * @param checkType 
              */
-            void replace(Tmdet::ValueObjects::Chain& chain, int beg, int end, Tmdet::Types::Region regionType, std::string what = "type", bool check = false, Tmdet::Types::Region checkType = Tmdet::Types::RegionType::MEMB);
+            void replace(Tmdet::VOs::Chain& chain, int beg, int end, Tmdet::Types::Region regionType, std::string what = "type", bool check = false, Tmdet::Types::Region checkType = Tmdet::Types::RegionType::MEMB);
 
             /**
              * @brief store regions from residue type to chain regions
@@ -85,8 +85,8 @@ namespace Tmdet::Engine {
              */
             int finalize();
 
-            bool sameDirection(Tmdet::ValueObjects::Chain& chain, int pos1, int pos2);
+            bool sameDirection(Tmdet::VOs::Chain& chain, int pos1, int pos2);
 
-            bool notSameDirection(Tmdet::ValueObjects::Chain& chain, int pos1, int pos2);
+            bool notSameDirection(Tmdet::VOs::Chain& chain, int pos1, int pos2);
     };
 }

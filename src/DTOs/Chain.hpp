@@ -4,7 +4,7 @@
 #include <vector>
 #include <gemmi/metadata.hpp>
 #include <gemmi/model.hpp>
-#include <ValueObjects/Chain.hpp>
+#include <VOs/Chain.hpp>
 
 /**
  * @brief namespace for data transfer objects
@@ -26,9 +26,9 @@ namespace Tmdet::DTOs {
          * @param chain 
          * @param entityId 
          * @param chainIdx 
-         * @return Tmdet::ValueObjects::Chain 
+         * @return Tmdet::VOs::Chain 
          */
-        static Tmdet::ValueObjects::Chain get(gemmi::Structure& protein, gemmi::Chain& chain, int chainIdx);
+        static Tmdet::VOs::Chain get(gemmi::Structure& protein, gemmi::Chain& chain, int chainIdx);
 
         /**
          * @brief string representation of the chain
@@ -36,7 +36,7 @@ namespace Tmdet::DTOs {
          * @param chain 
          * @return std::string 
          */
-        static std::string toString(const Tmdet::ValueObjects::Chain& chain);
+        static std::string toString(const Tmdet::VOs::Chain& chain);
 
         /**
          * @brief Get the entity index of a chain

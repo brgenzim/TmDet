@@ -3,7 +3,7 @@
 #include <array>
 #include <any>
 #include <gemmi/model.hpp>
-#include <ValueObjects/Protein.hpp>
+#include <VOs/Protein.hpp>
 
 #define VDW(a) (any_cast<double>(a.temp["vdw"]))
 #define MIN(a,b) ((a)<(b)?(a):(b))
@@ -18,7 +18,7 @@ namespace Tmdet::Utils {
      * @brief temporary geometry data for neighboring atom
      */
     struct surfNeighbor {
-        Tmdet::ValueObjects::Atom atom;
+        Tmdet::VOs::Atom atom;
         double d;
         double d2;
         double beta;
@@ -49,7 +49,7 @@ namespace Tmdet::Utils {
         int l3;
         int op;
         std::vector<std::vector<gemmi::Position>> frame;
-        std::vector<std::vector<Tmdet::ValueObjects::Atom *>> closestAtoms;
+        std::vector<std::vector<Tmdet::VOs::Atom *>> closestAtoms;
         std::vector<double> closestDist;
     };
 
@@ -68,7 +68,7 @@ namespace Tmdet::Utils {
             * 
             * @param protein 
             */
-            void proteinFromCache(Tmdet::ValueObjects::Protein& protein);
+            void proteinFromCache(Tmdet::VOs::Protein& protein);
 
             /**
              * @brief Convert cache data back to chain value object
@@ -76,21 +76,21 @@ namespace Tmdet::Utils {
              * @param chain 
              * @param index 
              */
-            void chainFromCache(Tmdet::ValueObjects::Chain& chain, unsigned int& index);
+            void chainFromCache(Tmdet::VOs::Chain& chain, unsigned int& index);
 
             /**
              * @brief Convert protein value object to cache data
              * 
              * @param protein 
              */
-            void proteinToCache(const Tmdet::ValueObjects::Protein& protein);
+            void proteinToCache(const Tmdet::VOs::Protein& protein);
         
             /**
              * @brief Convert chain value object to cache data
              * 
              * @param chain 
              */
-            void chainToCache(const Tmdet::ValueObjects::Chain& chain);
+            void chainToCache(const Tmdet::VOs::Chain& chain);
 
         public:
 
@@ -100,14 +100,14 @@ namespace Tmdet::Utils {
             * @param protein 
             * @return bool
             */
-            bool read(Tmdet::ValueObjects::Protein& protein);
+            bool read(Tmdet::VOs::Protein& protein);
 
             /**
             * @brief Write cache data from protein value objects to file
             * 
             * @param protein 
             */
-            void write(const Tmdet::ValueObjects::Protein& protein);
+            void write(const Tmdet::VOs::Protein& protein);
     };
 
     /**
@@ -120,7 +120,7 @@ namespace Tmdet::Utils {
             /**
              * @brief protein value objects containing the structure
              */
-            Tmdet::ValueObjects::Protein& protein;
+            Tmdet::VOs::Protein& protein;
 
             /**
              * @brief flag for do not use cache
@@ -142,7 +142,7 @@ namespace Tmdet::Utils {
              * 
              * @param a_atom 
              */
-            void setContactsOfAtom(Tmdet::ValueObjects::Atom& a_atom);
+            void setContactsOfAtom(Tmdet::VOs::Atom& a_atom);
 
             /**
              * @brief Set the neighbors of atoms
@@ -151,7 +151,7 @@ namespace Tmdet::Utils {
              * @param b_atom 
              * @param st 
              */
-            void setNeighbor(const Tmdet::ValueObjects::Atom& a_atom, const Tmdet::ValueObjects::Atom& b_atom, surfTemp& st);
+            void setNeighbor(const Tmdet::VOs::Atom& a_atom, const Tmdet::VOs::Atom& b_atom, surfTemp& st);
 
             /**
              * @brief Calculate surface of one atom
@@ -159,7 +159,7 @@ namespace Tmdet::Utils {
              * @param atom 
              * @param st 
              */
-            void calcSurfaceOfAtom(Tmdet::ValueObjects::Atom& atom,  surfTemp& st);
+            void calcSurfaceOfAtom(Tmdet::VOs::Atom& atom,  surfTemp& st);
 
             /**
              * @brief Calculate arcs of overlaping atoms in the given plane
@@ -170,7 +170,7 @@ namespace Tmdet::Utils {
              * @return true 
              * @return false 
              */
-            bool calcArcsOfAtom(Tmdet::ValueObjects::Atom& a_atom, surfTemp& st, double z);
+            bool calcArcsOfAtom(Tmdet::VOs::Atom& a_atom, surfTemp& st, double z);
 
             /**
              * @brief Sum up overlaping arcs
@@ -180,7 +180,7 @@ namespace Tmdet::Utils {
              * @param ss 
              * @return double 
              */
-            double calcSumArcsOfAtom(const Tmdet::ValueObjects::Atom& atom, surfTemp& st, bool ss) const;
+            double calcSumArcsOfAtom(const Tmdet::VOs::Atom& atom, surfTemp& st, bool ss) const;
 
             /**
              * @brief Set up parameters of the bounding box object
@@ -235,7 +235,7 @@ namespace Tmdet::Utils {
              * 
              * @param protein
              */
-            explicit Surface(Tmdet::ValueObjects::Protein& protein, bool noCache) : 
+            explicit Surface(Tmdet::VOs::Protein& protein, bool noCache) : 
                 protein(protein),
                 noCache(noCache) {
                     run();

@@ -1,15 +1,18 @@
 #include <any>
+#include <memory>
 #include <gemmi/model.hpp>
 #include <Config.hpp>
 #include <Helpers/Vector.hpp>
 #include <Engine/Annotator.hpp>
 #include <Engine/RegionHandler.hpp>
-#include <Engine/SideDetector.hpp>
+#include <Engine/BlendedSideDetector.hpp>
+#include <Engine/PlaneSideDetector.hpp>
 #include <Engine/BetaAnnotator.hpp>
 #include <System/Logger.hpp>
 #include <Types/Chain.hpp>
 #include <Types/Region.hpp>
 #include <Utils/SecStrVec.hpp>
+#include <Types/Membrane.hpp>
 
 #define REGTYPE(r) any_cast<Tmdet::Types::Region>(r.temp.at("type"))
 #define REGTTYPE(r) any_cast<Tmdet::Types::Region>(r.temp.at("ttype"))
@@ -22,6 +25,16 @@ namespace Tmdet::Engine {
 
     void Annotator::run() {
         DEBUG_LOG("Processing Annotator::run()");
+        std::unique_ptr<Tmdet::Engine::SideDetector> sideDetector;
+        if (protein.membranes[0].type.isPlane()) {
+            DEBUG_LOG("Plane sidedetector");
+            sideDetector = std::make_unique<Tmdet::Engine::PlaneSideDetector>(protein);
+        }
+        else {
+            DEBUG_LOG("Blended sidedetector");
+            sideDetector = std::make_unique<Tmdet::Engine::BlendedSideDetector>(protein);
+        }
+            
         setChainsType();
         detectInterfacialHelices();
         annotateChains();
@@ -37,7 +50,7 @@ namespace Tmdet::Engine {
     void Annotator::setChainsType() {
         DEBUG_LOG("Processing Annotator::setChainsType()");
         protein.eachChain(
-            [&](Tmdet::ValueObjects::Chain& chain) -> void {
+            [&](Tmdet::VOs::Chain& chain) -> void {
                 chain.type = (chain.selected?
                     Tmdet::Types::ChainType::NON_TM:
                     Tmdet::Types::ChainType::NOT_SELECTED);
@@ -75,7 +88,7 @@ namespace Tmdet::Engine {
 
     void Annotator::annotateChains() {
         protein.eachSelectedChain(
-            [&](Tmdet::ValueObjects::Chain& chain) -> void {
+            [&](Tmdet::VOs::Chain& chain) -> void {
                 smoothRegions(chain,"type");
                 smoothRegions(chain,"ttype");
                 detectLoops(chain);
@@ -91,7 +104,7 @@ namespace Tmdet::Engine {
         DEBUG_LOG(" Processed: Annotator::annotateChains:\n {}",regionHandler.toString("type"));
     }
 
-    void Annotator::smoothRegions(Tmdet::ValueObjects::Chain& chain, std::string what) {
+    void Annotator::smoothRegions(Tmdet::VOs::Chain& chain, std::string what) {
         int beg=0;
         int end=0;
         while(regionHandler.getNext(chain,beg,end,what)) {
@@ -111,7 +124,7 @@ namespace Tmdet::Engine {
         
     }
 
-    void Annotator::detectLoops(Tmdet::ValueObjects::Chain& chain) {
+    void Annotator::detectLoops(Tmdet::VOs::Chain& chain) {
         int beg=0;
         int end=0;
         while(regionHandler.getNext(chain,beg,end,"type")) {
@@ -122,7 +135,7 @@ namespace Tmdet::Engine {
         }
     }
 
-    void Annotator::detectLoop(Tmdet::ValueObjects::Chain& chain, int beg, int end) {
+    void Annotator::detectLoop(Tmdet::VOs::Chain& chain, int beg, int end) {
         for(int i=beg+5; i<end-5; i++) {
             if ( (!sameSide(chain,beg,i) || !sameSide(chain,i,end-1))
                 && std::abs(REGZ(chain.residues[i])) > 5.0
@@ -152,7 +165,7 @@ namespace Tmdet::Engine {
         DEBUG_LOG(" Processed Annotator::detectInterfacialHelices()");
     }
 
-    void Annotator::detectReEntrantLoops(Tmdet::ValueObjects::Chain& chain) {
+    void Annotator::detectReEntrantLoops(Tmdet::VOs::Chain& chain) {
         DEBUG_LOG("Processing Annotator::detectReEntrantLoops()");
         int begin = 0;
         int end = 0;
@@ -177,7 +190,7 @@ namespace Tmdet::Engine {
         DEBUG_LOG(" Processed Annotator::detectReEntrantLoops()");
     }
         
-    bool Annotator::hasHelixLoop(Tmdet::ValueObjects::Chain& chain, int begin, int end) {
+    bool Annotator::hasHelixLoop(Tmdet::VOs::Chain& chain, int begin, int end) {
         int numHelix = 0;
         int numNoSS = 0;
         int vecIdx = -1;
@@ -200,7 +213,7 @@ namespace Tmdet::Engine {
         return (numHelix > 5 && (numNoSS > 2||twoHelices));
     }
 
-    void Annotator::detectTransmembraneHelices(Tmdet::ValueObjects::Chain& chain) {
+    void Annotator::detectTransmembraneHelices(Tmdet::VOs::Chain& chain) {
         DEBUG_LOG("Processing Annotator::detectTransmembraneHelices()");
         int begin = 0;
         int end = 0;
@@ -215,11 +228,11 @@ namespace Tmdet::Engine {
         DEBUG_LOG(" Processed Annotator::detectTransmembraneHelices()");
     }
 
-   bool Annotator::sameSide(Tmdet::ValueObjects::Chain& chain, int beg, int end) {
+   bool Annotator::sameSide(Tmdet::VOs::Chain& chain, int beg, int end) {
         return REGZ(chain.residues[beg]) * REGZ(chain.residues[end]) > 0;
     }
-    std::vector<Tmdet::ValueObjects::SecStrVec> Annotator::getParallelAlphas(Tmdet::ValueObjects::Membrane& membrane) {
-        std::vector<Tmdet::ValueObjects::SecStrVec> ret;
+    std::vector<Tmdet::VOs::SecStrVec> Annotator::getParallelAlphas(Tmdet::VOs::Membrane& membrane) {
+        std::vector<Tmdet::VOs::SecStrVec> ret;
         for (auto& vector : protein.secStrVecs) {
             if (vector.type.isStrictAlpha() && checkParallel(vector, membrane)) {
                 DEBUG_LOG("\t===>parallel");
@@ -229,7 +242,7 @@ namespace Tmdet::Engine {
         return ret;
     }
 
-    bool Annotator::checkParallel(Tmdet::ValueObjects::SecStrVec& vec, Tmdet::ValueObjects::Membrane& membrane) const {    
+    bool Annotator::checkParallel(Tmdet::VOs::SecStrVec& vec, Tmdet::VOs::Membrane& membrane) const {    
         auto begRes = protein.chains[vec.chainIdx].residues[vec.begResIdx];
         auto endRes = protein.chains[vec.chainIdx].residues[vec.endResIdx];
         DEBUG_LOG("checkParallel: {}:{} {}:{} {}",begRes.authId,REGHZ(begRes),endRes.authId,REGHZ(endRes),
@@ -244,7 +257,7 @@ namespace Tmdet::Engine {
         int nA=0;
         int nB=0;
         protein.eachChain(
-            [&](Tmdet::ValueObjects::Chain &chain) {
+            [&](Tmdet::VOs::Chain &chain) {
                 for(const auto& region: chain.regions) {
                     nA += region.type.isAlpha();
                     nB += region.type.isBeta();
