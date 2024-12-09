@@ -21,7 +21,7 @@ namespace Tmdet::Engine {
 
     void BlendedOptimizer::setBestOrigo(double minz, double maxz) {
         bestOrigo = origo;
-        bestSphereRadius = (maxz -minz) / 2 + minZ;
+        bestSphereRadius = (maxz -minz) / 2 + minZ -5;
     }
 
     void BlendedOptimizer::setMembraneOrigo(Tmdet::VOs::Membrane& membrane, double minz, double maxz) {

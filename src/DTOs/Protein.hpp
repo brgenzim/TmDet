@@ -62,9 +62,9 @@ namespace Tmdet::DTOs {
         /**
          * @brief add silver atoms to the boundary of membrane
          */
-        static void addMembraneAtoms(Tmdet::VOs::Protein& protein);
+        static std::vector<gemmi::Vec3> addMembraneAtoms(Tmdet::VOs::Protein& protein);
 
-        static void addPlaneMembraneAtoms(Tmdet::VOs::Protein& protein, const Tmdet::VOs::Membrane& membrane);
-        static void addBlendedMembraneAtoms(Tmdet::VOs::Protein& protein, const Tmdet::VOs::Membrane& membrane);
+        static void addPlaneMembraneAtoms(Tmdet::VOs::Protein& protein, const Tmdet::VOs::Membrane& membrane, std::vector<gemmi::Vec3>&ret);
+        static void addBlendedMembraneAtoms(Tmdet::VOs::Protein& protein, const Tmdet::VOs::Membrane& membrane, std::vector<gemmi::Vec3>& ret);
     };
 }

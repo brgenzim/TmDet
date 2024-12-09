@@ -104,28 +104,42 @@ namespace Tmdet::DTOs {
         return ret;
     }
 
-    void Protein::addMembraneAtoms(Tmdet::VOs::Protein& protein) {
+    std::vector<gemmi::Vec3> Protein::addMembraneAtoms(Tmdet::VOs::Protein& protein) {
+        std::vector<gemmi::Vec3> ret;
         for (const auto& membrane: protein.membranes) {
             if (membrane.type.isPlane()) {
-                addPlaneMembraneAtoms(protein, membrane);
+                addPlaneMembraneAtoms(protein, membrane, ret);
             }
             else {
-                addBlendedMembraneAtoms(protein, membrane);
+                addBlendedMembraneAtoms(protein, membrane, ret);
             }
         }
+        return ret;
     }
 
-    void Protein::addPlaneMembraneAtoms(Tmdet::VOs::Protein& protein, const Tmdet::VOs::Membrane& membrane) {
+    void Protein::addPlaneMembraneAtoms(Tmdet::VOs::Protein& protein, const Tmdet::VOs::Membrane& membrane, std::vector<gemmi::Vec3>& ret) {
         for (double x=-membrane.membraneRadius; x<=membrane.membraneRadius; x+=3) {
             for (double y=-membrane.membraneRadius; y<=membrane.membraneRadius; y+=3) {
                 if (sqrt(x*x+y*y) < membrane.membraneRadius) {
-                    // todo add atoms to gemmi structure, but how???
+                    ret.push_back(gemmi::Vec3(x,y,membrane.halfThickness));
+                    ret.push_back(gemmi::Vec3(x,y,-membrane.halfThickness));
                 }
             }
         }
     }
 
-    void Protein::addBlendedMembraneAtoms(Tmdet::VOs::Protein& protein, const Tmdet::VOs::Membrane& membrane) {
-        
+    void Protein::addBlendedMembraneAtoms(Tmdet::VOs::Protein& protein, const Tmdet::VOs::Membrane& membrane, std::vector<gemmi::Vec3>& ret) {
+        for (double x=-membrane.membraneRadius; x<=membrane.membraneRadius; x+=3) {
+            for (double y=-membrane.membraneRadius; y<=membrane.membraneRadius; y+=3) {
+                if (sqrt(x*x+y*y) < membrane.membraneRadius) {
+                    double r = membrane.sphereRadius + membrane.halfThickness;
+                    double z = sqrt(r*r - x*x - y*y);
+                    ret.push_back(gemmi::Vec3(x,y,z));
+                    r = membrane.sphereRadius - membrane.halfThickness;
+                    z = sqrt(r*r - x*x - y*y);
+                    ret.push_back(gemmi::Vec3(x,y,z));
+                }
+            }
+        }
     }
 }
