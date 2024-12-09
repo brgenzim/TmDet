@@ -67,7 +67,6 @@ CHAIN idx:{} authId:{} labelId:{} entityId:{} entityIdx:{} length:{} selected:{}
 
         int idx=0;
         for (const auto& entity : entities) {
-            DEBUG_LOG("Entity: name:{}<< type:{}<<",entity.name,(entity.entity_type==gemmi::EntityType::Polymer?"yes":"no"));
             if (entity.entity_type == gemmi::EntityType::Polymer) {
                 for(const auto& subchain: entity.subchains) {
                     if (subchain == entityId) {

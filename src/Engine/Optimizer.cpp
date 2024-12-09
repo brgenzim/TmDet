@@ -251,7 +251,7 @@ namespace Tmdet::Engine {
                         bestQ = q;
                         bestNormal = normal;
                         bestSlices = slices;
-                        setBestOrigo(minZ,maxZ);
+                        setBestOrigo(minz,maxz);
                         DEBUG_LOG("BestWidth: {} {} {} {} {}",minz,i,maxz,q,bestQ);
                     }
                 }

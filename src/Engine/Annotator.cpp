@@ -36,7 +36,9 @@ namespace Tmdet::Engine {
         }
             
         setChainsType();
-        detectInterfacialHelices();
+        if (protein.membranes[0].type.isPlane()) {
+            detectInterfacialHelices();
+        }
         annotateChains();
         if (int nm = regionHandler.finalize(); nm>10) {
             DEBUG_LOG("Too many unhandled membrane segments: {}",nm);

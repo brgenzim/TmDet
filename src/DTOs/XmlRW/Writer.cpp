@@ -79,6 +79,9 @@ namespace Tmdet::DTOs::XmlRW {
             node.append_attribute(XML_ATTR_SIZE) = std::format("{:.1f}",membrane.membraneRadius).c_str();
             node.append_attribute(XML_ATTR_TYPE) = membrane.type.name.c_str();
             node.append_attribute(XML_ATTR_Z) = std::format("{:.1f}",membrane.origo).c_str();
+            if (!membrane.type.isPlane()) {
+                node.append_attribute(XML_ATTR_SPHERE_RADIUS) = std::format("{:.1f}",membrane.sphereRadius).c_str();
+            }
         }
     }
 
