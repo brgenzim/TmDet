@@ -95,6 +95,8 @@ namespace Tmdet::Engine {
                             || begType.isNotAnnotatedMembrane())
                         && beg>0
                         && end<chain.length-1
+                        && chain.residues[beg-1].selected
+                        && chain.residues[end].selected
                         && any_cast<Tmdet::Types::Region>(chain.residues[beg-1].temp.at("type")).isNotMembrane()
                         && any_cast<Tmdet::Types::Region>(chain.residues[beg-1].temp.at("type")).code ==
                             any_cast<Tmdet::Types::Region>(chain.residues[end].temp.at("type")).code) {
@@ -103,7 +105,9 @@ namespace Tmdet::Engine {
                     if ((begType.isAnnotatedTransMembraneType()
                             || begType.isNotAnnotatedMembrane())
                         && (beg==0 || end == chain.length-1)
-                        && end-beg < (begType.isBeta()?5:10)) {
+                        && end-beg < (begType.isBeta()?5:10)
+                        && chain.residues[beg].selected
+                        && chain.residues[end].selected ) {
                         replace(chain,beg,end-1,(beg==0?any_cast<Tmdet::Types::Region>(chain.residues[end].temp.at("ztype")):
                                                     any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("ztype"))));
                     }
@@ -111,16 +115,18 @@ namespace Tmdet::Engine {
                         && end - beg < 6
                         && beg>0
                         && end<chain.length-1
+                        && chain.residues[beg-1].selected
+                        && chain.residues[end].selected
                         && any_cast<Tmdet::Types::Region>(chain.residues[beg-1].temp.at("type")).isBeta()
                         && any_cast<Tmdet::Types::Region>(chain.residues[end].temp.at("type")).isBeta()) {
                         replace(chain,beg,end-1,Tmdet::Types::RegionType::BETA);
                     }
-                    /*if (any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("type")).isNotAnnotatedMembrane()) {
+                    if (any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("type")).isNotAnnotatedMembrane()) {
                         replace(chain,beg,end-1,any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("ztype")));
                         if (end-beg>4) {
                             ret += (end-beg);
                         }
-                    }*/
+                    }
                     beg = end;
                 }
             }

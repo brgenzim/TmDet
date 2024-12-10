@@ -56,6 +56,7 @@ namespace Tmdet::Engine {
             virtual void setZs(const std::vector<Tmdet::VOs::Membrane>& membranes) = 0;
             Tmdet::Types::Region getSideByZ(Tmdet::VOs::Residue& residue, double z) const;
             void setDirection();
+            double getZForDirection(Tmdet::VOs::Chain& chain, int pos);
             double getResidueDirection(Tmdet::VOs::Chain& chain, int pos);
             
         public:

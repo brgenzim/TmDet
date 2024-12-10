@@ -10,6 +10,7 @@
 #include <Version.hpp>
 #include <DTOs/Protein.hpp>
 #include <DTOs/Xml.hpp>
+#include <Engine/Fragmenter.hpp>
 #include <Engine/Organizer.hpp>
 #include <Helpers/Pymol.hpp>
 #include <Services/ChemicalComponentDirectoryService.hpp>
@@ -18,6 +19,7 @@
 #include <System/Environment.hpp>
 #include <System/FilePaths.hpp>
 #include <System/Logger.hpp>
+#include <Utils/Dssp.hpp>
 #include <VOs/Protein.hpp>
 
 using namespace std;
@@ -37,6 +39,7 @@ Tmdet::System::Arguments getArguments(int argc, char *argv[]) {
     args.define(false,"po","pdb_output","Output pdb file path","string","");
     args.define(false,"n","not","Set transmembrane='not' in the xml file","bool","false");
     args.define(false,"bm","blended_membrane","Search for blended membrane","bool","false");
+    args.define(false,"fr","fragment_analysis","Investigate protein domains/fragments separately","bool","false");
     args.define(false,"nc","no_cache","Do not use cached data","bool","false");
     args.define(false,"s","show","Show annotated structure by pymol","bool","false");
     args.define(false,"sp","show","Show parsed structure in the console","bool","false");
@@ -103,7 +106,7 @@ int main(int argc, char *argv[], char **envp) {
     }
     auto protein = Tmdet::DTOs::Protein::get(pdbInputPath);
     if (code != "") {
-	protein.code = code;
+	    protein.code = code;
     }
     bool na = args.getValueAsBool("na");
 
@@ -119,7 +122,13 @@ int main(int argc, char *argv[], char **envp) {
 
     //do the membrane region determination and annotation
     if (bool r = args.getValueAsBool("r"); r) {
-        auto organizer = Tmdet::Engine::Organizer(protein, args);
+        auto dssp = Tmdet::Utils::Dssp(protein);
+        if (bool fr = args.getValueAsBool("fr"); fr) {
+            auto fragmenter = Tmdet::Engine::Fragmenter(protein,args);
+        }
+        else {
+            auto organizer = Tmdet::Engine::Organizer(protein, args);
+        }
         protein.version = Tmdet::version();
         protein.date = Tmdet::System::Date::get();
 
@@ -143,7 +152,7 @@ int main(int argc, char *argv[], char **envp) {
     //show protein by pymol if required
     if (bool s = args.getValueAsBool("s"); s && protein.tmp) {
         auto pymol = Tmdet::Helpers::Pymol(protein);
-        pymol.show();
+        pymol.show(pdbOutputPath);
     }
 
     //print out protein structrure and properties

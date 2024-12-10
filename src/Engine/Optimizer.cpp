@@ -80,7 +80,10 @@ namespace Tmdet::Engine {
         DEBUG_LOG("Processing: Optimizer::setStraight()");
         protein.eachSelectedResidue(
             [&](Tmdet::VOs::Residue& residue) -> void {
-                if (residue.idx>2 && residue.idx<protein.chains[residue.chainIdx].length-3) {
+                if (residue.idx>2 
+                    && residue.idx<protein.chains[residue.chainIdx].length-3
+                    && protein.chains[residue.chainIdx].residues[residue.idx-3].selected
+                    && protein.chains[residue.chainIdx].residues[residue.idx+3].selected) {
                     double d1 = any_cast<double>(RES(residue,-3).temp.at("dist"));
                     double d2 = any_cast<double>(residue.temp.at("dist"));
                     double d3 = any_cast<double>(RES(residue,+3).temp.at("dist"));

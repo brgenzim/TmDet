@@ -25,10 +25,9 @@ namespace Tmdet::Engine {
     void Organizer::run() {
         DEBUG_LOG("Processing Organizer::run()");
         if (selectChains()) {
-            dssp();
             surface();
             auto ssVec = Tmdet::Utils::SecStrVec(protein);
-            std::unique_ptr<Tmdet::Engine::Optimizer> optimizer;
+            
             if (args.getValueAsBool("bm")) {
                 DEBUG_LOG("Blended optimization");
                 optimizer = std::make_unique<BlendedOptimizer>(protein);
@@ -37,7 +36,7 @@ namespace Tmdet::Engine {
                 DEBUG_LOG("Plane optimization");
                 optimizer = std::make_unique<PlaneOptimizer>(protein);
             }
-            checkSymmetry(optimizer);
+            checkSymmetry();
 
             if (!protein.tmp) {
                 searchForOneTm();
@@ -57,6 +56,10 @@ namespace Tmdet::Engine {
             protein.type = Tmdet::Types::ProteinType::NOPROTEIN;
         }
         DEBUG_LOG(" Processed Organizer::run()");
+    }
+
+    gemmi::Vec3 Organizer::getBestNormal() const {
+        return optimizer->getBestNormal();
     }
 
     unsigned int Organizer::selectChains() {
@@ -93,17 +96,6 @@ namespace Tmdet::Engine {
         return chain.selected?1:0;
     }
 
-    void Organizer::dssp() {
-        DEBUG_LOG("Processing Organizer::dssp()");
-        auto dssp = Tmdet::Utils::Dssp(protein);
-        for (auto& chain : protein.chains) {
-            if (chain.selected) {
-                DEBUG_LOG(" DSSP: {}: {}",chain.id,Tmdet::DTOs::Dssp::getSecondaryStructure(chain));
-            }
-        }
-        DEBUG_LOG(" Processed Organizer::dssp()");
-    }
-
     void Organizer::surface() {
         DEBUG_LOG("Processing Organizer::surface()");
         auto surf = Tmdet::Utils::Surface(protein,args.getValueAsBool("nc"));
@@ -111,7 +103,7 @@ namespace Tmdet::Engine {
         DEBUG_LOG(" Processed Organizer::surface()");
     }
 
-    void Organizer::checkSymmetry(std::unique_ptr<Tmdet::Engine::Optimizer>& optimizer) {
+    void Organizer::checkSymmetry() {
         DEBUG_LOG("Processing Organizer::checkSymmetry()");
         if (auto oligomerChains = Tmdet::Utils::Oligomer::getHomoOligomerEntities(protein.gemmi); !oligomerChains.empty()) {
             auto symmetry = Tmdet::Utils::Symmetry(protein);

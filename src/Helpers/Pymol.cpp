@@ -13,13 +13,13 @@
 
 namespace Tmdet::Helpers {
 
-    void Pymol::head() {
+    void Pymol::head(std::string pdbFile) {
         //os << "from pymol.CGO_membrane import *\n";
         os << "from pymol.cgo import *\n";
         os << "from pymol import cmd\n";
         os << "import math\n";
         os << "import random\n";
-        os << "load " << Tmdet::System::FilePaths::pdbOut(protein.code) << std::endl;
+        os << "load " << pdbFile << std::endl;
         os << "cmd.do(\'hide all\')\n";
         os << "cmd.do(\'run data/cgo_arrow.py\')\n";
     }
@@ -52,11 +52,11 @@ namespace Tmdet::Helpers {
         }
     }
     
-    void Pymol::show() {
+    void Pymol::show(std::string pdbFile) {
         int pid = getpid();
         pmlFileName = std::format("/tmp/tmdet_{}.pml",pid);
         os.open(pmlFileName, std::ios::binary);
-        head();
+        head(pdbFile);
         regions();
         dumpSecStrVec("cyan");
         tail();

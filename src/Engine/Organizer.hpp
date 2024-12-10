@@ -33,6 +33,8 @@ namespace Tmdet::Engine {
              */
             Tmdet::System::Arguments& args;
 
+            std::unique_ptr<Tmdet::Engine::Optimizer> optimizer;
+
             /**
              * @brief select chains that contains more than 15 residues
              *        and return the number of these chains
@@ -52,11 +54,6 @@ namespace Tmdet::Engine {
             unsigned int selectChain(Tmdet::VOs::Chain& chainVO);
 
             /**
-             * @brief calculate the secondary structure of selected chains
-             */
-            void dssp();
-
-            /**
              * @brief calculate the solvent accessible surface and outside surface
              *        of the selected chains
              */
@@ -67,7 +64,7 @@ namespace Tmdet::Engine {
              *        is that and the rotational axes for that part and check if
              *        the rotational axes can be the membrane normal
              */
-            void checkSymmetry(std::unique_ptr<Tmdet::Engine::Optimizer>& optimizer);
+            void checkSymmetry();
 
             /**
              * @brief if no symmetry in the molecule or it can not be the membrane plane
@@ -100,5 +97,10 @@ namespace Tmdet::Engine {
              */
             ~Organizer()=default;
             
+            /**
+             * @brief get the normal vector for the best qValue
+             */
+            gemmi::Vec3 getBestNormal() const;
+
     };
 }

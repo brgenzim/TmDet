@@ -26,6 +26,11 @@ namespace Tmdet::Engine {
     void Annotator::run() {
         DEBUG_LOG("Processing Annotator::run()");
         std::unique_ptr<Tmdet::Engine::SideDetector> sideDetector;
+        protein.eachChain(
+            [&](Tmdet::VOs::Chain& chain) -> void {
+                chain.regions.clear();
+            }
+        );
         if (protein.membranes[0].type.isPlane()) {
             DEBUG_LOG("Plane sidedetector");
             sideDetector = std::make_unique<Tmdet::Engine::PlaneSideDetector>(protein);
@@ -44,8 +49,10 @@ namespace Tmdet::Engine {
             DEBUG_LOG("Too many unhandled membrane segments: {}",nm);
             protein.notTransmembrane();
         }
-        regionHandler.store();
-        finalCheck();
+        else {
+            regionHandler.store();
+            finalCheck();
+        }
         DEBUG_LOG(" Processed Annotator::run({})",(protein.tmp?regionHandler.toString("type"):"not tmp"));
     }
 
@@ -60,12 +67,14 @@ namespace Tmdet::Engine {
                     int alpha=0;
                     int beta=0;
                     for(const auto& residue: chain.residues) {
-                        if (REGTTYPE(residue) == Tmdet::Types::RegionType::MEMB) {
-                            if (residue.ss.isAlpha()) {
-                                alpha++;
-                            }
-                            if (residue.ss.isBeta() && !residue.isInside()) {
-                                beta++;
+                        if (residue.selected) {
+                            if (REGTTYPE(residue) == Tmdet::Types::RegionType::MEMB) {
+                                if (residue.ss.isAlpha()) {
+                                    alpha++;
+                                }
+                                if (residue.ss.isBeta() && !residue.isInside()) {
+                                    beta++;
+                                }
                             }
                         }
                     }
@@ -156,8 +165,9 @@ namespace Tmdet::Engine {
             auto alphaVecs = getParallelAlphas(membrane);
             if (!alphaVecs.empty() ) {
                 for(const auto& vector: alphaVecs) {
-                    //if (protein.chains[vector.chainIdx].type == Tmdet::Types::ChainType::ALPHA) {
-                    if (vector.endResIdx -vector.begResIdx>7) {
+                    if (vector.endResIdx -vector.begResIdx>7
+                        && protein.chains[vector.chainIdx].residues[vector.begResIdx].selected
+                        && protein.chains[vector.chainIdx].residues[vector.endResIdx].selected) {
                         regionHandler.replace(protein.chains[vector.chainIdx],vector.begResIdx,vector.endResIdx,Tmdet::Types::RegionType::IFH);
                     }
                 }
@@ -247,11 +257,14 @@ namespace Tmdet::Engine {
     bool Annotator::checkParallel(Tmdet::VOs::SecStrVec& vec, Tmdet::VOs::Membrane& membrane) const {    
         auto begRes = protein.chains[vec.chainIdx].residues[vec.begResIdx];
         auto endRes = protein.chains[vec.chainIdx].residues[vec.endResIdx];
-        DEBUG_LOG("checkParallel: {}:{} {}:{} {}",begRes.authId,REGHZ(begRes),endRes.authId,REGHZ(endRes),
-            Tmdet::Helpers::Vector::cosAngle((vec.end-vec.begin),gemmi::Vec3(0,0,1)));
-        return ((REGHZ(begRes) < 5.0 || REGHZ(endRes) < 5.0)
-                && std::abs(Tmdet::Helpers::Vector::cosAngle((vec.end-vec.begin),gemmi::Vec3(0,0,1))) < 0.3
-        );
+        if (begRes.selected && endRes.selected) {
+            DEBUG_LOG("checkParallel: {}:{} {}:{} {}",begRes.authId,REGHZ(begRes),endRes.authId,REGHZ(endRes),
+                Tmdet::Helpers::Vector::cosAngle((vec.end-vec.begin),gemmi::Vec3(0,0,1)));
+            return ((REGHZ(begRes) < 5.0 || REGHZ(endRes) < 5.0)
+                    && std::abs(Tmdet::Helpers::Vector::cosAngle((vec.end-vec.begin),gemmi::Vec3(0,0,1))) < 0.3
+            );
+        }
+        return false;
     }
 
     void Annotator::finalCheck() {
@@ -266,10 +279,14 @@ namespace Tmdet::Engine {
                 }
             }
         );
-        DEBUG_LOG("Annotator::finalCheck: {} {} {}",protein.type.name,nA,nB);
         if (protein.type.isBeta() && nB<8) {
             protein.notTransmembrane();
         }
+        else if (nA==0) {
+            protein.notTransmembrane();
+        }
+        DEBUG_LOG("Annotator::finalCheck: type: {} na: {} nb: {} tmp: {}",
+            protein.type.name,nA,nB,protein.tmp?"yes":"no");
     }
 
 }

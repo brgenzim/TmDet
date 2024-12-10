@@ -56,35 +56,36 @@ namespace Tmdet::VOs {
     }
 
     void Protein::notTransmembrane() {
-        tmp = false;
         version = (version==""?Tmdet::version():version);
         modifications.emplace_back(
             Tmdet::System::Date::get(),
             (std::string)"Not transmembrane protein"
         );
-        type = Tmdet::Types::ProteinType::SOLUBLE;
-        bioMatrix.matrices.clear();
-        bioMatrix.deletedChainIds.clear();
-        membranes.clear();
-        chains.clear();
+        clear();
     }
 
     void Protein::clear() {
         tmp = false;
-        modifications.clear();
         qValue = 0.0;
         type = Tmdet::Types::ProteinType::SOLUBLE;
-        bioMatrix.matrices.clear();
-        bioMatrix.deletedChainIds.clear();
         membranes.clear();
-        chains.clear();
+        eachChain(
+            [&](Tmdet::VOs::Chain& chain) -> void {
+                chain.regions.clear();
+            }
+        );
+        DEBUG_LOG("Protein data cleared: {}",tmp);
     }
 
     std::string Protein::hash() const {
         std::string raw = code;
-        for(const auto& c: chains) {
-            if (c.selected) {
-                raw += c.seq;
+        for(const auto& chain: chains) {
+            if (chain.selected) {
+                for (const auto& residue: chain.residues) {
+                    if (residue.selected) {
+                        raw += residue.type.a1;
+                    }
+                }
             }
         }
         void* sig = hashing::md5::hash(raw);

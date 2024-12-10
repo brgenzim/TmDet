@@ -10,8 +10,6 @@
 #include <Utils/Fragment.hpp>
 #include <Utils/Graph.hpp>
 
-namespace StructVO = Tmdet::VOs;
-
 namespace Tmdet::Utils {
 
 #define NODE_ID(c,r) any_cast<int>(proteinVO.chains[c].residues[r].temp.at("node_index"))
@@ -22,14 +20,15 @@ namespace Tmdet::Utils {
      *        to the proteinVO redidues temp map.
      * @return void
      */
-    void Fragment::run() {
+    int Fragment::run() {
         auto crs = getCAlphaNetwork();
         auto clusters = createFragments(crs.size());
         writeBackFragmentInfoToStructure(clusters, crs);
         freeTempValues();
+        return (int)(clusters.size());
     }
 
-    std::vector<_cr> Fragment::getNeighbors(const StructVO::Residue& residueVO) {
+    std::vector<_cr> Fragment::getNeighbors(const Tmdet::VOs::Residue& residueVO) {
         std::vector<_cr> ret;
         std::vector<_cr> empty;
         const gemmi::Atom* ca_atom = residueVO.gemmi.get_ca();
@@ -90,19 +89,11 @@ namespace Tmdet::Utils {
 
     void Fragment::writeBackFragmentInfoToStructure(std::vector<std::vector<int>> clusters, std::vector<_cr> crs) {
         int cl_idx = 0;
+        
         for (auto& cluster: clusters) {
-            //std::cout << "select cl" << cl_idx << ", (";
-            //bool first = true;
             for(auto& nodeIdx: cluster) {
                 proteinVO.chains[crs[nodeIdx].chain_idx].residues[crs[nodeIdx].residue_idx].temp.insert({"fragment",std::any_cast<int>(cl_idx)});
-               /* if (!first) {
-                    std::cout << " | ";
-                }
-                std::cout << "(c. " << proteinVO.chains[crs[nodeIdx].chain_idx].id << " & ";
-                std::cout << "i. " << proteinVO.chains[crs[nodeIdx].chain_idx].residues[crs[nodeIdx].residue_idx].resn() << ")";
-                first = false;*/
             }
-            //std::cout << ")" << std::endl;
             cl_idx++;
         }
     }

@@ -32,15 +32,14 @@ namespace Tmdet::DTOs {
         for(const auto& atom: residue.atoms) {
             atoms += Tmdet::DTOs::Atom::toString(atom);
         }
-        /*std::string temp = "";
-        for(const auto &[key,value]: residue.temp) {
-            temp += std::format(R"(
-        TEMP key: {} value: {}
-            )",key,any_cast<double>(value));
-        }*/
+        std::string temp = "";
+        if (residue.temp.contains("fragment")) {
+            temp += std::format(R"(TEMP fragmentId: {})",
+                any_cast<int>(residue.temp.at("fragment")));
+        }
         return std::format(R"(
-    RESIDUE idx:{: >6d} authId:{: >6d} labelId:{: >6d} a3:{} a1:{} ss:{} surface:{:8.3f} outSurface:{:8.3f}{})", 
+    RESIDUE idx:{: >6d} authId:{: >6d} labelId:{: >6d} a3:{} a1:{} ss:{} surface:{:8.3f} outSurface:{:8.3f}{} temp:{})", 
             residue.idx,residue.authId, residue.labelId, residue.type.name, 
-            residue.type.a1, residue.ss.code, residue.surface, residue.outSurface, atoms);
+            residue.type.a1, residue.ss.code, residue.surface, residue.outSurface, temp, atoms);
     }
 }

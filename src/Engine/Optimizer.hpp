@@ -180,6 +180,13 @@ namespace Tmdet::Engine {
             void setNormal(const gemmi::Vec3 _normal);
 
             /**
+             * @brief get the normal vector for the best qValue
+             */
+            gemmi::Vec3 getBestNormal() const {
+                return bestNormal;
+            }
+
+            /**
              * @brief calculate Q value for a given normal
              */
             virtual void testMembraneNormal() = 0;

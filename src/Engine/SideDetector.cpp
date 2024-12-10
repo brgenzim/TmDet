@@ -113,35 +113,39 @@ namespace Tmdet::Engine {
     void SideDetector::setDirection() {
         protein.eachSelectedChain(
             [&](Tmdet::VOs::Chain& chain) -> void {
-                chain.residues[0].temp.try_emplace("direction",std::any(0.0));
-                chain.residues[1].temp.try_emplace("direction",std::any(0.0));
-                chain.residues[2].temp.try_emplace("direction",std::any(0.0));
-                chain.residues[chain.length-3].temp.try_emplace("direction",std::any(0.0));
-                chain.residues[chain.length-2].temp.try_emplace("direction",std::any(0.0));
-                chain.residues[chain.length-1].temp.try_emplace("direction",std::any(0.0));
-                for(int i=3; i<chain.length-3; i++) {
-                    chain.residues[i].temp.try_emplace("direction",std::any(getResidueDirection(chain,i)));
-                    DEBUG_LOG("RES: chain:{} res:{} type:{} ss:{} z:{} z1:{} hz:{} z4:{} direction:{}",chain.id,chain.residues[i].authId,
-                        any_cast<Tmdet::Types::Region>(chain.residues[i].temp.at("type")).code,
-                        chain.residues[i].ss.code,
-                        any_cast<double>(chain.residues[i].temp.at("z")),
-                        z1,
-                        any_cast<double>(chain.residues[i].temp.at("hz")),
-                        z4,
-                        any_cast<double>(chain.residues[i].temp.at("direction"))
-                    );
+                for(int i=0; i<chain.length; i++) {
+                    if (chain.residues[i].selected) {
+                        chain.residues[i].temp.try_emplace("direction",std::any(getResidueDirection(chain,i)));
+                        DEBUG_LOG("RES: chain:{} res:{} type:{} ss:{} z:{} z1:{} hz:{} z4:{} direction:{}",chain.id,chain.residues[i].authId,
+                            any_cast<Tmdet::Types::Region>(chain.residues[i].temp.at("type")).code,
+                            chain.residues[i].ss.code,
+                            any_cast<double>(chain.residues[i].temp.at("z")),
+                            z1,
+                            any_cast<double>(chain.residues[i].temp.at("hz")),
+                            z4,
+                            any_cast<double>(chain.residues[i].temp.at("direction"))
+                        );
+                    }
                 }
                 
             }
         );
     }
 
+    double SideDetector::getZForDirection(Tmdet::VOs::Chain& chain, int pos) {
+        double ret = 0.0;
+        if (pos>=0 && pos<chain.length && chain.residues[pos].temp.contains("z")) {
+            ret = any_cast<double>(chain.residues[pos].temp.at("z"));
+        }
+        return ret;
+    }
+
     double SideDetector::getResidueDirection(Tmdet::VOs::Chain& chain, int pos) {
-        return any_cast<double>(chain.residues[pos+3].temp.at("z"))
-                + any_cast<double>(chain.residues[pos+2].temp.at("z"))
-                + any_cast<double>(chain.residues[pos+1].temp.at("z"))
-                - any_cast<double>(chain.residues[pos-1].temp.at("z"))
-                - any_cast<double>(chain.residues[pos-2].temp.at("z"))
-                - any_cast<double>(chain.residues[pos-3].temp.at("z"));
+        return getZForDirection(chain,pos+3)
+                + getZForDirection(chain,pos+2)
+                + getZForDirection(chain,pos+1)
+                - getZForDirection(chain,pos-1)
+                - getZForDirection(chain,pos-2)
+                - getZForDirection(chain,pos-3);
     }
 }

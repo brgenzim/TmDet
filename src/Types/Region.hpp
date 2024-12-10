@@ -121,8 +121,14 @@ namespace Tmdet::Types {
             'O',
             "outside (i.e extra-cytosolic) in TOPDB"
         };
-        const Region PERIPLASM = {
+        const Region ERROR = {
             12,
+            "error",
+            'R',
+            "errorneously placed membrane region"
+        };
+        const Region PERIPLASM = {
+            13,
             "periplasm",
             'E',
             "Periplasmic"

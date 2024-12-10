@@ -19,18 +19,19 @@ namespace Tmdet::Helpers {
                 "limon", //MEMB
                 "yellow", //HELIX
                 "yellow", //BETA
-                "red", //SIDE1
-                "blue", //SIDE2
+                "salmon", //SIDE1
+                "lightblue", //SIDE2
                 "orange", //LOOP
                 "purpleblue", //IFH
                 "pink", //MEMBINS
                 "teal", //INTERMEMB
                 "grey80", //UNK
                 "red", //INSIDE
-                "blue" //OUTSIDE
+                "blue", //OUTSIDE
+                "red" //ERROR
             };
 
-            void head();
+            void head(std::string pdbFile);
             void regions();
             void dumpSecStrVec(std::string color);
             void tail();
@@ -41,7 +42,7 @@ namespace Tmdet::Helpers {
             explicit Pymol(const Tmdet::VOs::Protein& protein) :
                 protein(protein) {}
 
-            void show();
+            void show(std::string pdbFile);
 
     };
 }

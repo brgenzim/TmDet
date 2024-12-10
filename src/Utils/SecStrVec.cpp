@@ -56,7 +56,9 @@ namespace Tmdet::Utils {
     }
 
     bool SecStrVec::getNextNotUnkown(Tmdet::VOs::Chain& chain, int& begin) const {
-        while(begin < (int)chain.residues.size() && chain.residues[begin].ss == Tmdet::Types::SecStructType::U) {
+        while(begin < (int)chain.residues.size() 
+            && !chain.residues[begin].selected
+            && chain.residues[begin].ss == Tmdet::Types::SecStructType::U) {
             begin++;
         }
         return (begin < (int)chain.residues.size());
@@ -64,7 +66,9 @@ namespace Tmdet::Utils {
 
     bool SecStrVec::getNextSame(Tmdet::VOs::Chain& chain, const int& begin, int& end) const {
         end = begin+1;
-        while(end < (int)chain.residues.size() && chain.residues[begin].ss.same(chain.residues[end].ss)) {
+        while(end < (int)chain.residues.size() 
+            && chain.residues[begin].selected
+            && chain.residues[begin].ss.same(chain.residues[end].ss)) {
             end++;
         }
         return true;
