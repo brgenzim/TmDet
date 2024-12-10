@@ -1,0 +1,47 @@
+#
+data_minimal_ALA
+_entry.id 'minimal_ALA'
+_audit_conform.dict_name       mmcif_pdbx.dic
+_audit_conform.dict_version    5.356
+
+# Define entities
+loop_
+_entity.id
+_entity.type
+_entity.polymer_type
+_entity.formula_weight
+_entity.pdbx_description
+1 polymer polypeptide(L) 89.09 "Alanine"
+2 non-polymer . 107.87 "Silver atom"
+
+# Define polymer sequence
+loop_
+_entity_poly_seq.entity_id
+_entity_poly_seq.num
+_entity_poly_seq.mon_id
+1  1  ALA
+
+# Define atom site
+loop_
+_atom_site.group_PDB
+_atom_site.id
+_atom_site.type_symbol
+_atom_site.label_atom_id
+_atom_site.label_comp_id
+_atom_site.label_asym_id
+_atom_site.label_entity_id
+_atom_site.label_seq_id
+_atom_site.Cartn_x
+_atom_site.Cartn_y
+_atom_site.Cartn_z
+_atom_site.occupancy
+_atom_site.B_iso_or_equiv
+_atom_site.pdbx_formal_charge
+ATOM   1  N   N   ALA A 1 1   11.104  13.207  12.007  1.00 20.00 ?
+ATOM   2  C   CA  ALA A 1 1   12.504  13.707  12.007  1.00 20.00 ?
+ATOM   3  C   C   ALA A 1 1   12.704  15.207  12.007  1.00 20.00 ?
+ATOM   4  O   O   ALA A 1 1   12.004  15.907  12.007  1.00 20.00 ?
+ATOM   5  C   CB  ALA A 1 1   13.004  13.107  10.607  1.00 20.00 ?
+ATOM   6  H   H   ALA A 1 1   10.504  12.807  12.507  1.00 20.00 ?
+HETATM 7  Ag  Ag  AG1 B 2 1   15.000  15.000  15.000  1.00 10.00 ?
+
