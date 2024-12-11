@@ -227,11 +227,15 @@ namespace Tmdet::DTOs {
             for (double y=-membrane.membraneRadius; y<=membrane.membraneRadius; y+=5) {
                 if (sqrt(x*x+y*y) < membrane.membraneRadius) {
                     double r = membrane.sphereRadius + membrane.halfThickness;
-                    double z = sqrt(r*r - x*x - y*y);
-                    ret.push_back(gemmi::Vec3(x,y,z));
+                    if (r*r > x*x + y*y) {
+                        double z = sqrt(r*r - x*x - y*y) + membrane.origo;
+                        ret.push_back(gemmi::Vec3(x,y,z));
+                    }
                     r = membrane.sphereRadius - membrane.halfThickness;
-                    z = sqrt(r*r - x*x - y*y);
-                    ret.push_back(gemmi::Vec3(x,y,z));
+                    if (r*r > x*x + y*y) {
+                        double z = sqrt(r*r - x*x - y*y) + membrane.origo;
+                        ret.push_back(gemmi::Vec3(x,y,z));
+                    }
                 }
             }
         }

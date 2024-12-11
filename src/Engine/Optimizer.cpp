@@ -128,7 +128,7 @@ namespace Tmdet::Engine {
     }
 
     void Optimizer::sumupSlices() {
-        DEBUG_LOG("Processing: Optimizer::sumupSlices()");
+        DEBUG_LOG("Processing: Optimizer::sumupSlices({})",slices.size());
         protein.eachSelectedResidue(
             [&](Tmdet::VOs::Residue& residue) -> void {
                 auto sliceIndex = (unsigned int)(any_cast<double>(residue.temp.at("dist")) - minZ);
@@ -152,14 +152,20 @@ namespace Tmdet::Engine {
             }
         );
         for (auto& vector: protein.secStrVecs) {
-            if (protein.chains[vector.chainIdx].selected) {
+            if (protein.chains[vector.chainIdx].selected
+                && protein.chains[vector.chainIdx].residues[vector.begResIdx].selected
+                && protein.chains[vector.chainIdx].residues[vector.endResIdx].selected) {
                 double cosAngle = std::abs(Tmdet::Helpers::Vector::cosAngle(
                                     normal,vector.end - vector.begin));
                 int d1 = distance(vector.begin);
                 int d2 = distance(vector.end);
                 int dbeg = (d1<d2?d1:d2) - minZ; 
-                dbeg=(dbeg<0?0:dbeg);
                 int dend = (d1>d2?d1:d2) - minZ; 
+                dbeg=(dbeg<0?0:dbeg);
+                dend=(dend<0?0:dend);
+                if (dbeg>=(int)slices.size()) {
+                    dbeg=(int)slices.size()-1;
+                }
                 if (dend>=(int)slices.size()) {
                     dend=(int)slices.size()-1;
                 }
