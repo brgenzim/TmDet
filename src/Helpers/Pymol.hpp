@@ -22,13 +22,15 @@ namespace Tmdet::Helpers {
                 "salmon", //SIDE1
                 "lightblue", //SIDE2
                 "orange", //LOOP
-                "purpleblue", //IFH
-                "pink", //MEMBINS
+                "green", //IFH
+                "violetpurple", //MEMBINS
                 "teal", //INTERMEMB
-                "grey80", //UNK
                 "red", //INSIDE
                 "blue", //OUTSIDE
-                "red" //ERROR
+                "pink", //PERIPLASM
+                "red", //ERROR - FP
+                "blue", //ERROR - FN
+                "grey80" //UNK
             };
 
             void head(std::string pdbFile);

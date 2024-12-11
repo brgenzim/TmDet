@@ -103,51 +103,60 @@ namespace Tmdet::Types {
             '3',
             "Intermembrane space if protein crosses two membranes"
         };
-        const Region UNK = {
-            9,
-            "unkown",
-            'U',
-            "Unknown localization"
-        };
         const Region INSIDE = {
-            10,
+            9,
             "inside",
             'I',
             "inside (i.e cytoplasmic) in TOPDB"
         };
         const Region OUTSIDE = {
-            11,
+            10,
             "outside",
             'O',
             "outside (i.e extra-cytosolic) in TOPDB"
         };
-        const Region ERROR = {
-            12,
-            "error",
-            'R',
-            "errorneously placed membrane region"
-        };
         const Region PERIPLASM = {
-            13,
+            11,
             "periplasm",
             'E',
             "Periplasmic"
         };
+        const Region ERROR_FP = {
+            12,
+            "false positiv error",
+            'P',
+            "region in membrane that should not be in the membrane"
+        };
+        const Region ERROR_FN = {
+            13,
+            "false negativ error",
+            'R',
+            "region outside of the membrane that should be in the membrane"
+        };
+        const Region UNK = {
+            14,
+            "unknown",
+            'U',
+            "localisation of the region is unknown"
+        };
+        
     }
 
     const std::unordered_map<char, const Region> Regions = {
         { 'M', RegionType::MEMB },
-        { 'N', RegionType::MEMBINS },
         { 'H', RegionType::HELIX },
         { 'B', RegionType::BETA },
         { '1', RegionType::SIDE1 },
         { '2', RegionType::SIDE2 },
-        { '3', RegionType::INTERMEMB },
         { 'L', RegionType::LOOP },
         { 'F', RegionType::IFH },
+        { 'N', RegionType::MEMBINS },
+        { '3', RegionType::INTERMEMB },
         { 'I', RegionType::INSIDE },
         { 'O', RegionType::OUTSIDE },
         { 'E', RegionType::PERIPLASM },
+        { 'P', RegionType::ERROR_FP },
+        { 'R', RegionType::ERROR_FN },
         { 'U', RegionType::UNK }
     };
 

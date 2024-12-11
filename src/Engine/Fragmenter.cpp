@@ -173,10 +173,21 @@ namespace Tmdet::Engine {
                     residue.temp.insert({"type",Tmdet::Types::RegionType::UNK});
                 }
                 if (any_cast<Tmdet::Types::Region>(residue.temp.at("type")).isNotAnnotatedMembrane()) {
-                    residue.temp.at("type") = Tmdet::Types::RegionType::ERROR;
+                    residue.temp.at("type") = Tmdet::Types::RegionType::ERROR_FP;
                 }
             }
         );
+        for (auto& d: data) {
+            if (d.tmp) {
+                for (auto& r: d.regions) {
+                    if (r.type.isAnnotatedTransMembraneType()) {
+                        for (int i=r.beg.labelId-1; i<r.end.labelId; i++) {
+                            protein.chains[0].residues[i].temp.at("type") = Tmdet::Types::RegionType::ERROR_FN;
+                        }
+                    }
+                }
+            }
+        }
         auto regionHandler = Tmdet::Engine::RegionHandler(protein);
         DEBUG_LOG("Final regions: {}",regionHandler.toString("type"));
         protein.chains[0].regions.clear();
