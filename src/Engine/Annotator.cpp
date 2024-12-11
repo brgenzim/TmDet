@@ -279,10 +279,9 @@ namespace Tmdet::Engine {
                 }
             }
         );
-        if (protein.type.isBeta() && nB<8) {
-            protein.notTransmembrane();
-        }
-        else if (nA==0) {
+        if ((protein.type.isBeta() && nB < 8)
+            || (nA == 0 && nB == 0)
+            || (protein.type.isAlpha() && nA == 0)) {
             protein.notTransmembrane();
         }
         DEBUG_LOG("Annotator::finalCheck: type: {} na: {} nb: {} tmp: {}",

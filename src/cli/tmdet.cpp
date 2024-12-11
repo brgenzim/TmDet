@@ -124,6 +124,7 @@ int main(int argc, char *argv[], char **envp) {
     if (bool r = args.getValueAsBool("r"); r) {
         auto dssp = Tmdet::Utils::Dssp(protein);
         if (bool fr = args.getValueAsBool("fr"); fr) {
+            protein.forceSingleMembrane = true;
             auto fragmenter = Tmdet::Engine::Fragmenter(protein,args);
         }
         else {

@@ -312,7 +312,7 @@ namespace Tmdet::Engine {
         Tmdet::VOs::Membrane membrane;
         protein.membranes.clear();
         int i=0;
-        int maxM = (type == "Plain"?2:1);
+        int maxM = (protein.forceSingleMembrane?1:2);
         while(getMembrane(membrane,i) && i < maxM) {
             protein.membranes.push_back(membrane);
             i++;

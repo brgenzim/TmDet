@@ -30,7 +30,7 @@ namespace Tmdet::VOs {
         /**
          * @brief number of sec structure ends
          */
-        double ssEnd = 0;
+        int ssEnd = 0;
 
         /**
          * @brief raw, not smoothed q value

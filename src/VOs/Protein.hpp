@@ -132,6 +132,12 @@ namespace Tmdet::VOs {
         std::vector<Tmdet::VOs::SecStrVec> secStrVecs;
 
         /**
+         * @brief force single membrane (in case of blended membrane and
+         *        fragment analysis)
+         */
+        bool forceSingleMembrane = false;
+
+        /**
          * @brief set transmembrane to no and clear data
          */
         void notTransmembrane();

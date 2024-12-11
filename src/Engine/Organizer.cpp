@@ -30,6 +30,7 @@ namespace Tmdet::Engine {
             
             if (args.getValueAsBool("bm")) {
                 DEBUG_LOG("Blended optimization");
+                protein.forceSingleMembrane = true;
                 optimizer = std::make_unique<BlendedOptimizer>(protein);
             }
             else {

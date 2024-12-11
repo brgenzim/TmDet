@@ -25,13 +25,15 @@ namespace Tmdet::DTOs {
             xmlData.membranes = protein.membranes;
             xmlData.tmatrix = protein.tmatrix;
             for(const auto& chain: protein.chains) {
-                xmlData.chains.emplace_back(chain.id,
-                    chain.labelId,
-                    chain.selected,
-                    chain.numtm,
-                    chain.seq,
-                    chain.regions,
-                    chain.type);
+                if (chain.labelId != "") {
+                    xmlData.chains.emplace_back(chain.id,
+                        chain.labelId,
+                        chain.selected,
+                        chain.numtm,
+                        chain.seq,
+                        chain.regions,
+                        chain.type);
+                }
             }
         }
 
