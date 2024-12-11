@@ -22,6 +22,10 @@
 
 namespace Tmdet::Engine {
 
+    Organizer::~Organizer() {
+        DEBUG_LOG("Destroying Organizer");
+    }
+
     void Organizer::run() {
         DEBUG_LOG("Processing Organizer::run()");
         if (selectChains()) {

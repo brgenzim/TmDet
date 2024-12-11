@@ -212,8 +212,8 @@ namespace Tmdet::DTOs {
     }
 
     void Protein::addPlaneMembraneAtoms(Tmdet::VOs::Protein& protein, const Tmdet::VOs::Membrane& membrane, std::vector<gemmi::Vec3>& ret) {
-        for (double x=-membrane.membraneRadius; x<=membrane.membraneRadius; x+=3) {
-            for (double y=-membrane.membraneRadius; y<=membrane.membraneRadius; y+=3) {
+        for (double x=-membrane.membraneRadius; x<=membrane.membraneRadius; x+=5) {
+            for (double y=-membrane.membraneRadius; y<=membrane.membraneRadius; y+=5) {
                 if (sqrt(x*x+y*y) < membrane.membraneRadius) {
                     ret.push_back(gemmi::Vec3(x,y,membrane.halfThickness));
                     ret.push_back(gemmi::Vec3(x,y,-membrane.halfThickness));
@@ -223,8 +223,8 @@ namespace Tmdet::DTOs {
     }
 
     void Protein::addBlendedMembraneAtoms(Tmdet::VOs::Protein& protein, const Tmdet::VOs::Membrane& membrane, std::vector<gemmi::Vec3>& ret) {
-        for (double x=-membrane.membraneRadius; x<=membrane.membraneRadius; x+=3) {
-            for (double y=-membrane.membraneRadius; y<=membrane.membraneRadius; y+=3) {
+        for (double x=-membrane.membraneRadius; x<=membrane.membraneRadius; x+=5) {
+            for (double y=-membrane.membraneRadius; y<=membrane.membraneRadius; y+=5) {
                 if (sqrt(x*x+y*y) < membrane.membraneRadius) {
                     double r = membrane.sphereRadius + membrane.halfThickness;
                     double z = sqrt(r*r - x*x - y*y);

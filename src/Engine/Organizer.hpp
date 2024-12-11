@@ -95,7 +95,7 @@ namespace Tmdet::Engine {
             /**
              * @brief Destroy the Organizer object
              */
-            ~Organizer()=default;
+            ~Organizer();
             
             /**
              * @brief get the normal vector for the best qValue

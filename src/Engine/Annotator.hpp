@@ -35,6 +35,7 @@ namespace Tmdet::Engine {
             std::vector<Tmdet::VOs::SecStrVec> getParallelAlphas(Tmdet::VOs::Membrane& membrane);
             bool checkParallel(Tmdet::VOs::SecStrVec& vec, Tmdet::VOs::Membrane& membrane) const;    
             void finalCheck();
+            void setMembraneSize();
             
         public:
             

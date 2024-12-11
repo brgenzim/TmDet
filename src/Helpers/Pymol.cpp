@@ -38,6 +38,7 @@ namespace Tmdet::Helpers {
     void Pymol::tail() {
         os << "cmd.do(\'cartoon automatic\')\n";
         os << "cmd.do(\'show cartoon\')\n";
+        os << "cmd.do(\'show spheres, (segi TM_)\')\n";
         os << "cmd.do(\'zoom " << protein.code << "_updated_tr\')";
     }
 

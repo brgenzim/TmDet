@@ -182,8 +182,8 @@ namespace Tmdet::Utils {
             std::vector<std::string> atomLine(colIndex, ".");
             atomLine[0] = "HETATM";
             atomLine[serialIndex] = std::format("{:d}", nextSerialId);
-            atomLine[typeSymbolIndex] = "AG";
-            atomLine[labelCompIdIndex] = "AG";
+            atomLine[typeSymbolIndex] = "H";
+            atomLine[labelCompIdIndex] = "H";
             atomLine[labelAsymIdIndex] = TMDET_MEMBRANE_ASYM_ID;
             atomLine[labelEntityIdIndex] = entityId;
             atomLine[labelSeqIdIndex] = "1"; // This is a single giant residue

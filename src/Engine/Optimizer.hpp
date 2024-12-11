@@ -168,9 +168,7 @@ namespace Tmdet::Engine {
              * @brief Destroy the Optim object
              * 
              */
-            ~Optimizer() {
-                end();
-            };
+            ~Optimizer();
 
             /**
              * @brief set the membrane normal

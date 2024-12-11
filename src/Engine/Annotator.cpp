@@ -53,6 +53,9 @@ namespace Tmdet::Engine {
             regionHandler.store();
             finalCheck();
         }
+        if (protein.tmp) {
+            setMembraneSize();
+        }
         DEBUG_LOG(" Processed Annotator::run({})",(protein.tmp?regionHandler.toString("type"):"not tmp"));
     }
 
@@ -288,4 +291,26 @@ namespace Tmdet::Engine {
             protein.type.name,nA,nB,protein.tmp?"yes":"no");
     }
 
+    void Annotator::setMembraneSize() {
+        double minX = 10000;
+        double maxX = -10000;
+        double minY = 10000;
+        double maxY = -10000;
+        protein.eachResidue(
+            [&](Tmdet::VOs::Residue& residue) {
+                for(const auto& a: residue.atoms) {
+                    minX = (a.gemmi.pos.x<minX?a.gemmi.pos.x:minX);
+                    maxX = (a.gemmi.pos.x>maxX?a.gemmi.pos.x:maxX);
+                    minY = (a.gemmi.pos.y<minY?a.gemmi.pos.y:minY);
+                    maxY = (a.gemmi.pos.y>maxY?a.gemmi.pos.y:maxY);
+                }
+            }
+        );
+        double r = (maxX-minX>maxY-minY?maxX-minX:maxY-minY);
+        r/=2;
+        r+=5;
+        for (auto& membrane: protein.membranes) {
+            membrane.membraneRadius = r;
+        }
+    }
 }

@@ -19,6 +19,11 @@
 
 namespace Tmdet::Engine {
 
+    Optimizer::~Optimizer() {
+        DEBUG_LOG("Destroying Optimizer");
+        end();
+    }
+
     void Optimizer::init() {
         DEBUG_LOG("Processing: Optimizer::init()");
         massCentre = protein.centre();
@@ -158,6 +163,7 @@ namespace Tmdet::Engine {
                 if (dend>=(int)slices.size()) {
                     dend=(int)slices.size()-1;
                 }
+                DEBUG_LOG("sumupSliceVectors: beg:{} end:{} size:{}",dbeg,dend,slices.size());
                 for(int i=dbeg; i<= dend; i++) {
                     slices[i].straight+=cosAngle * (vector.type.isBeta()?1.5:1.0);
                     slices[i].numCa++;
