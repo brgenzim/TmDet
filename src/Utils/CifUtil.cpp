@@ -23,15 +23,13 @@ namespace Tmdet::Utils {
             throw std::runtime_error("_entity not found");
         }
 
-        if (!block.has_mmcif_category("_pdbx_struct_assembly_gen")) {
-            throw std::runtime_error("_pdbx_struct_assembly_gen not found");
-        }
-
-        // TODO: what if this category is a loop?
-        auto asymIdListPair = block.find_pair("_pdbx_struct_assembly_gen.asym_id_list");
-        if (asymIdListPair != nullptr) {
-            std::string newList = std::format("{},{}", (*asymIdListPair)[1], CifUtil::TMDET_MEMBRANE_ASYM_ID);
-            block.set_pair("_pdbx_struct_assembly_gen.asym_id_list", newList);
+        if (block.has_mmcif_category("_pdbx_struct_assembly_gen")) {
+            // TODO: what if this category is a loop?
+            auto asymIdListPair = block.find_pair("_pdbx_struct_assembly_gen.asym_id_list");
+            if (asymIdListPair != nullptr) {
+                std::string newList = std::format("{},{}", (*asymIdListPair)[1], CifUtil::TMDET_MEMBRANE_ASYM_ID);
+                block.set_pair("_pdbx_struct_assembly_gen.asym_id_list", newList);
+            }
         }
 
         // TODO: find_mmcif_category ???
@@ -182,8 +180,8 @@ namespace Tmdet::Utils {
             std::vector<std::string> atomLine(colIndex, ".");
             atomLine[0] = "HETATM";
             atomLine[serialIndex] = std::format("{:d}", nextSerialId);
-            atomLine[typeSymbolIndex] = "H";
-            atomLine[labelCompIdIndex] = "H";
+            atomLine[typeSymbolIndex] = "AG";
+            atomLine[labelCompIdIndex] = "AG";
             atomLine[labelAsymIdIndex] = TMDET_MEMBRANE_ASYM_ID;
             atomLine[labelEntityIdIndex] = entityId;
             atomLine[labelSeqIdIndex] = "1"; // This is a single giant residue
