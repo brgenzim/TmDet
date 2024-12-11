@@ -141,22 +141,17 @@ namespace Tmdet::Utils {
         auto& newLoop = document.blocks[0].init_mmcif_loop("_atom_site.", columns);
 
         // lambda function to update atom coords - including transformation
-        auto updateCoords = [protein](std::vector<std::string>& values, int xColumn, int yColumn, int zColumn) {
+        auto updateCoords = [&](std::vector<std::string>& values, int xColumn, int yColumn, int zColumn) {
 
             double x = std::stod(values[xColumn]);
             double y = std::stod(values[yColumn]);
             double z = std::stod(values[zColumn]);
 
             gemmi::Vec3 pos{x, y, z};
-            pos = protein.tmatrix.rot.multiply(pos);
-
-            x = protein.tmatrix.trans.x + pos.x;
-            y = protein.tmatrix.trans.y + pos.y;
-            z = protein.tmatrix.trans.z + pos.z;
-
-            values[xColumn] = std::format("{:.3f}", x);
-            values[yColumn] = std::format("{:.3f}", y);
-            values[zColumn] = std::format("{:.3f}", z);
+            protein.tmatrix.transform(pos);
+            values[xColumn] = std::format("{:.3f}", pos.x);
+            values[yColumn] = std::format("{:.3f}", pos.y);
+            values[zColumn] = std::format("{:.3f}", pos.z);
         };
 
         // Iterate on existing atoms
