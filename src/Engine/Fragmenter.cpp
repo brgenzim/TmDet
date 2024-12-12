@@ -7,6 +7,7 @@
 #include <Engine/Organizer.hpp>
 #include <Engine/PlaneSideDetector.hpp>
 #include <Engine/RegionHandler.hpp>
+#include <Helpers/Pymol.hpp>
 #include <System/Logger.hpp>
 #include <Utils/Fragment.hpp>
 #include <VOs/Protein.hpp>
@@ -20,8 +21,11 @@ namespace Tmdet::Engine {
             WARN_LOG("Fragment analysis can be run on protein containing exactly one chain");
             return;
         }
+        saveState();
         auto fragmentUtil = Tmdet::Utils::Fragment(protein);
         auto numFrags = fragmentUtil.run();
+        //toString();
+        //toPymol(); return;
         //DEBUG_LOG("Fragment results: {}",Tmdet::DTOs::Protein::toString(protein));
         DEBUG_LOG("Number of fragments: {}",numFrags);
         runOnFragments(numFrags);
@@ -131,25 +135,26 @@ namespace Tmdet::Engine {
         DEBUG_LOG("Processing Fragmenter:runOnBestCluster()");
         protein.clear();
         toString();
-        std::string members = "";
+        restoreState();
+        for (auto& d: data){
+            d.final = ((int)d.clusterId == bestClusterId);
+        }
+        std::string res="";
         for(auto& residue: protein.chains[0].residues) {
             if (residue.temp.contains("fragment")) {
                 residue.selected = false;
                 for (auto& d: data){
-                    DEBUG_LOG("Final selection: res:{} resFr:{} d.id{} d.clusterId{}",
-                        residue.authId,any_cast<int>(residue.temp.at("fragment")),d.id,d.clusterId);
-                    if ((int)d.clusterId == bestClusterId 
-                        && (int)d.id == any_cast<int>(residue.temp.at("fragment"))) {
-                            residue.selected = true;
+                    if (d.final  && (int)d.id == any_cast<int>(residue.temp.at("fragment"))) {
+                        residue.selected = true;
                     }
                 }
-                members += (residue.selected?"1":"0");
             }
             else {
                 residue.selected = false;
             }
+            res += (residue.selected?"1":"0");
         }
-        DEBUG_LOG("Final members: {}",members);
+        DEBUG_LOG("Final selected residues: {}",res);
         auto organizer = Tmdet::Engine::Organizer(protein, args);
         DEBUG_LOG("Processed Fragmenter:runOnBestCluster()");
     }
@@ -162,7 +167,7 @@ namespace Tmdet::Engine {
         );
         auto sideDetector = Tmdet::Engine::PlaneSideDetector(protein);
         for(auto& region: protein.chains[0].regions) {
-            for (int i=region.beg.labelId-1; i<region.end.labelId; i++) {
+            for (int i=region.beg.idx; i<=region.end.idx; i++) {
                 protein.chains[0].residues[i].temp.insert({"type",region.type});
             }
         }
@@ -178,10 +183,10 @@ namespace Tmdet::Engine {
             }
         );
         for (auto& d: data) {
-            if (d.tmp) {
+            if (d.tmp && !d.final) {
                 for (auto& r: d.regions) {
                     if (r.type.isAnnotatedTransMembraneType()) {
-                        for (int i=r.beg.labelId-1; i<r.end.labelId; i++) {
+                        for (int i=r.beg.idx; i<=r.end.idx; i++) {
                             protein.chains[0].residues[i].temp.at("type") = Tmdet::Types::RegionType::ERROR_FN;
                         }
                     }
@@ -214,4 +219,101 @@ namespace Tmdet::Engine {
             }
         );
     }
+
+    void Fragmenter::toPymol() {
+        auto& chain = protein.chains[0];
+        chain.regions.clear();
+        chain.regions.reserve(100);
+        auto l = chain.length -1;
+        Tmdet::VOs::Region region = {
+            {chain.residues[0].authId, chain.residues[0].authIcode,chain.residues[0].labelId, 0},
+            {chain.residues[l].authId, chain.residues[l].authIcode,chain.residues[l].labelId, l},
+            Tmdet::Types::RegionType::UNK
+        };
+        chain.regions.push_back(region);
+        int beg=0;
+        int end=0;
+        while(getNext(chain, beg, end, "fragment")) {
+            int fr = any_cast<int>(chain.residues[beg].temp.at("fragment"))%14;
+            Tmdet::VOs::Region region = {
+                {chain.residues[beg].authId, chain.residues[beg].authIcode,chain.residues[beg].labelId, beg},
+                {chain.residues[end-1].authId, chain.residues[end-1].authIcode,chain.residues[end-1].labelId, end-1},
+                getRegionType(fr)
+            };
+            DEBUG_LOG("Region stored: {}:{}-{}-{}",chain.id,region.beg.authId,region.end.authId,region.type.code);
+            chain.regions.push_back(region);
+            beg=end;
+        }
+        auto pymol = Tmdet::Helpers::Pymol(protein);
+        pymol.show(protein.inputFile);
+    }
+
+    Tmdet::Types::Region Fragmenter::getRegionType(int fr) {
+        for(auto& [key,reg]: Tmdet::Types::Regions) {
+            if (reg.id == fr) {
+                return reg;
+            }
+        }
+        return Tmdet::Types::RegionType::UNK;
+    }
+
+    void Fragmenter::saveState() {
+        protein.eachResidue(
+            [&](Tmdet::VOs::Residue& residue) {
+                for(const auto& atom: residue.atoms) {
+                    depo.push_back(atom.gemmi.pos);
+                }
+            }
+        );
+        for (const auto& ssVec: protein.secStrVecs) {
+            depo.push_back(ssVec.begin);
+            depo.push_back(ssVec.end);
+        }
+    }
+
+    void Fragmenter::restoreState() {
+        int i = 0;
+        protein.eachResidue(
+            [&](Tmdet::VOs::Residue& residue) {
+                for(const auto& atom: residue.atoms) {
+                    atom.gemmi.pos.x = depo[i].x;
+                    atom.gemmi.pos.y = depo[i].y;
+                    atom.gemmi.pos.z = depo[i].z;
+                    i++;
+                }
+            }
+        );
+        for (auto& ssVec: protein.secStrVecs) {
+            ssVec.begin.x = depo[i].x;
+            ssVec.begin.y = depo[i].y;
+            ssVec.begin.z = depo[i].z;
+            i++;
+            ssVec.end.x = depo[i].x;
+            ssVec.end.y = depo[i].y;
+            ssVec.end.z = depo[i].z;
+            i++;
+        }
+    }
+
+    bool Fragmenter::getNext(Tmdet::VOs::Chain& chain, int& begin, int& end, std::string what) const {
+        return (getNextDefined(chain, begin, what) && getNextSame(chain, begin, end, what));
+    }
+
+    bool Fragmenter::getNextDefined(Tmdet::VOs::Chain& chain, int& begin, std::string what) const {
+        while(begin < (int)chain.residues.size() && !chain.residues[begin].temp.contains(what)) {
+            begin++;
+        }
+        return (begin < (int)chain.residues.size());
+    }
+
+    bool Fragmenter::getNextSame(Tmdet::VOs::Chain& chain, const int& begin, int& end, std::string what) const {
+        end = begin;
+        while(end < (int)chain.residues.size() && chain.residues[end].temp.contains(what)
+            && std::any_cast<int>(chain.residues[begin].temp.at(what)) 
+                        == std::any_cast<int>(chain.residues[end].temp.at(what))) {
+            end++;
+        }
+        return true;
+    }
+
 }

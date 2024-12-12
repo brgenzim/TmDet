@@ -5,6 +5,8 @@
 #include <cmath>
 #include <limits>
 #include <gemmi/model.hpp>
+#include <Config.hpp>
+#include <System/Logger.hpp>
 #include <VOs/Protein.hpp>
 #include <VOs/Residue.hpp>
 #include <Utils/Fragment.hpp>
@@ -32,17 +34,26 @@ namespace Tmdet::Utils {
         std::vector<_cr> ret;
         std::vector<_cr> empty;
         const gemmi::Atom* ca_atom = residueVO.gemmi.get_ca();
+        std::string ns="";
+        bool check=false;
         if (ca_atom) {
             for (auto mark: proteinVO.neighbors.find_neighbors(*ca_atom, 3, 9)) {
                 if (proteinVO.chains[mark->chain_idx].residues[mark->residue_idx].atoms[mark->atom_idx].gemmi.name == "CA") {
                     _cr cr;
                     cr.chain_idx = mark->chain_idx;
                     cr.residue_idx = mark->residue_idx;
-                        ret.emplace_back(cr);
+                    ret.emplace_back(cr);
+                    ns += std::format("{}, ",cr.residue_idx);
+                    if (std::abs(residueVO.idx - cr.residue_idx) > 3) {
+                        check = true;
+                    }
                 }
             }
         }
-        return (ret.size()>2?ret:empty);
+        
+
+        DEBUG_LOG("Neighhor: res:{} {} - {}",residueVO.idx,(check?"good":"wrong"),ns);
+        return (check?ret:empty);
     }
 
     std::vector<_cr> Fragment::getCAlphaNetwork() {

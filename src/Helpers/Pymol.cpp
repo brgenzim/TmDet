@@ -14,7 +14,6 @@
 namespace Tmdet::Helpers {
 
     void Pymol::head(std::string pdbFile) {
-        //os << "from pymol.CGO_membrane import *\n";
         os << "from pymol.cgo import *\n";
         os << "from pymol import cmd\n";
         os << "import math\n";

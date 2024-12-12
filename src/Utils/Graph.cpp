@@ -53,7 +53,7 @@ namespace Tmdet::Utils {
         if (numLeft>0||numRight>0) {
             ret /= (numLeft<numRight?numLeft:numRight);
         }
-        ret += (numLeft<15||numRight<15?10000:0);
+        ret += (numLeft<20||numRight<20?10000:0);
         return ret;
     }
 
@@ -87,7 +87,7 @@ namespace Tmdet::Utils {
         if (numLeft>0&&numRight>0) {
             ret /= (numLeft<numRight?numLeft:numRight);
         }
-        ret += (numLeft<15||numRight<15?10000:0);
+        ret += (numLeft<20||numRight<20?10000:0);
         return ret;
     }
 

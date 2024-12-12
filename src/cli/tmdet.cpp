@@ -20,6 +20,7 @@
 #include <System/FilePaths.hpp>
 #include <System/Logger.hpp>
 #include <Utils/Dssp.hpp>
+#include <Utils/SecStrVec.hpp>
 #include <VOs/Protein.hpp>
 
 using namespace std;
@@ -123,6 +124,7 @@ int main(int argc, char *argv[], char **envp) {
     //do the membrane region determination and annotation
     if (bool r = args.getValueAsBool("r"); r) {
         auto dssp = Tmdet::Utils::Dssp(protein);
+        auto ssVec = Tmdet::Utils::SecStrVec(protein);
         if (bool fr = args.getValueAsBool("fr"); fr) {
             protein.forceSingleMembrane = true;
             auto fragmenter = Tmdet::Engine::Fragmenter(protein,args);

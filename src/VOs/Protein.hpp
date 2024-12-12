@@ -137,6 +137,8 @@ namespace Tmdet::VOs {
          */
         bool forceSingleMembrane = false;
 
+        std::string inputFile;
+
         /**
          * @brief set transmembrane to no and clear data
          */

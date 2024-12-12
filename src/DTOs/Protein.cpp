@@ -142,6 +142,7 @@ namespace Tmdet::DTOs {
         Tmdet::VOs::Protein protein;
         protein.getStructure(inputPath);
         protein.code = protein.gemmi.name;
+        protein.inputFile = inputPath;
         Tmdet::Helpers::String::toLower(protein.code);
         remove_hydrogens(protein.gemmi.models[0]);
         remove_ligands_and_waters(protein.gemmi.models[0]);
@@ -215,8 +216,8 @@ namespace Tmdet::DTOs {
         for (double x=-membrane.membraneRadius; x<=membrane.membraneRadius; x+=5) {
             for (double y=-membrane.membraneRadius; y<=membrane.membraneRadius; y+=5) {
                 if (sqrt(x*x+y*y) < membrane.membraneRadius) {
-                    ret.push_back(gemmi::Vec3(x,y,membrane.halfThickness));
-                    ret.push_back(gemmi::Vec3(x,y,-membrane.halfThickness));
+                    ret.push_back(gemmi::Vec3(x,y,membrane.origo+membrane.halfThickness));
+                    ret.push_back(gemmi::Vec3(x,y,membrane.origo-membrane.halfThickness));
                 }
             }
         }

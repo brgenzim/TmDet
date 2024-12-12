@@ -30,8 +30,6 @@ namespace Tmdet::Engine {
         DEBUG_LOG("Processing Organizer::run()");
         if (selectChains()) {
             surface();
-            auto ssVec = Tmdet::Utils::SecStrVec(protein);
-            
             if (args.getValueAsBool("bm")) {
                 DEBUG_LOG("Blended optimization");
                 protein.forceSingleMembrane = true;

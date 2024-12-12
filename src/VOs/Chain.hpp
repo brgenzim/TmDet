@@ -62,11 +62,6 @@ namespace Tmdet::VOs {
         std::vector<Residue> residues;
 
         /**
-         * @brief gemmi chain index to tmdet value object chain index
-         */
-        std::vector<int> g2tIndex;
-
-        /**
          * @brief chain index in Tmdet ValueObject protein.chains
          */
         int idx = 0;

@@ -11,6 +11,7 @@ namespace Tmdet::VOs {
         int authId;
         char authIcode;
         int labelId;
+        int idx;
     };
 
     /**
@@ -32,5 +33,6 @@ namespace Tmdet::VOs {
          * @brief region type
          */
         Tmdet::Types::Region type = Tmdet::Types::RegionType::UNK;
+
     };
 }

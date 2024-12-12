@@ -17,6 +17,7 @@ namespace Tmdet::Engine {
         unsigned int id;
         unsigned int clusterId;
         bool tmp;
+        bool final;
         Tmdet::VOs::Membrane membrane;
         gemmi::Vec3 normal;
         gemmi::Vec3 origo;
@@ -41,6 +42,11 @@ namespace Tmdet::Engine {
              */
             std::vector<_fragmentData> data;
 
+            /**
+             * @brief depo for saving state of the protein
+             */
+            std::vector<gemmi::Vec3> depo;
+
             void runOnFragments(int numFragments);
 
             void findClusters();
@@ -52,6 +58,17 @@ namespace Tmdet::Engine {
             void runOnBestCluster(int bestClusterId);
 
             void finalize();
+
+            void saveState();
+
+            void restoreState();
+
+            void toPymol();
+
+            Tmdet::Types::Region getRegionType(int fr);
+            bool getNext(Tmdet::VOs::Chain& chain, int& begin, int& end, std::string what) const;
+            bool getNextDefined(Tmdet::VOs::Chain& chain, int& begin, std::string what) const;
+            bool getNextSame(Tmdet::VOs::Chain& chain, const int& begin, int& end, std::string what) const;
 
             void run();
             void toString();
