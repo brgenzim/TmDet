@@ -1,3 +1,9 @@
+// © 2003-2024 Gabor E. Tusnady <tusnady.gabor@ttk.hu> and TmDet developer team
+//             Protein Bioinformatics Research Group 
+//             Research Center of Natural Sciences, HUN-REN
+//
+// License:    CC-BY-NC-4.0, see LICENSE.txt
+
 #pragma once
 
 #include <any>
@@ -9,10 +15,19 @@
 #include <Types/Chain.hpp>
 #include <Types/Region.hpp>
 
+/**
+ * @brief namespace for tmdet engine
+ *
+ * @namespace Tmdet
+ * @namespace Engine
+ */
 namespace Tmdet::Engine {
 
     class RegionHandler {
         private:
+            /**
+             * @brief structure and tmdet data containing protein value object
+             */
             Tmdet::VOs::Protein& protein;
 
             /**
@@ -32,6 +47,7 @@ namespace Tmdet::Engine {
              * @param what 
              * @return bool
              */
+            template <typename T>
             bool getNextSame(Tmdet::VOs::Chain& chain, const int& begin, int& end, std::string what) const;
 
         public:
@@ -62,6 +78,7 @@ namespace Tmdet::Engine {
              * @param what 
              * @return bool
              */
+            template <typename T>
             bool getNext(Tmdet::VOs::Chain& chain, int& begin, int& end, std::string what) const;
 
             /**
@@ -78,15 +95,41 @@ namespace Tmdet::Engine {
             /**
              * @brief store regions from residue type to chain regions
              */
+            template <typename T>
             void store();
 
             /**
              * @brief finalize regions, remediate possible errors
              */
+            template <typename T>
+            
+            /**
+             * @brief finalize regions, detect and remediate errors
+             * 
+             * @return int 
+             */
             int finalize();
 
+            /**
+             * @brief check if directions are the same for two residues
+             * 
+             * @param chain 
+             * @param pos1 
+             * @param pos2 
+             * @return true 
+             * @return false 
+             */
             bool sameDirection(Tmdet::VOs::Chain& chain, int pos1, int pos2);
 
+            /**
+             * @brief check if direction are not the same for two residues
+             * 
+             * @param chain 
+             * @param pos1 
+             * @param pos2 
+             * @return true 
+             * @return false 
+             */
             bool notSameDirection(Tmdet::VOs::Chain& chain, int pos1, int pos2);
     };
 }

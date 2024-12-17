@@ -1,3 +1,9 @@
+// © 2003-2024 Gabor E. Tusnady <tusnady.gabor@ttk.hu> and TmDet developer team
+//             Protein Bioinformatics Research Group 
+//             Research Center of Natural Sciences, HUN-REN
+//
+// License:    CC-BY-NC-4.0, see LICENSE.txt
+
 #pragma once
 
 #include <unordered_map>
@@ -5,7 +11,7 @@
 #include <functional>
 
 /**
- * @brief namespace of types
+ * @brief namespace of tmdet types
  * @namespace Tmdet
  * @namespace Types
  */
@@ -15,7 +21,16 @@ namespace Tmdet::Types {
      * @brief description of an atom type
      */
     struct Atom {
+        /**
+         * @brief name of the atom
+         * 
+         */
         std::string name;
+
+        /**
+         * @brief van der Waals radius of the atom
+         * 
+         */
         double vdw;
     };
 

@@ -1,3 +1,9 @@
+// © 2003-2024 Gabor E. Tusnady <tusnady.gabor@ttk.hu> and TmDet developer team
+//             Protein Bioinformatics Research Group 
+//             Research Center of Natural Sciences, HUN-REN
+//
+// License:    CC-BY-NC-4.0, see LICENSE.txt
+
 #include <any>
 #include <memory>
 #include <gemmi/model.hpp>
@@ -5,7 +11,7 @@
 #include <Helpers/Vector.hpp>
 #include <Engine/Annotator.hpp>
 #include <Engine/RegionHandler.hpp>
-#include <Engine/BlendedSideDetector.hpp>
+#include <Engine/CurvedSideDetector.hpp>
 #include <Engine/PlaneSideDetector.hpp>
 #include <Engine/BetaAnnotator.hpp>
 #include <System/Logger.hpp>
@@ -36,8 +42,8 @@ namespace Tmdet::Engine {
             sideDetector = std::make_unique<Tmdet::Engine::PlaneSideDetector>(protein);
         }
         else {
-            DEBUG_LOG("Blended sidedetector");
-            sideDetector = std::make_unique<Tmdet::Engine::BlendedSideDetector>(protein);
+            DEBUG_LOG("Curved sidedetector");
+            sideDetector = std::make_unique<Tmdet::Engine::CurvedSideDetector>(protein);
         }
             
         setChainsType();
@@ -45,12 +51,12 @@ namespace Tmdet::Engine {
             detectInterfacialHelices();
         }
         annotateChains();
-        if (int nm = regionHandler.finalize(); nm>10) {
+        if (int nm = regionHandler.finalize<Tmdet::Types::Region>(); nm>100) {
             DEBUG_LOG("Too many unhandled membrane segments: {}",nm);
             protein.notTransmembrane();
         }
         else {
-            regionHandler.store();
+            regionHandler.store<Tmdet::Types::Region>();
             finalCheck();
         }
         if (protein.tmp) {
@@ -121,7 +127,7 @@ namespace Tmdet::Engine {
     void Annotator::smoothRegions(Tmdet::VOs::Chain& chain, std::string what) {
         int beg=0;
         int end=0;
-        while(regionHandler.getNext(chain,beg,end,what)) {
+        while(regionHandler.getNext<Tmdet::Types::Region>(chain,beg,end,what)) {
             if (REGTYPEW(chain.residues[beg],what) == Tmdet::Types::RegionType::MEMB && end-beg < 3) {
                 regionHandler.replace(chain,beg,end-1,REGZTYPE(chain.residues[beg]),what);
             }
@@ -129,7 +135,7 @@ namespace Tmdet::Engine {
         }
         beg=0;
         end=0;
-        while(regionHandler.getNext(chain,beg,end,what)) {
+        while(regionHandler.getNext<Tmdet::Types::Region>(chain,beg,end,what)) {
             if (REGTYPEW(chain.residues[beg],what) != Tmdet::Types::RegionType::MEMB && end-beg < 3) {
                 regionHandler.replace(chain,beg,end-1,Tmdet::Types::RegionType::MEMB,what);
             }
@@ -141,7 +147,7 @@ namespace Tmdet::Engine {
     void Annotator::detectLoops(Tmdet::VOs::Chain& chain) {
         int beg=0;
         int end=0;
-        while(regionHandler.getNext(chain,beg,end,"type")) {
+        while(regionHandler.getNext<Tmdet::Types::Region>(chain,beg,end,"type")) {
             if (REGTYPE(chain.residues[beg]) == Tmdet::Types::RegionType::MEMB) {
                 detectLoop(chain,beg,end);
             }
@@ -168,7 +174,8 @@ namespace Tmdet::Engine {
             auto alphaVecs = getParallelAlphas(membrane);
             if (!alphaVecs.empty() ) {
                 for(const auto& vector: alphaVecs) {
-                    if (vector.endResIdx -vector.begResIdx>7
+                    if (vector.endResIdx -vector.begResIdx>10
+                        && protein.chains[vector.chainIdx].type.isAlpha()
                         && protein.chains[vector.chainIdx].residues[vector.begResIdx].selected
                         && protein.chains[vector.chainIdx].residues[vector.endResIdx].selected) {
                         regionHandler.replace(protein.chains[vector.chainIdx],vector.begResIdx,vector.endResIdx,Tmdet::Types::RegionType::IFH);
@@ -184,7 +191,7 @@ namespace Tmdet::Engine {
         DEBUG_LOG("Processing Annotator::detectReEntrantLoops()");
         int begin = 0;
         int end = 0;
-        while(regionHandler.getNext(chain,begin,end,"type")) {
+        while(regionHandler.getNext<Tmdet::Types::Region>(chain,begin,end,"type")) {
             end--;
             if (REGTYPE(chain.residues[begin]) == Tmdet::Types::RegionType::MEMB) {
                 DEBUG_LOG("detectReEntrantLoops: {} {} {}",chain.id,begin,end);
@@ -232,7 +239,7 @@ namespace Tmdet::Engine {
         DEBUG_LOG("Processing Annotator::detectTransmembraneHelices()");
         int begin = 0;
         int end = 0;
-        while(regionHandler.getNext(chain,begin,end,"type")) {
+        while(regionHandler.getNext<Tmdet::Types::Region>(chain,begin,end,"type")) {
             if (REGTYPE(chain.residues[begin]) == Tmdet::Types::RegionType::MEMB 
                 && end-begin > 10
                 && REGZ(chain.residues[begin]) * REGZ(chain.residues[end-1]) < 0) {
@@ -271,7 +278,6 @@ namespace Tmdet::Engine {
     }
 
     void Annotator::finalCheck() {
-        
         int nA=0;
         int nB=0;
         protein.eachChain(
@@ -308,7 +314,6 @@ namespace Tmdet::Engine {
         );
         double r = (maxX-minX>maxY-minY?maxX-minX:maxY-minY);
         r/=2;
-        r+=5;
         for (auto& membrane: protein.membranes) {
             membrane.membraneRadius = r;
         }

@@ -1,3 +1,9 @@
+// © 2003-2024 Gabor E. Tusnady <tusnady.gabor@ttk.hu> and TmDet developer team
+//             Protein Bioinformatics Research Group 
+//             Research Center of Natural Sciences, HUN-REN
+//
+// License:    CC-BY-NC-4.0, see LICENSE.txt
+
 #pragma once
 
 #include <unordered_map>
@@ -7,7 +13,7 @@
 #include <Types/Atom.hpp>
 
 /**
- * @brief namespace of types
+ * @brief namespace of tmdet types
  * @namespace Tmdet
  * @namespace Types
  */
@@ -27,12 +33,38 @@ namespace Tmdet::Types {
         double sds;
     };
 
+    /**
+     * @brief definition of residue type
+     */
     struct Residue {
+        /**
+         * @brief name of the residue type
+         */
         std::string name;
+
+        /**
+         * @brief one letter code
+         */
         char a1;
+
+        /**
+         * @brief apolarity
+         */
         float apol = 0.0;
+
+        /**
+         * @brief hydrophobicity
+         */
         float hsc = 0.0;
+
+        /**
+         * @brief number of side chain atoms
+         */
         int nsa = 0;
+
+        /**
+         * @brief list of atom datas
+         */
         std::unordered_map<std::string,AtomData> atoms;
     };
 

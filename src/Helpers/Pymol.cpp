@@ -1,3 +1,9 @@
+// © 2003-2024 Gabor E. Tusnady <tusnady.gabor@ttk.hu> and TmDet developer team
+//             Protein Bioinformatics Research Group 
+//             Research Center of Natural Sciences, HUN-REN
+//
+// License:    CC-BY-NC-4.0, see LICENSE.txt
+
 #include <string>
 #include <vector>
 #include <format>
@@ -12,6 +18,24 @@
 #include <Helpers/Pymol.hpp>
 
 namespace Tmdet::Helpers {
+
+    const std::vector<std::string> colors = {
+        "limon", //MEMB
+        "yellow", //HELIX
+        "yellow", //BETA
+        "salmon", //SIDE1
+        "lightblue", //SIDE2
+        "orange", //LOOP
+        "green", //IFH
+        "violetpurple", //MEMBINS
+        "teal", //INTERMEMB
+        "red", //INSIDE
+        "blue", //OUTSIDE
+        "pink", //PERIPLASM
+        "red", //ERROR - FP
+        "blue", //ERROR - FN
+        "grey80" //UNK
+    };
 
     void Pymol::head(std::string pdbFile) {
         os << "from pymol.cgo import *\n";

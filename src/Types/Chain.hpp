@@ -1,10 +1,16 @@
+// © 2003-2024 Gabor E. Tusnady <tusnady.gabor@ttk.hu> and TmDet developer team
+//             Protein Bioinformatics Research Group 
+//             Research Center of Natural Sciences, HUN-REN
+//
+// License:    CC-BY-NC-4.0, see LICENSE.txt
+
 #pragma once
 
 #include <unordered_map>
 #include <string>
 
 /**
- * @brief namespace of types
+ * @brief namespace of tmdet types
  * @namespace Tmdet
  * @namespace Types
  */
@@ -14,17 +20,43 @@ namespace Tmdet::Types {
      * @brief description of a chain type
      */
     struct Chain {
+        /**
+         * @brief name of chain type
+         */
         std::string name;
+
+        /**
+         * @brief description of chain type
+         */
         std::string description;
 
+        /**
+         * @brief check if two chain types are equal
+         * 
+         * @param other 
+         * @return true 
+         * @return false 
+         */
         bool operator == (const Chain& other) const {
             return name == other.name;
         }
 
+        /**
+         * @brief check is chain type is alpha
+         * 
+         * @return true 
+         * @return false 
+         */
         bool isAlpha() const {
             return name == "alpha";
         }
 
+        /**
+         * @brief check is chain type is beta
+         * 
+         * @return true 
+         * @return false 
+         */
         bool isBeta() const {
             return name == "beta";
         }

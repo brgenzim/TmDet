@@ -1,3 +1,9 @@
+// © 2003-2024 Gabor E. Tusnady <tusnady.gabor@ttk.hu> and TmDet developer team
+//             Protein Bioinformatics Research Group 
+//             Research Center of Natural Sciences, HUN-REN
+//
+// License:    CC-BY-NC-4.0, see LICENSE.txt
+
 #pragma once
 
 #include <iostream>
@@ -9,6 +15,12 @@
 #include <unistd.h>
 #include <Config.hpp>
 
+/**
+ * @brief namespace for tmdet system
+ *
+ * @namespace Tmdet
+ * @namespace System
+ */
 namespace Tmdet::System {
 
     struct FilePaths {

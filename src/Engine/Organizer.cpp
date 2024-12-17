@@ -1,3 +1,9 @@
+// © 2003-2024 Gabor E. Tusnady <tusnady.gabor@ttk.hu> and TmDet developer team
+//             Protein Bioinformatics Research Group 
+//             Research Center of Natural Sciences, HUN-REN
+//
+// License:    CC-BY-NC-4.0, see LICENSE.txt
+
 
 #include <string>
 #include <memory>
@@ -11,8 +17,7 @@
 #include <Engine/Organizer.hpp>
 #include <Engine/Optimizer.hpp>
 #include <Engine/PlaneOptimizer.hpp>
-#include <Engine/BlendedOptimizer.hpp>
-#include <Exceptions/NoProteinStructureException.hpp>
+#include <Engine/CurvedOptimizer.hpp>
 #include <System/Arguments.hpp>
 #include <Types/Protein.hpp>
 #include <Utils/Dssp.hpp>
@@ -30,10 +35,10 @@ namespace Tmdet::Engine {
         DEBUG_LOG("Processing Organizer::run()");
         if (selectChains()) {
             surface();
-            if (args.getValueAsBool("bm")) {
-                DEBUG_LOG("Blended optimization");
+            if (args.getValueAsBool("cm")) {
+                DEBUG_LOG("Curved optimization");
                 protein.forceSingleMembrane = true;
-                optimizer = std::make_unique<BlendedOptimizer>(protein);
+                optimizer = std::make_unique<CurvedOptimizer>(protein);
             }
             else {
                 DEBUG_LOG("Plane optimization");
@@ -41,9 +46,6 @@ namespace Tmdet::Engine {
             }
             checkSymmetry();
 
-            if (!protein.tmp) {
-                searchForOneTm();
-            }
             if (!protein.tmp) {
                 optimizer->searchForMembraneNormal();
                 optimizer->setMembranesToProtein();
@@ -119,14 +121,6 @@ namespace Tmdet::Engine {
             }
         }
         DEBUG_LOG(" Processed Organizer::checkSymmetry()");
-    }
-
-    void Organizer::searchForOneTm() {
-        DEBUG_LOG("Processing Organizer::searchForOneTm()");
-        //TODO: check if protein contains only onel long alpha helix
-        //      then search for membrane normal around 30 degree
-        //      of the arrow of the helix
-        DEBUG_LOG(" Processed Organizer::searchForOneTm()");
     }
 
 }

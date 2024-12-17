@@ -1,11 +1,27 @@
+// © 2003-2024 Gabor E. Tusnady <tusnady.gabor@ttk.hu> and TmDet developer team
+//             Protein Bioinformatics Research Group 
+//             Research Center of Natural Sciences, HUN-REN
+//
+// License:    CC-BY-NC-4.0, see LICENSE.txt
+
 #pragma once
 
 #include <string>
 #include <VOs/Protein.hpp>
 #include <VOs/Xml.hpp>
 
+/**
+ * @brief namespace for tmdet data transfer objects
+ *
+ * @namespace Tmdet
+ * @namespace DTOs
+ */
 namespace Tmdet::DTOs {
 
+    /**
+     * @brief convert protein value object into xml value object
+     * 
+     */
     class Xml {
         private:
             /**

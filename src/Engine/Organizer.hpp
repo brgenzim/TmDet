@@ -1,3 +1,9 @@
+// © 2003-2024 Gabor E. Tusnady <tusnady.gabor@ttk.hu> and TmDet developer team
+//             Protein Bioinformatics Research Group 
+//             Research Center of Natural Sciences, HUN-REN
+//
+// License:    CC-BY-NC-4.0, see LICENSE.txt
+
 #pragma once
 
 #include <vector>
@@ -12,19 +18,21 @@
 #include <VOs/Protein.hpp>
 
 /**
- * @brief name space for tmdet engine
+ * @brief namespace for tmdet engine
+ *
+ * @namespace Tmdet
+ * @namespace Engine
  */
 namespace Tmdet::Engine {
 
     /**
-     * @brief the main class of the engine organizing the
-     * 
+     * @brief the main class that organize the whole annotation
      */
     class Organizer {
         private:
 
             /**
-             * @brief structure and tmdet data containing value object
+             * @brief structure and tmdet data containing protein value object
              */
             Tmdet::VOs::Protein& protein;
 
@@ -33,6 +41,9 @@ namespace Tmdet::Engine {
              */
             Tmdet::System::Arguments& args;
 
+            /**
+             * @brief pointer to the optimizer object (curved or plain)
+             */
             std::unique_ptr<Tmdet::Engine::Optimizer> optimizer;
 
             /**
@@ -67,17 +78,9 @@ namespace Tmdet::Engine {
             void checkSymmetry();
 
             /**
-             * @brief if no symmetry in the molecule or it can not be the membrane plane
-             *        search for the best membrane plane
-             */
-            void findMembrane();
-
-            /**
              * @brief run the process
              */
             void run();
-
-            void searchForOneTm();
             
         public:
             /**

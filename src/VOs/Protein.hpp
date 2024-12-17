@@ -1,3 +1,9 @@
+// © 2003-2024 Gabor E. Tusnady <tusnady.gabor@ttk.hu> and TmDet developer team
+//             Protein Bioinformatics Research Group 
+//             Research Center of Natural Sciences, HUN-REN
+//
+// License:    CC-BY-NC-4.0, see LICENSE.txt
+
 #pragma once
 
 #include <string>
@@ -132,7 +138,7 @@ namespace Tmdet::VOs {
         std::vector<Tmdet::VOs::SecStrVec> secStrVecs;
 
         /**
-         * @brief force single membrane (in case of blended membrane and
+         * @brief force single membrane (in case of curved membrane and
          *        fragment analysis)
          */
         bool forceSingleMembrane = false;

@@ -21,9 +21,9 @@
 namespace Tmdet::Engine {
 
     /**
-     * @brief set region types for residues of protein in plane membrane
+     * @brief set region types for residues of protein in curved membrane
      */
-    class PlaneSideDetector : public SideDetector {
+    class CurvedSideDetector : public SideDetector {
         protected:
             /**
              * @brief calculate distance of an atom from membrane plane
@@ -32,7 +32,7 @@ namespace Tmdet::Engine {
              * @return double 
              */
             double getDistance(const gemmi::Vec3& vec);
-            
+
             /**
              * @brief Set the z coordinates of membrane boundaries
              * 
@@ -41,15 +41,14 @@ namespace Tmdet::Engine {
             void setZs(const std::vector<Tmdet::VOs::Membrane>& membranes);
             
         public:
-
             /**
-             * @brief Construct a new Plane Side Detector object
+             * @brief Construct a new Curved Side Detector object
              * 
              * @param protein 
              */
-            explicit PlaneSideDetector(Tmdet::VOs::Protein& protein) :
+            explicit CurvedSideDetector(Tmdet::VOs::Protein& protein) :
                 SideDetector(protein) {
-                    type="Plane";
+                    type="Curved";
                     run();
             }
             

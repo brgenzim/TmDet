@@ -1,17 +1,33 @@
+// © 2003-2024 Gabor E. Tusnady <tusnady.gabor@ttk.hu> and TmDet developer team
+//             Protein Bioinformatics Research Group 
+//             Research Center of Natural Sciences, HUN-REN
+//
+// License:    CC-BY-NC-4.0, see LICENSE.txt
+
 #pragma once
 
 #include <unordered_map>
 #include <string>
 
 /**
- * @brief namespace of types
+ * @brief namespace of tmdet types
  * @namespace Tmdet
  * @namespace Types
  */
 namespace Tmdet::Types {
 
+    /**
+     * @brief definition of oligomer type
+     */
     struct Oligomer {
+        /**
+         * @brief name of the oligomer type
+         */
         std::string name;
+
+        /**
+         * @brief description of oligomer type
+         */
         std::string description;
     };
 

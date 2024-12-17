@@ -1,3 +1,9 @@
+// © 2003-2024 Gabor E. Tusnady <tusnady.gabor@ttk.hu> and TmDet developer team
+//             Protein Bioinformatics Research Group 
+//             Research Center of Natural Sciences, HUN-REN
+//
+// License:    CC-BY-NC-4.0, see LICENSE.txt
+
 #include <string>
 
 #include <Config.hpp>
@@ -24,9 +30,7 @@ namespace Tmdet::Engine {
         saveState();
         auto fragmentUtil = Tmdet::Utils::Fragment(protein);
         auto numFrags = fragmentUtil.run();
-        //toString();
         //toPymol(); return;
-        //DEBUG_LOG("Fragment results: {}",Tmdet::DTOs::Protein::toString(protein));
         DEBUG_LOG("Number of fragments: {}",numFrags);
         runOnFragments(numFrags);
         findClusters();
@@ -39,7 +43,6 @@ namespace Tmdet::Engine {
         DEBUG_LOG("Processing Fragmenter:runOnFragments()");
         for(int i=0; i<numFragments; i++) {
             DEBUG_LOG("FragmentId: {}",i);
-            toString();
             std::string members="";
             for(auto& residue: protein.chains[0].residues) {
                 if (residue.temp.contains("fragment")) {
@@ -99,10 +102,6 @@ namespace Tmdet::Engine {
         return data[i].normal.angle(data[j].normal) < 15;
     }
 
-   /* bool Fragmenter::checkOrigo(int i, int j) {
-        return data[i].origo.dist(data[j].origo) < 5;
-    }*/
-
     int Fragmenter::findBestCluster() {
         DEBUG_LOG("Processing Fragmenter:findBestCluster()");
         int largestClusterId=0;
@@ -134,7 +133,6 @@ namespace Tmdet::Engine {
     void Fragmenter::runOnBestCluster(int bestClusterId) {
         DEBUG_LOG("Processing Fragmenter:runOnBestCluster()");
         protein.clear();
-        toString();
         restoreState();
         for (auto& d: data){
             d.final = ((int)d.clusterId == bestClusterId);
@@ -196,28 +194,7 @@ namespace Tmdet::Engine {
         auto regionHandler = Tmdet::Engine::RegionHandler(protein);
         DEBUG_LOG("Final regions: {}",regionHandler.toString("type"));
         protein.chains[0].regions.clear();
-        regionHandler.store();
-    }
-
-    void Fragmenter::toString() {
-        std::string cl="0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        
-        protein.eachSelectedChain(
-            [&](Tmdet::VOs::Chain& chain) -> void {
-                std::string cls="";
-                chain.eachResidue(
-                    [&](Tmdet::VOs::Residue& residue) -> void {
-                        if (residue.temp.contains("fragment")) {
-                            cls += cl[any_cast<int>(residue.temp.at("fragment"))];
-                        }
-                        else {
-                            cls += "-";
-                        }
-                    }
-                );
-                DEBUG_LOG("Fragment results chain:{} {}",chain.id,cls);
-            }
-        );
+        regionHandler.store<Tmdet::Types::Region>();
     }
 
     void Fragmenter::toPymol() {
@@ -233,7 +210,8 @@ namespace Tmdet::Engine {
         chain.regions.push_back(region);
         int beg=0;
         int end=0;
-        while(getNext(chain, beg, end, "fragment")) {
+        RegionHandler regionHandler(protein);
+        while(regionHandler.getNext<int>(chain, beg, end, "fragment")) {
             int fr = any_cast<int>(chain.residues[beg].temp.at("fragment"))%14;
             Tmdet::VOs::Region region = {
                 {chain.residues[beg].authId, chain.residues[beg].authIcode,chain.residues[beg].labelId, beg},
@@ -293,27 +271,6 @@ namespace Tmdet::Engine {
             ssVec.end.z = depo[i].z;
             i++;
         }
-    }
-
-    bool Fragmenter::getNext(Tmdet::VOs::Chain& chain, int& begin, int& end, std::string what) const {
-        return (getNextDefined(chain, begin, what) && getNextSame(chain, begin, end, what));
-    }
-
-    bool Fragmenter::getNextDefined(Tmdet::VOs::Chain& chain, int& begin, std::string what) const {
-        while(begin < (int)chain.residues.size() && !chain.residues[begin].temp.contains(what)) {
-            begin++;
-        }
-        return (begin < (int)chain.residues.size());
-    }
-
-    bool Fragmenter::getNextSame(Tmdet::VOs::Chain& chain, const int& begin, int& end, std::string what) const {
-        end = begin;
-        while(end < (int)chain.residues.size() && chain.residues[end].temp.contains(what)
-            && std::any_cast<int>(chain.residues[begin].temp.at(what)) 
-                        == std::any_cast<int>(chain.residues[end].temp.at(what))) {
-            end++;
-        }
-        return true;
     }
 
 }

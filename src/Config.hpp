@@ -1,3 +1,9 @@
+// © 2003-2024 Gabor E. Tusnady <tusnady.gabor@ttk.hu> and TmDet developer team
+//             Protein Bioinformatics Research Group 
+//             Research Center of Natural Sciences, HUN-REN
+//
+// License:    CC-BY-NC-4.0, see LICENSE.txt
+
 #pragma once
 
 #define DEFAULT_APP_NAME "tmdet"
@@ -31,7 +37,7 @@
 #define TMDET_TINY 1e-10
 #define TMDET_MINIMUM_QVALUE 48
 #define TMDET_MEMBRANE_QVALUE 40
-#define TMDET_MEMBRANE_MIN_HALFTHICKNESS 6.5
+#define TMDET_MEMBRANE_MIN_HALFTHICKNESS 7
 #define TMDET_MEMBRANE_MAX_HALFTHICKNESS 15
 #define TMDET_SECSTRVEC_MERGE_DIST 6.0
 #define TMDET_SECSTRVEC_MERGE_ANGLE 15.0

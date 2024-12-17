@@ -1,3 +1,9 @@
+// © 2003-2024 Gabor E. Tusnady <tusnady.gabor@ttk.hu> and TmDet developer team
+//             Protein Bioinformatics Research Group 
+//             Research Center of Natural Sciences, HUN-REN
+//
+// License:    CC-BY-NC-4.0, see LICENSE.txt
+
 #pragma once
 
 #include <string>
@@ -14,12 +20,12 @@
  * 
  * @namespace Tmdet
  * @namespace DTOs
- * @namespace Xml
+ * @namespace XmlRW
  */
 namespace Tmdet::DTOs::XmlRW {
 
     /**
-     * @brief class for writing old (pdbtm_3.0) xml files
+     * @brief class for writing xml files
      */
     class Writer {
         private:
@@ -135,7 +141,15 @@ namespace Tmdet::DTOs::XmlRW {
              * @param regions 
              */
             void setRegions(pugi::xml_node& pnode, const std::vector<Tmdet::VOs::Region>& regions) const;
+          
           public:
+
+            /**
+             * @brief write xmlData to xml file
+             * 
+             * @param xmlData 
+             * @param path 
+             */
             void writeXml(Tmdet::VOs::Xml& xmlData, const std::string& path);
     };
 }

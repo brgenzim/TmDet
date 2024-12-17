@@ -1,3 +1,9 @@
+// © 2003-2024 Gabor E. Tusnady <tusnady.gabor@ttk.hu> and TmDet developer team
+//             Protein Bioinformatics Research Group 
+//             Research Center of Natural Sciences, HUN-REN
+//
+// License:    CC-BY-NC-4.0, see LICENSE.txt
+
 #include <sstream>
 #include <string>
 #include <gemmi/modify.hpp>
@@ -206,16 +212,17 @@ namespace Tmdet::DTOs {
                 addPlaneMembraneAtoms(protein, membrane, ret);
             }
             else {
-                addBlendedMembraneAtoms(protein, membrane, ret);
+                addCurvedMembraneAtoms(protein, membrane, ret);
             }
         }
         return ret;
     }
 
     void Protein::addPlaneMembraneAtoms(Tmdet::VOs::Protein& protein, const Tmdet::VOs::Membrane& membrane, std::vector<gemmi::Vec3>& ret) {
-        for (double x=-membrane.membraneRadius; x<=membrane.membraneRadius; x+=5) {
-            for (double y=-membrane.membraneRadius; y<=membrane.membraneRadius; y+=5) {
-                if (sqrt(x*x+y*y) < membrane.membraneRadius) {
+        double R = membrane.membraneRadius + 10;
+        for (double x=-R; x<=R; x+=5) {
+            for (double y=-R; y<=R; y+=5) {
+                if (sqrt(x*x+y*y) < R) {
                     ret.push_back(gemmi::Vec3(x,y,membrane.origo+membrane.halfThickness));
                     ret.push_back(gemmi::Vec3(x,y,membrane.origo-membrane.halfThickness));
                 }
@@ -223,10 +230,11 @@ namespace Tmdet::DTOs {
         }
     }
 
-    void Protein::addBlendedMembraneAtoms(Tmdet::VOs::Protein& protein, const Tmdet::VOs::Membrane& membrane, std::vector<gemmi::Vec3>& ret) {
-        for (double x=-membrane.membraneRadius; x<=membrane.membraneRadius; x+=5) {
-            for (double y=-membrane.membraneRadius; y<=membrane.membraneRadius; y+=5) {
-                if (sqrt(x*x+y*y) < membrane.membraneRadius) {
+    void Protein::addCurvedMembraneAtoms(Tmdet::VOs::Protein& protein, const Tmdet::VOs::Membrane& membrane, std::vector<gemmi::Vec3>& ret) {
+        double R = membrane.membraneRadius + 5;
+        for (double x=-R; x<=R; x+=5) {
+            for (double y=-R; y<=R; y+=5) {
+                if (sqrt(x*x+y*y) < R) {
                     double r = membrane.sphereRadius + membrane.halfThickness;
                     if (r*r > x*x + y*y) {
                         double z = sqrt(r*r - x*x - y*y) + membrane.origo;

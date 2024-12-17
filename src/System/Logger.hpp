@@ -1,3 +1,9 @@
+// © 2003-2024 Gabor E. Tusnady <tusnady.gabor@ttk.hu> and TmDet developer team
+//             Protein Bioinformatics Research Group 
+//             Research Center of Natural Sciences, HUN-REN
+//
+// License:    CC-BY-NC-4.0, see LICENSE.txt
+
 #pragma once
 
 #include <vector>
@@ -63,6 +69,12 @@
 #define CRITICAL_LOG(...)
 #endif
 
+/**
+ * @brief namespace for tmdet system
+ *
+ * @namespace Tmdet
+ * @namespace System
+ */
 namespace Tmdet::System {
 
     enum level : int {
@@ -76,18 +88,43 @@ namespace Tmdet::System {
         n_levels
     };
 
+    /**
+     * @brief class for logging
+     */
     class Logger {
         private:
+            /**
+             * @brief output stream
+             */
             std::vector<std::ostream*> logStreams;
+
+            /**
+             * @brief log level
+             */
             level logLevel = level::err;
             const std::vector<std::string> logLevels = {
                 "nop", "trace", "debug", "info", "warning", "error", "critical", "off"
             };
 
+            /**
+             * @brief check if should logging in the given level
+             * 
+             * @param lvl 
+             * @return true 
+             * @return false 
+             */
             bool shouldLog(level lvl) const {
                 return lvl >= logLevel;
             }
 
+            /**
+             * @brief log out the info and data given
+             * 
+             * @tparam Args 
+             * @param lvl 
+             * @param fmt 
+             * @param args 
+             */
             template <typename... Args>
             void logIt(level lvl, std::format_string<Args...> fmt, Args &&... args) {
                 std::string str = std::format(fmt,std::forward<Args>(args)...);
@@ -97,6 +134,14 @@ namespace Tmdet::System {
                 }
             }
 
+            /**
+             * @brief log if it should log
+             * 
+             * @tparam Args 
+             * @param lvl 
+             * @param fmt 
+             * @param args 
+             */
             template <typename... Args>
             void log(level lvl, std::format_string<Args...> fmt, Args &&... args) {
                 if (shouldLog(lvl)) {
@@ -104,6 +149,11 @@ namespace Tmdet::System {
                 }
             }
 
+            /**
+             * @brief Get the Current Date Time 
+             * 
+             * @return std::string 
+             */
             std::string getCurrentDateTime() {
                 auto now = std::chrono::system_clock::now();
                 std::time_t currentTime = std::chrono::system_clock::to_time_t(now);
@@ -116,39 +166,91 @@ namespace Tmdet::System {
             }
 
         public:
+            /**
+             * @brief add output stream
+             * 
+             * @param os 
+             */
             void addStream(std::ostream& os) {
                 logStreams.push_back(&os);
             }
 
+            /**
+             * @brief Set log level
+             * 
+             * @param log_level 
+             */
             void setLevel(level log_level) {
                 logLevel = log_level;
             }
 
+            /**
+             * @brief trace log
+             * 
+             * @tparam Args 
+             * @param fmt 
+             * @param args 
+             */
             template <typename... Args>
             void trace(std::format_string<Args...> fmt, Args &&...args) {
                 log(level::trace, fmt, std::forward<Args>(args)...);
             }
 
+            /**
+             * @brief debug log
+             * 
+             * @tparam Args 
+             * @param fmt 
+             * @param args 
+             */
             template <typename... Args>
             void debug(std::format_string<Args...> fmt, Args &&...args) {
                 log(level::debug, fmt, std::forward<Args>(args)...);
             }
 
+            /**
+             * @brief info log
+             * 
+             * @tparam Args 
+             * @param fmt 
+             * @param args 
+             */
             template <typename... Args>
             void info(std::format_string<Args...> fmt, Args &&...args) {
                 log(level::info, fmt, std::forward<Args>(args)...);
             }
 
+            /**
+             * @brief warn log
+             * 
+             * @tparam Args 
+             * @param fmt 
+             * @param args 
+             */
             template <typename... Args>
             void warn(std::format_string<Args...> fmt, Args &&...args) {
                 log(level::warn, fmt, std::forward<Args>(args)...);
             }
 
+            /**
+             * @brief error log
+             * 
+             * @tparam Args 
+             * @param fmt 
+             * @param args 
+             */
             template <typename... Args>
             void error(std::format_string<Args...> fmt, Args &&...args) {
                 log(level::err, fmt, std::forward<Args>(args)...);
             }
 
+            /**
+             * @brief critical log
+             * 
+             * @tparam Args 
+             * @param fmt 
+             * @param args 
+             */
             template <typename... Args>
             void critical(std::format_string<Args...> fmt, Args &&...args) {
                 log(level::critical, fmt, std::forward<Args>(args)...);

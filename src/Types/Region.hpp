@@ -1,48 +1,122 @@
+// © 2003-2024 Gabor E. Tusnady <tusnady.gabor@ttk.hu> and TmDet developer team
+//             Protein Bioinformatics Research Group 
+//             Research Center of Natural Sciences, HUN-REN
+//
+// License:    CC-BY-NC-4.0, see LICENSE.txt
+
 #pragma once
 
 #include <unordered_map>
 #include <string>
 
 /**
- * @brief namespace of types
+ * @brief namespace of tmdet types
  * @namespace Tmdet
  * @namespace Types
  */
 namespace Tmdet::Types {
 
+    /**
+     * @brief definition of a region type
+     */
     struct Region {
+        /**
+         * @brief uniq udentifier number
+         */
         int id;
+
+        /**
+         * @brief name of the region type
+         */
         std::string name;
+
+        /**
+         * @brief code of the region type
+         */
         char code;
+
+        /**
+         * @brief description of the region type
+         */
         std::string description;
 
+        /**
+         * @brief check if two region type are equal
+         * 
+         * @param other 
+         * @return true 
+         * @return false 
+         */
         bool operator == (const Region& other) const {
             return id == other.id;
         }
 
+        /**
+         * @brief check if the region type is annotated transmembrane type
+         * 
+         * @return true 
+         * @return false 
+         */
         bool isAnnotatedTransMembraneType() const {
             return code == 'H' || code == 'B';
         }
 
+        /**
+         * @brief check if the region type is annotated membrane type
+         * 
+         * @return true 
+         * @return false 
+         */
         bool isAnnotatedMembraneType() const {
             return code == 'H' || code == 'B' || code == 'L' || code =='F';
         }
 
+        /**
+         * @brief check if region type is not membrane
+         * 
+         * @return true 
+         * @return false 
+         */
         bool isNotMembrane() const {
             return code == '1' || code == '2' || code == '3';
         }
 
+        /**
+         * @brief check if region type is not annotated membrane type
+         * 
+         * @return true 
+         * @return false 
+         */
         bool isNotAnnotatedMembrane() const {
             return code == 'M';
         }
 
+        /**
+         * @brief check if region type is membrane inside
+         * 
+         * @return true 
+         * @return false 
+         */
         bool isMembraneInside() const {
             return code == 'N';
         }
 
+        /**
+         * @brief check if region type is alpha helical transmembrane type
+         * 
+         * @return true 
+         * @return false 
+         */
         bool isAlpha() const {
             return code == 'H';
         }
+
+        /**
+         * @brief check if region type is beta barrel type
+         * 
+         * @return true 
+         * @return false 
+         */
         bool isBeta() const {
             return code == 'B';
         }

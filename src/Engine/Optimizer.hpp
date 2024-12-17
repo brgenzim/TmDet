@@ -1,3 +1,9 @@
+// © 2003-2024 Gabor E. Tusnady <tusnady.gabor@ttk.hu> and TmDet developer team
+//             Protein Bioinformatics Research Group 
+//             Research Center of Natural Sciences, HUN-REN
+//
+// License:    CC-BY-NC-4.0, see LICENSE.txt
+
 #pragma once
 
 #include <string>
@@ -11,19 +17,22 @@
 
 /**
  * @brief namespace for tmdet engine
+ *
+ * @namespace Tmdet
+ * @namespace Engine
  */
 namespace Tmdet::Engine {
 
 #define RES(res,a) (protein.chains[res.chainIdx].residues[res.idx + a])
-
-    
 
     /**
      * @brief class for searching for membrane plane
      */
     class Optimizer {
         protected:
-
+            /**
+             * @brief type of the optimizer (plane or curved)
+             */
             std::string type = "";
 
             /**
@@ -71,10 +80,15 @@ namespace Tmdet::Engine {
              */
             gemmi::Vec3 massCentre;
 
+            /**
+             * @brief last origo
+             */
             double lastO = 0;
 
+            /**
+             * @brief best origo
+             */
             double bestOrigo = 0;
-
 
             /**
              * @brief initialize the algorithm
@@ -82,10 +96,17 @@ namespace Tmdet::Engine {
             void init();
 
             /**
-             * @brief end and clean of the algorithm
+             * @brief clean temporary data
              */
             void end();
 
+            /**
+             * @brief distance of the atom from the membrane plane
+             *        or the centre of the sphere
+             * 
+             * @param vec 
+             * @return double 
+             */
             virtual double distance(gemmi::Vec3& vec) = 0;
 
             /**
@@ -127,8 +148,20 @@ namespace Tmdet::Engine {
              */
             void checkBestSlice();
 
+            /**
+             * @brief Get the width of the membrane (region of slices those qValue
+             *        is above TMDET_MEMBRANE_VALUE)
+             * 
+             * @param z 
+             * @param minz 
+             * @param maxz 
+             * @return double 
+             */
             double getWidth(const int z, int& minz, int& maxz);
 
+            /**
+             * @brief calculate qValue for the given membrane normal
+             */
             void testMembraneNormalOne();
 
             /**
@@ -138,6 +171,12 @@ namespace Tmdet::Engine {
              */
             bool isTransmembrane() const;
 
+            /**
+             * @brief Set place of the best origo
+             * 
+             * @param minz 
+             * @param maxz 
+             */
             virtual void setBestOrigo(double minz, double maxz) = 0;
 
             /**

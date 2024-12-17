@@ -1,9 +1,21 @@
+// © 2003-2024 Gabor E. Tusnady <tusnady.gabor@ttk.hu> and TmDet developer team
+//             Protein Bioinformatics Research Group 
+//             Research Center of Natural Sciences, HUN-REN
+//
+// License:    CC-BY-NC-4.0, see LICENSE.txt
+
 #pragma once
 
 #include <chrono>
 #include <string>
 #include <sstream>
 
+/**
+ * @brief namespace for tmdet system
+ *
+ * @namespace Tmdet
+ * @namespace System
+ */
 namespace Tmdet::System {
 
     /**

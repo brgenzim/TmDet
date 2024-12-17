@@ -1,3 +1,9 @@
+// © 2003-2024 Gabor E. Tusnady <tusnady.gabor@ttk.hu> and TmDet developer team
+//             Protein Bioinformatics Research Group 
+//             Research Center of Natural Sciences, HUN-REN
+//
+// License:    CC-BY-NC-4.0, see LICENSE.txt
+
 #pragma once
 
 #include <vector>
@@ -10,20 +16,61 @@
 
 /**
  * @brief namespace for tmdet engine
+ *
+ * @namespace Tmdet
+ * @namespace Engine
  */
 namespace Tmdet::Engine {
 
+    /**
+     * @brief temporary container for fragments data
+     * 
+     */
     struct _fragmentData {
+        /**
+         * @brief identifier 
+         */
         unsigned int id;
+
+        /**
+         * @brief cluster identifier
+         */
         unsigned int clusterId;
+
+        /**
+         * @brief tmdet results for the fragment (yes or no)
+         */
         bool tmp;
+
+        /**
+         * @brief flag if the fragment is in the final tmdet run
+         */
         bool final;
+
+        /**
+         * @brief tmdet membrane definition for the fragment (if tmp)
+         */
         Tmdet::VOs::Membrane membrane;
+
+        /**
+         * @brief normal vector of the membrane calculated for the fragment
+         */
         gemmi::Vec3 normal;
+
+        /**
+         * @brief origo of the membrane calculated for the fragment
+         */
         gemmi::Vec3 origo;
+
+        /**
+         * @brief annotated regions for the fragment
+         */
         std::vector<Tmdet::VOs::Region> regions;
     };
 
+    /**
+     * @brief the main class for fragment analysis
+     */
     class Fragmenter {
         protected:
             
@@ -47,33 +94,86 @@ namespace Tmdet::Engine {
              */
             std::vector<gemmi::Vec3> depo;
 
+            /**
+             * @brief run tmdet algorithm on fragments
+             * 
+             * @param numFragments 
+             */
             void runOnFragments(int numFragments);
 
+            /**
+             * @brief find fragments having same membrane normal
+             */
             void findClusters();
 
+            /**
+             * @brief check angle of the membrane normals of two fragments
+             * 
+             * @param i 
+             * @param j 
+             * @return true 
+             * @return false 
+             */
             bool checkAngle(int i, int j);
 
+            /**
+             * @brief find the best cluster of fragments (having the most
+             *        membrane regions)
+             * 
+             * @return int 
+             */
             int findBestCluster();
 
+            /**
+             * @brief run tmdet algorithm on the best cluster of fragments
+             * 
+             * @param bestClusterId 
+             */
             void runOnBestCluster(int bestClusterId);
 
+            /**
+             * @brief finaliye the results (annotate false positive and negative
+             *        membrane regions)
+             */
             void finalize();
 
+            /**
+             * @brief save the original coordinates of the protein
+             */
             void saveState();
 
+            /**
+             * @brief restore original coordinates of the protein
+             * 
+             */
             void restoreState();
 
+            /**
+             * @brief show fragments on the structure by pymol
+             */
             void toPymol();
 
+            /**
+             * @brief Get region type of the fragment
+             * 
+             * @param fr 
+             * @return Tmdet::Types::Region 
+             */
             Tmdet::Types::Region getRegionType(int fr);
-            bool getNext(Tmdet::VOs::Chain& chain, int& begin, int& end, std::string what) const;
-            bool getNextDefined(Tmdet::VOs::Chain& chain, int& begin, std::string what) const;
-            bool getNextSame(Tmdet::VOs::Chain& chain, const int& begin, int& end, std::string what) const;
-
+            
+            /**
+             * @brief main entry point of the fragmenter class
+             */
             void run();
-            void toString();
 
         public:
+
+            /**
+             * @brief Construct a new Fragmenter object
+             * 
+             * @param protein 
+             * @param args 
+             */
             explicit Fragmenter(Tmdet::VOs::Protein& protein, Tmdet::System::Arguments& args) :
                 protein(protein),
                 args(args) {

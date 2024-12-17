@@ -1,3 +1,9 @@
+// © 2003-2024 Gabor E. Tusnady <tusnady.gabor@ttk.hu> and TmDet developer team
+//             Protein Bioinformatics Research Group 
+//             Research Center of Natural Sciences, HUN-REN
+//
+// License:    CC-BY-NC-4.0, see LICENSE.txt
+
 #include <any>
 #include <Config.hpp>
 #include <Helpers/Vector.hpp>
@@ -28,9 +34,12 @@ namespace Tmdet::Engine {
         return ret;
     }
 
+    template <typename T>
     bool RegionHandler::getNext(Tmdet::VOs::Chain& chain, int& begin, int& end, std::string what) const {
-        return (getNextDefined(chain, begin, what) && getNextSame(chain, begin, end, what));
+        return (getNextDefined(chain, begin, what) && getNextSame<T>(chain, begin, end, what));
     }
+    template bool RegionHandler::getNext<int>(Tmdet::VOs::Chain& chain, int& begin, int& end, std::string what) const;
+    template bool RegionHandler::getNext<Tmdet::Types::Region>(Tmdet::VOs::Chain& chain, int& begin, int& end, std::string what) const;
 
     bool RegionHandler::getNextDefined(Tmdet::VOs::Chain& chain, int& begin, std::string what) const {
         while(begin < (int)chain.residues.size() && !chain.residues[begin].temp.contains(what)) {
@@ -39,15 +48,18 @@ namespace Tmdet::Engine {
         return (begin < (int)chain.residues.size());
     }
 
+    template <typename T>
     bool RegionHandler::getNextSame(Tmdet::VOs::Chain& chain, const int& begin, int& end, std::string what) const {
         end = begin;
         while(end < (int)chain.residues.size() && chain.residues[end].temp.contains(what)
-            && std::any_cast<Tmdet::Types::Region>(chain.residues[begin].temp.at(what)) 
-                        == std::any_cast<Tmdet::Types::Region>(chain.residues[end].temp.at(what))) {
+            && std::any_cast<T>(chain.residues[begin].temp.at(what)) 
+                        == std::any_cast<T>(chain.residues[end].temp.at(what))) {
             end++;
         }
         return true;
     }
+    template bool RegionHandler::getNextSame<int>(Tmdet::VOs::Chain& chain, const int& begin, int& end, std::string what) const;
+    template bool RegionHandler::getNextSame<Tmdet::Types::Region>(Tmdet::VOs::Chain& chain, const int& begin, int& end, std::string what) const;
 
     void RegionHandler::replace(Tmdet::VOs::Chain& chain, int beg, int end, Tmdet::Types::Region regionType, std::string what, bool check, Tmdet::Types::Region checkType) {
         DEBUG_LOG("Processing RegionHandler::replace({} {} {} {} --> {})",
@@ -81,6 +93,7 @@ namespace Tmdet::Engine {
         return (d1*d2<0);
     }
 
+    template <typename T>
     int RegionHandler::finalize() {
         DEBUG_LOG("Processing regionHandler::finalize()");
         int ret = 0;
@@ -88,7 +101,7 @@ namespace Tmdet::Engine {
             [&](Tmdet::VOs::Chain& chain) -> void {
                 int beg = 0;
                 int end = 0;
-                while(getNext(chain,beg,end,"type")) {
+                while(getNext<T>(chain,beg,end,"type")) {
                     auto begType = any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("type"));
                     DEBUG_LOG("Finalize checks: {}:{}-{}:{}",chain.id,chain.residues[beg].authId,chain.residues[end-1].authId,begType.code);
                     if ((begType.isAnnotatedTransMembraneType() 
@@ -134,14 +147,17 @@ namespace Tmdet::Engine {
         return ret;
         DEBUG_LOG(" Processed RegionHandler::finalize({})",ret);
     }
+    template int RegionHandler::finalize<int>();
+    template int RegionHandler::finalize<Tmdet::Types::Region>();
 
+    template <typename T>
     void RegionHandler::store() {
         DEBUG_LOG("Processing: RegionHandler::store()");
         protein.eachSelectedChain(
             [&](Tmdet::VOs::Chain& chain) -> void {
                 int begin = 0;
                 int end = 0;
-                while(getNext(chain,begin,end,"type")) {
+                while(getNext<T>(chain,begin,end,"type")) {
                     if (end - begin > 0) {
                         Tmdet::VOs::Region region = {
                             {chain.residues[begin].authId, chain.residues[begin].authIcode,chain.residues[begin].labelId,begin},
@@ -163,4 +179,7 @@ namespace Tmdet::Engine {
         );
         DEBUG_LOG(" Processed: RegionHandler::store()");
     }
+
+    template void RegionHandler::store<int>();
+    template void RegionHandler::store<Tmdet::Types::Region>();
 }

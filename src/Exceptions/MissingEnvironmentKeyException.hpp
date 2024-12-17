@@ -1,11 +1,25 @@
-#ifndef __TMDET_EXCEPTIONS_MISSING_ENVIRONMENT_KEY_EXCEPTION__
-#define __TMDET_EXCEPTIONS_MISSING_ENVIRONMENT_KEY_EXCEPTION__
+// © 2003-2024 Gabor E. Tusnady <tusnady.gabor@ttk.hu> and TmDet developer team
+//             Protein Bioinformatics Research Group 
+//             Research Center of Natural Sciences, HUN-REN
+//
+// License:    CC-BY-NC-4.0, see LICENSE.txt
+
+#pragma once
 
 #include <string>
 #include <exception>
 
+/**
+ * @brief namespace for tmdet exceptions
+ *
+ * @namespace Tmdet
+ * @namespace Exceptions
+ */
 namespace Tmdet::Exceptions {
 
+    /**
+     * @brief Missing Envirenment Key Exception
+     */
     class MissingEnvironmentKeyException : public std::exception {
         private:
             /**
@@ -43,5 +57,3 @@ namespace Tmdet::Exceptions {
             }
     };
 }
-
-#endif

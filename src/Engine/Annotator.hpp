@@ -1,3 +1,9 @@
+// © 2003-2024 Gabor E. Tusnady <tusnady.gabor@ttk.hu> and TmDet developer team
+//             Protein Bioinformatics Research Group 
+//             Research Center of Natural Sciences, HUN-REN
+//
+// License:    CC-BY-NC-4.0, see LICENSE.txt
+
 #pragma once
 
 #include <array>
@@ -13,38 +19,154 @@
 
 /**
  * @brief namespace for tmdet engine
+ *
+ * @namespace Tmdet
+ * @namespace Engine
  */
 namespace Tmdet::Engine {
 
+    /**
+     * @brief the main class for region annotation
+     */
     class Annotator {
         private:
+
+            /**
+             * @brief structure and tmdet data containing protein value object
+             */
             Tmdet::VOs::Protein& protein;
+
+            /**
+             * @brief region handler
+             */
             Tmdet::Engine::RegionHandler regionHandler;
 
+            /**
+             * @brief the main entry point for annotation
+             */
             void run();
+
+            /**
+             * @brief Set chain's types
+             */
             void setChainsType();
+
+            /**
+             * @brief annotate chain
+             */
             void annotateChains();
+
+            /**
+             * @brief remedite small errors in raw region data
+             * 
+             * @param chain 
+             * @param what 
+             */
             void smoothRegions(Tmdet::VOs::Chain& chain, std::string what);
+
+            /**
+             * @brief detect small loops between two membrane segments
+             * 
+             * @param chain 
+             */
             void detectLoops(Tmdet::VOs::Chain& chain);
+
+            /**
+             * @brief detect loop between two membrane segment
+             * 
+             * @param chain 
+             * @param beg 
+             * @param end 
+             */
             void detectLoop(Tmdet::VOs::Chain& chain, int beg, int end);
+
+            /**
+             * @brief detect interfacial helices
+             */
             void detectInterfacialHelices();
+
+            /**
+             * @brief detect reentrant loops
+             * 
+             * @param chain 
+             */
             void detectReEntrantLoops(Tmdet::VOs::Chain& chain);
+
+            /**
+             * @brief check if the region contains both helix and loop
+             * 
+             * @param chain 
+             * @param begin 
+             * @param end 
+             * @return true 
+             * @return false 
+             */
             bool hasHelixLoop(Tmdet::VOs::Chain& chain, int begin, int end);
+
+            /**
+             * @brief detect alpha helical transmembrane regions
+             * 
+             * @param chain 
+             */
             void detectTransmembraneHelices(Tmdet::VOs::Chain& chain);
+
+            /**
+             * @brief check if the whole region is in the same side of the membrane
+             * 
+             * @param chain 
+             * @param beg 
+             * @param end 
+             * @return true 
+             * @return false 
+             */
             bool sameSide(Tmdet::VOs::Chain& chain, int beg, int end);
+
+            /**
+             * @brief Get alpha helical regions parallel to the membrane plane
+             * 
+             * @param membrane 
+             * @return std::vector<Tmdet::VOs::SecStrVec> 
+             */
             std::vector<Tmdet::VOs::SecStrVec> getParallelAlphas(Tmdet::VOs::Membrane& membrane);
-            bool checkParallel(Tmdet::VOs::SecStrVec& vec, Tmdet::VOs::Membrane& membrane) const;    
+
+            /**
+             * @brief check if the vector is parallel to the membrane plane
+             * 
+             * @param vec 
+             * @param membrane 
+             * @return true 
+             * @return false 
+             */
+            bool checkParallel(Tmdet::VOs::SecStrVec& vec, Tmdet::VOs::Membrane& membrane) const;
+
+            /**
+             * @brief made a final check on the annotation
+             * 
+             */
             void finalCheck();
+
+            /**
+             * @brief Set the radius of the membrane in the xy plane
+             * 
+             */
             void setMembraneSize();
             
         public:
             
-
+            /**
+             * @brief Construct a new Annotator object
+             * 
+             * @param protein 
+             */
             explicit Annotator(Tmdet::VOs::Protein& protein) :
                 protein(protein),
                 regionHandler(Tmdet::Engine::RegionHandler(protein)) {
                     run();
             }
+
+            /**
+             * @brief Destroy the Annotator object
+             */
             ~Annotator()=default;
     };
 }

@@ -1,3 +1,9 @@
+// © 2003-2024 Gabor E. Tusnady <tusnady.gabor@ttk.hu> and TmDet developer team
+//             Protein Bioinformatics Research Group 
+//             Research Center of Natural Sciences, HUN-REN
+//
+// License:    CC-BY-NC-4.0, see LICENSE.txt
+
 #pragma once
 
 #include <string>
@@ -15,7 +21,7 @@
  * 
  * @namespace Tmdet
  * @namespace DTOs
- * @namespace Xml
+ * @namespace XmlRW
  */
 namespace Tmdet::DTOs::XmlRW {
     
@@ -107,6 +113,9 @@ namespace Tmdet::DTOs::XmlRW {
              */
             virtual void readXml(Tmdet::VOs::Xml& xmlData) = 0;
 
+            /**
+             * @brief Destroy the BaseReader object
+             */
             virtual ~BaseReader()=default;
 
             /**
@@ -116,6 +125,5 @@ namespace Tmdet::DTOs::XmlRW {
              */
             virtual void setRoot(const pugi::xml_document& doc) = 0;
 
-            
     };
 }

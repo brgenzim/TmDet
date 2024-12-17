@@ -1,3 +1,9 @@
+// © 2003-2024 Gabor E. Tusnady <tusnady.gabor@ttk.hu> and TmDet developer team
+//             Protein Bioinformatics Research Group 
+//             Research Center of Natural Sciences, HUN-REN
+//
+// License:    CC-BY-NC-4.0, see LICENSE.txt
+
 #pragma once
 
 #include <iostream>
@@ -5,8 +11,17 @@
 #include <stdio.h>
 #include <string>
 
+/**
+ * @brief namespace for tmdet system
+ *
+ * @namespace Tmdet
+ * @namespace System
+ */
 namespace Tmdet::System {
 
+    /**
+     * @brief simple class for console progress bar
+     */
     class ProgressBar {
         private:
             /**
@@ -67,33 +82,55 @@ namespace Tmdet::System {
 
         public:
             
-
+            /**
+             * @brief Set the Title of the progress bar
+             * 
+             * @param title 
+             */
             void setTitle(const char* title) {
                 _title = title;
             }
 
+            /**
+             * @brief Set the width of the progress bar (in character)
+             * 
+             * @param width 
+             */
             void setWidth(const unsigned int width) {
                 _width = width;
             }
 
+            /**
+             * @brief Set the number of ticks
+             * 
+             * @param numTicks 
+             */
             void setNumTicks(const unsigned long numTicks) {
                 _numTicks = numTicks;
             }
 
+            /**
+             * @brief Set the Done Character
+             * 
+             * @param doneCharacter 
+             */
             void setDoneCharacter(const char doneCharacter) {
                 _doneCharacter = doneCharacter;
             }
 
+            /**
+             * @brief Set the Todo Character
+             * 
+             * @param todoCharacter 
+             */
             void setTodoCharacter(const char todoCharacter) {
                 _todoCharacter = todoCharacter;
             }
-
             
             /**
              * @brief increase tick by one
              */
             void tick();
-
             
             /**
              * @brief set display percentage flag

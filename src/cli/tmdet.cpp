@@ -1,3 +1,9 @@
+// © 2003-2024 Gabor E. Tusnady <tusnady.gabor@ttk.hu> and TmDet developer team
+//             Protein Bioinformatics Research Group 
+//             Research Center of Natural Sciences, HUN-REN
+//
+// License:    CC-BY-NC-4.0, see LICENSE.txt
+
 // Copyright(c) 2003-present, Gabor E. Tusnady & tmdet contributors.
 // Distributed under the MIT License (http://opensource.org/licenses/MIT)
 
@@ -39,7 +45,7 @@ Tmdet::System::Arguments getArguments(int argc, char *argv[]) {
     args.define(false,"xo","xml_output","Output xml file path","string","");
     args.define(false,"po","pdb_output","Output pdb file path","string","");
     args.define(false,"n","not","Set transmembrane='not' in the xml file","bool","false");
-    args.define(false,"bm","blended_membrane","Search for blended membrane","bool","false");
+    args.define(false,"cm","curved_membrane","Search for curved membrane","bool","false");
     args.define(false,"fr","fragment_analysis","Investigate protein domains/fragments separately","bool","false");
     args.define(false,"nc","no_cache","Do not use cached data","bool","false");
     args.define(false,"s","show","Show annotated structure by pymol","bool","false");

@@ -1,3 +1,9 @@
+// © 2003-2024 Gabor E. Tusnady <tusnady.gabor@ttk.hu> and TmDet developer team
+//             Protein Bioinformatics Research Group 
+//             Research Center of Natural Sciences, HUN-REN
+//
+// License:    CC-BY-NC-4.0, see LICENSE.txt
+
 #include <any>
 #include <gemmi/model.hpp>
 #include <Config.hpp>
@@ -85,7 +91,7 @@ namespace Tmdet::Engine {
         }
         int beg=0;
         int end=0;
-        while(regionHandler.getNext(chain,beg,end,"type")) {
+        while(regionHandler.getNext<Tmdet::Types::Region>(chain,beg,end,"type")) {
             if (any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("type")).isBeta() 
                 && otherConnection(beg,end-1) < 3) {
                     regionHandler.replace(chain,beg,end-1,Tmdet::Types::RegionType::MEMB,"type");
@@ -94,7 +100,7 @@ namespace Tmdet::Engine {
         }
         beg=0;
         end=0;
-        while(regionHandler.getNext(chain,beg,end,"type")) {
+        while(regionHandler.getNext<Tmdet::Types::Region>(chain,beg,end,"type")) {
             if (any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("type")).isNotAnnotatedMembrane() 
                 && beg > 0
                 && end < chain.length-1
@@ -113,7 +119,7 @@ namespace Tmdet::Engine {
         if (maxCount<40) {
             int beg=0;
             int end=0;
-            while(regionHandler.getNext(chain,beg,end,"type")) {
+            while(regionHandler.getNext<Tmdet::Types::Region>(chain,beg,end,"type")) {
                 if (any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("type")).isNotAnnotatedMembrane() 
                     && end-beg < 13
                     && end-beg > 5
@@ -206,7 +212,7 @@ namespace Tmdet::Engine {
     void BetaAnnotator::detectLoops() {
         int beg=0;
         int end=0;
-        while(regionHandler.getNext(chain,beg,end,"type")) {
+        while(regionHandler.getNext<Tmdet::Types::Region>(chain,beg,end,"type")) {
             if (any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("type")).isBeta() 
                 && end-beg < 3) {
                 regionHandler.replace(chain,beg,end-1,Tmdet::Types::RegionType::MEMB,"type");
@@ -215,13 +221,13 @@ namespace Tmdet::Engine {
         }
         beg=0;
         end=0;
-        while(regionHandler.getNext(chain,beg,end,"type")) {
+        while(regionHandler.getNext<Tmdet::Types::Region>(chain,beg,end,"type")) {
             if (end <= chain.length-1
                 && beg > 0
                 && any_cast<double>(chain.residues[beg].temp.at("hz")) < 4.0
                 && any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("type")).isNotAnnotatedMembrane() 
-                && (any_cast<Tmdet::Types::Region>(chain.residues[beg-1].temp.at("type")).isAnnotatedTransMembraneType()
-                    || any_cast<Tmdet::Types::Region>(chain.residues[end].temp.at("type")).isAnnotatedTransMembraneType())
+                && ((chain.residues[beg-1].temp.contains("type") && any_cast<Tmdet::Types::Region>(chain.residues[beg-1].temp.at("type")).isAnnotatedTransMembraneType())
+                    || (chain.residues[end].temp.contains("type") && any_cast<Tmdet::Types::Region>(chain.residues[end].temp.at("type")).isAnnotatedTransMembraneType()))
                 && end-beg < 6) {
                 regionHandler.replace(chain,beg,end-1,any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("ztype")),"type");
             }
@@ -243,7 +249,7 @@ namespace Tmdet::Engine {
         DEBUG_LOG("Barrel inside1: {}",regionHandler.toString("type"));
         int beg=0;
         int end=0;
-        while(regionHandler.getNext(chain,beg,end,"type")) {
+        while(regionHandler.getNext<Tmdet::Types::Region>(chain,beg,end,"type")) {
             if (any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("type")).isNotAnnotatedMembrane()
                 && end <= chain.length-1
                 && beg > 0
@@ -258,7 +264,7 @@ namespace Tmdet::Engine {
         DEBUG_LOG("Barrel inside2: {}",regionHandler.toString("type"));
         beg=0;
         end=0;
-        while(regionHandler.getNext(chain,beg,end,"type")) {
+        while(regionHandler.getNext<Tmdet::Types::Region>(chain,beg,end,"type")) {
             if (any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("type")).isNotMembrane()
                 && end <= chain.length-1
                 && beg > 0

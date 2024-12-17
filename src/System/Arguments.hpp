@@ -1,18 +1,67 @@
+// © 2003-2024 Gabor E. Tusnady <tusnady.gabor@ttk.hu> and TmDet developer team
+//             Protein Bioinformatics Research Group 
+//             Research Center of Natural Sciences, HUN-REN
+//
+// License:    CC-BY-NC-4.0, see LICENSE.txt
+
 #pragma once
 
 #include <unordered_map>
 #include <string>
 
+/**
+ * @brief namespace for tmdet system
+ *
+ * @namespace Tmdet
+ * @namespace System
+ */
 namespace Tmdet::System {
     
+    /**
+     * @brief container for arguments
+     */
     struct _arg {
+        /**
+         * @brief flag to define if the argument is mandatory or not
+         */
         bool mandatory;
+
+        /**
+         * @brief flag that gives if the argument is actually given in
+         *        the command line
+         */
         bool has;
+
+        /**
+         * @brief short form of the argument (like -h)
+         */
         std::string shortFlag;
+
+        /**
+         * @brief long form of the argument (like --help)
+         */
         std::string longFlag;
+
+        /**
+         * @brief description of the argument
+         */
         std::string description;
+
+        /**
+         * @brief type of the argument (bool, string, int)
+         */
         std::string type;
+
+        /**
+         * @brief default value of the argument (if it is not
+         *        given in the command line)
+         */
         std::string defaultValue;
+
+        /**
+         * @brief actual value of the argument (given in the
+         *        command line)
+         */
         std::string value;
     };
 
@@ -44,6 +93,9 @@ namespace Tmdet::System {
              */
             std::string _setValueByShortFlag(char *flag);
 
+            /**
+             * @brief all arguments in a concatenated string
+             */
             std::string commandLine = "";
 
             /**
@@ -122,6 +174,11 @@ namespace Tmdet::System {
              */
             std::string getValueAsString(std::string name);
 
+            /**
+             * @brief return the concatenated argument string
+             * 
+             * @return std::string 
+             */
             std::string getCommandLine() const;
     };
     
