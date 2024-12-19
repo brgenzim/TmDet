@@ -161,7 +161,7 @@ namespace Tmdet::Engine {
                     if (end - begin > 0) {
                         Tmdet::VOs::Region region = {
                             {chain.residues[begin].authId, chain.residues[begin].authIcode,chain.residues[begin].labelId,begin},
-                            {chain.residues[end-1].authId, chain.residues[end-1].authIcode,chain.residues[end-1].labelId,end},
+                            {chain.residues[end-1].authId, chain.residues[end-1].authIcode,chain.residues[end-1].labelId,end-1},
                             std::any_cast<Tmdet::Types::Region>(chain.residues[begin].temp.at("type"))
                         };
                         if (std::any_cast<Tmdet::Types::Region>(chain.residues[begin].temp.at("type")).isAnnotatedTransMembraneType()) {
