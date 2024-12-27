@@ -95,6 +95,16 @@ namespace Tmdet::Engine {
             std::vector<gemmi::Vec3> depo;
 
             /**
+             * @brief index of the selected chain
+             */
+            int chIdx;
+
+            /**
+             * @brief get number of selected chains
+             */
+            int getNumberOfSelectedChains();
+
+            /**
              * @brief run tmdet algorithm on fragments
              * 
              * @param numFragments 

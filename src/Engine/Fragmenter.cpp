@@ -23,7 +23,7 @@ namespace Tmdet::Engine {
 
     void Fragmenter::run() {
         DEBUG_LOG("Processing Fragmenter:run()");
-        if (protein.chains.size()>1) {
+        if (getNumberOfSelectedChains()>1) {
             WARN_LOG("Fragment analysis can be run on protein containing exactly one chain");
             return;
         }
@@ -39,12 +39,23 @@ namespace Tmdet::Engine {
         DEBUG_LOG("Processed Fragmenter:run()");
     }
 
+    int Fragmenter::getNumberOfSelectedChains() {
+        int ret = 0;
+        protein.eachSelectedChain(
+            [&](Tmdet::VOs::Chain& chain) {
+                ret++;
+                chIdx = chain.idx;
+            }
+        );
+        return ret;
+    }
+
     void Fragmenter::runOnFragments(int numFragments) {
         DEBUG_LOG("Processing Fragmenter:runOnFragments()");
         for(int i=0; i<numFragments; i++) {
             DEBUG_LOG("FragmentId: {}",i);
             std::string members="";
-            for(auto& residue: protein.chains[0].residues) {
+            for(auto& residue: protein.chains[chIdx].residues) {
                 if (residue.temp.contains("fragment")) {
                     residue.selected = (any_cast<int>(residue.temp.at("fragment")) == i);
                     members += (residue.selected?"1":"0");
@@ -66,7 +77,7 @@ namespace Tmdet::Engine {
                 d.membrane = protein.membranes[0];
                 d.normal = organizer.getBestNormal();
                 d.origo = protein.tmatrix.trans;
-                d.regions = protein.chains[0].regions;
+                d.regions = protein.chains[chIdx].regions;
                 for(auto& r: d.regions) {
                     DEBUG_LOG("Fragment result: fr:{} {}",i,Tmdet::DTOs::Region::toString(r));
                 }
@@ -138,7 +149,7 @@ namespace Tmdet::Engine {
             d.final = ((int)d.clusterId == bestClusterId);
         }
         std::string res="";
-        for(auto& residue: protein.chains[0].residues) {
+        for(auto& residue: protein.chains[chIdx].residues) {
             if (residue.temp.contains("fragment")) {
                 residue.selected = false;
                 for (auto& d: data){
@@ -158,18 +169,18 @@ namespace Tmdet::Engine {
     }
 
     void Fragmenter::finalize() {
-        protein.chains[0].eachResidue(
+        protein.chains[chIdx].eachResidue(
             [&](Tmdet::VOs::Residue& residue) -> void {
                 residue.selected = !residue.selected;
             }
         );
         auto sideDetector = Tmdet::Engine::PlaneSideDetector(protein);
-        for(auto& region: protein.chains[0].regions) {
+        for(auto& region: protein.chains[chIdx].regions) {
             for (int i=region.beg.idx; i<=region.end.idx; i++) {
-                protein.chains[0].residues[i].temp.insert({"type",region.type});
+                protein.chains[chIdx].residues[i].temp.insert({"type",region.type});
             }
         }
-        protein.chains[0].eachResidue(
+        protein.chains[chIdx].eachResidue(
             [&](Tmdet::VOs::Residue& residue) -> void {
                 residue.selected = true;
                 if (!residue.temp.contains("type")) {
@@ -185,7 +196,7 @@ namespace Tmdet::Engine {
                 for (auto& r: d.regions) {
                     if (r.type.isAnnotatedTransMembraneType()) {
                         for (int i=r.beg.idx; i<=r.end.idx; i++) {
-                            protein.chains[0].residues[i].temp.at("type") = Tmdet::Types::RegionType::ERROR_FN;
+                            protein.chains[chIdx].residues[i].temp.at("type") = Tmdet::Types::RegionType::ERROR_FN;
                         }
                     }
                 }
@@ -193,12 +204,12 @@ namespace Tmdet::Engine {
         }
         auto regionHandler = Tmdet::Engine::RegionHandler(protein);
         DEBUG_LOG("Final regions: {}",regionHandler.toString("type"));
-        protein.chains[0].regions.clear();
+        protein.chains[chIdx].regions.clear();
         regionHandler.store<Tmdet::Types::Region>();
     }
 
     void Fragmenter::toPymol() {
-        auto& chain = protein.chains[0];
+        auto& chain = protein.chains[chIdx];
         chain.regions.clear();
         chain.regions.reserve(100);
         auto l = chain.length -1;

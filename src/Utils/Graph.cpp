@@ -42,6 +42,9 @@ namespace Tmdet::Utils {
      * @return double
      */
     double Graph::graphValue(unsigned int clIdx, unsigned int cutPos) {
+        if (chain.residues[cutPos].secStrVecIdx != -1) {
+            return manyContacts;
+        }
         double ret=0;
         int numLeft=0;
         int numRight=0;
@@ -59,7 +62,7 @@ namespace Tmdet::Utils {
         if (numLeft>0||numRight>0) {
             ret /= (numLeft<numRight?numLeft:numRight);
         }
-        ret += (numLeft<20||numRight<20?10000:0);
+        ret += (numLeft<10||numRight<10?manyContacts:0);
         return ret;
     }
 
@@ -93,7 +96,7 @@ namespace Tmdet::Utils {
         if (numLeft>0&&numRight>0) {
             ret /= (numLeft<numRight?numLeft:numRight);
         }
-        ret += (numLeft<20||numRight<20?10000:0);
+        ret += (numLeft<10||numRight<10?manyContacts:0);
         return ret;
     }
 

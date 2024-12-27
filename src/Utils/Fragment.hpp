@@ -8,6 +8,7 @@
 #include <vector>
 #include <gemmi/model.hpp>
 #include <VOs/Protein.hpp>
+#include <VOs/Chain.hpp>
 #include <VOs/Residue.hpp>
 
 #define CA_DIST 8.0
@@ -24,9 +25,7 @@ namespace Tmdet::Utils {
     class Fragment {
         private:
             Tmdet::VOs::Protein& proteinVO;
-
-            const double CaDistLimit = 8.0;
-            
+            int chIdx;
             
             std::vector<_cr> getNeighbors(const Tmdet::VOs::Residue& residueVO);
             std::vector<_cr> getCAlphaNetwork();

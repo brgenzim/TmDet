@@ -58,41 +58,43 @@ namespace Tmdet::Utils {
         }
         
 
-        DEBUG_LOG("Neighhor: res:{} {} - {}",residueVO.idx,(check?"good":"wrong"),ns);
+        DEBUG_LOG("Neighhor: res:{}:{} {} - {}",residueVO.authId,residueVO.ss.code,(check?"good":"wrong"),ns);
         return (check?ret:empty);
     }
 
     std::vector<_cr> Fragment::getCAlphaNetwork() {
         int node_idx = 0;
         std::vector<_cr> crs;
-        for (auto& chainVO: proteinVO.chains) {
-            for (auto& residueVO: chainVO.residues) {
-                auto neighbors = getNeighbors(residueVO);
-                
-                residueVO.temp.try_emplace("neighbors",std::any_cast<std::vector<_cr>>(neighbors));
-                if ( !neighbors.empty() ) {
-                    residueVO.temp.try_emplace("node_index",std::any_cast<int>(node_idx++));
-                    _cr cr;
-                    cr.chain_idx = residueVO.chainIdx;
-                    cr.residue_idx = residueVO.idx;
-                    crs.emplace_back(cr);
+        proteinVO.eachSelectedChain(
+            [&](Tmdet::VOs::Chain& chainVO) -> void {
+                chIdx = chainVO.idx;
+                for (auto& residueVO: chainVO.residues) {
+                    auto neighbors = getNeighbors(residueVO);
+                    
+                    residueVO.temp.try_emplace("neighbors",std::any_cast<std::vector<_cr>>(neighbors));
+                    if ( !neighbors.empty() ) {
+                        residueVO.temp.try_emplace("node_index",std::any_cast<int>(node_idx++));
+                        _cr cr;
+                        cr.chain_idx = residueVO.chainIdx;
+                        cr.residue_idx = residueVO.idx;
+                        crs.emplace_back(cr);
+                    }
                 }
             }
-        }
+        );
         return crs;
     }
 
     std::vector<std::vector<int>> Fragment::createFragments(const unsigned long size) {
-        Graph G(size);
-        for (auto& chainVO: proteinVO.chains) {
-            for (auto& residueVO: chainVO.residues) {
-                auto neighbors = std::any_cast<std::vector<_cr>>(residueVO.temp.at("neighbors"));
-                for (const auto& cr: neighbors) {
-                    int u = any_cast<int>(residueVO.temp.at("node_index"));
-                    if (proteinVO.chains[cr.chain_idx].residues[cr.residue_idx].temp.contains("node_index")) {
-                        int v = NODE_ID(cr.chain_idx,cr.residue_idx);
-                        G.addEdge(u,v);
-                    }
+        auto& chainVO = proteinVO.chains[chIdx];
+        Graph G(chainVO,size);
+        for (auto& residueVO: chainVO.residues) {
+            auto neighbors = std::any_cast<std::vector<_cr>>(residueVO.temp.at("neighbors"));
+            for (const auto& cr: neighbors) {
+                int u = any_cast<int>(residueVO.temp.at("node_index"));
+                if (proteinVO.chains[cr.chain_idx].residues[cr.residue_idx].temp.contains("node_index")) {
+                    int v = NODE_ID(cr.chain_idx,cr.residue_idx);
+                    G.addEdge(u,v);
                 }
             }
         }
@@ -116,14 +118,16 @@ namespace Tmdet::Utils {
     }
 
     void Fragment::freeTempValues() {
-        for (auto& chainVO: proteinVO.chains) {
-            for (auto& residueVO: chainVO.residues) {
-                residueVO.temp.erase("neighbors");
-                if (residueVO.temp.contains("node_index")) {
-                    residueVO.temp.erase("node_index");
+        proteinVO.eachSelectedChain(
+            [&](Tmdet::VOs::Chain& chainVO) -> void {
+                for (auto& residueVO: chainVO.residues) {
+                    residueVO.temp.erase("neighbors");
+                    if (residueVO.temp.contains("node_index")) {
+                        residueVO.temp.erase("node_index");
+                    }
                 }
             }
-        }
+        );
     }
 
 }

@@ -117,6 +117,10 @@ namespace Tmdet::Types {
         bool same(const SecStruct &other) const {
             return ((isAlpha() && other.isAlpha()) || (isBeta() && other.isBeta()));
         }
+
+        bool isUnStructured() const {
+            return (code == '-');
+        }
     };
 
     namespace SecStructType {
@@ -127,7 +131,7 @@ namespace Tmdet::Types {
         const SecStruct B = { "Bend", 'B', 'B' };
         const SecStruct E = { "Extended", 'E', 'B' };
         const SecStruct S = { "SBend", 'S', 'B' };
-        const SecStruct U = { "Unknown", '-', '-' };
+        const SecStruct U = { "UnStructured", '-', '-' };
     }
 
     const std::unordered_map<char, const SecStruct> SecStructs = {
