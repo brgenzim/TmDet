@@ -60,7 +60,8 @@ namespace Tmdet::VOs {
     }
 
     bool Residue::isInside() const {
-        return (outSurface / (surface + 0.1)) < 0.7;
+        //return (outSurface / (surface + 0.1)) < 0.7;
+        return surface < 5.0;
     }
 
 }

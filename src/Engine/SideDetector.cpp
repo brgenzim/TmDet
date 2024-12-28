@@ -122,9 +122,12 @@ namespace Tmdet::Engine {
                 for(int i=0; i<chain.length; i++) {
                     if (chain.residues[i].selected) {
                         chain.residues[i].temp.try_emplace("direction",std::any(getResidueDirection(chain,i)));
-                        DEBUG_LOG("RES: chain:{} res:{} type:{} ss:{} z:{} z1:{} hz:{} z4:{} direction:{}",chain.id,chain.residues[i].authId,
+                        DEBUG_LOG("RES: chain:{} res:{} type:{} ss:{} out:{:.2f} surf:{:.2f} isInside:{} z:{:.2f} z1:{:.2f} hz:{:.2f} z4:{:.2f} direction:{:.2f}",chain.id,chain.residues[i].authId,
                             any_cast<Tmdet::Types::Region>(chain.residues[i].temp.at("type")).code,
                             chain.residues[i].ss.code,
+                            chain.residues[i].outSurface,
+                            chain.residues[i].surface,
+                            (chain.residues[i].isInside()?"inside":"outside"),
                             any_cast<double>(chain.residues[i].temp.at("z")),
                             z1,
                             any_cast<double>(chain.residues[i].temp.at("hz")),

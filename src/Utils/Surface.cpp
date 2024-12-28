@@ -147,6 +147,7 @@ namespace Tmdet::Utils {
                     setContactsOfAtom(atom);
                     residue.surface += atom.surface;
                 }
+                //residue.outSurface = residue.surface;
             }
         );
         DEBUG_LOG(" Processed Surface::setContacts()");
@@ -309,7 +310,7 @@ namespace Tmdet::Utils {
         box.l1 = (box.xmax - box.xmin) + 1; 
 	    box.l2 = 2 * (box.xmax - box.xmin) + 2;
 	    box.l3 = 2 * (box.xmax - box.xmin) + 2 + (box.ymax - box.ymin) + 1;	
-	    box.op = 2 * (box.xmax - box.xmin) + 2 * (box.ymax - box.ymin) + 2;
+	    box.op = 2 * (box.xmax - box.xmin) + 2 * (box.ymax - box.ymin) + 4;
     }
 
     void Surface::initFrame(boundingBox& box) {

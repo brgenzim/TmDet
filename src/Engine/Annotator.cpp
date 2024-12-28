@@ -72,9 +72,9 @@ namespace Tmdet::Engine {
                 chain.type = (chain.selected?
                     Tmdet::Types::ChainType::NON_TM:
                     Tmdet::Types::ChainType::NOT_SELECTED);
+                int alpha=0;
+                int beta=0;
                 if (chain.selected) {
-                    int alpha=0;
-                    int beta=0;
                     for(const auto& residue: chain.residues) {
                         if (residue.selected) {
                             if (REGTTYPE(residue) == Tmdet::Types::RegionType::MEMB) {
@@ -87,20 +87,21 @@ namespace Tmdet::Engine {
                             }
                         }
                     }
-                    if (alpha>3*beta && alpha>0) {
-                        chain.type = Tmdet::Types::ChainType::ALPHA;
-                        protein.type = (protein.type==Tmdet::Types::ProteinType::TM_BETA?
-                                Tmdet::Types::ProteinType::TM_MIXED:
-                                Tmdet::Types::ProteinType::TM_ALPHA);
-                    }
-                    else if (beta>0) {
+                    if (beta>10) {
                         chain.type = Tmdet::Types::ChainType::BETA;
                         protein.type = (protein.type==Tmdet::Types::ProteinType::TM_ALPHA?
                                 Tmdet::Types::ProteinType::TM_MIXED:
                                 Tmdet::Types::ProteinType::TM_BETA);
                     }
+                    else if (alpha>3*beta && alpha>0) {
+                        chain.type = Tmdet::Types::ChainType::ALPHA;
+                        protein.type = (protein.type==Tmdet::Types::ProteinType::TM_BETA?
+                                Tmdet::Types::ProteinType::TM_MIXED:
+                                Tmdet::Types::ProteinType::TM_ALPHA);
+                    }
+                    
                 }
-                DEBUG_LOG("ChainType: {}-{}",chain.id,chain.type.name);
+                DEBUG_LOG("ChainType: {}-{} ({}-{})",chain.id,chain.type.name,alpha,beta);
             }
         );
         DEBUG_LOG("Processed Annotator::setChainsType()");

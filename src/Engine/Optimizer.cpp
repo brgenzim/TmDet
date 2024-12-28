@@ -148,10 +148,10 @@ namespace Tmdet::Engine {
                 }
                 else {
                     for(const auto& atom: residue.atoms) {
-                        slices[sliceIndex].surf += atom.outSurface * (residue.ss.isBeta()?1.4:0.9);
+                        slices[sliceIndex].surf += atom.outSurface * (residue.ss.isBeta()?1.1:0.9);
                         if (residue.type.atoms.contains(atom.gemmi.name)) {
                             slices[sliceIndex].apol += residue.type.apol * atom.outSurface 
-                                * (residue.ss.isBeta()?1.2:0.9);
+                                * (residue.ss.isBeta()?1.1:0.9);
                         }
                     }
                 }
@@ -163,6 +163,7 @@ namespace Tmdet::Engine {
                 && protein.chains[vector.chainIdx].residues[vector.endResIdx].selected) {
                 double cosAngle = std::abs(Tmdet::Helpers::Vector::cosAngle(
                                     normal,vector.end - vector.begin));
+                cosAngle = (cosAngle<0.3?-3:cosAngle);
                 int d1 = distance(vector.begin);
                 int d2 = distance(vector.end);
                 int dbeg = (d1<d2?d1:d2) - minZ; 
@@ -177,7 +178,7 @@ namespace Tmdet::Engine {
                 }
                 DEBUG_LOG("sumupSliceVectors: beg:{} end:{} size:{}",dbeg,dend,slices.size());
                 for(int i=dbeg; i<= dend; i++) {
-                    slices[i].straight+=cosAngle * (vector.type.isBeta()?1.5:1.0);
+                    slices[i].straight+= cosAngle  * (vector.type.isBeta()?1.1:0.9);
                     slices[i].numCa++;
                 }
                 slices[dbeg].ssEnd++;
@@ -241,20 +242,23 @@ namespace Tmdet::Engine {
             slices[i].qValue = q;
             
             if (q>TMDET_MINIMUM_QVALUE) {
-                DEBUG_LOG("{}:{} {}{}{}",
+                DEBUG_LOG("{}:{:.2f} {}{}{}",
                     i, q,
                     n.substr(0,TMDET_MEMBRANE_QVALUE),
                     m.substr(0,(int)(TMDET_MINIMUM_QVALUE-TMDET_MEMBRANE_QVALUE)),
                     b.substr(0,(int)(q-TMDET_MINIMUM_QVALUE+1)));
             }
             else if (q>TMDET_MEMBRANE_QVALUE) {
-                DEBUG_LOG("{}:{} {}{}",
+                DEBUG_LOG("{}:{:.2f} {}{}",
                     i, q,
                     n.substr(0,TMDET_MEMBRANE_QVALUE),
                     m.substr(0,(int)(q-TMDET_MEMBRANE_QVALUE+1)));
             }
+            else if (q>0) {
+                DEBUG_LOG("{}:{:.2f} {}",i,q,n.substr(0,(int)(q)));
+            }
             else {
-                DEBUG_LOG("{}:{} {}",i,q,n.substr(0,(int)(q)));
+                DEBUG_LOG("{}:{:.2f}",i,q);
             }
         }
     }
@@ -282,12 +286,20 @@ namespace Tmdet::Engine {
 
     double Optimizer::getWidth(const int z, int& minz, int& maxz) {
         minz = z;
-        while(minz>0 && slices[minz].qValue > TMDET_MEMBRANE_QVALUE) {
+        while(minz>0 && slices[minz].qValue > TMDET_MINIMUM_QVALUE) {
             minz--;
         }
         maxz = z+1;
-        while(maxz<(int)slices.size() && slices[maxz].qValue > TMDET_MEMBRANE_QVALUE) {
+        while(maxz<(int)slices.size() && slices[maxz].qValue > TMDET_MINIMUM_QVALUE) {
             maxz++;
+        }
+        if (maxz-minz>5) {
+                while(minz>0 && slices[minz].qValue > TMDET_MEMBRANE_QVALUE) {
+                minz--;
+            }
+            while(maxz<(int)slices.size() && slices[maxz].qValue > TMDET_MEMBRANE_QVALUE) {
+                maxz++;
+            }
         }
         return slices[z].qValue;
     }
