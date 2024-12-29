@@ -12,6 +12,7 @@
 #include <gemmi/neighbor.hpp>
 #include <Config.hpp>
 #include <DTOs/Residue.hpp>
+#include <DTOs/Dssp.hpp>
 #include <System/Logger.hpp>
 #include <VOs/Protein.hpp>
 #include <VOs/HBond.hpp>
@@ -32,6 +33,7 @@ namespace Tmdet::Utils {
         protein.eachSelectedChain(
             [&](Tmdet::VOs::Chain& chain) -> void {
                 calcDsspOnChain(chain);
+                DEBUG_LOG("DSSP: {}:{}",chain.id,Tmdet::DTOs::Dssp::getSecondaryStructure(chain));
             }
         );
         end();
