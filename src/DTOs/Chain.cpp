@@ -29,16 +29,14 @@ namespace Tmdet::DTOs {
         chainVO.selected = false;
         auto poly = chain.get_polymer();
         if (poly) {
-            chainVO.entityId = poly.subchain_id(); //chain.residues[0].entity_id;
-            chainVO.entityIdx = getEntityIdx(protein.entities,chainVO.entityId);
+            chainVO.entityId = chain.residues[0].entity_id;
+            chainVO.labelId = poly.subchain_id();
+            chainVO.entityIdx = getEntityIdx(protein.entities,chainVO.labelId);
             if (chainVO.entityIdx != -1) {
                 chainVO.selected = true;
                 auto sequence = protein.entities[chainVO.entityIdx].full_sequence;
                 chainVO.seq = gemmi::one_letter_code(sequence);
                 chainVO.idx = chainIdx;
-        
-        
-                chainVO.labelId = poly.subchain_id();
                 int residueIdx = 0;
                 for(auto& residue: chain.residues) {
                     chainVO.residues.emplace_back(Tmdet::DTOs::Residue::get(residue,chainIdx,residueIdx++));

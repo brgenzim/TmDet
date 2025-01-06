@@ -43,6 +43,7 @@ Tmdet::System::Arguments getArguments(int argc, char *argv[]) {
     args.define(false,"x","xml","Input/Output xml file path","string","");
     args.define(false,"xi","xml_input","Input xml file path","string","");
     args.define(false,"xo","xml_output","Output xml file path","string","");
+    args.define(false,"xf3","xml_out_fmt3","Set xml output format to v3","bool","false");
     args.define(false,"po","pdb_output","Output pdb file path","string","");
     args.define(false,"n","not","Set transmembrane='not' in the xml file","bool","false");
     args.define(false,"cm","curved_membrane","Search for curved membrane","bool","false");
@@ -87,6 +88,9 @@ int main(int argc, char *argv[], char **envp) {
     //if code is given then system directories are used
     //else user should provide the full path of xml and cif files
     Tmdet::DTOs::Xml xml;
+    if (bool xf3 = args.getValueAsBool("xf3"); xf3) {
+        xml.setV3Fmt();
+    }
     string code = args.getValueAsString("c");
     string xmlInputPath = xml.setPath(code,args.getValueAsString("x"),args.getValueAsString("xi"));
     string xmlOutputPath = xml.setPath(code,args.getValueAsString("x"),args.getValueAsString("xo"));
@@ -130,6 +134,7 @@ int main(int argc, char *argv[], char **envp) {
     //do the membrane region determination and annotation
     if (bool r = args.getValueAsBool("r"); r) {
         auto dssp = Tmdet::Utils::Dssp(protein);
+        //DEBUG_LOG("{}",Tmdet::DTOs::Protein::toString(protein));
         auto ssVec = Tmdet::Utils::SecStrVec(protein);
         if (bool fr = args.getValueAsBool("fr"); fr) {
             protein.forceSingleMembrane = true;

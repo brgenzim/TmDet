@@ -161,8 +161,8 @@ namespace Tmdet::Engine {
             if (protein.chains[vector.chainIdx].selected
                 && protein.chains[vector.chainIdx].residues[vector.begResIdx].selected
                 && protein.chains[vector.chainIdx].residues[vector.endResIdx].selected) {
-                double cosAngle = std::abs(Tmdet::Helpers::Vector::cosAngle(
-                                    normal,vector.end - vector.begin));
+                double cosAngle = (type=="Plane"?std::abs(Tmdet::Helpers::Vector::cosAngle(
+                                    normal,vector.end - vector.begin)):1);
                 cosAngle = (cosAngle<0.3?-3:cosAngle);
                 int d1 = distance(vector.begin);
                 int d2 = distance(vector.end);
@@ -178,7 +178,8 @@ namespace Tmdet::Engine {
                 }
                 DEBUG_LOG("sumupSliceVectors: beg:{} end:{} size:{}",dbeg,dend,slices.size());
                 for(int i=dbeg; i<= dend; i++) {
-                    slices[i].straight+= cosAngle  * (vector.type.isBeta()?1.1:0.9);
+                    slices[i].straight+= (vector.type.isBeta()?1:cosAngle);
+                    slices[i].ifh += ((vector.type.isAlpha() && cosAngle < 0.2)?1:0);
                     slices[i].numCa++;
                 }
                 slices[dbeg].ssEnd++;
@@ -196,7 +197,7 @@ namespace Tmdet::Engine {
     void Optimizer::smoothQValues() {
         std::string n="***************************************************************************";
         std::string m="mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm";
-        std::string b="bbbbbbbbbbbbbbbbbbbbbbbbbbbb";
+        std::string b="bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
         auto s = slices.size();
         for(unsigned long int i = 0; i<s; i++) {
             int k=0;
@@ -205,12 +206,14 @@ namespace Tmdet::Engine {
             double smoothedSsEnd = 0.0;
             double smoothedSurf = 0.0;
             double smoothedCa = 0.0;
+            double smoothedIfh = 0.0;
             for (int j=-2; j<=2; j++) {
                 if (j+(int)i>=0 && j+i<s) {
                     smoothedStraight += slices[j+i].straight;
                     smoothedApol += slices[j+i].apol;
                     smoothedSsEnd += slices[j+i].ssEnd;
                     smoothedSurf += slices[i+j].surf;
+                    smoothedIfh += slices[i+j].ifh;
                     smoothedCa += slices[i+j].numCa;
                     k++;
                 }
@@ -219,15 +222,18 @@ namespace Tmdet::Engine {
             smoothedApol /= k;
             smoothedSsEnd /= k;
             smoothedSurf /= k;
+            smoothedIfh /= k;
             smoothedCa /= k;
             smoothedStraight = divide(smoothedStraight,smoothedCa);
             smoothedApol = divide(smoothedApol, smoothedSurf);
             smoothedSsEnd = divide(smoothedSsEnd, smoothedCa);
-            
-            slices[i].rawQ = 130.0 * smoothedStraight *(1.0 - smoothedSsEnd) * smoothedApol;
+            slices[i].smoothedIfh = divide(smoothedIfh, smoothedCa);
 
-             DEBUG_LOG("{} straight:{:5.2f} apol:{:5.2f} surf:{:5.2f} q:{:5.2f}",
-                i,smoothedStraight,smoothedApol,slices[i].surf,slices[i].qValue);
+            
+            slices[i].rawQ = 130.0 * smoothedStraight * (1.0 - slices[i].smoothedIfh) * (1.0 - smoothedSsEnd) * smoothedApol;
+
+             DEBUG_LOG("{} straight:{:5.2f} apol:{:5.2f} surf:{:5.2f} end:{:5.2f} ifh:{:5.2f} q:{:5.2f}",
+                i,smoothedStraight,smoothedApol,slices[i].surf,smoothedSsEnd,slices[i].smoothedIfh,slices[i].rawQ);
         }
         for(unsigned long int i = 0; i<s; i++) {
             int k=0;
@@ -274,6 +280,8 @@ namespace Tmdet::Engine {
                 if (i-minz > minHW && maxz -i > minHW && q>TMDET_MINIMUM_QVALUE) {
                     if (q>bestQ) {
                         bestQ = q;
+                        bestMinZ = minz;
+                        bestMaxZ = maxz;
                         bestNormal = normal;
                         bestSlices = slices;
                         setBestOrigo(minz,maxz);
@@ -286,18 +294,30 @@ namespace Tmdet::Engine {
 
     double Optimizer::getWidth(const int z, int& minz, int& maxz) {
         minz = z;
-        while(minz>0 && slices[minz].qValue > TMDET_MINIMUM_QVALUE) {
+        while(minz>0 
+            && slices[minz].qValue > TMDET_MINIMUM_QVALUE 
+            && slices[minz].smoothedIfh < 0.07
+            && z-minz < TMDET_MEMBRANE_MAX_HALFTHICKNESS) {
             minz--;
         }
         maxz = z+1;
-        while(maxz<(int)slices.size() && slices[maxz].qValue > TMDET_MINIMUM_QVALUE) {
+        while(maxz<(int)slices.size()
+            && slices[maxz].qValue > TMDET_MINIMUM_QVALUE
+            && slices[maxz].smoothedIfh < 0.07
+            && maxz-z < TMDET_MEMBRANE_MAX_HALFTHICKNESS) {
             maxz++;
         }
         if (maxz-minz>5) {
-                while(minz>0 && slices[minz].qValue > TMDET_MEMBRANE_QVALUE) {
+                while(minz>0 
+                    && slices[minz].qValue > TMDET_MEMBRANE_QVALUE  
+                    && slices[minz].smoothedIfh < 0.07
+                    && z-minz < TMDET_MEMBRANE_MAX_HALFTHICKNESS) {
                 minz--;
             }
-            while(maxz<(int)slices.size() && slices[maxz].qValue > TMDET_MEMBRANE_QVALUE) {
+            while(maxz<(int)slices.size() 
+                    && slices[maxz].qValue > TMDET_MEMBRANE_QVALUE
+                    && slices[maxz].smoothedIfh < 0.07
+                    && maxz-z < TMDET_MEMBRANE_MAX_HALFTHICKNESS) {
                 maxz++;
             }
         }
@@ -338,6 +358,7 @@ namespace Tmdet::Engine {
             return;
         }
         normal = bestNormal;
+        bestQ = 0;
         testMembraneNormal();
         Tmdet::VOs::Membrane membrane;
         protein.membranes.clear();
@@ -359,24 +380,30 @@ namespace Tmdet::Engine {
         DEBUG_LOG("bestQ: {}",bestQ);
         DEBUG_LOG("bestSlices: {}",bestSlices[10].qValue);
         DEBUG_LOG("bestnormal: [{}, {}, {}]",bestNormal.x, bestNormal.y, bestNormal.z);
-        unsigned long int bestZ = -1;
-        double q = -1e30;
+        
+        /*double q = -1e30;
         for (unsigned long int i = 0; i <bestSlices.size(); i++) {
             if (bestSlices[i].qValue > q) {
                 q = bestSlices[i].qValue;
                 bestZ = i;
             }
         }
-        DEBUG_LOG("\tLargest qValue: {}",q);
-        if (q < TMDET_MINIMUM_QVALUE) {
-            DEBUG_LOG(" Processed Optimizer::getMembrane(q:{}): no more membrane",q);
+        */
+        bestQ = 0;
+        slices = bestSlices;
+        checkBestSlice();
+        unsigned long int bestZ = (bestMinZ+bestMaxZ) / 2;
+
+        DEBUG_LOG("\tLargest qValue: {}",bestQ);
+        if (bestQ < TMDET_MINIMUM_QVALUE) {
+            DEBUG_LOG(" Processed Optimizer::getMembrane(q:{}): no more membrane",bestQ);
             return false;
         }
         if (count && (bestZ<12 || bestZ>bestSlices.size()-12)) {
             DEBUG_LOG(" Processed Optimizer::getMembrane(z:{}): no more membrane",bestZ);
             return false;
         }
-
+/*
         unsigned long int minz = bestZ; 
         while (minz>0 && bestSlices[minz].qValue > TMDET_MINIMUM_QVALUE && bestZ - minz < TMDET_MEMBRANE_MAX_HALFTHICKNESS) {
             minz--;
@@ -396,11 +423,11 @@ namespace Tmdet::Engine {
         }
         while (maxz<bestSlices.size() && bestSlices[maxz].qValue > TMDET_MEMBRANE_QVALUE && maxz - bestZ < TMDET_MEMBRANE_MAX_HALFTHICKNESS) {
             maxz++;
-        }
-        membrane.halfThickness = (maxz-minz) / 2;
+        }*/
+        membrane.halfThickness = (bestMaxZ-bestMinZ) / 2;
 
         if (membrane.halfThickness < TMDET_MEMBRANE_MIN_HALFTHICKNESS) {
-            DEBUG_LOG(" Processed Optimizer::getMembrane(): not transmembrane, membrane thickness is small: {} {} {}",minz,bestZ,maxz);
+            DEBUG_LOG(" Processed Optimizer::getMembrane(): not transmembrane, membrane thickness is small: {} {} {}",bestMinZ,bestZ,bestMaxZ);
             return false;
         }
 
@@ -409,25 +436,25 @@ namespace Tmdet::Engine {
             bestSlices[i].qValue=0;
             i--;
         }
-        int j=0;
+        /*int j=0;
         while (i>0 && j<60) {
             bestSlices[i].qValue=0;
             i--; j++;
-        }
+        }*/
         i = bestZ+1; 
         while (i<bestSlices.size() && bestSlices[i].qValue > TMDET_MEMBRANE_QVALUE) {
             bestSlices[i].qValue=0;
             i++;
         }
-        j=0;
+        /*j=0;
         while (i<bestSlices.size() && j<60) {
             bestSlices[i].qValue=0;
             i++; j++;
-        }
-        setMembraneOrigo(membrane,minz,maxz);
+        }*/
+        setMembraneOrigo(membrane,bestMinZ,bestMaxZ);
 
         DEBUG_LOG(" Processed Optimizer::getMembrane({}-{}-{}) thickness: {} ",
-            minz,bestZ,maxz,membrane.halfThickness);
+            bestMinZ,bestZ,bestMaxZ,membrane.halfThickness);
         return true;
     }
 

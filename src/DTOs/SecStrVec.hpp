@@ -8,6 +8,7 @@
 
 #include <string>
 #include <format>
+#include <VOs/Protein.hpp>
 #include <VOs/SecStrVec.hpp>
 
 /**
@@ -23,13 +24,16 @@ namespace Tmdet::DTOs {
         /**
          * @brief convert value object content into string
          */
-        static std::string toString(const Tmdet::VOs::SecStrVec& vec) {
+        static std::string toString(const Tmdet::VOs::Protein& protein, const Tmdet::VOs::SecStrVec& vec) {
             return std::format(R"(
-    SecStrVec type: {} begin: [{}, {}, {}] end: [{}, {}, {}] chainIdx: {} begResIdx: {} endResIdx: {}
+    SecStrVec type: {} begin: [{}, {}, {}] end: [{}, {}, {}]
+            chainIdx: {} begResIdx: {} endResIdx: {}
 )",
                 vec.type.name,vec.begin.x,vec.begin.y,vec.begin.z,
                 vec.end.x, vec.end.y, vec.end.z,
-                vec.chainIdx,vec.begResIdx,vec.endResIdx);
+                protein.chains[vec.chainIdx].id,
+                protein.chains[vec.chainIdx].residues[vec.begResIdx].authId,
+                protein.chains[vec.chainIdx].residues[vec.endResIdx].authId);
         }
     };
 }

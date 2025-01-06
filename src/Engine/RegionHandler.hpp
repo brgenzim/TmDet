@@ -23,6 +23,12 @@
  */
 namespace Tmdet::Engine {
 
+    struct simpleRegion {
+        int beg;
+        int end;
+        Tmdet::Types::Region type;
+    };
+
     class RegionHandler {
         private:
             /**
@@ -91,6 +97,15 @@ namespace Tmdet::Engine {
              * @param checkType 
              */
             void replace(Tmdet::VOs::Chain& chain, int beg, int end, Tmdet::Types::Region regionType, std::string what = "type", bool check = false, Tmdet::Types::Region checkType = Tmdet::Types::RegionType::MEMB);
+
+            /**
+             * @brief Get all regions in a vector
+             * 
+             * @param what 
+             * @return std::vector<simpleRegion> 
+             */
+            template <typename T>
+            std::vector<simpleRegion> getAll(Tmdet::VOs::Chain& chain, std::string what);
 
             /**
              * @brief store regions from residue type to chain regions

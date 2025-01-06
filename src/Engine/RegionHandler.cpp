@@ -50,8 +50,9 @@ namespace Tmdet::Engine {
 
     template <typename T>
     bool RegionHandler::getNextSame(Tmdet::VOs::Chain& chain, const int& begin, int& end, std::string what) const {
-        end = begin;
+        end = begin + 1;
         while(end < (int)chain.residues.size() && chain.residues[end].temp.contains(what)
+            && chain.orderDistance(end-1,end) == 1
             && std::any_cast<T>(chain.residues[begin].temp.at(what)) 
                         == std::any_cast<T>(chain.residues[end].temp.at(what))) {
             end++;
@@ -92,6 +93,19 @@ namespace Tmdet::Engine {
         double d2 = any_cast<double>(chain.residues[p2].temp.at("direction"));
         return (d1*d2<0);
     }
+
+    template <typename T>
+    std::vector<simpleRegion> RegionHandler::getAll(Tmdet::VOs::Chain& chain, std::string what) {
+        int beg = 0;
+        int end = 0;
+        std::vector<simpleRegion> ret;
+        while(getNext<T>(chain,beg,end,what)) {
+            ret.emplace_back(beg,end-1,any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("type")));
+            beg = end;
+        }
+        return ret;
+    }
+    template std::vector<simpleRegion> RegionHandler::getAll<Tmdet::Types::Region>(Tmdet::VOs::Chain& chain, std::string what);
 
     template <typename T>
     int RegionHandler::finalize() {

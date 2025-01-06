@@ -140,6 +140,26 @@ namespace Tmdet::Engine {
             bool checkParallel(Tmdet::VOs::SecStrVec& vec, Tmdet::VOs::Membrane& membrane) const;
 
             /**
+             * @brief calculate average surface of a region
+             * 
+             * @param chain 
+             * @param beg 
+             * @param end 
+             * @return double 
+             */
+            double averageSurface(Tmdet::VOs::Chain& chain, int beg, int end);
+
+            /**
+             * @brief calculate hydrophobicity momentum of a helix
+             * 
+             * @param chain 
+             * @param beg 
+             * @param end 
+             * @return double 
+             */
+            double hydrophocityMomentum(Tmdet::VOs::Chain& chain, int beg, int end);
+
+            /**
              * @brief made a final check on the annotation
              * 
              */

@@ -63,6 +63,9 @@ namespace Tmdet::VOs {
                 polymerNames[entity[0]] = entity[1];
             }
         }
+        for(auto& [key, val]: polymerNames) {
+            DEBUG_LOG("polymerNames[{}]: {}",key,val);
+        }
     }
 
     void Protein::notTransmembrane() {

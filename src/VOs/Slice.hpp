@@ -39,6 +39,12 @@ namespace Tmdet::VOs {
         int ssEnd = 0;
 
         /**
+         * @brief number of interfacial helix residues
+         */
+        int ifh = 0;
+        double smoothedIfh;
+
+        /**
          * @brief raw, not smoothed q value
          */
         double rawQ = 0.0;

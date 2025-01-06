@@ -90,6 +90,9 @@ namespace Tmdet::Engine {
              */
             double bestOrigo = 0;
 
+            double bestMinZ;
+            double bestMaxZ;
+
             /**
              * @brief initialize the algorithm
              */

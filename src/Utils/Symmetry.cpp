@@ -138,6 +138,8 @@ namespace Tmdet::Utils {
         Eigen::Vector3d axis;
         double tg;
 
+        DEBUG_LOG("MATRIX: {:.4f} {:.4f}",R(0,0),R(0,1));
+        DEBUG_LOG("MATRIX: {:.4f} {:.4f}",R(1,0),R(1,1));
         if ((R(0, 0)<0.999)&&(R(1, 1)<0.999) /*&&(R(0, 0)>-0.999)*/)
         {
             /* Find vector which is invariant of the rotation
@@ -156,16 +158,17 @@ namespace Tmdet::Utils {
         } else {
             if (R(0, 0)>0.999) {
                 axis.x() = 1;
+                axis.y() = 0;
+                axis.z() = 0;
             }
-            axis.y() = 0;
-            axis.z() = 0;
             if (R(1, 1)>0.999) {
                 axis.x() = 0;
+                axis.y() = 1;
+                axis.z() = 0;
             }
-            axis.y() = 1;
-            axis.z() = 0;
-
         }
+
+        DEBUG_LOG("AXIS: {}:{}:{}",axis.x(),axis.y(),axis.z());
         axis = axis / axis.norm();
         LR=rotateZ(axis);
 

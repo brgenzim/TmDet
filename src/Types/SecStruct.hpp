@@ -84,7 +84,7 @@ namespace Tmdet::Types {
          * @return false 
          */
         bool isBeta() const {
-            return (code == 'E' || code == 'S');
+            return (code == 'E');
         }
 
         /**

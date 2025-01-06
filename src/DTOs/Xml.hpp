@@ -30,6 +30,11 @@ namespace Tmdet::DTOs {
             Tmdet::VOs::Xml xmlData;
 
             /**
+             * @brief output xml format (v3 or v4, default = v4)
+             */
+            std::string outXmlFmt = "v4";
+
+            /**
              * @brief copy data from protein value object to xml value object
              * 
              * @param protein 
@@ -91,5 +96,10 @@ namespace Tmdet::DTOs {
              * @return std::string 
              */
             std::string setPath(const std::string& code, const std::string& x1, const std::string& x2) const;
+
+            /**
+             * @brief set output xml format to v3
+             */
+            void setV3Fmt();
     };
 }

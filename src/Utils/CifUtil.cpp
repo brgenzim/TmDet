@@ -73,7 +73,7 @@ namespace Tmdet::Utils {
         std::vector<std::string> values{
             newEntityId,
             ".",
-            gemmi::cif::quote("TMDET MEMBRANE REPRESENTATION ARTIFACT"),
+            gemmi::cif::quote("TMDET MEMBRANE REPRESENTATION"),
         };
         newLoop.add_row(values);
 

@@ -65,7 +65,7 @@ namespace Tmdet::Engine {
              */
             PlaneOptimizer(Tmdet::VOs::Protein& protein) :
                 Optimizer(protein) {
-                    type = "Plain";
+                    type = "Plane";
                 }
             
             /**

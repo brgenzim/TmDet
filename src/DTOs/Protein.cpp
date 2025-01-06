@@ -168,6 +168,7 @@ namespace Tmdet::DTOs {
 
     void Protein::unselectAntiBodyChains(Tmdet::VOs::Protein& protein) {
         for (auto& chain : protein.chains) {
+            DEBUG_LOG("Checking {} {} to unselect",chain.id, chain.entityId);
             if (!protein.polymerNames.contains(chain.entityId)) {
                 continue;
             }
@@ -200,7 +201,7 @@ namespace Tmdet::DTOs {
             ret += Tmdet::DTOs::Chain::toString(chain);
         }
         for (const auto& secStrVec: protein.secStrVecs) {
-            ret += Tmdet::DTOs::SecStrVec::toString(secStrVec);
+            ret += Tmdet::DTOs::SecStrVec::toString(protein,secStrVec);
         }
         return ret;
     }

@@ -31,10 +31,9 @@ namespace Tmdet::Utils {
             Tmdet::VOs::SecStrVec getBetaVector(Tmdet::VOs::Chain& chain, int begin, int end) const;
             const gemmi::Atom* getCa(Tmdet::VOs::Chain& chain, int begin, int end) const;
             void checkAlphaVectorsForSplitting();
-            bool checkAlphaVectorForSplitting(const Tmdet::VOs::SecStrVec& vector);
+            bool checkIfStraight(Tmdet::VOs::Chain& chain, int beg, int end);
             std::vector<Tmdet::VOs::SecStrVec> splitAlphaVector(const Tmdet::VOs::SecStrVec& vector);
-            bool getStraightVector(int chainIdx, int begResIdx, int endResIdxAll, Tmdet::VOs::SecStrVec& vec);
-            double getCaDist(int chainIdx, int resIdx);
+            bool getStraightVector(Tmdet::VOs::Chain& chain, int beg, int& end);
             void checkAlphaVectorsForMerging();
             bool checkAlphaVectorForMerging(const Tmdet::VOs::SecStrVec& v1, const Tmdet::VOs::SecStrVec& v2) const;
             Tmdet::VOs::SecStrVec mergeVectors(const Tmdet::VOs::SecStrVec& v1, const Tmdet::VOs::SecStrVec& v2) const;

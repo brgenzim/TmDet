@@ -104,6 +104,6 @@ namespace Tmdet::Helpers::Vector {
     }
 
     double cosAngle(const gemmi::Vec3& a, const gemmi::Vec3& b) {
-        return (a.dot(b) / (a.length() * b.length()) );
+        return (a.length()>0&&b.length()>0?(a.dot(b) / (a.length() * b.length()) ):0.0);
     }
 }

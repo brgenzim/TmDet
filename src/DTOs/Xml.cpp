@@ -9,6 +9,7 @@
 #include <DTOs/Xml.hpp>
 #include <DTOs/XmlRW/Reader.hpp>
 #include <DTOs/XmlRW/Writer.hpp>
+#include <DTOs/XmlRW/Writer3.hpp>
 #include <System/Logger.hpp>
 #include <System/FilePaths.hpp>
 #include <VOs/Protein.hpp>
@@ -95,8 +96,14 @@ namespace Tmdet::DTOs {
         }
 
         void Xml::write(const std::string& xmlPath) {
-            Tmdet::DTOs::XmlRW::Writer writer;
-            writer.writeXml(xmlData, xmlPath);
+            if (outXmlFmt == "v4") {
+                Tmdet::DTOs::XmlRW::Writer writer;
+                writer.writeXml(xmlData, xmlPath);
+            }
+            else {
+                Tmdet::DTOs::XmlRW::Writer3 writer;
+                writer.writeXml(xmlData, xmlPath);
+            }
         }
 
         void Xml::write(const std::string& xmlPath, const Tmdet::VOs::Protein& protein) {
@@ -120,5 +127,9 @@ namespace Tmdet::DTOs {
                 return Tmdet::System::FilePaths::xml(code,true);
             }
             return (x1==""?x2:x1);
+        }
+
+        void Xml::setV3Fmt() {
+            outXmlFmt = "v3";
         }
 }

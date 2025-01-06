@@ -11,7 +11,9 @@
 namespace Tmdet::Engine {
 
     const std::vector<double> origos = {
-        10, 11, 12, 13, 14, 15, 17, 20, 25, 30, 40, 50, 60, 80, 100, 120, 140, 150, 160, 200, 250, 300, 350, 400, 10000
+        //5, 10, 11, 12, 13, 14, 15, 16, 17, 18, 20, 22, 25, 30, 40, 50, 60, 70,
+        70, 72, 75, 78, 80, 90, 100, 120, 140, 150, 160, 200, 250, 300, 350, 400, 10000,
+        -70, -72, -75, -78, -80, -90, -100, -120, -140, -150, -160, -200, -250, -300, -350, -400
     };
 
     double CurvedOptimizer::distance(gemmi::Vec3& vec) {
@@ -22,7 +24,8 @@ namespace Tmdet::Engine {
         for (auto& o: origos) {
             origo = -1.0 * o;
             origoVec3 = massCentre + origo * normal;
-            testMembraneNormalOne();  
+            DEBUG_LOG("Test Radius: {}",o);
+            testMembraneNormalOne(); 
         }
     }
 

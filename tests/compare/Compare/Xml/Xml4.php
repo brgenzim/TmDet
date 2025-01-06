@@ -2,6 +2,7 @@
 
 namespace Tmdet\Compare\Xml;
 
+use SimpleXMLElement;
 use Tmdet\Compare\Helper;
 use Tmdet\Compare\Xml\Constant4 as XML;
 
@@ -46,9 +47,15 @@ class Xml4 {
         return $ret;
     }
 
-    private function getRegions() : array {
+    private function getRegions(SimpleXMLElement $chainNode) : array {
         $ret = [];
-
+        foreach($chainNode->{XML::NODE_REGIONS}->{XML::NODE_REGION} as $region) {
+            $ret[] = [
+                'start' => $region[XML::ATTR_START_LABEL_ID],
+                'end' => $region[XML::ATTR_END_LABEL_ID],
+                'type' => $region[XML::ATTR_TYPE]
+            ];
+        }
         return $ret;
     }
 }
