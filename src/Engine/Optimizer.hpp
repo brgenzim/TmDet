@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 #include <gemmi/model.hpp>
+#include <System/Arguments.hpp>
 #include <VOs/Protein.hpp>
 #include <VOs/Residue.hpp>
 #include <VOs/Membrane.hpp>
@@ -30,6 +31,17 @@ namespace Tmdet::Engine {
      */
     class Optimizer {
         protected:
+            
+            /**
+             * @brief the protein structure in Protein Value Object
+             */
+            Tmdet::VOs::Protein& protein;
+
+            /**
+             * @brief command line arguments
+             */
+            Tmdet::System::Arguments& args;
+            
             /**
              * @brief type of the optimizer (plane or curved)
              */
@@ -44,11 +56,6 @@ namespace Tmdet::Engine {
              * @brief the actual membrane normal
              */
             gemmi::Vec3 normal;
-
-            /**
-             * @brief the protein structure in Protein Value Object
-             */
-            Tmdet::VOs::Protein& protein;
 
             /**
              * @brief best qValue
@@ -92,6 +99,11 @@ namespace Tmdet::Engine {
 
             double bestMinZ;
             double bestMaxZ;
+            double minHalfThickness;
+            double maxHalfThickness;
+            double maxCurvedHalfThickness;
+            double lowerQ;
+            double higherQ;
 
             /**
              * @brief initialize the algorithm
@@ -111,6 +123,11 @@ namespace Tmdet::Engine {
              * @return double 
              */
             virtual double distance(gemmi::Vec3& vec) = 0;
+
+
+            virtual double getAngle(Tmdet::VOs::SecStrVec& vector) = 0;
+
+            virtual void testMembraneNormalFinal() = 0;
 
             /**
              * @brief Set the distances from the centre of membrane plane
@@ -201,8 +218,9 @@ namespace Tmdet::Engine {
              * 
              * @param protein
              */
-            explicit Optimizer(Tmdet::VOs::Protein& protein) : 
-                protein(protein) {
+            explicit Optimizer(Tmdet::VOs::Protein& protein, Tmdet::System::Arguments& args) : 
+                protein(protein),
+                args(args) {
                     init();
                 }
 

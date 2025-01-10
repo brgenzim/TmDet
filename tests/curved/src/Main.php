@@ -19,5 +19,9 @@ if (!file_exists($argv[1])) {
 foreach(file($argv[1]) as $code) {
     $code = trim($code);
     $xml4 = new Xml4(filePath($code,PDBTM_4_BASEPATH));
-    echo "$code:".($xml4->hasRequestedRegion('F')?"OK":"Not OK")."\n";
+    $test = true;
+    if ($xml4->getTmpStatus() != "yes") {
+        $test = false;
+    }
+    echo "$code:".($test?"OK":"Not OK")."\n";
 }

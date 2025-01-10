@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 #include <pugixml.hpp>
+#include <System/Arguments.hpp>
 #include <VOs/Chain.hpp>
 #include <VOs/Membrane.hpp>
 #include <VOs/Protein.hpp>
@@ -129,6 +130,13 @@ namespace Tmdet::DTOs::XmlRW {
             void setPdbkw(const std::string& pdbkw) const;
 
             /**
+             * @brief write command line arguments to xml document
+             * 
+             * @param args 
+             */
+            void setArguments(const Tmdet::System::Arguments& args) const;
+
+            /**
              * @brief set transformation
              * 
              * @param tmatrix 
@@ -167,6 +175,6 @@ namespace Tmdet::DTOs::XmlRW {
              * @param xmlData 
              * @param path 
              */
-            void writeXml(Tmdet::VOs::Xml& xmlData, const std::string& path);
+            void writeXml(Tmdet::VOs::Xml& xmlData, const std::string& path, const Tmdet::System::Arguments& args);
     };
 }

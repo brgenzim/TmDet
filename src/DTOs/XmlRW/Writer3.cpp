@@ -14,6 +14,7 @@
 #include <DTOs/XmlRW/Writer3.hpp>
 #include <Exceptions/SyntaxErrorException.hpp>
 #include <Helpers/String.hpp>
+#include <System/Arguments.hpp>
 #include <System/Logger.hpp>
 #include <VOs/TMatrix.hpp>
 #include <VOs/BioMatrix.hpp>
@@ -65,6 +66,10 @@ namespace Tmdet::DTOs::XmlRW {
 
     void Writer3::setPdbkw(const std::string& pdbkw) const {
         _root.child(XML3_NODE_RAWRES).child(XML3_NODE_PDBKWRES).text() = pdbkw.c_str();
+    }
+
+    void Writer3::setArguments(const Tmdet::System::Arguments& args) const {
+        
     }
 
     void Writer3::setTMatrix(pugi::xml_node& pnode, Tmdet::VOs::TMatrix& tmatrix) {
@@ -131,7 +136,7 @@ namespace Tmdet::DTOs::XmlRW {
         }
     }
             
-    void Writer3::writeXml(Tmdet::VOs::Xml& xmlData, const std::string& path) {
+    void Writer3::writeXml(Tmdet::VOs::Xml& xmlData, const std::string& path, const Tmdet::System::Arguments& args) {
         DEBUG_LOG("Processing: Writer3::writeXml({})",path);
         create();
         setTmp(xmlData.tmp);
@@ -142,6 +147,7 @@ namespace Tmdet::DTOs::XmlRW {
         setTmtype(xmlData.type.name);
         setSpres(xmlData.spres);
         setPdbkw(xmlData.pdbkwres);
+        setArguments(args);
         if (xmlData.tmp) {
             setBioMatrix(xmlData.bioMatrix);
             setMembrane(xmlData.membranes, xmlData.tmatrix);

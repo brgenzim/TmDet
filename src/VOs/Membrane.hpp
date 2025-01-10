@@ -22,7 +22,7 @@ namespace Tmdet::VOs {
     struct Membrane {
 
         /**
-         * @brief centre of the membrane after tarnsformation 
+         * @brief centre of the membrane after transformation 
          *        for the firs membrane it is always zero
          *
          *        For curved membrane the origo is the centre of the

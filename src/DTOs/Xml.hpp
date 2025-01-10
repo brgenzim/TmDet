@@ -7,6 +7,7 @@
 #pragma once
 
 #include <string>
+#include <System/Arguments.hpp>
 #include <VOs/Protein.hpp>
 #include <VOs/Xml.hpp>
 
@@ -70,22 +71,23 @@ namespace Tmdet::DTOs {
              * 
              * @param xmlPath 
              */
-            void write(const std::string& xmlPath);
+            void write(const std::string& xmlPath, const Tmdet::System::Arguments& args);
 
             /**
              * @brief copy protein value object to xml value object and write to file
              * 
              * @param xmlPath 
              * @param protein 
+             * @param args
              */
-            void write(const std::string& xmlPath, const Tmdet::VOs::Protein& protein);
+            void write(const std::string& xmlPath, const Tmdet::VOs::Protein& protein, const Tmdet::System::Arguments& args);
 
             /**
              * @brief change xml file to not transmembrane protein
              * 
              * @param xmlPath 
              */
-            void notTransmembrane(const std::string& xmlInputPath, const std::string& xmlOutputPath);
+            void notTransmembrane(const std::string& xmlInputPath, const std::string& xmlOutputPath, const Tmdet::System::Arguments& args);
 
             /**
              * @brief Set the file path

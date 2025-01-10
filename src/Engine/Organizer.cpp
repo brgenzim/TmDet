@@ -38,11 +38,11 @@ namespace Tmdet::Engine {
             if (args.getValueAsBool("cm")) {
                 DEBUG_LOG("Curved optimization");
                 protein.forceSingleMembrane = true;
-                optimizer = std::make_unique<CurvedOptimizer>(protein);
+                optimizer = std::make_unique<CurvedOptimizer>(protein,args);
             }
             else {
                 DEBUG_LOG("Plane optimization");
-                optimizer = std::make_unique<PlaneOptimizer>(protein);
+                optimizer = std::make_unique<PlaneOptimizer>(protein,args);
             }
             checkSymmetry();
 
@@ -52,7 +52,7 @@ namespace Tmdet::Engine {
             }
             if (bool na = args.getValueAsBool("na"); !na && protein.tmp) {
                 protein.transform();
-                auto annotator = Tmdet::Engine::Annotator(protein);
+                auto annotator = Tmdet::Engine::Annotator(protein, args);
             }
         }
         else {

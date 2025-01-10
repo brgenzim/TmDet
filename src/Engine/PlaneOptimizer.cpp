@@ -7,6 +7,7 @@
 #include <gemmi/model.hpp>
 #include <Engine/PlaneOptimizer.hpp>
 #include <Engine/Rotator.hpp>
+#include <Helpers/Vector.hpp>
 
 namespace Tmdet::Engine {
 
@@ -16,7 +17,15 @@ namespace Tmdet::Engine {
                 + normal.z * (vec.z - massCentre.z);
     }
 
+    double PlaneOptimizer::getAngle(Tmdet::VOs::SecStrVec& vector) {
+        return std::abs(Tmdet::Helpers::Vector::cosAngle(normal,vector.end - vector.begin));
+    }
+
     void PlaneOptimizer::testMembraneNormal() {
+        testMembraneNormalOne();
+    }
+
+    void PlaneOptimizer::testMembraneNormalFinal() {
         testMembraneNormalOne();
     }
 

@@ -16,6 +16,7 @@
 #include <Engine/Optimizer.hpp>
 #include <Engine/Rotator.hpp>
 #include <Helpers/Vector.hpp>
+#include <System/Arguments.hpp>
 #include <Types/Residue.hpp>
 #include <Types/Chain.hpp>
 #include <VOs/Protein.hpp>
@@ -32,6 +33,11 @@ namespace Tmdet::Engine {
 
     void Optimizer::init() {
         DEBUG_LOG("Processing: Optimizer::init()");
+        minHalfThickness = args.getValueAsFloat("minht");
+        maxHalfThickness = args.getValueAsFloat("maxht");
+        maxCurvedHalfThickness = args.getValueAsFloat("maxcht");
+        lowerQ = args.getValueAsFloat("lq");
+        higherQ = args.getValueAsFloat("hq");
         massCentre = protein.centre();
         protein.eachSelectedResidue(
             [](Tmdet::VOs::Residue& residue) -> void {
@@ -161,9 +167,8 @@ namespace Tmdet::Engine {
             if (protein.chains[vector.chainIdx].selected
                 && protein.chains[vector.chainIdx].residues[vector.begResIdx].selected
                 && protein.chains[vector.chainIdx].residues[vector.endResIdx].selected) {
-                double cosAngle = (type=="Plane"?std::abs(Tmdet::Helpers::Vector::cosAngle(
-                                    normal,vector.end - vector.begin)):1);
-                cosAngle = (cosAngle<0.3?-3:cosAngle);
+                double cosAngle = getAngle(vector);
+                cosAngle = (cosAngle<0.1?-3:cosAngle);
                 int d1 = distance(vector.begin);
                 int d2 = distance(vector.end);
                 int dbeg = (d1<d2?d1:d2) - minZ; 
@@ -179,7 +184,7 @@ namespace Tmdet::Engine {
                 DEBUG_LOG("sumupSliceVectors: beg:{} end:{} size:{}",dbeg,dend,slices.size());
                 for(int i=dbeg; i<= dend; i++) {
                     slices[i].straight+= (vector.type.isBeta()?1:cosAngle);
-                    slices[i].ifh += ((vector.type.isAlpha() && cosAngle < 0.2)?1:0);
+                    slices[i].ifh += ((vector.type.isAlpha() && cosAngle < 0)?1:0);
                     slices[i].numCa++;
                 }
                 slices[dbeg].ssEnd++;
@@ -247,18 +252,18 @@ namespace Tmdet::Engine {
             q/=k;
             slices[i].qValue = q;
             
-            if (q>TMDET_MINIMUM_QVALUE) {
+            if (q>higherQ) {
                 DEBUG_LOG("{}:{:.2f} {}{}{}",
                     i, q,
-                    n.substr(0,TMDET_MEMBRANE_QVALUE),
-                    m.substr(0,(int)(TMDET_MINIMUM_QVALUE-TMDET_MEMBRANE_QVALUE)),
-                    b.substr(0,(int)(q-TMDET_MINIMUM_QVALUE+1)));
+                    n.substr(0,lowerQ),
+                    m.substr(0,(int)(higherQ-lowerQ)),
+                    b.substr(0,(int)(q-higherQ+1)));
             }
-            else if (q>TMDET_MEMBRANE_QVALUE) {
+            else if (q>lowerQ) {
                 DEBUG_LOG("{}:{:.2f} {}{}",
                     i, q,
-                    n.substr(0,TMDET_MEMBRANE_QVALUE),
-                    m.substr(0,(int)(q-TMDET_MEMBRANE_QVALUE+1)));
+                    n.substr(0,lowerQ),
+                    m.substr(0,(int)(q-lowerQ+1)));
             }
             else if (q>0) {
                 DEBUG_LOG("{}:{:.2f} {}",i,q,n.substr(0,(int)(q)));
@@ -271,13 +276,13 @@ namespace Tmdet::Engine {
 
     void Optimizer::checkBestSlice() {
         auto s = slices.size();
-        int minHW = TMDET_MEMBRANE_MIN_HALFTHICKNESS;
-        if ((int)s > 2 * minHW) {
-            for(int i = minHW; i < (int)s - minHW; i++) {
+        
+        if ((int)s > 2 * minHalfThickness) {
+            for(int i = minHalfThickness; i < (int)s - minHalfThickness; i++) {
                 int minz;
                 int maxz;
                 double q = getWidth(i,minz,maxz);
-                if (i-minz > minHW && maxz -i > minHW && q>TMDET_MINIMUM_QVALUE) {
+                if (i-minz > minHalfThickness && maxz -i > minHalfThickness && q>higherQ) {
                     if (q>bestQ) {
                         bestQ = q;
                         bestMinZ = minz;
@@ -293,31 +298,32 @@ namespace Tmdet::Engine {
     }
 
     double Optimizer::getWidth(const int z, int& minz, int& maxz) {
+        double maxHT = (type=="Plane"?maxHalfThickness:maxCurvedHalfThickness);
         minz = z;
         while(minz>0 
-            && slices[minz].qValue > TMDET_MINIMUM_QVALUE 
-            && slices[minz].smoothedIfh < 0.07
-            && z-minz < TMDET_MEMBRANE_MAX_HALFTHICKNESS) {
+            && slices[minz].qValue > higherQ 
+            && slices[minz].smoothedIfh < TMDET_IFH_LIMIT
+            && z-minz < maxHT) {
             minz--;
         }
         maxz = z+1;
         while(maxz<(int)slices.size()
-            && slices[maxz].qValue > TMDET_MINIMUM_QVALUE
-            && slices[maxz].smoothedIfh < 0.07
-            && maxz-z < TMDET_MEMBRANE_MAX_HALFTHICKNESS) {
+            && slices[maxz].qValue > higherQ
+            && slices[maxz].smoothedIfh < TMDET_IFH_LIMIT
+            && maxz-z < maxHT) {
             maxz++;
         }
         if (maxz-minz>5) {
                 while(minz>0 
-                    && slices[minz].qValue > TMDET_MEMBRANE_QVALUE  
-                    && slices[minz].smoothedIfh < 0.07
-                    && z-minz < TMDET_MEMBRANE_MAX_HALFTHICKNESS) {
+                    && slices[minz].qValue > lowerQ  
+                    && slices[minz].smoothedIfh < TMDET_IFH_LIMIT
+                    && z-minz < maxHT) {
                 minz--;
             }
             while(maxz<(int)slices.size() 
-                    && slices[maxz].qValue > TMDET_MEMBRANE_QVALUE
-                    && slices[maxz].smoothedIfh < 0.07
-                    && maxz-z < TMDET_MEMBRANE_MAX_HALFTHICKNESS) {
+                    && slices[maxz].qValue > lowerQ
+                    && slices[maxz].smoothedIfh < TMDET_IFH_LIMIT
+                    && maxz-z < maxHT) {
                 maxz++;
             }
         }
@@ -346,7 +352,7 @@ namespace Tmdet::Engine {
 
     bool Optimizer::isTransmembrane() const {
         DEBUG_LOG("Processing Optimizer::isTransmembrane(): {}",bestQ);
-        return bestQ > TMDET_MINIMUM_QVALUE;
+        return bestQ > higherQ;
     }
 
     void Optimizer::setMembranesToProtein() {
@@ -359,7 +365,7 @@ namespace Tmdet::Engine {
         }
         normal = bestNormal;
         bestQ = 0;
-        testMembraneNormal();
+        testMembraneNormalFinal();
         Tmdet::VOs::Membrane membrane;
         protein.membranes.clear();
         int i=0;
@@ -395,7 +401,7 @@ namespace Tmdet::Engine {
         unsigned long int bestZ = (bestMinZ+bestMaxZ) / 2;
 
         DEBUG_LOG("\tLargest qValue: {}",bestQ);
-        if (bestQ < TMDET_MINIMUM_QVALUE) {
+        if (bestQ < higherQ) {
             DEBUG_LOG(" Processed Optimizer::getMembrane(q:{}): no more membrane",bestQ);
             return false;
         }
@@ -403,54 +409,23 @@ namespace Tmdet::Engine {
             DEBUG_LOG(" Processed Optimizer::getMembrane(z:{}): no more membrane",bestZ);
             return false;
         }
-/*
-        unsigned long int minz = bestZ; 
-        while (minz>0 && bestSlices[minz].qValue > TMDET_MINIMUM_QVALUE && bestZ - minz < TMDET_MEMBRANE_MAX_HALFTHICKNESS) {
-            minz--;
-        }
-        unsigned long int maxz = bestZ; 
-        while (maxz<bestSlices.size() && bestSlices[maxz].qValue > TMDET_MINIMUM_QVALUE && maxz - bestZ < TMDET_MEMBRANE_MAX_HALFTHICKNESS) {
-            maxz++;
-        }
-        
-        if (maxz - minz < 5) {
-            DEBUG_LOG(" Processed Optimizer::getMembrane(): not transmembrane, membrane minQValue is small: {} {} {}",minz,bestZ,maxz);
-            return false;
-        }
-        
-        while (minz>2 && bestSlices[minz].qValue > TMDET_MEMBRANE_QVALUE && bestZ - minz < TMDET_MEMBRANE_MAX_HALFTHICKNESS) {
-            minz--;
-        }
-        while (maxz<bestSlices.size() && bestSlices[maxz].qValue > TMDET_MEMBRANE_QVALUE && maxz - bestZ < TMDET_MEMBRANE_MAX_HALFTHICKNESS) {
-            maxz++;
-        }*/
         membrane.halfThickness = (bestMaxZ-bestMinZ) / 2;
 
-        if (membrane.halfThickness < TMDET_MEMBRANE_MIN_HALFTHICKNESS) {
+        if (membrane.halfThickness < minHalfThickness) {
             DEBUG_LOG(" Processed Optimizer::getMembrane(): not transmembrane, membrane thickness is small: {} {} {}",bestMinZ,bestZ,bestMaxZ);
             return false;
         }
 
         unsigned long int i = bestZ; 
-        while (i>0 && bestSlices[i].qValue > TMDET_MEMBRANE_QVALUE) {
+        while (i>0 && bestSlices[i].qValue > lowerQ) {
             bestSlices[i].qValue=0;
             i--;
         }
-        /*int j=0;
-        while (i>0 && j<60) {
-            bestSlices[i].qValue=0;
-            i--; j++;
-        }*/
         i = bestZ+1; 
-        while (i<bestSlices.size() && bestSlices[i].qValue > TMDET_MEMBRANE_QVALUE) {
+        while (i<bestSlices.size() && bestSlices[i].qValue > lowerQ) {
             bestSlices[i].qValue=0;
             i++;
         }
-        /*j=0;
-        while (i<bestSlices.size() && j<60) {
-            bestSlices[i].qValue=0;
-            i++; j++;
-        }*/
         setMembraneOrigo(membrane,bestMinZ,bestMaxZ);
 
         DEBUG_LOG(" Processed Optimizer::getMembrane({}-{}-{}) thickness: {} ",

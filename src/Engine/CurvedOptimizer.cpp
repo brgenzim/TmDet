@@ -7,17 +7,23 @@
 #include <gemmi/model.hpp>
 #include <Engine/CurvedOptimizer.hpp>
 #include <Engine/Rotator.hpp>
+#include <Helpers/Vector.hpp>
 
 namespace Tmdet::Engine {
 
     const std::vector<double> origos = {
         //5, 10, 11, 12, 13, 14, 15, 16, 17, 18, 20, 22, 25, 30, 40, 50, 60, 70,
-        70, 72, 75, 78, 80, 90, 100, 120, 140, 150, 160, 200, 250, 300, 350, 400, 10000,
-        -70, -72, -75, -78, -80, -90, -100, -120, -140, -150, -160, -200, -250, -300, -350, -400
+        70, 72, 75, 78, 80, 90, 100, 120, 140, 150, 160, 200, 250, 300, 350, 400, 500, 1000, 2000, 5000, 10000
     };
 
     double CurvedOptimizer::distance(gemmi::Vec3& vec) {
         return origoVec3.dist(vec);
+    }
+
+    double CurvedOptimizer::getAngle(Tmdet::VOs::SecStrVec& vector) {
+        gemmi::Vec3 vec = (vector.begin + vector.end) / 2;
+        vec -= origoVec3;
+        return std::abs(Tmdet::Helpers::Vector::cosAngle(vec,vector.end - vector.begin));
     }
 
     void CurvedOptimizer::testMembraneNormal() {
@@ -27,6 +33,13 @@ namespace Tmdet::Engine {
             DEBUG_LOG("Test Radius: {}",o);
             testMembraneNormalOne(); 
         }
+    }
+
+    void CurvedOptimizer::testMembraneNormalFinal() {
+        origo = bestOrigo;
+        origoVec3 = massCentre + bestOrigo * normal;
+        DEBUG_LOG("Test Final Radius: {}",bestOrigo);
+        testMembraneNormalOne(); 
     }
 
     void CurvedOptimizer::setBestOrigo(double minz, double maxz) {

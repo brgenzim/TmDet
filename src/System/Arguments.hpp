@@ -175,6 +175,14 @@ namespace Tmdet::System {
             std::string getValueAsString(std::string name);
 
             /**
+             * @brief get value as float of an argument
+             *
+             * @param name
+             * @return float
+             */
+            float getValueAsFloat(std::string name);
+
+            /**
              * @brief return the concatenated argument string
              * 
              * @return std::string 

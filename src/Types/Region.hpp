@@ -159,56 +159,62 @@ namespace Tmdet::Types {
             'L',
             "Re-entrant membrane loop"
         };
-        const Region IFH = {
+        const Region TWO_H_LOOP = {
             6,
+            "loop with two helices",
+            'K',
+            "Re-entrant membrane loop with two helices"
+        };
+        const Region IFH = {
+            7,
             "interfacial helix",
             'F',
             "Interfacial helix on membrane surface"
         };
         const Region MEMBINS = {
-            7,
+            8,
             "membins",
             'N',
             "Beta barrel inside element"
         };
         const Region INTERMEMB = {
-            8,
+            9,
             "intermembrane",
             '3',
             "Intermembrane space if protein crosses two membranes"
         };
         const Region INSIDE = {
-            9,
+            10,
             "inside",
             'I',
             "inside (i.e cytoplasmic) in TOPDB"
         };
         const Region OUTSIDE = {
-            10,
+            11,
             "outside",
             'O',
             "outside (i.e extra-cytosolic) in TOPDB"
         };
         const Region PERIPLASM = {
-            11,
+            12,
             "periplasm",
             'E',
             "Periplasmic"
         };
         const Region ERROR_FP = {
-            12,
+            13,
             "false positiv error",
             'P',
             "region in membrane that should not be in the membrane"
         };
         const Region ERROR_FN = {
-            13,
+            14,
             "false negativ error",
             'R',
             "region outside of the membrane that should be in the membrane"
         };
         const Region UNK = {
-            14,
+            15,
             "unknown",
             'U',
             "localisation of the region is unknown"
@@ -223,6 +229,7 @@ namespace Tmdet::Types {
         { '1', RegionType::SIDE1 },
         { '2', RegionType::SIDE2 },
         { 'L', RegionType::LOOP },
+        { 'K', RegionType::TWO_H_LOOP},
         { 'F', RegionType::IFH },
         { 'N', RegionType::MEMBINS },
         { '3', RegionType::INTERMEMB },

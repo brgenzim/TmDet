@@ -153,6 +153,20 @@ namespace Tmdet::System {
         exit(EXIT_FAILURE);
     }
 
+    float Arguments::getValueAsFloat(std::string name) {
+        if (this->_args.contains(name)) {
+            if (this->_args[name].type == "float") {
+                return atof(this->_args[name].value.c_str());
+            }
+            else {
+                std::cerr << "Argument type error: " << name << std::endl;
+                exit(EXIT_FAILURE);
+            }
+        }
+        std::cerr << "Argument name error: " << name << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
     std::string Arguments::getValueAsString(std::string name) {
         if (this->_args.contains(name)) {
             if (this->_args[name].type == "string") {

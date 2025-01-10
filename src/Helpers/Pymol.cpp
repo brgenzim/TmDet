@@ -26,6 +26,7 @@ namespace Tmdet::Helpers {
         "salmon", //SIDE1
         "lightblue", //SIDE2
         "orange", //LOOP
+        "olive", //TWO_H_LOOP
         "green", //IFH
         "violetpurple", //MEMBINS
         "teal", //INTERMEMB
@@ -62,7 +63,7 @@ namespace Tmdet::Helpers {
         os << "cmd.do(\'cartoon automatic\')\n";
         os << "cmd.do(\'show cartoon\')\n";
         os << "cmd.do(\'show spheres, (segi TM_)\')\n";
-        os << "cmd.do(\'zoom " << protein.code << "_updated_tr\')";
+        os << "cmd.do(\'zoom " << protein.code << "_updated_tr\')\n";
     }
 
     void Pymol::dumpSecStrVec(std::string color) {

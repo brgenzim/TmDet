@@ -60,11 +60,12 @@ namespace Tmdet::System {
          * @param code 
          * @return std::string 
          */
-        static std::string cif(const std::string& code) {
+        static std::string cif(const std::string& code, const int assemblyId = 0) {
             return std::format("{}/{}/{}{}",
                     environment.get("PDB_CIF_DIR",DEFAULT_PDB_CIF_DIR),
                     code.substr(1,2),code,
-                    environment.get("PDB_CIF_EXT",DEFAULT_PDB_CIF_EXT));
+                    (assemblyId>0?std::format("-assembly{}.cif.gz",assemblyId):".cif.gz")
+            );
         }
 
         /**

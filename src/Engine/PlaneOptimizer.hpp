@@ -8,6 +8,7 @@
 
 #include <gemmi/model.hpp>
 #include <Engine/Optimizer.hpp>
+#include <System/Arguments.hpp>
 
 /**
  * @brief namespace for tmdet engine
@@ -36,6 +37,10 @@ namespace Tmdet::Engine {
              */
             double distance(gemmi::Vec3& vec);
 
+            double getAngle(Tmdet::VOs::SecStrVec& vector);
+
+            void testMembraneNormalFinal();
+
             /**
              * @brief Set place of the best origo
              * 
@@ -63,8 +68,8 @@ namespace Tmdet::Engine {
              * 
              * @param protein 
              */
-            PlaneOptimizer(Tmdet::VOs::Protein& protein) :
-                Optimizer(protein) {
+            PlaneOptimizer(Tmdet::VOs::Protein& protein, Tmdet::System::Arguments& args) :
+                Optimizer(protein,args) {
                     type = "Plane";
                 }
             

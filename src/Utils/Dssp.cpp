@@ -316,8 +316,10 @@ namespace Tmdet::Utils {
                     }
                     double skap = sqrt(1-ckap*ckap);
                     double kap = 180.0 * atan2(skap,ckap) / M_PI;
-                    if (kap>70.0) {
+                    if (kap>70.5) {
                         chain.residues[i].ss = Tmdet::Types::SecStructType::S;
+//                        DEBUG_LOG("detectS: {}:{} {} {} {}",chain.id,chain.residues[i].authId,
+//                                    ckap,skap,kap);
                     }
                 }
             }

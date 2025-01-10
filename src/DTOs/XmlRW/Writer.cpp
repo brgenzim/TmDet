@@ -14,6 +14,7 @@
 #include <DTOs/XmlRW/Writer.hpp>
 #include <Exceptions/SyntaxErrorException.hpp>
 #include <Helpers/String.hpp>
+#include <System/Arguments.hpp>
 #include <System/Logger.hpp>
 #include <VOs/Membrane.hpp>
 #include <VOs/TMatrix.hpp>
@@ -54,6 +55,10 @@ namespace Tmdet::DTOs::XmlRW {
 
     void Writer::setTmtype(const std::string& ptype) const {
         _root.child(XML_NODE_RAWDATA).child(XML_NODE_TMTYPE).text() = ptype.c_str();
+    }
+
+    void Writer::setArguments(const Tmdet::System::Arguments& args) const {
+        
     }
 
     void Writer::setTMatrix(Tmdet::VOs::TMatrix& tmatrix) {
@@ -125,7 +130,7 @@ namespace Tmdet::DTOs::XmlRW {
         }
     }
             
-    void Writer::writeXml(Tmdet::VOs::Xml& xmlData, const std::string& path) {
+    void Writer::writeXml(Tmdet::VOs::Xml& xmlData, const std::string& path, const Tmdet::System::Arguments& args) {
         DEBUG_LOG("Processing: Writer::writeXml({})",path);
         create();
         setTmp(xmlData.tmp);
@@ -134,6 +139,7 @@ namespace Tmdet::DTOs::XmlRW {
         setVersion(xmlData.version);
         setQvalue(xmlData.qValue);
         setTmtype(xmlData.type.name);
+        setArguments(args);
         if (xmlData.tmp) {
             setTMatrix(xmlData.tmatrix);
             setMembranes(xmlData.membranes);

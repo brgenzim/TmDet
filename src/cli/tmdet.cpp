@@ -26,6 +26,7 @@
 #include <System/FilePaths.hpp>
 #include <System/Logger.hpp>
 #include <Utils/Dssp.hpp>
+#include <Utils/MyDssp.hpp>
 #include <Utils/SecStrVec.hpp>
 #include <VOs/Protein.hpp>
 
@@ -36,25 +37,41 @@ Tmdet::System::Logger logger;
 
 Tmdet::System::Arguments getArguments(int argc, char *argv[]) {
     Tmdet::System::Arguments args;
+    
+    //system
     args.define(false,"e","env","Path for environment variable file","string",".env");
-    args.define(false,"r","run","Run the tmdet algorithm on the protein structure","bool","false");
-    args.define(false,"pi","pdb_input","Input PDB file full path (in ent or cif format)","string","");
+
+    //path related
     args.define(false,"c","code","Input PDB code (c or pi is mandatory)","string","");
     args.define(false,"x","xml","Input/Output xml file path","string","");
+    args.define(false,"pi","pdb_input","Input PDB file full path (in ent or cif format)","string","");
+    args.define(false,"po","pdb_output","Output pdb file path","string","");
     args.define(false,"xi","xml_input","Input xml file path","string","");
     args.define(false,"xo","xml_output","Output xml file path","string","");
-    args.define(false,"xf3","xml_out_fmt3","Set xml output format to v3","bool","false");
-    args.define(false,"po","pdb_output","Output pdb file path","string","");
+    args.define(false,"a","assembly","Set assembly id","int","1");
+    
+    //work 
+    args.define(false,"r","run","Run the tmdet algorithm on the protein structure","bool","false");
     args.define(false,"n","not","Set transmembrane='not' in the xml file","bool","false");
     args.define(false,"cm","curved_membrane","Search for curved membrane","bool","false");
     args.define(false,"fr","fragment_analysis","Investigate protein domains/fragments separately","bool","false");
-    args.define(false,"nc","no_cache","Do not use cached data","bool","false");
     args.define(false,"s","show","Show annotated structure by pymol","bool","false");
     args.define(false,"sp","show","Show parsed structure in the console","bool","false");
     args.define(false,"uc","unselect_chains","Unselect proteins chains","string","");
     args.define(false,"na","no_annotation","Do not make annotation","bool","false");
     args.define(false,"fa","force_nodel_antibody","Do not unselect antibodies in the structure","bool","false");
-    args.define(false,"tm","force_transmembrane","Set type to transmembrane without making decision using Q value","bool","false");
+    args.define(false,"nc","no_cache","Do not use cached data","bool","false");
+    args.define(false,"xf3","xml_out_fmt3","Set xml output format to v3","bool","false");
+    
+    //parameters
+    args.define(false,"lq","lower_qvalue","Lower qValue, above it is membrane","float","38");
+    args.define(false,"hq","higher_qvalue","Higher qValue, limit for transmembrane type","float","48");
+    args.define(false,"minht","minimum_of_half_thickness","Minimum value of half thickness","float","7.0");
+    args.define(false,"maxht","maximum_of_half_thickness","Maximum value of half thickness","float","20");
+    args.define(false,"maxcht","maximum_of_curved_half_thickness","Maximum value of half thickness for curved membrane detection","float","14");
+    args.define(false,"hml","hydrph_limit","Hydrophobicity momentum limit for ifh detection","float","1.6");
+    args.define(false,"as","avg_surface","Average free solvent accessible surface limit for ifh detection","float","40");
+    
     args.set(argc,argv);
     args.check();
     return args;
@@ -94,12 +111,12 @@ int main(int argc, char *argv[], char **envp) {
     string code = args.getValueAsString("c");
     string xmlInputPath = xml.setPath(code,args.getValueAsString("x"),args.getValueAsString("xi"));
     string xmlOutputPath = xml.setPath(code,args.getValueAsString("x"),args.getValueAsString("xo"));
-    string pdbInputPath = (code != ""?Tmdet::System::FilePaths::cif(code):args.getValueAsString("pi"));
+    string pdbInputPath = (code != ""?Tmdet::System::FilePaths::cif(code,args.getValueAsInt("a")):args.getValueAsString("pi"));
     string pdbOutputPath = (code != ""?Tmdet::System::FilePaths::pdbOut(code):args.getValueAsString("po"));
 
     //change xml file to TMP="no" if the protein is set to not transmembrane and exit
     if (bool n = args.getValueAsBool("n"); n) {
-        xml.notTransmembrane(xmlInputPath,xmlOutputPath);
+        xml.notTransmembrane(xmlInputPath, xmlOutputPath, args);
         exit(EXIT_SUCCESS);
     }
     
@@ -134,6 +151,7 @@ int main(int argc, char *argv[], char **envp) {
     //do the membrane region determination and annotation
     if (bool r = args.getValueAsBool("r"); r) {
         auto dssp = Tmdet::Utils::Dssp(protein);
+        auto mydssp = Tmdet::Utils::MyDssp(protein);
         //DEBUG_LOG("{}",Tmdet::DTOs::Protein::toString(protein));
         auto ssVec = Tmdet::Utils::SecStrVec(protein);
         if (bool fr = args.getValueAsBool("fr"); fr) {
@@ -148,7 +166,7 @@ int main(int argc, char *argv[], char **envp) {
 
         //write xml output if required
         if (xmlOutputPath != "" && !na) {
-            xml.write(xmlOutputPath, protein);
+            xml.write(xmlOutputPath, protein, args);
         }
 
         //write transformed pdb file if required and protein is tmp

@@ -39,7 +39,7 @@ namespace Tmdet::Engine {
         else {
             z1 = membranes[0].sphereRadius + membranes[0].halfThickness;
             z4 = membranes[0].sphereRadius - membranes[0].halfThickness;
-            o1 = o2 = (z1 + z4) / 2;
+            o1 = o2 = membranes[0].sphereRadius;
         }
     }
 

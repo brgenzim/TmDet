@@ -11,6 +11,7 @@
 #include <vector>
 #include <gemmi/model.hpp>
 #include <Engine/RegionHandler.hpp>
+#include <System/Arguments.hpp>
 #include <Types/Region.hpp>
 #include <Utils/SecStrVec.hpp>
 #include <VOs/Protein.hpp>
@@ -35,6 +36,11 @@ namespace Tmdet::Engine {
              * @brief structure and tmdet data containing protein value object
              */
             Tmdet::VOs::Protein& protein;
+
+            /**
+             * @brief command line arguments
+             */
+            Tmdet::System::Arguments& args;
 
             /**
              * @brief region handler
@@ -81,6 +87,19 @@ namespace Tmdet::Engine {
             void detectLoop(Tmdet::VOs::Chain& chain, int beg, int end);
 
             /**
+             * @brief detect if a region has element from the other side
+             *        of membrane leaflet
+             * 
+             * @param chain 
+             * @param pos 
+             * @param beg 
+             * @param end 
+             * @return true 
+             * @return false 
+             */
+            bool hasOtherSide(Tmdet::VOs::Chain& chain, int pos, int beg, int end);
+
+            /**
              * @brief detect interfacial helices
              */
             void detectInterfacialHelices();
@@ -101,7 +120,7 @@ namespace Tmdet::Engine {
              * @return true 
              * @return false 
              */
-            bool hasHelixLoop(Tmdet::VOs::Chain& chain, int begin, int end);
+            bool hasHelixTurnLoop(Tmdet::VOs::Chain& chain, int begin, int end, int& numHelix);
 
             /**
              * @brief detect alpha helical transmembrane regions
@@ -178,8 +197,9 @@ namespace Tmdet::Engine {
              * 
              * @param protein 
              */
-            explicit Annotator(Tmdet::VOs::Protein& protein) :
+            explicit Annotator(Tmdet::VOs::Protein& protein, Tmdet::System::Arguments& args) :
                 protein(protein),
+                args(args),
                 regionHandler(Tmdet::Engine::RegionHandler(protein)) {
                     run();
             }

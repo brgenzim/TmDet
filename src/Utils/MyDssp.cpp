@@ -19,7 +19,7 @@ namespace Tmdet::Utils {
 
     void MyDssp::exec() {
         setCO();
-        setAngle();
+        //setAngle();
         //end();
     }
 

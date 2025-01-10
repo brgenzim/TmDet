@@ -101,7 +101,7 @@ namespace Tmdet::Engine {
             else {
                 r = Tmdet::Types::RegionType::MEMB;
                 rz = z - o1;
-                hz = (z>0?z1-z:z-z4);
+                hz = (z>o1?z1-z:z-z4);
             }
         }
         if (!residue.temp.contains("z")) {

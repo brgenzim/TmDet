@@ -8,6 +8,7 @@
 
 #include <gemmi/model.hpp>
 #include <Engine/Optimizer.hpp>
+#include <System/Arguments.hpp>
 #include <VOs/Protein.hpp>
 
 /**
@@ -48,6 +49,10 @@ namespace Tmdet::Engine {
              */
             double distance(gemmi::Vec3& vec);
 
+            double getAngle(Tmdet::VOs::SecStrVec& vector);
+
+            void testMembraneNormalFinal();
+
             /**
              * @brief searcvh for the best sphere centre
              * 
@@ -74,8 +79,8 @@ namespace Tmdet::Engine {
              * 
              * @param protein 
              */
-            CurvedOptimizer(Tmdet::VOs::Protein& protein) :
-                Optimizer(protein) {
+            CurvedOptimizer(Tmdet::VOs::Protein& protein, Tmdet::System::Arguments& args) :
+                Optimizer(protein,args) {
                     type = "Curved";
                 }
             

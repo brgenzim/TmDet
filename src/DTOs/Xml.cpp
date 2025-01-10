@@ -10,6 +10,7 @@
 #include <DTOs/XmlRW/Reader.hpp>
 #include <DTOs/XmlRW/Writer.hpp>
 #include <DTOs/XmlRW/Writer3.hpp>
+#include <System/Arguments.hpp>
 #include <System/Logger.hpp>
 #include <System/FilePaths.hpp>
 #include <VOs/Protein.hpp>
@@ -95,27 +96,27 @@ namespace Tmdet::DTOs {
             }
         }
 
-        void Xml::write(const std::string& xmlPath) {
+        void Xml::write(const std::string& xmlPath, const Tmdet::System::Arguments& args) {
             if (outXmlFmt == "v4") {
                 Tmdet::DTOs::XmlRW::Writer writer;
-                writer.writeXml(xmlData, xmlPath);
+                writer.writeXml(xmlData, xmlPath, args);
             }
             else {
                 Tmdet::DTOs::XmlRW::Writer3 writer;
-                writer.writeXml(xmlData, xmlPath);
+                writer.writeXml(xmlData, xmlPath, args);
             }
         }
 
-        void Xml::write(const std::string& xmlPath, const Tmdet::VOs::Protein& protein) {
+        void Xml::write(const std::string& xmlPath, const Tmdet::VOs::Protein& protein, const Tmdet::System::Arguments& args) {
             fromProtein(protein);
-            write(xmlPath);
+            write(xmlPath, args);
         }
 
-        void Xml::notTransmembrane(const std::string& xmlInputPath, const std::string& xmlOutputPath) {
+        void Xml::notTransmembrane(const std::string& xmlInputPath, const std::string& xmlOutputPath, const Tmdet::System::Arguments& args) {
             read(xmlInputPath);
             if (xmlData.version != "") {
                 xmlData.notTransmembrane();
-                write(xmlOutputPath);
+                write(xmlOutputPath, args);
             }
             else {
                 ERROR_LOG("Cannot overwrite old (version < 4.0) xml file");
