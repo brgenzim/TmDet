@@ -13,8 +13,8 @@ function filePath(string $id, string $basePath) : string {
     return $basePath."/".$id[1].$id[2]."/".$id.".xml";
 }
 
-foreach(file($argv[1]) as $id) {
-    $id = trim($id);
+foreach(file($argv[1]) as $line) {
+    list($id) = explode(' ',trim($line));
     $xml3 = new Xml3(filePath($id,PDBTM_3_BASEPATH));
     $xml4 = new Xml4(filePath($id,PDBTM_4_BASEPATH));
     $compare = new Compare($xml3,$xml4);

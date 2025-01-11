@@ -270,9 +270,9 @@ namespace Tmdet::Engine {
                 && beg > 0
                 && chain.residues[beg-1].selected
                 && chain.residues[end].selected
-                && end-beg < 10
-                && any_cast<Tmdet::Types::Region>(chain.residues[beg-1].temp.at("type")).isMembraneInside()
-                && any_cast<Tmdet::Types::Region>(chain.residues[end].temp.at("type")).isMembraneInside()) {
+                && end-beg < 3
+                && (any_cast<Tmdet::Types::Region>(chain.residues[beg-1].temp.at("type")).isMembraneInside()
+                || any_cast<Tmdet::Types::Region>(chain.residues[end].temp.at("type")).isMembraneInside())) {
                 regionHandler.replace(chain,beg,end-1,Tmdet::Types::RegionType::MEMBINS,"type");
             }
             beg=end;

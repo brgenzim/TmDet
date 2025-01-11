@@ -70,16 +70,16 @@ namespace Tmdet::Utils {
                             any_cast<gemmi::Vec3>(chain.residues[ni].temp["ca"]) - any_cast<gemmi::Vec3>(chain.residues[i].temp["ca"])
                         ):0.0);
                         //if (pco>100&&nco>100&&(pco>135||nco>135)) {
-                        if ((caa<85&&((pco>125||nco>125)||(pco>105&&nco>105))) || caa<55) {
+                        if (((caa<85&&((pco>125||nco>125)||(pco>105&&nco>105))) || caa<55) && chain.residues[i].ss.code == 'S') {
                             chain.residues[i].ss = Tmdet::Types::SecStructType::E;
                         }
-                        if (pco<100&&nco<100&&(pco<55||nco<55)) {
+                        /*if (pco<100&&nco<100&&(pco<55||nco<55)) {
                             chain.residues[i].ss = Tmdet::Types::SecStructType::S;
                         }
 
                         INFO_LOG("Angle: {}:{}:{} {:.2f} {:.2f} {:.2f}",
                             chain.id,chain.residues[i].authId,
-                            chain.residues[i].ss.code,pco,nco,caa);
+                            chain.residues[i].ss.code,pco,nco,caa);*/
                     }
                 }
             }

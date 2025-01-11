@@ -87,13 +87,13 @@ namespace Tmdet::Engine {
                     }
                     if (alpha>3*beta && alpha>0) {
                         chain.type = Tmdet::Types::ChainType::ALPHA;
-                        protein.type = (protein.type==Tmdet::Types::ProteinType::TM_BETA?
+                        protein.type = (protein.type.isBeta()?
                                 Tmdet::Types::ProteinType::TM_MIXED:
                                 Tmdet::Types::ProteinType::TM_ALPHA);
                     }
                     else if (beta>0) {
                         chain.type = Tmdet::Types::ChainType::BETA;
-                        protein.type = (protein.type==Tmdet::Types::ProteinType::TM_ALPHA?
+                        protein.type = (protein.type.isAlpha()?
                                 Tmdet::Types::ProteinType::TM_MIXED:
                                 Tmdet::Types::ProteinType::TM_BETA);
                     }
@@ -377,9 +377,11 @@ namespace Tmdet::Engine {
                 }
             }
         );
+        DEBUG_LOG("Annotator::finalCheck: type: {} na: {} nb: {} tmp: {}",
+            protein.type.name,nA,nB,protein.tmp?"yes":"no");
         if ((!protein.type.isAlpha() && nB < 8)
             || (nA == 0 && nB == 0)
-            || (protein.type.isAlpha() && nA == 0)) {
+            || (!protein.type.isBeta() && nA == 0)) {
             protein.notTransmembrane();
         }
         DEBUG_LOG("Annotator::finalCheck: type: {} na: {} nb: {} tmp: {}",
