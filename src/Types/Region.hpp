@@ -162,7 +162,7 @@ namespace Tmdet::Types {
         const Region TWO_H_LOOP = {
             6,
             "loop with two helices",
-            'K',
+            'L',
             "Re-entrant membrane loop with two helices"
         };
         const Region IFH = {

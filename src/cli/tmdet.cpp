@@ -69,8 +69,8 @@ Tmdet::System::Arguments getArguments(int argc, char *argv[]) {
     args.define(false,"minht","minimum_of_half_thickness","Minimum value of half thickness","float","7.0");
     args.define(false,"maxht","maximum_of_half_thickness","Maximum value of half thickness","float","20");
     args.define(false,"maxcht","maximum_of_curved_half_thickness","Maximum value of half thickness for curved membrane detection","float","14");
-    args.define(false,"hml","hydrph_limit","Hydrophobicity momentum limit for ifh detection","float","1.6");
-    args.define(false,"as","avg_surface","Average free solvent accessible surface limit for ifh detection","float","40");
+    args.define(false,"hml","hydrph_limit","Hydrophobicity momentum limit for ifh detection","float","0.0"/*"1.6"*/);
+    args.define(false,"as","avg_surface","Average free solvent accessible surface limit for ifh detection","float","0"/*"40"*/);
     
     args.set(argc,argv);
     args.check();
