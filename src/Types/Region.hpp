@@ -68,7 +68,7 @@ namespace Tmdet::Types {
          * @return false 
          */
         bool isAnnotatedMembraneType() const {
-            return code == 'H' || code == 'B' || code == 'L' || code =='F';
+            return code == 'H' || code == 'B' || code == 'L' || code =='F' || code == 'N';
         }
 
         /**

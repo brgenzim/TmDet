@@ -13,6 +13,7 @@ namespace Tmdet::Engine {
 
     Rotator::Rotator() {
         alpha_step = std::stof(environment.get("TMDET_BALL_DIST",DEFAULT_TMDET_BALL_DIST)) / 2;
+        end90();
         logger.debug("Init rotator. alpha_step: {}",alpha_step);
     }
 
@@ -26,7 +27,7 @@ namespace Tmdet::Engine {
      */
     bool Rotator::next(gemmi::Vec3& normal) {
         
-        if (alpha>M_PI) {
+        if (alpha>alpha_end) {
             return false;
         }
         normal.x = cos(beta) * q;

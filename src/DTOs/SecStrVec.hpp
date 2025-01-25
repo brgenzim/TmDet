@@ -8,8 +8,8 @@
 
 #include <string>
 #include <format>
-#include <VOs/Protein.hpp>
 #include <VOs/SecStrVec.hpp>
+#include <VOs/Protein.hpp>
 
 /**
  * @brief namespace for tmdet data transfer objects
@@ -26,10 +26,12 @@ namespace Tmdet::DTOs {
          */
         static std::string toString(const Tmdet::VOs::Protein& protein, const Tmdet::VOs::SecStrVec& vec) {
             return std::format(R"(
-    SecStrVec type: {} begin: [{}, {}, {}] end: [{}, {}, {}]
-            chainIdx: {} begResIdx: {} endResIdx: {}
+    SecStrVec type: {} sheet: {} barrel: {}
+        begin: [{}, {}, {}] end: [{}, {}, {}]
+        chainIdx: {} begResIdx: {} endResIdx: {}
 )",
-                vec.type.name,vec.begin.x,vec.begin.y,vec.begin.z,
+                vec.type.name, vec.sheetIdx, vec.barrelIdx,
+                vec.begin.x,vec.begin.y,vec.begin.z,
                 vec.end.x, vec.end.y, vec.end.z,
                 protein.chains[vec.chainIdx].id,
                 protein.chains[vec.chainIdx].residues[vec.begResIdx].authId,

@@ -47,24 +47,6 @@ namespace Tmdet::Engine {
             std::unique_ptr<Tmdet::Engine::Optimizer> optimizer;
 
             /**
-             * @brief select chains that contains more than 15 residues
-             *        and return the number of these chains
-             * 
-             * @return unsigned int 
-             */
-            unsigned int selectChains();
-
-            /**
-             * @brief get the number of residues having all side chain atoms
-             *        and select the chain if it is larger than the defined 
-             *        minimum
-             * 
-             * @param chainVO 
-             * @return unsigned int 
-             */
-            unsigned int selectChain(Tmdet::VOs::Chain& chainVO);
-
-            /**
              * @brief calculate the solvent accessible surface and outside surface
              *        of the selected chains
              */

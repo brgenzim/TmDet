@@ -9,8 +9,8 @@ do
 		echo "waiting..."
 		sleep 30
 	done
-	code=`echo $line | cut -d' ' -f 1`
-	chains=`echo $line | cut -d' ' -f 2`
+	code=`echo $line | cut -c 1-4`
+	args=`echo $line | cut -c 5-`
 	LOG="$ROOT/log/"`echo $code | cut -c 2-3`
-	sbatch -p btwins -c 2 --mem 2G -e "$LOG/$code.e.log" -o "$LOG/$code.o.log" --chdir "$ROOT/TmDet" run.sh $code $chains
+	sbatch -p rall -c 2 --mem 8G -e "$LOG/$code.e.log" -o "$LOG/$code.o.log" --chdir "$ROOT/TmDet" run.sh $code $args
 done  < $1

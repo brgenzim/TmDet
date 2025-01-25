@@ -34,6 +34,11 @@ namespace Tmdet::Engine {
             double alpha_step;
 
             /**
+             * @brief end of alpha angle rotation
+             */
+            double alpha_end;
+
+            /**
              * @brief current beta angle of the normal vector
              *        horizontal angle
              */
@@ -78,5 +83,13 @@ namespace Tmdet::Engine {
              * @return false 
              */
             bool next(gemmi::Vec3& normal);
+
+            void end90() {
+                alpha_end = M_PI / 2;
+            }
+
+            void end180() {
+                alpha_end = M_PI;
+            }
     };
 }

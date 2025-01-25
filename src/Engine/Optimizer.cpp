@@ -38,13 +38,34 @@ namespace Tmdet::Engine {
         maxCurvedHalfThickness = args.getValueAsFloat("maxcht");
         lowerQ = args.getValueAsFloat("lq");
         higherQ = args.getValueAsFloat("hq");
+        higherQ2 = args.getValueAsFloat("hq2");
         massCentre = protein.centre();
+        ifhAngleLimit = args.getValueAsFloat("ian");
+        ifhResLimit = args.getValueAsInt("irl");
+
         protein.eachSelectedResidue(
             [](Tmdet::VOs::Residue& residue) -> void {
                 residue.temp.try_emplace("dist",std::any(0.0));
-                residue.temp.try_emplace("straight",std::any(0.0));
+               // residue.temp.try_emplace("straight",std::any(0.0));
                 for(auto& atom: residue.atoms) {
                     atom.temp.try_emplace("dist",std::any(0.0));
+                }
+            }
+        );
+        protein.eachSelectedChain(
+            [&](Tmdet::VOs::Chain& chain) -> void {
+                for (int i=0; i<chain.length; i++) {
+                    if (chain.residues[i].selected) {
+                        int k=0;
+                        double apol = 0;
+                        for (int j=-0; j<=0; j++) {
+                            if (i+j>=0&&i+j<chain.length&&chain.residues[i+j].selected) {
+                                apol += (chain.residues[i+j].type.hsc + 12.3 ) / 16.0;
+                                k++;
+                            }
+                        }
+                        chain.residues[i].apol = apol;
+                    }
                 }
             }
         );
@@ -56,7 +77,7 @@ namespace Tmdet::Engine {
         protein.eachSelectedResidue(
             [](Tmdet::VOs::Residue& residue) -> void {
                 residue.temp.erase("dist");
-                residue.temp.erase("straight");
+               // residue.temp.erase("straight");
                 for(auto& atom: residue.atoms) {
                     atom.temp.erase("dist");
                 }
@@ -144,20 +165,20 @@ namespace Tmdet::Engine {
         protein.eachSelectedResidue(
             [&](Tmdet::VOs::Residue& residue) -> void {
                 auto sliceIndex = (unsigned int)(any_cast<double>(residue.temp.at("dist")) - minZ);
-                if (protein.secStrVecs.size()<10 || protein.chains[residue.chainIdx].type == Tmdet::Types::ChainType::LOW_RES) {
-                    slices[sliceIndex].straight += any_cast<double>(residue.temp.at("straight"));
-                    slices[sliceIndex].numCa++;
-                }
+                //if (protein.secStrVecs.size()<10 || protein.chains[residue.chainIdx].type == Tmdet::Types::ChainType::LOW_RES) {
+                //    slices[sliceIndex].straight += any_cast<double>(residue.temp.at("straight"));
+                //    slices[sliceIndex].numCa++;
+                //}
                 if (protein.chains[residue.chainIdx].type == Tmdet::Types::ChainType::LOW_RES) {
-                    slices[sliceIndex].surf++;
-                    slices[sliceIndex].apol += (residue.type.hsc + 12.3 ) / 16.0;
+                    slices[sliceIndex].surf+=5;
+                    slices[sliceIndex].apol += 5*(residue.type.hsc + 12.3 ) / 16.0;
                 }
                 else {
                     for(const auto& atom: residue.atoms) {
-                        slices[sliceIndex].surf += atom.outSurface * (residue.ss.isBeta()?1.1:0.9);
+                        slices[sliceIndex].surf += atom.outSurface /* (residue.ss.isBeta()?1.1:0.9)*/;
                         if (residue.type.atoms.contains(atom.gemmi.name)) {
-                            slices[sliceIndex].apol += residue.type.apol * atom.outSurface 
-                                * (residue.ss.isBeta()?1.1:0.9);
+                            slices[sliceIndex].apol += residue.apol * atom.outSurface 
+                                /* (residue.ss.isBeta()?1.1:0.9)*/;
                         }
                     }
                 }
@@ -168,7 +189,11 @@ namespace Tmdet::Engine {
                 && protein.chains[vector.chainIdx].residues[vector.begResIdx].selected
                 && protein.chains[vector.chainIdx].residues[vector.endResIdx].selected) {
                 double cosAngle = getAngle(vector);
-                cosAngle = (cosAngle<0.1?-3:cosAngle);
+                double angle = std::abs(90.0 - acos(cosAngle) * 180.0 / M_PI);
+                cosAngle = (cosAngle<0.2?-3:cosAngle);
+                if (protein.hasIdenticalChains) {
+                    cosAngle = (cosAngle>0.7?1:cosAngle);
+                }
                 int d1 = distance(vector.begin);
                 int d2 = distance(vector.end);
                 int dbeg = (d1<d2?d1:d2) - minZ; 
@@ -181,10 +206,22 @@ namespace Tmdet::Engine {
                 if (dend>=(int)slices.size()) {
                     dend=(int)slices.size()-1;
                 }
-                DEBUG_LOG("sumupSliceVectors: beg:{} end:{} size:{}",dbeg,dend,slices.size());
+                DEBUG_LOG("sumupSliceVectors: beg:{} end:{} size:{} cosAngle:{} angle:{}",
+                    dbeg,dend,slices.size(),cosAngle,angle);
+                //for(int i=dbeg; i<= dend; i++) {
+                if (vector.type.isAlpha() && dend-dbeg<5 && angle < ifhAngleLimit)  {
+                    for (int j=vector.begResIdx; j<=vector.endResIdx; j++) {
+                        int i = distance(any_cast<gemmi::Vec3&>(protein.chains[vector.chainIdx].residues[j].temp["ca"])) - minZ;
+                        slices[i].ifh ++;
+                    }
+                }
                 for(int i=dbeg; i<= dend; i++) {
-                    slices[i].straight+= (vector.type.isBeta()?1:cosAngle);
-                    slices[i].ifh += ((vector.type.isAlpha() && cosAngle < 0)?1:0);
+                    if (vector.type.isBeta()) {
+                        slices[i].beta += (cosAngle>0.6?1:cosAngle);
+                    }
+                    else {
+                        slices[i].alpha += cosAngle;
+                    }
                     slices[i].numCa++;
                 }
                 slices[dbeg].ssEnd++;
@@ -214,7 +251,7 @@ namespace Tmdet::Engine {
             double smoothedIfh = 0.0;
             for (int j=-2; j<=2; j++) {
                 if (j+(int)i>=0 && j+i<s) {
-                    smoothedStraight += slices[j+i].straight;
+                    smoothedStraight += (slices[j+i].alpha>slices[j+i].beta?slices[i+j].alpha:(slices[j+i].beta>4?slices[j+i].beta:0));
                     smoothedApol += slices[j+i].apol;
                     smoothedSsEnd += slices[j+i].ssEnd;
                     smoothedSurf += slices[i+j].surf;
@@ -224,21 +261,22 @@ namespace Tmdet::Engine {
                 }
             }
             smoothedStraight /= k;
-            smoothedApol /= k;
+            smoothedApol /= k; 
             smoothedSsEnd /= k;
             smoothedSurf /= k;
             smoothedIfh /= k;
             smoothedCa /= k;
             smoothedStraight = divide(smoothedStraight,smoothedCa);
-            smoothedApol = divide(smoothedApol, smoothedSurf);
+            smoothedApol = (smoothedSurf>20?divide(smoothedApol, smoothedSurf):0); smoothedApol = (smoothedApol>0.55?1:smoothedApol);
             smoothedSsEnd = divide(smoothedSsEnd, smoothedCa);
-            slices[i].smoothedIfh = divide(smoothedIfh, smoothedCa);
+            //slices[i].smoothedIfh = divide(smoothedIfh, smoothedCa);
+            smoothedIfh /= ifhResLimit; smoothedIfh = (smoothedIfh>1?1:smoothedIfh);
 
             
-            slices[i].rawQ = 130.0 * smoothedStraight * (1.0 - slices[i].smoothedIfh) * (1.0 - smoothedSsEnd) * smoothedApol;
+            slices[i].rawQ = 100.0 * smoothedStraight * (1.0 - smoothedSsEnd) * (1.0 - smoothedIfh) * smoothedApol;
 
-             DEBUG_LOG("{} straight:{:5.2f} apol:{:5.2f} surf:{:5.2f} end:{:5.2f} ifh:{:5.2f} q:{:5.2f}",
-                i,smoothedStraight,smoothedApol,slices[i].surf,smoothedSsEnd,slices[i].smoothedIfh,slices[i].rawQ);
+             DEBUG_LOG("{} straight:{:5.2f} apol:{:5.2f} surf:{:5.2f} end:{:5.2f} ifh:{} q:{:5.2f}",
+                i,smoothedStraight,smoothedApol,slices[i].surf,smoothedSsEnd,slices[i].ifh,slices[i].rawQ);
         }
         for(unsigned long int i = 0; i<s; i++) {
             int k=0;
@@ -285,8 +323,8 @@ namespace Tmdet::Engine {
                 if (i-minz > minHalfThickness && maxz -i > minHalfThickness && q>higherQ) {
                     if (q>bestQ) {
                         bestQ = q;
-                        bestMinZ = minz;
-                        bestMaxZ = maxz;
+                        bestMinZ = minz; bestMinZ -= 0.5;
+                        bestMaxZ = maxz; bestMaxZ -= 0.5;
                         bestNormal = normal;
                         bestSlices = slices;
                         setBestOrigo(minz,maxz);
@@ -300,39 +338,54 @@ namespace Tmdet::Engine {
     double Optimizer::getWidth(const int z, int& minz, int& maxz) {
         double maxHT = (type=="Plane"?maxHalfThickness:maxCurvedHalfThickness);
         minz = z;
-        while(minz>0 
-            && slices[minz].qValue > higherQ 
-            && slices[minz].smoothedIfh < TMDET_IFH_LIMIT
-            && z-minz < maxHT) {
-            minz--;
-        }
         maxz = z+1;
-        while(maxz<(int)slices.size()
-            && slices[maxz].qValue > higherQ
-            && slices[maxz].smoothedIfh < TMDET_IFH_LIMIT
-            && maxz-z < maxHT) {
-            maxz++;
+        bool ok = true;
+        while(ok) {
+            ok = false;
+            if (minz > 0
+                && slices[minz].qValue > higherQ 
+                && slices[minz].smoothedIfh < ifhResLimit
+                && maxz-minz < 2*maxHT) {
+                    minz--;
+                    ok = true;
+            }
+            if (maxz < (int)slices.size()-1
+                && slices[maxz].qValue > higherQ
+                && slices[maxz].smoothedIfh < ifhResLimit
+                && maxz-minz < 2*maxHT) {
+                    maxz++;
+                    ok = true;
+            }
         }
-        if (maxz-minz>5) {
-                while(minz>0 
-                    && slices[minz].qValue > lowerQ  
-                    && slices[minz].smoothedIfh < TMDET_IFH_LIMIT
-                    && z-minz < maxHT) {
-                minz--;
-            }
-            while(maxz<(int)slices.size() 
+        
+        if (maxz-minz>7) {
+            ok=true;
+            while(ok) {
+                ok = false;
+                if (minz > 0
+                    && slices[minz].qValue > lowerQ 
+                    && slices[minz].smoothedIfh < ifhResLimit
+                    && maxz-minz < 2*maxHT) {
+                        minz--;
+                        ok = true;
+                }
+                if (maxz < (int)slices.size()-1
                     && slices[maxz].qValue > lowerQ
-                    && slices[maxz].smoothedIfh < TMDET_IFH_LIMIT
-                    && maxz-z < maxHT) {
-                maxz++;
+                    && slices[maxz].smoothedIfh < ifhResLimit
+                    && maxz-minz < 2*maxHT) {
+                        maxz++;
+                        ok = true;
+                }
             }
+            minz++;
+            maxz--;
         }
         return slices[z].qValue;
     }
 
     void Optimizer::testMembraneNormalOne() {
         setDistances();
-        setStraight();
+        //setStraight();
         setBoundaries();
         sumupSlices();
         smoothQValues();
@@ -345,6 +398,9 @@ namespace Tmdet::Engine {
 
     void Optimizer::searchForMembraneNormal() {
         Tmdet::Engine::Rotator rotator;
+        if (type == "Curved") {
+            rotator.end180();
+        }
         while(rotator.next(normal)) {
             testMembraneNormal();
         }
@@ -382,26 +438,18 @@ namespace Tmdet::Engine {
     }
 
     bool Optimizer::getMembrane(Tmdet::VOs::Membrane& membrane, int count) {
-        DEBUG_LOG("Processing Optimizer::getMembrane()");
+        DEBUG_LOG("Processing Optimizer::getMembrane({})",count+1);
         DEBUG_LOG("bestQ: {}",bestQ);
         DEBUG_LOG("bestSlices: {}",bestSlices[10].qValue);
         DEBUG_LOG("bestnormal: [{}, {}, {}]",bestNormal.x, bestNormal.y, bestNormal.z);
         
-        /*double q = -1e30;
-        for (unsigned long int i = 0; i <bestSlices.size(); i++) {
-            if (bestSlices[i].qValue > q) {
-                q = bestSlices[i].qValue;
-                bestZ = i;
-            }
-        }
-        */
         bestQ = 0;
         slices = bestSlices;
         checkBestSlice();
         unsigned long int bestZ = (bestMinZ+bestMaxZ) / 2;
 
         DEBUG_LOG("\tLargest qValue: {}",bestQ);
-        if (bestQ < higherQ) {
+        if (bestQ < (count?higherQ2:higherQ)) {
             DEBUG_LOG(" Processed Optimizer::getMembrane(q:{}): no more membrane",bestQ);
             return false;
         }

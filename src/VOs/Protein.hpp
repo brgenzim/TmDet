@@ -143,7 +143,14 @@ namespace Tmdet::VOs {
          */
         bool forceSingleMembrane = false;
 
+        /**
+         * @brief number of beta barrels in the protein
+         */
+        int numBarrels = 0;
+
         std::string inputFile;
+
+        bool hasIdenticalChains = false;
 
         /**
          * @brief set transmembrane to no and clear data
@@ -249,6 +256,17 @@ namespace Tmdet::VOs {
                     }
                 }
             }
+        }
+
+        /**
+         * @brief number of selected chains
+         */
+        int numberOfSelectedChains() {
+            int ret = 0;
+            for(const auto& chain: chains) {
+                ret += (chain.selected?1:0);
+            }
+            return ret;
         }
     };
 }

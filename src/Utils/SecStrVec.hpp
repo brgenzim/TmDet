@@ -25,17 +25,17 @@ namespace Tmdet::Utils {
             bool getNextRegion(Tmdet::VOs::Chain& chain, int& begin, int& end) const;
             bool getNextNotUnkown(Tmdet::VOs::Chain& chain, int& begin) const;
             bool getNextSame(Tmdet::VOs::Chain& chain, const int& begin, int& end) const;
-            Tmdet::VOs::SecStrVec getVector(Tmdet::VOs::Chain& chain, int begin, int end) const;
+            Tmdet::VOs::SecStrVec getVector(const Tmdet::VOs::Chain& chain, int begin, int end) const;
             Tmdet::VOs::SecStrVec getAlphaVector(const Tmdet::VOs::Chain& chain, const int begin, const int end) const;
             gemmi::Vec3 getMeanPosition(const Tmdet::VOs::Chain& chain, const int pos) const;
-            Tmdet::VOs::SecStrVec getBetaVector(Tmdet::VOs::Chain& chain, int begin, int end) const;
-            const gemmi::Atom* getCa(Tmdet::VOs::Chain& chain, int begin, int end) const;
-            void checkAlphaVectorsForSplitting();
-            bool isStraight(const Tmdet::VOs::Chain& chain, const int beg, const int end);
-            std::vector<Tmdet::VOs::SecStrVec> splitAlphaVector(const Tmdet::VOs::SecStrVec& vector);
-            void getStraightVector(Tmdet::VOs::Chain& chain, int& beg, int& end);
-            void checkAlphaVectorsForMerging();
-            bool checkAlphaVectorForMerging(const Tmdet::VOs::SecStrVec& v1, const Tmdet::VOs::SecStrVec& v2);
+            Tmdet::VOs::SecStrVec getBetaVector(const Tmdet::VOs::Chain& chain, int begin, int end) const;
+            const gemmi::Atom* getCa(const Tmdet::VOs::Chain& chain, int begin, int end) const;
+            void checkVectorsForSplitting();
+            bool isStraight(const Tmdet::VOs::Chain& chain, const int beg, const int end, const Tmdet::Types::SecStruct& type);
+            std::vector<Tmdet::VOs::SecStrVec> splitVector(const Tmdet::VOs::SecStrVec& vector);
+            void getStraightVector(Tmdet::VOs::Chain& chain, int& beg, int& end,const Tmdet::Types::SecStruct& type);
+            void checkVectorsForMerging();
+            bool checkVectorForMerging(const Tmdet::VOs::SecStrVec& v1, const Tmdet::VOs::SecStrVec& v2);
             Tmdet::VOs::SecStrVec mergeVectors(const Tmdet::VOs::SecStrVec& v1, const Tmdet::VOs::SecStrVec& v2) const;
 
         public:

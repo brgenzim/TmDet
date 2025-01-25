@@ -43,8 +43,13 @@ namespace Tmdet::Utils {
 
     bool Symmetry::searchForRotatedChains(const std::vector<std::string>& chainIds) {
         std::string ids = "";
+        int i=0;
         for(const auto& c: chainIds) {
             ids += c+":";
+            i++;
+        }
+        if (i>0) {
+            protein.hasIdenticalChains = true;
         }
         DEBUG_LOG("Processing Symmetry::searchForRotatedChains({})",ids);
         int numChains = 0 ;
@@ -82,7 +87,7 @@ namespace Tmdet::Utils {
         getSymmetryOperand( R, t1, t2, curSim);
         double distance = (t2 - t1).squaredNorm();
         DEBUG_LOG("results {} {} distance: {} rmsd: {}",cidx1,cidx2,distance,rmsd);
-        if (distance > 2.0 && rmsd < 10 ) {
+        if (distance > 2.0 && rmsd < 25 ) {
             curSim.good = true;
         }
         sim.emplace_back(curSim);

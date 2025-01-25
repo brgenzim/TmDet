@@ -47,6 +47,8 @@ namespace Tmdet::Engine {
              */
             Tmdet::Engine::RegionHandler regionHandler;
 
+            double ifhAngleLimit = 15;
+
             /**
              * @brief the main entry point for annotation
              */
@@ -65,17 +67,14 @@ namespace Tmdet::Engine {
             /**
              * @brief remedite small errors in raw region data
              * 
-             * @param chain 
              * @param what 
              */
-            void smoothRegions(Tmdet::VOs::Chain& chain, std::string what);
+            void smoothRegions(std::string what);
 
             /**
              * @brief detect small loops between two membrane segments
-             * 
-             * @param chain 
              */
-            void detectLoops(Tmdet::VOs::Chain& chain);
+            void detectLoops();
 
             /**
              * @brief detect loop between two membrane segment
@@ -85,6 +84,8 @@ namespace Tmdet::Engine {
              * @param end 
              */
             void detectLoop(Tmdet::VOs::Chain& chain, int beg, int end);
+
+            double maxDist(Tmdet::VOs::Chain& chain, int pos, int beg, int end, int dir);
 
             /**
              * @brief detect if a region has element from the other side

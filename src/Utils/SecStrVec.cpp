@@ -42,12 +42,12 @@ namespace Tmdet::Utils {
                 begin = end;
             }
         }
-        checkAlphaVectorsForSplitting();
+        checkVectorsForSplitting();
         if (protein.secStrVecs.size()>1) {
-            checkAlphaVectorsForMerging();
+            checkVectorsForMerging();
         }
         for(unsigned long int i=0; auto& vector: protein.secStrVecs) {
-            DEBUG_LOG("{}",Tmdet::DTOs::SecStrVec::toString(protein,vector));
+           // DEBUG_LOG("{}",Tmdet::DTOs::SecStrVec::toString(protein,vector));
             for (int j=vector.begResIdx; j<=vector.endResIdx; j++) {
                 protein.chains[vector.chainIdx].residues[j].secStrVecIdx = (int)i;
             }
@@ -81,8 +81,8 @@ namespace Tmdet::Utils {
         return true;
     }
 
-    Tmdet::VOs::SecStrVec SecStrVec::getVector(Tmdet::VOs::Chain& chain, int begin, int end) const {
-        DEBUG_LOG("SecStrVec to define: {}-{}-{}::{}",
+    Tmdet::VOs::SecStrVec SecStrVec::getVector(const Tmdet::VOs::Chain& chain, int begin, int end) const {
+        DEBUG_LOG("getVector: {}-{}-{}::{}",
             chain.id,chain.residues[begin].authId,chain.residues[end].authId,
             chain.residues[begin].ss.code);
         return (chain.residues[begin].ss.isAlpha()?
@@ -91,31 +91,37 @@ namespace Tmdet::Utils {
     }
 
     Tmdet::VOs::SecStrVec SecStrVec::getAlphaVector(const Tmdet::VOs::Chain& chain, const int begin, const int end) const {
-        /*auto b = getMeanPosition(chain,begin);
-        auto e = getMeanPosition(chain,end-2);
-        auto v = (e -b).normalized();
-        b -= 1 * v;
-        e += 2 * v;*/
-        auto co = gemmi::Vec3(0,0,0);
-        auto centre = gemmi::Vec3(0,0,0);
-        bool first = true;
-        gemmi::Vec3 firstCa;
-        gemmi::Vec3 lastCa;
-        for (int i=begin; i<=end; i++) {
-            if (chain.residues[i].temp.contains("co")) {
-                co += any_cast<gemmi::Vec3>(chain.residues[i].temp.at("co"));
-                centre += any_cast<gemmi::Vec3>(chain.residues[i].temp.at("ca"));
-                if (first) {
-                    firstCa = centre;
-                    first = false;
-                }
-                lastCa = any_cast<gemmi::Vec3>(chain.residues[i].temp.at("ca"));
-            }
+        gemmi::Vec3 b;
+        gemmi::Vec3 e;
+        if (chain.type == Tmdet::Types::ChainType::LOW_RES) {
+            b = getMeanPosition(chain,begin);
+            e = getMeanPosition(chain,end-2);
+            auto v = (e -b).normalized();
+            b -= 1 * v;
+            e += 2 * v;
         }
-        centre /= (end-begin+1);
-        co /= co.length();
-        auto b = centre + (firstCa.dot(co) - centre.dot(co)) * co;
-        auto e = centre + (lastCa.dot(co) - centre.dot(co)) * co;
+        else {
+            auto co = gemmi::Vec3(0,0,0);
+            auto centre = gemmi::Vec3(0,0,0);
+            bool first = true;
+            gemmi::Vec3 firstCa;
+            gemmi::Vec3 lastCa;
+            for (int i=begin; i<=end; i++) {
+                if (chain.residues[i].temp.contains("co")) {
+                    co += any_cast<gemmi::Vec3>(chain.residues[i].temp.at("co"));
+                    centre += any_cast<gemmi::Vec3>(chain.residues[i].temp.at("ca"));
+                    if (first) {
+                        firstCa = centre;
+                        first = false;
+                    }
+                    lastCa = any_cast<gemmi::Vec3>(chain.residues[i].temp.at("ca"));
+                }
+            }
+            centre /= (end-begin+1);
+            co /= co.length();
+            b = centre + (firstCa.dot(co) - centre.dot(co)) * co;
+            e = centre + (lastCa.dot(co) - centre.dot(co)) * co;
+        }
         return Tmdet::VOs::SecStrVec({
             Tmdet::Types::SecStructType::H,
             b, e, chain.idx, begin, end
@@ -139,7 +145,7 @@ namespace Tmdet::Utils {
         return vec;
     }
 
-    Tmdet::VOs::SecStrVec SecStrVec::getBetaVector(Tmdet::VOs::Chain& chain, int begin, int end) const {
+    Tmdet::VOs::SecStrVec SecStrVec::getBetaVector(const Tmdet::VOs::Chain& chain, int begin, int end) const {
         auto ca = getCa(chain,begin,end);
         auto b = gemmi::Vec3(ca->pos);
         ca = getCa(chain,end,begin);
@@ -153,7 +159,7 @@ namespace Tmdet::Utils {
         });
     }
 
-    const gemmi::Atom* SecStrVec::getCa(Tmdet::VOs::Chain& chain, int begin, int end) const {
+    const gemmi::Atom* SecStrVec::getCa(const Tmdet::VOs::Chain& chain, int begin, int end) const {
         int direction = (end-begin) / std::abs(end-begin);
         auto i = begin;
         while((direction == 1 && i<end) || (direction == -1 && i>end)) {
@@ -172,63 +178,82 @@ namespace Tmdet::Utils {
         return (gemmi::Atom*)nullptr;
     }
 
-    void SecStrVec::checkAlphaVectorsForSplitting() {
+    void SecStrVec::checkVectorsForSplitting() {
         auto vectors = protein.secStrVecs;
         protein.secStrVecs.clear();
         for(auto& vector: vectors) {
-            if (vector.type.isAlpha() && !isStraight(protein.chains[vector.chainIdx],vector.begResIdx,vector.endResIdx)) {
-                for (auto part: splitAlphaVector(vector)) {
-                    protein.secStrVecs.emplace_back(part);
+            if (vector.type.isAlpha()) {
+                if (!isStraight(protein.chains[vector.chainIdx],vector.begResIdx,vector.endResIdx,vector.type)) {
+                    for (auto part: splitVector(vector)) {
+                        DEBUG_LOG("Splitted: {}",Tmdet::DTOs::SecStrVec::toString(protein,part));
+                        protein.secStrVecs.emplace_back(part);
+                    }
+                }
+                else {
+                    DEBUG_LOG("Straigth: {}",Tmdet::DTOs::SecStrVec::toString(protein,vector));
+                    protein.secStrVecs.emplace_back(vector);
                 }
             }
             else {
+                DEBUG_LOG("Not alpha: {}",Tmdet::DTOs::SecStrVec::toString(protein,vector));
                 protein.secStrVecs.emplace_back(vector);
             }
         }
     }
 
-    bool SecStrVec::isStraight(const Tmdet::VOs::Chain& chain, const int beg, const int end) {
+    bool SecStrVec::isStraight(const Tmdet::VOs::Chain& chain, const int beg, const int end, const Tmdet::Types::SecStruct& type) {
         if (end-beg<3) {
             return true;
         }
-        auto vec = getAlphaVector(chain,beg,end);
+        auto vec = (getVector(chain,beg,end));
         for (int i=beg; i<=end; i++) {
             auto ca = chain.residues[i].getCa();
-            if (ca !=nullptr && Tmdet::Helpers::Vector::distanceFromLine(vec.begin, vec.end, ca->pos) > 2.9) {
+            if (ca !=nullptr && Tmdet::Helpers::Vector::distanceFromLine(vec.begin, vec.end, ca->pos) > (type.isAlpha()?5.5:16.0)) {
                 return false;
             }
         }
         return true;
     }
 
-    std::vector<Tmdet::VOs::SecStrVec> SecStrVec::splitAlphaVector(const Tmdet::VOs::SecStrVec& vector) {
+    std::vector<Tmdet::VOs::SecStrVec> SecStrVec::splitVector(const Tmdet::VOs::SecStrVec& vector) {
+        DEBUG_LOG("Processing splitVector()");
         std::vector<Tmdet::VOs::SecStrVec> ret;
         Tmdet::VOs::Chain& chain = protein.chains[vector.chainIdx];
         int beg = vector.begResIdx;
         int end = vector.endResIdx;
-        getStraightVector(chain,beg,end);
-        ret.push_back(getAlphaVector(chain,beg,end));
-        if(!isStraight(chain,vector.begResIdx,beg)) {
-            for(auto part: splitAlphaVector(getAlphaVector(chain,vector.begResIdx,beg))) {
+        getStraightVector(chain,beg,end,vector.type);
+        ret.push_back(getVector(chain,beg,end));
+        if(!isStraight(chain,vector.begResIdx,beg,vector.type)) {
+            for(auto part: splitVector(getVector(chain,vector.begResIdx,beg))) {
                 ret.push_back(part);
             }
         }
-        if(!isStraight(chain,end+1,vector.endResIdx)) {
-            for(auto part: splitAlphaVector(getAlphaVector(chain,end+1,vector.endResIdx))) {
+        else {
+            if (beg-vector.begResIdx > 3) {
+                ret.push_back(getVector(chain,vector.begResIdx,beg-1));
+            }
+        }
+        if(!isStraight(chain,end+1,vector.endResIdx,vector.type)) {
+            for(auto part: splitVector(getVector(chain,end+1,vector.endResIdx))) {
                 ret.push_back(part);
             }
         }
+        else {
+            if (vector.endResIdx-end > 3)
+            ret.push_back(getVector(chain,end+1,vector.endResIdx));
+        }
+        DEBUG_LOG("Processed splitVector()");
         return ret;
     }
 
-    void SecStrVec::getStraightVector(Tmdet::VOs::Chain& chain, int& beg, int& end) {
+    void SecStrVec::getStraightVector(Tmdet::VOs::Chain& chain, int& beg, int& end,const Tmdet::Types::SecStruct& type) {
         int maxLength = 0;
         int newBegin = beg;
         int newEnd = end;
         for(int i=beg; i<=end-4; i++) {
             for (int j=i+4; j<end; j++) {
                 int length = j-i+1;
-                if (isStraight(chain,i,j) && length>maxLength) {
+                if (isStraight(chain,i,j,type) && length>maxLength) {
                     maxLength = length;
                     newBegin = i;
                     newEnd = j;
@@ -242,16 +267,15 @@ namespace Tmdet::Utils {
         end = newEnd;
     }
 
-    void SecStrVec::checkAlphaVectorsForMerging() {
+    void SecStrVec::checkVectorsForMerging() {
         auto vectors = protein.secStrVecs;
         protein.secStrVecs.clear();
         unsigned long int i = 0;
         unsigned long step = 1;
         while (i<vectors.size()-1) {
-            DEBUG_LOG("checkAlphaVectorsForMerging: {} and {}",
-                Tmdet::DTOs::SecStrVec::toString(protein,vectors[i]),
-                Tmdet::DTOs::SecStrVec::toString(protein,vectors[i+1]));
-            if (vectors[i].type.isAlpha() && vectors[i+1].type.isAlpha() && checkAlphaVectorForMerging(vectors[i],vectors[i+1])) {
+            if (vectors[i].type == vectors[i+1].type 
+                && vectors[i].type.isAlpha()
+                && checkVectorForMerging(vectors[i],vectors[i+1])) {
                 protein.secStrVecs.emplace_back(mergeVectors(vectors[i],vectors[i+1]));
                 step = 2;
             }
@@ -266,13 +290,15 @@ namespace Tmdet::Utils {
         }
     }
 
-    bool SecStrVec::checkAlphaVectorForMerging(const Tmdet::VOs::SecStrVec& v1, const Tmdet::VOs::SecStrVec& v2) {
+    bool SecStrVec::checkVectorForMerging(const Tmdet::VOs::SecStrVec& v1, const Tmdet::VOs::SecStrVec& v2) {
         double d = v1.end.dist(v2.begin);
-        DEBUG_LOG("check merge {} {}-{}: {}",
-            protein.chains[v1.chainIdx].id,v1.endResIdx,v2.begResIdx,d);
+        double angle = Tmdet::Helpers::Vector::angle((v1.end-v1.begin),(v2.end-v2.begin));
+        DEBUG_LOG("check merge {} {}-{}: {} {}",
+            protein.chains[v1.chainIdx].id,v1.endResIdx,v2.begResIdx,d,angle);
         return (d < TMDET_SECSTRVEC_MERGE_DIST
                 && v1.chainIdx==v2.chainIdx
-                && isStraight(protein.chains[v1.chainIdx],v1.begResIdx,v2.endResIdx)
+                && isStraight(protein.chains[v1.chainIdx],v1.begResIdx,v2.endResIdx,v1.type)
+                && angle < 20
         );
     }
 

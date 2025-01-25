@@ -53,5 +53,14 @@ namespace Tmdet::DTOs {
          * @return int 
          */
         static int getEntityIdx(const std::vector<gemmi::Entity> entities, const std::string entityId);
+
+        /**
+         * @brief detect low resolution (only backbone atoms)
+         *        and unselect chain if number of residues is below
+         *        a certain limit
+         * 
+         * @param chain 
+         */
+        static void detectResolution(Tmdet::VOs::Chain& chainVO);
     };
 }

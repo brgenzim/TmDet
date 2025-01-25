@@ -118,36 +118,35 @@ namespace Tmdet::Engine {
                 while(getNext<T>(chain,beg,end,"type")) {
                     auto begType = any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("type"));
                     DEBUG_LOG("Finalize checks: {}:{}-{}:{}",chain.id,chain.residues[beg].authId,chain.residues[end-1].authId,begType.code);
+                    // 1111MM..MM111 or 111BB..BB1111 or 111HH..HH111
                     if ((begType.isAnnotatedTransMembraneType() 
                             || begType.isNotAnnotatedMembrane())
                         && beg>0
                         && end<chain.length-1
                         && chain.residues[beg-1].selected
                         && chain.residues[end].selected
+                        && chain.residues[beg].authId - chain.residues[beg-1].authId == 1
+                        && chain.residues[end].authId - chain.residues[end-1].authId == 1
                         && any_cast<Tmdet::Types::Region>(chain.residues[beg-1].temp.at("type")).isNotMembrane()
                         && any_cast<Tmdet::Types::Region>(chain.residues[beg-1].temp.at("type")).code ==
                             any_cast<Tmdet::Types::Region>(chain.residues[end].temp.at("type")).code) {
+                                DEBUG_LOG("rule: 1111MM..MM111 or 111BB..BB1111 or 111HH..HH111");
+                                DEBUG_LOG("{}::{} and {}::{}",
+                                    chain.residues[beg-1].authId,chain.residues[beg].authId,
+                                    chain.residues[end-1].authId,chain.residues[end].authId);
                         replace(chain,beg,end-1,any_cast<Tmdet::Types::Region>(chain.residues[end].temp.at("ztype")));
                     }
+                    //short B or H or M at the end of the chain
                     if ((begType.isAnnotatedTransMembraneType()
                             || begType.isNotAnnotatedMembrane())
                         && (beg==0 || end == chain.length-1)
-                        && end-beg < (begType.isBeta()?5:10)
+                        && end-beg < (begType.isBeta()?3:10)
                         && chain.residues[beg].selected
                         && chain.residues[end].selected ) {
                         replace(chain,beg,end-1,(beg==0?any_cast<Tmdet::Types::Region>(chain.residues[end].temp.at("ztype")):
-                                                    any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("ztype"))));
+                            any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("ztype"))));
                     }
-                    if (begType.isMembraneInside()
-                        && end - beg < 6
-                        && beg>0
-                        && end<chain.length-1
-                        && chain.residues[beg-1].selected
-                        && chain.residues[end].selected
-                        && any_cast<Tmdet::Types::Region>(chain.residues[beg-1].temp.at("type")).isBeta()
-                        && any_cast<Tmdet::Types::Region>(chain.residues[end].temp.at("type")).isBeta()) {
-                        replace(chain,beg,end-1,Tmdet::Types::RegionType::BETA);
-                    }
+                    // any MMM anywhere that not handled so far
                     if (any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("type")).isNotAnnotatedMembrane()) {
                         replace(chain,beg,end-1,any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("ztype")));
                         if (end-beg>4) {

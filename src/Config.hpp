@@ -26,6 +26,8 @@
 
 #define DEFAULT_PDBTM_DATA_ROOT "/tmp/PDBTM"
 
+#define DEFAULT_CCTOP_METHODS_ROOT "/opt/cctopMethods"
+
 #define DEFAULT_UNITMP_SCHEMA "https://"
 #define DEFAULT_UNITMP_DOMAIN "unitmp.org"
 
@@ -37,7 +39,6 @@
 #define TMDET_TINY 1e-10
 #define TMDET_CURVED_MEMBRANE_MAX_HALFTHICKNESS 14
 #define TMDET_SECSTRVEC_MERGE_DIST 6.0
-#define TMDET_IFH_LIMIT 0.1
 
 #ifndef TMDET_LOG_LEVEL
 #define TMDET_LOG_LEVEL "off"
@@ -53,6 +54,7 @@ extern Tmdet::System::Logger logger;
 namespace Tmdet {
     static std::vector<std::string> ANTIBODY_NAMES = {
         "ANTIBODY",
+        "GLUEBODY",
         "NANOBODY",
         "MEGABODY",
         "MONOBODY",

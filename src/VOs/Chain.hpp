@@ -87,6 +87,8 @@ namespace Tmdet::VOs {
          */
         Tmdet::Types::Chain type = Tmdet::Types::ChainType::UNK;
 
+        bool isTmp = false;
+
         /**
          * @brief transform atom coordinates in the chain
          * 

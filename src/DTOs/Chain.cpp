@@ -17,6 +17,7 @@
 #include <DTOs/Residue.hpp>
 #include <Helpers/String.hpp>
 #include <System/Logger.hpp>
+#include <System/Environment.hpp>
 #include <VOs/Protein.hpp>
 #include <VOs/Chain.hpp>
 #include <VOs/Residue.hpp>
@@ -32,7 +33,8 @@ namespace Tmdet::DTOs {
             chainVO.entityId = chain.residues[0].entity_id;
             chainVO.labelId = poly.subchain_id();
             chainVO.entityIdx = getEntityIdx(protein.entities,chainVO.labelId);
-            if (chainVO.entityIdx != -1) {
+            if (chainVO.entityIdx != -1 
+                && protein.entities[chainVO.entityIdx].polymer_type == gemmi::PolymerType::PeptideL) {
                 chainVO.selected = true;
                 auto sequence = protein.entities[chainVO.entityIdx].full_sequence;
                 chainVO.seq = gemmi::one_letter_code(sequence);
@@ -42,6 +44,12 @@ namespace Tmdet::DTOs {
                     chainVO.residues.emplace_back(Tmdet::DTOs::Residue::get(residue,chainIdx,residueIdx++));
                 }
                 chainVO.length = residueIdx;
+                if (chainVO.length > 0) {
+                    detectResolution(chainVO);
+                }
+                else {
+                    chainVO.selected = false;
+                }
             }
         }
         return chainVO;
@@ -82,6 +90,23 @@ CHAIN idx:{} authId:{} labelId:{} entityId:{} entityIdx:{} length:{} selected:{}
         }
         WARN_LOG("Could not find entity: >>{}<<",entityId);
         return -1;
+    }
+
+    void Chain::detectResolution(Tmdet::VOs::Chain& chainVO) {
+        int nr = 0;
+        int nb = 0;
+        for (const auto& residue : chainVO.residues) {
+            nr += (residue.hasAllSideChainAtoms()?1:0);
+            nb += (residue.hasOnlyBackBoneAtoms()?1:0);
+        }
+        DEBUG_LOG("selectChain: id:{} nr:{} nb:{}",chainVO.id,nr,nb);
+        if (nb > nr) {
+            chainVO.type = Tmdet::Types::ChainType::LOW_RES;
+            DEBUG_LOG("Low Resolution chain: {}",chainVO.id);
+        }
+        if (nr+nb < std::stoi(environment.get("TMDET_MIN_NUMBER_OF_RESIDUES_IN_CHAIN",DEFAULT_TMDET_MIN_NUMBER_OF_RESIDUES_IN_CHAIN))) {
+            chainVO.selected = false;
+        }
     }
 
 }

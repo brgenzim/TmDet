@@ -48,5 +48,15 @@ namespace Tmdet::VOs {
          * @brief index of the last residues in the chain value object
          */
         int endResIdx;
+
+        /**
+         * @brief beta sheet index
+         */
+        int sheetIdx = -1;
+
+        /**
+         * @brief beta barrel index
+         */
+        int barrelIdx = -1;
     };
 }

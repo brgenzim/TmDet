@@ -33,7 +33,7 @@ namespace Tmdet::Engine {
 
     void Organizer::run() {
         DEBUG_LOG("Processing Organizer::run()");
-        if (selectChains()) {
+        if (protein.numberOfSelectedChains() > 0) {
             surface();
             if (args.getValueAsBool("cm")) {
                 DEBUG_LOG("Curved optimization");
@@ -44,7 +44,9 @@ namespace Tmdet::Engine {
                 DEBUG_LOG("Plane optimization");
                 optimizer = std::make_unique<PlaneOptimizer>(protein,args);
             }
-            checkSymmetry();
+            if (!args.getValueAsBool("ns")) {
+                checkSymmetry();
+            }
 
             if (!protein.tmp) {
                 optimizer->searchForMembraneNormal();
@@ -67,40 +69,6 @@ namespace Tmdet::Engine {
         return optimizer->getBestNormal();
     }
 
-    unsigned int Organizer::selectChains() {
-        DEBUG_LOG("Processing Organizer::selectChains()");
-        unsigned int ret = 0;
-        for (auto& chain : protein.chains) {
-            if (chain.selected) {
-                ret += selectChain(chain);
-            }
-        }
-        DEBUG_LOG(" Processed Organizer::selectChains(). Return: {}",ret);
-        return ret;
-    }
-
-    unsigned int Organizer::selectChain(Tmdet::VOs::Chain& chain) {
-        if (protein.gemmi.entities[chain.entityIdx].polymer_type != gemmi::PolymerType::PeptideL ) {
-            chain.selected = false;
-            return 0;
-        }
-        int nr = 0;
-        int nb = 0;
-        for (const auto& residue : chain.residues) {
-            nr += (residue.hasAllSideChainAtoms()?1:0);
-            nb += (residue.hasOnlyBackBoneAtoms()?1:0);
-        }
-        DEBUG_LOG("selectChain: id:{} nr:{} nb:{}",chain.id,nr,nb);
-        if (nb > nr) {
-            chain.type = Tmdet::Types::ChainType::LOW_RES;
-            DEBUG_LOG("Low Resolution chain: {}",chain.id);
-        }
-        if (nr+nb < std::stoi(environment.get("TMDET_MIN_NUMBER_OF_RESIDUES_IN_CHAIN",DEFAULT_TMDET_MIN_NUMBER_OF_RESIDUES_IN_CHAIN))) {
-            chain.selected = false;
-        }
-        return chain.selected?1:0;
-    }
-
     void Organizer::surface() {
         DEBUG_LOG("Processing Organizer::surface()");
         auto surf = Tmdet::Utils::Surface(protein,args.getValueAsBool("nc"));
@@ -113,10 +81,15 @@ namespace Tmdet::Engine {
         if (auto oligomerChains = Tmdet::Utils::Oligomer::getHomoOligomerEntities(protein.gemmi); !oligomerChains.empty()) {
             auto symmetry = Tmdet::Utils::Symmetry(protein);
             auto axes = symmetry.getMembraneAxes();
-            for(const auto& normal: axes) {
+            for(auto& normal: axes) {
                 optimizer->setNormal(normal);
                 optimizer->clear();
                 optimizer->testMembraneNormal();
+                if (optimizer->getType() == "Curved") {
+                    normal *= -1.0;
+                    optimizer->setNormal(normal);
+                    optimizer->testMembraneNormal();
+                }
                 optimizer->setMembranesToProtein();
             }
         }

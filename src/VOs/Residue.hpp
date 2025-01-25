@@ -73,6 +73,8 @@ namespace Tmdet::VOs {
          */
         double outSurface = 0.0;
 
+        double apol = 0.0;
+
         /**
          * @brief type of the residue
          */

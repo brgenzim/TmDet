@@ -24,7 +24,17 @@ namespace Tmdet::VOs {
         double surf = 0.0;
 
         /**
-         * @brief ratio of straight element in the slice
+         * @brief ratio of alpha helices in the slice
+         */
+        double alpha = 0.0;
+
+        /**
+         * @brief ratio of beta sheets in the slice
+         */
+        double beta = 0.0;
+
+        /**
+         * @brief ration of straigth elemens (alpha plus beta)
          */
         double straight = 0.0;
 

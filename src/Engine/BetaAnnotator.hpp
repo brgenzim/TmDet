@@ -24,92 +24,77 @@ namespace Tmdet::Engine {
     class BetaAnnotator {
         private:
             /**
-             * @brief chain value object
+             * @brief protein value object
              */
-            Tmdet::VOs::Chain& chain;
+            Tmdet::VOs::Protein& protein;
 
             /**
              * @brief region handler 
              */
             Tmdet::Engine::RegionHandler& regionHandler;
             
+            int numSheets=0;
+            std::vector<int> sheetIndex;
+            std::vector<std::vector<int>> connectome;
+            
+
             /**
              * @brief main entry point of beta annotation
              */
             void run();
 
             /**
-             * @brief initialize temporary data
-             */
-            void init();
-
-            /**
-             * @brief end of beta annotation, destroy temporary data
-             */
-            void end();
-
-            /**
-             * @brief detect beta barrel structure using hydrogen bond
-             *        network and water accessible outline surface
-             */
-            void detectBarrel();
-
-            /**
-             * @brief calculate the number of hydrogen bridges to other sheet
+             * @brief collect sheets those are in the membrane
              * 
-             * @param beg 
-             * @param end 
+             */
+            void getSheets();
+
+            /**
+             * @brief count connected C alpha atoms between sheets
+             * 
+             */
+            void setConnections();
+
+            void cleanConnectome();
+
+            /**
+             * @brief detect connected sheets
+             */
+            void detectBarrels();
+
+            /**
+             * @brief detect sheet that are part of a beta barrel
+             * 
+             * @param begin 
+             * @param sheetNum 
+             * @param prevSheet 
+             * @param elements 
              * @return int 
              */
-            int otherConnection(int beg, int end);
+            int detectBarrelSheets(int sheetNum, int prevSheet, std::vector<bool>& elements);
 
             /**
-             * @brief calculate of the average otside accessible surface of the
-             *        extended region
+             * @brief Set barrel index to sheets
              * 
-             * @param beg 
-             * @param end 
-             * @return double 
+             * @param elements 
              */
-            double averageOutSurface(int beg, int end);
+            void setIndex(std::vector<bool>& elements);
 
             /**
-             * @brief calculate the average extended residue content of region
+             * @brief Set elements of a barrel in residue level
              * 
-             * @param beg 
-             * @param end 
-             * @return double 
+             * @param chain 
              */
-            double averageBeta(int beg, int end);
+            void setBarrel();
 
-            /**
-             * @brief calculate the average direction in z coordinates of the region
-             * 
-             * @param beg 
-             * @param end 
-             * @return double 
-             */
-            double averageDirection(int beg, int end);
-
-            /**
-             * @brief search for connected hydrogen bridge network
-             * 
-             * @param pos 
-             * @param cluster 
-             * @param count 
-             * @return int 
-             */
-            int setCluster(int pos, int cluster, int count);
+            int numConnects(Tmdet::VOs::Chain& chain, int pos);
 
             /**
              * @brief detect turns between extended regions
              */
             void detectLoops();
 
-            /**
-             * @brief detect residues being inside the beta barrel
-             */
-            void detectBarrelInside();
+            
             
         public:
             /**
@@ -118,8 +103,9 @@ namespace Tmdet::Engine {
              * @param chain 
              * @param regionHandler 
              */
-            explicit BetaAnnotator(Tmdet::VOs::Chain& chain, Tmdet::Engine::RegionHandler& regionHandler) :
-                chain(chain),
+            explicit BetaAnnotator(Tmdet::VOs::Protein& protein,
+                Tmdet::Engine::RegionHandler& regionHandler) :
+                protein(protein),
                 regionHandler(regionHandler) {
                     run();
                 }
@@ -128,5 +114,10 @@ namespace Tmdet::Engine {
              * @brief Destroy the Beta Annotator object
              */
             ~BetaAnnotator()=default;
+
+            /**
+             * @brief detect residues being inside the beta barrel
+             */
+            void detectBarrelInside(Tmdet::VOs::Chain& chain);
     };
 }

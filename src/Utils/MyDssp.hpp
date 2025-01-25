@@ -19,6 +19,9 @@ namespace Tmdet::Utils {
             void end();
             void setCO();
             void setAngle();
+            void setHelix();
+            void setExtended();
+            void removeMins(std::string what);
 
         public:
             explicit MyDssp(Tmdet::VOs::Protein& protein) : 

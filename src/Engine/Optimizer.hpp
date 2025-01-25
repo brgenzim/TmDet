@@ -104,7 +104,9 @@ namespace Tmdet::Engine {
             double maxCurvedHalfThickness;
             double lowerQ;
             double higherQ;
-
+            double higherQ2;
+            double ifhAngleLimit;
+            int ifhResLimit;
             /**
              * @brief initialize the algorithm
              */
@@ -269,6 +271,15 @@ namespace Tmdet::Engine {
              * @brief clear former results
              */
             void clear();
+
+            /**
+             * @brief Get the type of the optimizer
+             * 
+             * @return std::string 
+             */
+            std::string getType() const {
+                return type;
+            }
 
     };
 }

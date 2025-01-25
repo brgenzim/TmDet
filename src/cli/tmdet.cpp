@@ -27,6 +27,7 @@
 #include <System/Logger.hpp>
 #include <Utils/Dssp.hpp>
 #include <Utils/MyDssp.hpp>
+#include <Utils/NeighBors.hpp>
 #include <Utils/SecStrVec.hpp>
 #include <VOs/Protein.hpp>
 
@@ -54,7 +55,10 @@ Tmdet::System::Arguments getArguments(int argc, char *argv[]) {
     args.define(false,"r","run","Run the tmdet algorithm on the protein structure","bool","false");
     args.define(false,"n","not","Set transmembrane='not' in the xml file","bool","false");
     args.define(false,"cm","curved_membrane","Search for curved membrane","bool","false");
+    args.define(false,"dm","duble_membrane","Enable duble membrane mode","bool","false");
     args.define(false,"fr","fragment_analysis","Investigate protein domains/fragments separately","bool","false");
+    args.define(false,"bi","barrel_inside","Indicate chains those are within a barrel (but not part of barrel, like 5iv8)","string","");
+    args.define(false,"ns","no_symmetry","Do not use symmetry axes as membrane normal","bool","false");
     args.define(false,"s","show","Show annotated structure by pymol","bool","false");
     args.define(false,"sp","show","Show parsed structure in the console","bool","false");
     args.define(false,"uc","unselect_chains","Unselect proteins chains","string","");
@@ -66,11 +70,14 @@ Tmdet::System::Arguments getArguments(int argc, char *argv[]) {
     //parameters
     args.define(false,"lq","lower_qvalue","Lower qValue, above it is membrane","float","38");
     args.define(false,"hq","higher_qvalue","Higher qValue, limit for transmembrane type","float","48");
+    args.define(false,"hq2","higher_qvalue2","Higher qValue2, limit for second membrane","float","55");
     args.define(false,"minht","minimum_of_half_thickness","Minimum value of half thickness","float","7.0");
-    args.define(false,"maxht","maximum_of_half_thickness","Maximum value of half thickness","float","20");
+    args.define(false,"maxht","maximum_of_half_thickness","Maximum value of half thickness","float","18");
     args.define(false,"maxcht","maximum_of_curved_half_thickness","Maximum value of half thickness for curved membrane detection","float","14");
     args.define(false,"hml","hydrph_limit","Hydrophobicity momentum limit for ifh detection","float","0.0"/*"1.6"*/);
-    args.define(false,"as","avg_surface","Average free solvent accessible surface limit for ifh detection","float","0"/*"40"*/);
+    args.define(false,"ias","ifh_avg_surface","Average free solvent accessible surface limit for ifh detection","float","0"/*"40"*/);
+    args.define(false,"ian","ifh_angle","Maximum angle between membrane plane and ifh","float","25");
+    args.define(false,"irl","ifh_res_limit","Minimum number of residues in ifhs (all together)","int","10");
     
     args.set(argc,argv);
     args.check();
@@ -133,6 +140,8 @@ int main(int argc, char *argv[], char **envp) {
         exit(EXIT_FAILURE);
     }
     auto protein = Tmdet::DTOs::Protein::get(pdbInputPath);
+    protein.forceSingleMembrane = !args.getValueAsBool("dm");
+
     if (code != "") {
 	    protein.code = code;
     }
@@ -152,8 +161,9 @@ int main(int argc, char *argv[], char **envp) {
     if (bool r = args.getValueAsBool("r"); r) {
         auto dssp = Tmdet::Utils::Dssp(protein);
         auto mydssp = Tmdet::Utils::MyDssp(protein);
-        //DEBUG_LOG("{}",Tmdet::DTOs::Protein::toString(protein));
         auto ssVec = Tmdet::Utils::SecStrVec(protein);
+        Tmdet::Utils::NeighBors::store(protein);
+
         if (bool fr = args.getValueAsBool("fr"); fr) {
             protein.forceSingleMembrane = true;
             auto fragmenter = Tmdet::Engine::Fragmenter(protein,args);
