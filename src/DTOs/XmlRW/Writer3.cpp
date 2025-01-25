@@ -47,8 +47,8 @@ namespace Tmdet::DTOs::XmlRW {
     void Writer3::setModifications(const std::vector<Tmdet::VOs::Modification>& modifications) {
         for (const auto& mod: modifications) {
             auto node = _root.insert_child_after(XML3_NODE_MODIFICATION, _root.child(XML3_NODE_CREATE_DATE));
-            node.append_child(XML3_NODE_DATE).set_value(mod.date);
-            node.append_child(XML3_NODE_DESCR).set_value(mod.descr); 
+            node.append_child(XML3_NODE_DATE).set_value(mod.date.c_str());
+            node.append_child(XML3_NODE_DESCR).set_value(mod.descr.c_str()); 
         }
     }
 

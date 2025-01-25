@@ -15,6 +15,9 @@ namespace Tmdet::Utils {
         public:
             static constexpr std::string TMDET_MEMBRANE_ASYM_ID = "TM_";
 
+            /**
+             * @brief Util function to get last part of a tag name.
+             */
             static std::string getSuffix(const std::string& tag);
 
             /**

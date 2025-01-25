@@ -24,38 +24,75 @@ namespace Tmdet::Utils {
         return tag.substr(pos + 1);
     }
 
+    void updateStructAssemblyGen(gemmi::cif::Block& block) {
+        // local function
+        auto appendMembraneId = [](const std::string& idList) -> std::string {
+            std::string result{idList};
+            if (idList[0] == ';') {
+                auto insertionPosition = (idList.ends_with("\r\n;"))
+                    ? idList.size() - 3
+                    // otherwise it ends with "\n;"
+                    : idList.size() - 2;
+                result.insert(insertionPosition, "," + CifUtil::TMDET_MEMBRANE_ASYM_ID);
+            } else {
+                result += ("," + CifUtil::TMDET_MEMBRANE_ASYM_ID);
+            }
+            return result;
+        };
+
+        // if this category has pairs
+        auto asymIdListPair = block.find_pair("_pdbx_struct_assembly_gen.asym_id_list");
+        if (asymIdListPair != nullptr) {
+            std::string newList = appendMembraneId((*asymIdListPair)[1]);
+            block.set_pair("_pdbx_struct_assembly_gen.asym_id_list", newList);
+            return;
+        }
+        // if this category is a loop
+        auto asymGenLoopPtr = block.find_loop_item("_pdbx_struct_assembly_gen.assembly_id");
+        if (asymGenLoopPtr == nullptr) {
+            return;
+        }
+        // relevant columns (others will be excluded from the new loop):
+        std::vector<std::string> columns{ "assembly_id", "oper_expression", "asym_id_list" };
+        auto asymGenTable = block.find("_pdbx_struct_assembly_gen.", columns);
+
+        // Collect row values
+        std::vector<std::vector<std::string>> newRows;
+        for (const auto& row : asymGenTable) {
+            newRows.push_back({ row.at(0), row.at(1), row.at(2) });
+        }
+        // _pdbx_struct_assembly_gen.assembly_id
+        // _pdbx_struct_assembly_gen.oper_expression
+        // _pdbx_struct_assembly_gen.asym_id_list
+        auto& newGenLoop = block.init_mmcif_loop("_pdbx_struct_assembly_gen.", columns);
+        for (auto& row : newRows) {
+            // WARNING: need more work to check this is the identity operator
+            if (row[1] == "1") {
+                row[2] = appendMembraneId(row[2]);
+            }
+            newGenLoop.add_row(row);
+        }
+    }
+
     std::string addMembraneEntity(gemmi::cif::Block& block) {
         if (!block.has_mmcif_category("_entity")) {
             throw std::runtime_error("_entity not found");
         }
 
         if (block.has_mmcif_category("_pdbx_struct_assembly_gen")) {
-            // TODO: what if this category is a loop?
-            auto asymIdListPair = block.find_pair("_pdbx_struct_assembly_gen.asym_id_list");
-            if (asymIdListPair != nullptr) {
-                std::string newList = std::format("{},{}", (*asymIdListPair)[1], CifUtil::TMDET_MEMBRANE_ASYM_ID);
-                block.set_pair("_pdbx_struct_assembly_gen.asym_id_list", newList);
-            }
+            updateStructAssemblyGen(block);
         }
 
-        // TODO: find_mmcif_category ???
-        auto entityItemPtr = block.find_loop_item("_entity.id");
-        if (entityItemPtr == nullptr) {
-            entityItemPtr = block.find_pair_item("_entity.id");
-        }
-        auto entityItem = *entityItemPtr;
+        // get entity list as table
 
-        auto entityTable = entityItem.type == gemmi::cif::ItemType::Loop
-            ? block.item_as_table(entityItem)
-            // TODO: use each columns
-            : block.find("_entity.", { "id", "type", "pdbx_description" });
-
-
+        // relevant columns (other columns will be omitted in the output)
         std::vector<std::string> columns{
             "id",
             "type",
             "pdbx_description",
         };
+
+        auto entityTable = block.find("_entity.", columns);
 
         // Collect row values
         std::vector<std::vector<std::string>> newRows;
@@ -176,7 +213,6 @@ namespace Tmdet::Utils {
         }
 
         // Add atoms for membrane representation
-        // TODO:
 
         // colIndex == number of columns
         const auto& membraneAtoms = Tmdet::DTOs::Protein::addMembraneAtoms(protein);
