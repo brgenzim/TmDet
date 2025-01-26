@@ -152,6 +152,8 @@ namespace Tmdet::VOs {
 
         bool hasIdenticalChains = false;
 
+        bool tmFilterResults = false;
+
         /**
          * @brief set transmembrane to no and clear data
          */

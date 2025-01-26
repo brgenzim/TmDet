@@ -15,9 +15,9 @@
 
 namespace Tmdet::Utils {
 
-    bool Filter::run() {
-        bool ret = false;
+    void Filter::run() {
         methodsDir = environment.get("CCTOP_METHODS_ROOT",DEFAULT_CCTOP_METHODS_ROOT);
+        protein.tmFilterResults = false;
         protein.eachSelectedChain(
             [&](Tmdet::VOs::Chain& chain) -> void {
                 if (createTempFasta(chain)) {
@@ -27,11 +27,10 @@ namespace Tmdet::Utils {
                     tmp += runTMHMM(chain.id);
                     DEBUG_LOG("Filter results in {}",tmp);
                     chain.isTmp = (tmp>0);
-                    ret |= chain.isTmp;
+                    protein.tmFilterResults |= chain.isTmp;
                 }
             }
         );
-        return ret;
     }
 
     bool Filter::filePutContents(std::string filePath, std::string content) {

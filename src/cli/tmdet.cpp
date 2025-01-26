@@ -161,19 +161,17 @@ int main(int argc, char *argv[], char **envp) {
     //do the membrane region determination and annotation
     if (bool r = args.getValueAsBool("r"); r) {
         auto filter = Tmdet::Utils::Filter(protein);
-        if (filter.run() ) {
-            auto dssp = Tmdet::Utils::Dssp(protein);
-            auto mydssp = Tmdet::Utils::MyDssp(protein);
-            auto ssVec = Tmdet::Utils::SecStrVec(protein);
-            Tmdet::Utils::NeighBors::store(protein);
+        auto dssp = Tmdet::Utils::Dssp(protein);
+        auto mydssp = Tmdet::Utils::MyDssp(protein);
+        auto ssVec = Tmdet::Utils::SecStrVec(protein);
+        Tmdet::Utils::NeighBors::store(protein);
 
-            if (bool fr = args.getValueAsBool("fr"); fr) {
-                protein.forceSingleMembrane = true;
-                auto fragmenter = Tmdet::Engine::Fragmenter(protein,args);
-            }
-            else {
-                auto organizer = Tmdet::Engine::Organizer(protein, args);
-            }
+        if (bool fr = args.getValueAsBool("fr"); fr) {
+            protein.forceSingleMembrane = true;
+            auto fragmenter = Tmdet::Engine::Fragmenter(protein,args);
+        }
+        else {
+            auto organizer = Tmdet::Engine::Organizer(protein, args);
         }
         protein.version = Tmdet::version();
         protein.date = Tmdet::System::Date::get();

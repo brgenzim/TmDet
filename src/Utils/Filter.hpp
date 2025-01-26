@@ -25,13 +25,15 @@ namespace Tmdet::Utils {
             int parsePhobius(std::string results);
             int parseScampi(std::string results);
             int parseTMHMM(std::string results);
+            void run();
 
         public:
             explicit Filter(Tmdet::VOs::Protein& protein) : 
                 protein(protein) {
+                    run();
             }
             ~Filter()=default;
 
-            bool run();
+            
     };
 }
