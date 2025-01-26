@@ -111,7 +111,7 @@ namespace Tmdet::System {
          * @param hash 
          * @return std::string 
          */
-        static std::string cache(const std::string& hash) {
+        static std::string temp(const std::string& hash) {
             return std::format("{}/{}/{}/{}",
                     environment.get("TMDET_TEMP_ROOT",DEFAULT_TMDET_TEMP_ROOT),
                     hash.substr(0,2), hash.substr(2,2), hash.substr(4,2));

@@ -101,8 +101,7 @@ namespace Tmdet::VOs {
                 }
             }
         }
-        void* sig = hashing::md5::hash(raw);
-        return hashing::md5::sig2hex(sig);
+        return Tmdet::Utils::Md5::getHash(raw);
     }
 
     void Protein::unSelectAll() {

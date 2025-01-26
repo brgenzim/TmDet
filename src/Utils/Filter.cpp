@@ -6,6 +6,9 @@
 
 
 #include <iostream>
+#include <filesystem>
+#include <System/Command.hpp>
+#include <System/FilePaths.hpp>
 #include <Utils/Filter.hpp>
 #include <Utils/Md5.hpp>
 #include <VOs/Chain.hpp>
@@ -22,6 +25,7 @@ namespace Tmdet::Utils {
                     tmp += runPhobius(chain.id);
                     tmp += runScampi(chain.id);
                     tmp += runTMHMM(chain.id);
+                    DEBUG_LOG("Filter results in {}",tmp);
                     chain.isTmp = (tmp>0);
                     ret |= chain.isTmp;
                 }
@@ -42,19 +46,18 @@ namespace Tmdet::Utils {
     }
 
     bool Filter::createTempFasta(Tmdet::VOs::Chain& chain ) {
-        void* sig = hashing::md5::hash(raw);
-        std::string hash =  hashing::md5::sig2hex(sig);
+        std::string hash =  Tmdet::Utils::Md5::getHash(chain.seq);
         tempDir = Tmdet::System::FilePaths::temp(hash);
-        std::filesystem::create_directories(dir);
-        std::string path = dir + "/" + protein.code + "_" + chain.id + ".fas";
+        std::filesystem::create_directories(tempDir);
+        std::string path = tempDir + "/" + protein.code + "_" + chain.id + ".fas";
         bool ret = filePutContents(path,std::format(">{}_{}\n{}",protein.code,chain.id,chain.seq));
-        path = dir + "/list";
-        ret &= filePutContents(path,std::format("{}_{}.fas",protein.code,chain.id));
+        path = tempDir + "/list";
+        ret &= filePutContents(path,std::format("{}/{}_{}.fas",tempDir,protein.code,chain.id));
         return true;
     }
 
     int Filter::runPhobius(std::string id) {
-        std::string cmd = std::format("{}/phobius/phobius.pl {}/{}_{}",
+        std::string cmd = std::format("{}/phobius/phobius.pl {}/{}_{}.fas",
                     methodsDir,tempDir,protein.code,id);
         return parsePhobius(Tmdet::System::Command::run(cmd));
     }
@@ -66,26 +69,22 @@ namespace Tmdet::Utils {
     }
 
     int Filter::runTMHMM(std::string id) {
-        std::string cmd = std::format("{}/tmhmm-2.0c/bin/decodeanhmm.Linux_x86_64 -modelfile {}/tmhmm-2.0c/lib/TMHMM2.0.model < {}/{}_{}.fas",
-                    methodsDir, methodsDir, tempDir, protein.code, id);
+        std::string cmd = std::format("{}/tmhmm-2.0c/bin/decodeanhmm.Linux_x86_64 -f {}/tmhmm-2.0c/lib/TMHMM2.0.options -modelfile {}/tmhmm-2.0c/lib/TMHMM2.0.model < {}/{}_{}.fas",
+                    methodsDir, methodsDir,  methodsDir, tempDir, protein.code, id);
         return parseTMHMM(Tmdet::System::Command::run(cmd));
     }
 
-    int parsePhobius(std::string results) {
-        int ret = 0;
-
-        return ret;
+    int Filter::parsePhobius(std::string results) {
+        return (results.find("FT   TRANSMEM") == std::string::npos?0:1);
     }
 
-    int parseScampi(std::string results) {
-        int ret = 0;
-
-        return ret;
+    int Filter::parseScampi(std::string results) {
+        return (results.find("<label>M</label>") == std::string::npos?0:1);
     }
 
-    int parseTMHMM(std::string results) {
+    int Filter::parseTMHMM(std::string results) {
         int ret = 0;
-
+        return (results.find("MMMMMMMMM") == std::string::npos?0:1);
         return ret;
     }
 }

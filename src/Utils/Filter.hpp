@@ -17,13 +17,21 @@ namespace Tmdet::Utils {
             Tmdet::VOs::Protein& protein;
             std::string tempDir;
             std::string methodsDir;
+            bool filePutContents(std::string filePath, std::string content);
+            bool createTempFasta(Tmdet::VOs::Chain& chain );
+            int runPhobius(std::string id);
+            int runScampi(std::string id);
+            int runTMHMM(std::string id);
+            int parsePhobius(std::string results);
+            int parseScampi(std::string results);
+            int parseTMHMM(std::string results);
 
         public:
             explicit Filter(Tmdet::VOs::Protein& protein) : 
                 protein(protein) {
-                    run();
-            } ;
+            }
             ~Filter()=default;
 
+            bool run();
     };
 }

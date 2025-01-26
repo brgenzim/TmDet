@@ -19,6 +19,7 @@
 #define DEFAULT_TMDET_CACHE_ROOT "/tmp/TmDet/cache"
 #define DEFAULT_TMDET_LOG_DIR "/tmp/TmDet/log"
 #define DEFAULT_TMDET_LOG_FILE "/tmp/TmDet/log/tmdet.log"
+#define DEFAULT_TMDET_TEMP_ROOT "/tmp/TmDet/tmp"
 #define DEFAULT_TMDET_CC_DIR "/tmp/TmDet/data/ccd"
 #define DEFAULT_TMDET_CC_FILE "/tmp/TmDet/data/components.cif.gz"
 #define DEFAULT_TMDET_CC_URL "https://files.wwpdb.org/pub/pdb/data/monomers/components.cif.gz"
