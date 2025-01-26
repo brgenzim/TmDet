@@ -137,11 +137,6 @@ namespace Tmdet::Engine {
             void setDistances();
 
             /**
-             * @brief Set the straightness of a residue
-             */
-            void setStraight();
-
-            /**
              * @brief Set the box containing the protein
              */
             void setBoundaries();

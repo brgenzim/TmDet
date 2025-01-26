@@ -46,7 +46,6 @@ namespace Tmdet::Engine {
         protein.eachSelectedResidue(
             [](Tmdet::VOs::Residue& residue) -> void {
                 residue.temp.try_emplace("dist",std::any(0.0));
-               // residue.temp.try_emplace("straight",std::any(0.0));
                 for(auto& atom: residue.atoms) {
                     atom.temp.try_emplace("dist",std::any(0.0));
                 }
@@ -57,14 +56,22 @@ namespace Tmdet::Engine {
                 for (int i=0; i<chain.length; i++) {
                     if (chain.residues[i].selected) {
                         int k=0;
+                        int w = (chain.residues[i].ss.isBeta()?3:8);
                         double apol = 0;
-                        for (int j=-0; j<=0; j++) {
+                        for (int j=-w; j<=w; j++) {
                             if (i+j>=0&&i+j<chain.length&&chain.residues[i+j].selected) {
-                                apol += (chain.residues[i+j].type.hsc + 12.3 ) / 16.0;
+                                //apol += (chain.residues[i+j].type.hsc + 12.3 ) / 16.0;
+                                apol += chain.residues[i+j].type.apol;
                                 k++;
                             }
                         }
-                        chain.residues[i].apol = apol;
+                        chain.residues[i].apol = apol/k;
+                        double q = (chain.residues[i].type.hsc + 12.3 ) / 16.0;
+                        DEBUG_LOG("APOL: {}:{}({}) w:{} {},{} = {}",
+                            chain.id,chain.residues[i].authId,
+                            chain.residues[i].type.name,
+                            w,chain.residues[i].type.hsc,q,
+                            chain.residues[i].apol);
                     }
                 }
             }
@@ -77,7 +84,6 @@ namespace Tmdet::Engine {
         protein.eachSelectedResidue(
             [](Tmdet::VOs::Residue& residue) -> void {
                 residue.temp.erase("dist");
-               // residue.temp.erase("straight");
                 for(auto& atom: residue.atoms) {
                     atom.temp.erase("dist");
                 }
@@ -114,34 +120,6 @@ namespace Tmdet::Engine {
         DEBUG_LOG(" Processed: Optimizer::setDistances()");
     }
 
-    void Optimizer::setStraight() {
-        DEBUG_LOG("Processing: Optimizer::setStraight()");
-        protein.eachSelectedResidue(
-            [&](Tmdet::VOs::Residue& residue) -> void {
-                if (residue.idx>2 
-                    && residue.idx<protein.chains[residue.chainIdx].length-3
-                    && protein.chains[residue.chainIdx].residues[residue.idx-3].selected
-                    && protein.chains[residue.chainIdx].residues[residue.idx+3].selected) {
-                    double d1 = any_cast<double>(RES(residue,-3).temp.at("dist"));
-                    double d2 = any_cast<double>(residue.temp.at("dist"));
-                    double d3 = any_cast<double>(RES(residue,+3).temp.at("dist"));
-                    auto ca1 = RES(residue,-3).getCa();
-                    auto ca3 = RES(residue,+3).getCa();
-                    double q1 = d2-d1;
-                    double q2 = d3-d2;
-                    double s = 1.0;
-                    if (ca1 != nullptr && ca3 != nullptr and q1*q2>0) {
-                        if (double d = ca1->pos.dist(ca3->pos); d >1.0) {
-                            s = std::abs(d3-d1)/d;
-                        }
-                    }
-                    residue.temp.at("straight") = std::any(s);
-                }
-            }
-        );
-        DEBUG_LOG(" Processed: Optimizer::setStraight()");
-    }
-
     void Optimizer::setBoundaries() {
         DEBUG_LOG("Processing: Optimizer::setBoundaries()");
         minZ = 1e30;
@@ -160,15 +138,13 @@ namespace Tmdet::Engine {
         DEBUG_LOG(" Processed: Optimizer::setBoundaries()");
     }
 
+
+
     void Optimizer::sumupSlices() {
         DEBUG_LOG("Processing: Optimizer::sumupSlices({})",slices.size());
         protein.eachSelectedResidue(
             [&](Tmdet::VOs::Residue& residue) -> void {
                 auto sliceIndex = (unsigned int)(any_cast<double>(residue.temp.at("dist")) - minZ);
-                //if (protein.secStrVecs.size()<10 || protein.chains[residue.chainIdx].type == Tmdet::Types::ChainType::LOW_RES) {
-                //    slices[sliceIndex].straight += any_cast<double>(residue.temp.at("straight"));
-                //    slices[sliceIndex].numCa++;
-                //}
                 if (protein.chains[residue.chainIdx].type == Tmdet::Types::ChainType::LOW_RES) {
                     slices[sliceIndex].surf+=5;
                     slices[sliceIndex].apol += 5*(residue.type.hsc + 12.3 ) / 16.0;
@@ -385,7 +361,6 @@ namespace Tmdet::Engine {
 
     void Optimizer::testMembraneNormalOne() {
         setDistances();
-        //setStraight();
         setBoundaries();
         sumupSlices();
         smoothQValues();
