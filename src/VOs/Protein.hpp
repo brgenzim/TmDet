@@ -270,5 +270,18 @@ namespace Tmdet::VOs {
             }
             return ret;
         }
+
+        /**
+         * @brief number of selected residues
+         */
+        int numberOfSelectedResidues() {
+            int ret = 0;
+            eachSelectedResidue(
+                [&](Tmdet::VOs::Residue& residue) {
+                    ret++;
+                }
+            );
+            return ret;
+        }
     };
 }

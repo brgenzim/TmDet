@@ -158,6 +158,11 @@ int main(int argc, char *argv[], char **envp) {
         Tmdet::DTOs::Protein::unselectChains(uc, protein);
     }
 
+    if (int nr = protein.numberOfSelectedResidues(); nr > 10000) {
+        WARN_LOG("Protein is too large (number of residues:{} > 10.000). Exiting.",nr);
+        exit(EXIT_FAILURE);
+    }
+
     //do the membrane region determination and annotation
     if (bool r = args.getValueAsBool("r"); r) {
         auto filter = Tmdet::Utils::Filter(protein);

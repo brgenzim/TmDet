@@ -221,20 +221,23 @@ namespace Tmdet::DTOs {
 
     void Protein::addPlaneMembraneAtoms(Tmdet::VOs::Protein& protein, const Tmdet::VOs::Membrane& membrane, std::vector<gemmi::Vec3>& ret) {
         double R = membrane.membraneRadius + 10;
-        for (double x=-R; x<=R; x+=5) {
-            for (double y=-R; y<=R; y+=5) {
+        int sign = 1;
+        for (double x=-R; x<=R; x+=7) {
+            for (double y=-R + sign * 3.5; y<=R + sign * 3.5; y+=7) {
                 if (sqrt(x*x+y*y) < R) {
                     ret.push_back(gemmi::Vec3(x,y,membrane.origo+membrane.halfThickness));
                     ret.push_back(gemmi::Vec3(x,y,membrane.origo-membrane.halfThickness));
                 }
+                sign *= -1;
             }
         }
     }
 
     void Protein::addCurvedMembraneAtoms(Tmdet::VOs::Protein& protein, const Tmdet::VOs::Membrane& membrane, std::vector<gemmi::Vec3>& ret) {
-        double R = membrane.membraneRadius + 5;
-        for (double x=-R; x<=R; x+=5) {
-            for (double y=-R; y<=R; y+=5) {
+        double R = membrane.membraneRadius;
+        int sign = 1;
+        for (double x=-R; x<=R; x+=7) {
+            for (double y=-R + sign * 3.5; y<=R + sign * 3.5; y+=7) {
                 if (sqrt(x*x+y*y) < R) {
                     double r = membrane.sphereRadius + membrane.halfThickness;
                     if (r*r > x*x + y*y) {
@@ -247,6 +250,7 @@ namespace Tmdet::DTOs {
                         ret.push_back(gemmi::Vec3(x,y,z));
                     }
                 }
+                sign *= -1;
             }
         }
     }
