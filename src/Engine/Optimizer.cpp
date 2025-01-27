@@ -56,7 +56,7 @@ namespace Tmdet::Engine {
                 for (int i=0; i<chain.length; i++) {
                     if (chain.residues[i].selected) {
                         int k=0;
-                        int w = (chain.residues[i].ss.isBeta()?3:8);
+                        int w = (chain.residues[i].ss.isBeta()?0:8);
                         double apol = 0;
                         for (int j=-w; j<=w; j++) {
                             if (i+j>=0&&i+j<chain.length&&chain.residues[i+j].selected) {
@@ -193,7 +193,7 @@ namespace Tmdet::Engine {
                 }
                 for(int i=dbeg; i<= dend; i++) {
                     if (vector.type.isBeta()) {
-                        slices[i].beta += (cosAngle>0.6?1:cosAngle);
+                        slices[i].beta += (cosAngle>0.7?1:cosAngle);
                     }
                     else {
                         slices[i].alpha += cosAngle;

@@ -262,7 +262,7 @@ namespace Tmdet::Utils {
     }
 
     void Surface::setOutsideSurface() {
-        boundingBox box;
+       /* boundingBox box;
         setBoundingBox(box);
         initFrame(box);
         setFrame(box);
@@ -274,11 +274,12 @@ namespace Tmdet::Utils {
                     box.closestAtoms[z][i]->outSurface = box.closestAtoms[z][i]->surface;
                 }
             }
-        }
+        }*/
         protein.eachSelectedResidue(
             [&](Tmdet::VOs::Residue& residue) -> void {
                 double q = 0;
                 for(auto& atom: residue.atoms) {
+                    atom.outSurface = atom.surface;
                     q += atom.outSurface;
                 }
                 residue.outSurface = q;
