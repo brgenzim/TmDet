@@ -15,18 +15,24 @@
 
 namespace Tmdet::Utils {
 
-    void Filter::run() {
+    void Filter::run(bool applyTmFilter) {
         methodsDir = environment.get("CCTOP_METHODS_ROOT",DEFAULT_CCTOP_METHODS_ROOT);
         protein.tmFilterResults = false;
         protein.eachSelectedChain(
             [&](Tmdet::VOs::Chain& chain) -> void {
-                if (createTempFasta(chain)) {
-                    int tmp = 0;
-                    tmp += runPhobius(chain.id);
-                    tmp += runScampi(chain.id);
-                    tmp += runTMHMM(chain.id);
-                    DEBUG_LOG("Filter results in {}",tmp);
-                    chain.isTmp = (tmp>0);
+                if (applyTmFilter && !chain.hasUnknownResidue()) {
+                    if (createTempFasta(chain)) {
+                        int tmp = 0;
+                        tmp += runPhobius(chain.id);
+                        tmp += runScampi(chain.id);
+                        tmp += runTMHMM(chain.id);
+                        DEBUG_LOG("Filter results in {}",tmp);
+                        chain.isTmp = (tmp>0);
+                        protein.tmFilterResults |= chain.isTmp;
+                    }
+                }
+                else {
+                    chain.isTmp = true;
                     protein.tmFilterResults |= chain.isTmp;
                 }
             }
