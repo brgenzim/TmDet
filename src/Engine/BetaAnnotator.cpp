@@ -45,11 +45,11 @@ namespace Tmdet::Engine {
                     }
                 }
                 double angle = std::abs(90 - Tmdet::Helpers::Vector::angle(gemmi::Vec3(0,0,1),ssVec.end - ssVec.begin));
-                DEBUG_LOG("getSheet: {}:{}-{} = {}",
+                DEBUG_LOG("getSheet: {}:{}-{} = {} {}",
                     protein.chains[ssVec.chainIdx].id,
                     protein.chains[ssVec.chainIdx].residues[ssVec.begResIdx].authId,
                     protein.chains[ssVec.chainIdx].residues[ssVec.endResIdx].authId,
-                    angle);
+                    angle, (inMembrane?"Membrane":"NotMembrane"));
                 if (inMembrane &&  angle > 20) {
                     sheetIndex.push_back(vectorIndex);
                     ssVec.sheetIdx = numSheets++;
@@ -151,16 +151,18 @@ namespace Tmdet::Engine {
     int BetaAnnotator::detectBarrelSheets(int sheetNum, int prevSheet, std::vector<bool>& elements) {
         DEBUG_LOG("Processing BetaAnnotator::detectBarrelSheets: {}->{}",prevSheet,sheetNum);
         int max = 0;
+        double percent = 0.0;
         int maxSheet = -1;
         for (int i=0; i<numSheets; i++) {
             if (max<connectome[sheetNum][i]
                     && protein.secStrVecs[sheetIndex[i]].barrelIdx == -1
                     && !elements[i] ) {
                 max = connectome[sheetNum][i];
+                percent = 100 * max / (protein.secStrVecs[sheetIndex[i]].endResIdx-protein.secStrVecs[sheetIndex[i]].begResIdx+1);
                 maxSheet = i;
             }
         }
-        if (max>4) {
+        if (max>4 || percent > 20) {
             elements[maxSheet] = true;
             //connectome[sheetNum][maxSheet] = 0;
             //connectome[maxSheet][sheetNum] = 0;
