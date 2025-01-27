@@ -122,5 +122,14 @@ namespace Tmdet::VOs {
             return ret;
         }
 
+        bool hasUnknownResidue() {
+            for(const auto& residue: residues) {
+                if (residue.selected && residue.type.name == "UNK") {
+                    return true;
+                }
+            }
+            return false;
+        }
+
     };
 }
