@@ -61,7 +61,7 @@ namespace Tmdet::Engine {
             }
         );
         detectInterfacialHelices();
-        if (int nm = regionHandler.finalize<Tmdet::Types::Region>(); nm>1000) {
+        if (int nm = regionHandler.finalize<Tmdet::Types::Region>(); nm>20) {
             DEBUG_LOG("Too many unhandled membrane segments: {}",nm);
             protein.notTransmembrane();
         }
