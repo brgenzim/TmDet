@@ -158,8 +158,8 @@ int main(int argc, char *argv[], char **envp) {
         Tmdet::DTOs::Protein::unselectChains(uc, protein);
     }
 
-    if (int nr = protein.numberOfSelectedResidues(); nr > 10000) {
-        WARN_LOG("Protein is too large (number of residues:{} > 10.000). Exiting.",nr);
+    if (int nr = protein.numberOfSelectedResidues(); nr > 20000) {
+        WARN_LOG("Protein is too large (number of residues:{} > 20.000). Exiting.",nr);
         exit(EXIT_FAILURE);
     }
 

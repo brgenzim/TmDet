@@ -32,8 +32,9 @@ namespace Tmdet::System {
              * @param cmd 
              * @return std::string 
              */
-            static std::string run( const std::string &cmd ) {
-                FILE *pfd = popen( cmd.c_str(), "r" );
+            static std::string run( const std::string& cmd, const bool hideStderr = true) {
+                std::string realCmd = cmd + (hideStderr?" 2>/dev/null":"");
+                FILE *pfd = popen( realCmd.c_str(), "r" );
                 std::string res="";
                 if ( pfd != nullptr ) {    
                     while ( !feof(pfd) ) {
