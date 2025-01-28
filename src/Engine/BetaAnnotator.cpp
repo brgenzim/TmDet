@@ -50,7 +50,7 @@ namespace Tmdet::Engine {
                     protein.chains[ssVec.chainIdx].residues[ssVec.begResIdx].authId,
                     protein.chains[ssVec.chainIdx].residues[ssVec.endResIdx].authId,
                     angle, (inMembrane?"Membrane":"NotMembrane"));
-                if (inMembrane &&  angle > 20) {
+                if (inMembrane &&  angle > 10) {
                     sheetIndex.push_back(vectorIndex);
                     ssVec.sheetIdx = numSheets++;
                 }
@@ -293,7 +293,7 @@ namespace Tmdet::Engine {
             [&](Tmdet::VOs::Residue& residue) -> void {
                 if (any_cast<Tmdet::Types::Region>(residue.temp.at("type")).isNotAnnotatedMembrane() 
                     && residue.isInside()) {
-                    residue.temp.at("type") = (any_cast<double>(residue.temp["hz"]) > 1 ? 
+                    residue.temp.at("type") = (any_cast<double>(residue.temp["hz"]) > 0 ? 
                         std::any(Tmdet::Types::RegionType::MEMBINS) :
                         std::any(residue.temp.at("ztype")));
                 }
@@ -304,12 +304,11 @@ namespace Tmdet::Engine {
         int end=0;
         while(regionHandler.getNext<Tmdet::Types::Region>(chain,beg,end,"type")) {
             if (any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("type")).isNotAnnotatedMembrane()
-                && end <= chain.length-1
-                && beg > 0
-                && chain.residues[beg-1].selected
-                && chain.residues[end].selected
-                && (any_cast<Tmdet::Types::Region>(chain.residues[beg-1].temp.at("type")).isMembraneInside()
-                    || any_cast<Tmdet::Types::Region>(chain.residues[end].temp.at("type")).isMembraneInside())) {
+                && (beg == 0 || (beg >0 && chain.residues[beg-1].selected))
+                && (end == chain.length -1 || (end < chain.length-1 && chain.residues[end].selected))
+                && ((beg == 0 || (beg >0 && any_cast<Tmdet::Types::Region>(chain.residues[beg-1].temp.at("type")).isMembraneInside()))
+                    || (end == chain.length-1 || (end < chain.length-1 && any_cast<Tmdet::Types::Region>(chain.residues[end].temp.at("type")).isMembraneInside())))
+                ) {
                 regionHandler.replace(chain,beg,end-1,Tmdet::Types::RegionType::MEMBINS,"type");
             }
             beg=end;
