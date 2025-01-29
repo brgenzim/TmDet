@@ -36,6 +36,7 @@ namespace Tmdet::Engine {
             int numSheets=0;
             std::vector<int> sheetIndex;
             std::vector<std::vector<int>> connectome;
+            std::vector<int> numSheetsInBarrels;
             
 
             /**

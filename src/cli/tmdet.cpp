@@ -79,7 +79,7 @@ Tmdet::System::Arguments getArguments(int argc, char *argv[]) {
     args.define(false,"hml","hydrph_limit","Hydrophobicity momentum limit for ifh detection","float","0.0"/*"1.6"*/);
     args.define(false,"ias","ifh_avg_surface","Average free solvent accessible surface limit for ifh detection","float","0"/*"40"*/);
     args.define(false,"ian","ifh_angle","Maximum angle between membrane plane and ifh","float","25");
-    args.define(false,"irl","ifh_res_limit","Minimum number of residues in ifhs (all together)","int","10");
+    args.define(false,"irl","ifh_res_limit","Minimum number of residues in ifhs (all together)","int","10000");
     
     args.set(argc,argv);
     args.check();

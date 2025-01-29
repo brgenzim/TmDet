@@ -182,11 +182,14 @@ namespace Tmdet::Engine {
     }
 
     void BetaAnnotator::setIndex(std::vector<bool>& elements) {
+        int nb = 0;
         for (int i=0; i<numSheets; i++) {
             if (elements[i]) {
+                nb++;
                 protein.secStrVecs[sheetIndex[i]].barrelIdx = protein.numBarrels;
             }
         }
+        numSheetsInBarrels.push_back(nb);
         protein.numBarrels++;
     }
 
@@ -212,26 +215,16 @@ namespace Tmdet::Engine {
                 }
             }
         }
-        /*
-        protein.eachSelectedChain(
-            [&](Tmdet::VOs::Chain& chain) -> void {
-                int beg=0;
-                int end=0;
-                while(regionHandler.getNext<Tmdet::Types::Region>(chain,beg,end,"type")) {
-                    if (any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("type")).isNotAnnotatedMembrane() 
-                        && beg > 0
-                        && end < chain.length-1
-                        && ((any_cast<Tmdet::Types::Region>(chain.residues[beg-1].temp.at("type")).isNotMembrane() &&
-                                any_cast<Tmdet::Types::Region>(chain.residues[end].temp.at("type")).isBeta())
-                            || (any_cast<Tmdet::Types::Region>(chain.residues[beg-1].temp.at("type")).isBeta() &&
-                                any_cast<Tmdet::Types::Region>(chain.residues[end].temp.at("type")).isNotMembrane()
-                        ))) {
-                            regionHandler.replace(chain,beg,end-1,Tmdet::Types::RegionType::BETA,"type");
+        if (protein.numBarrels == 1 && numSheetsInBarrels[0] == 8) {
+            protein.eachSelectedResidue(
+                [&](Tmdet::VOs::Residue& residue) -> void {
+                    if (any_cast<Tmdet::Types::Region>(residue.temp.at("type")).isNotAnnotatedMembrane()) {
+                        residue.temp.at("type") = std::any(Tmdet::Types::RegionType::BETA);
                     }
-                    beg=end;
                 }
-            }
-        );*/
+            );
+        }
+        DEBUG_LOG("setBarrel: {} {}",numSheetsInBarrels[0],regionHandler.toString("type"));
         protein.eachSelectedChain(
             [&](Tmdet::VOs::Chain& chain) -> void {
                 int beg=0;

@@ -61,7 +61,7 @@ namespace Tmdet::Engine {
             }
         );
         detectInterfacialHelices();
-        if (int nm = regionHandler.finalize<Tmdet::Types::Region>(); nm>20) {
+        if (int nm = regionHandler.finalize<Tmdet::Types::Region>(); nm>(protein.type.isBeta()?50:200)) {
             DEBUG_LOG("Too many unhandled membrane segments: {}",nm);
             protein.notTransmembrane();
         }

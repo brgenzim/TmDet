@@ -193,7 +193,7 @@ namespace Tmdet::Engine {
                 }
                 for(int i=dbeg; i<= dend; i++) {
                     if (vector.type.isBeta()) {
-                        slices[i].beta += (cosAngle>0.7?1:cosAngle);
+                        slices[i].beta += (cosAngle>0.55?1:cosAngle);
                     }
                     else {
                         slices[i].alpha += cosAngle;
@@ -296,7 +296,7 @@ namespace Tmdet::Engine {
                 int minz;
                 int maxz;
                 double q = getWidth(i,minz,maxz);
-                if (i-minz > minHalfThickness && maxz -i > minHalfThickness && q>higherQ) {
+                if (maxz-minz > 2 * minHalfThickness && q>higherQ) {
                     if (q>bestQ) {
                         bestQ = q;
                         bestMinZ = minz; bestMinZ -= 0.5;
@@ -313,6 +313,7 @@ namespace Tmdet::Engine {
 
     double Optimizer::getWidth(const int z, int& minz, int& maxz) {
         double maxHT = (type=="Plane"?maxHalfThickness:maxCurvedHalfThickness);
+        double ifhLimit = (type=="Plane"?ifhResLimit:10000);
         minz = z;
         maxz = z+1;
         bool ok = true;
@@ -320,14 +321,14 @@ namespace Tmdet::Engine {
             ok = false;
             if (minz > 0
                 && slices[minz].qValue > higherQ 
-                && slices[minz].smoothedIfh < ifhResLimit
+                && slices[minz].smoothedIfh < ifhLimit
                 && maxz-minz < 2*maxHT) {
                     minz--;
                     ok = true;
             }
             if (maxz < (int)slices.size()-1
                 && slices[maxz].qValue > higherQ
-                && slices[maxz].smoothedIfh < ifhResLimit
+                && slices[maxz].smoothedIfh < ifhLimit
                 && maxz-minz < 2*maxHT) {
                     maxz++;
                     ok = true;
