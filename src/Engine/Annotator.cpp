@@ -61,7 +61,11 @@ namespace Tmdet::Engine {
             }
         );
         detectInterfacialHelices();
-        if (int nm = regionHandler.finalize<Tmdet::Types::Region>(); nm>(protein.type.isBeta()?50:200)) {
+        int limit = protein.type.isBeta()?50:10;
+        if (args.getValueAsBool("fr")) {
+            limit = 0;
+        }
+        if (int nm = regionHandler.finalize<Tmdet::Types::Region>(); nm>limit) {
             DEBUG_LOG("Too many unhandled membrane segments: {}",nm);
             protein.notTransmembrane();
         }
@@ -104,7 +108,7 @@ namespace Tmdet::Engine {
         protein.eachChain(
             [&](Tmdet::VOs::Chain& chain) -> void {
                 int alpha=0;
-                if (chain.type == Tmdet::Types::ChainType::NON_TM && chain.isTmp) {
+                if (chain.type == Tmdet::Types::ChainType::NON_TM && (chain.isTmp || chain.length < 50)) {
                     for(const auto& residue: chain.residues) {
                         if (residue.selected) {
                             if (REGTYPE(residue) == Tmdet::Types::RegionType::MEMB) {
@@ -349,6 +353,7 @@ namespace Tmdet::Engine {
         while(regionHandler.getNext<Tmdet::Types::Region>(chain,begin,end,"type")) {
             DEBUG_LOG("detectTMH: {}:{}-{}",chain.id,chain.residues[begin].authId,chain.residues[end-1].authId);
             if (REGTYPE(chain.residues[begin]).isNotAnnotatedMembrane()
+                && helixContent(chain,begin,end) > 0.3
                 && (end-begin > 6 || ((begin < 2 || end > chain.length -2) && end-begin > 6))
                 && REGZ(chain.residues[begin]) * REGZ(chain.residues[end-1]) < 0) {
                     regionHandler.replace(chain,begin,end-1,Tmdet::Types::RegionType::HELIX);
@@ -358,7 +363,17 @@ namespace Tmdet::Engine {
         DEBUG_LOG(" Processed Annotator::detectTransmembraneHelices()");
     }
 
-   bool Annotator::sameSide(Tmdet::VOs::Chain& chain, int beg, int end) {
+    double Annotator::helixContent(Tmdet::VOs::Chain& chain, int beg, int end) {
+        double ret = 0.0;
+        for (int i=beg; i<=end; i++) {
+            if (chain.residues[i].ss.isAlpha()) {
+                ret++;
+            }
+        }
+        ret /= (end-beg+1);
+        return ret;
+    }
+    bool Annotator::sameSide(Tmdet::VOs::Chain& chain, int beg, int end) {
         return ((std::abs(REGZ(chain.residues[beg]))<4.0?0:REGZ(chain.residues[beg])) * 
                 (std::abs(REGZ(chain.residues[end]))<4.0?0:REGZ(chain.residues[end])) > -0.1);
     }

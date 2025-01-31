@@ -130,6 +130,8 @@ namespace Tmdet::Engine {
              */
             void detectTransmembraneHelices(Tmdet::VOs::Chain& chain);
 
+            double helixContent(Tmdet::VOs::Chain& chain, int beg, int end);
+
             /**
              * @brief check if the whole region is in the same side of the membrane
              * 

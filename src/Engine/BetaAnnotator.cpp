@@ -38,21 +38,25 @@ namespace Tmdet::Engine {
         int vectorIndex = 0;
         for(auto& ssVec: protein.secStrVecs) {
             if (ssVec.type.isBeta()) {
-                bool inMembrane = false;
-                for (int i=ssVec.begResIdx; i<=ssVec.endResIdx; i++) {
-                    if (any_cast<Tmdet::Types::Region>(protein.chains[ssVec.chainIdx].residues[i].temp["type"]).isNotAnnotatedMembrane()) {
-                        inMembrane = true;
+                if (protein.chains[ssVec.chainIdx].residues[ssVec.begResIdx].selected 
+                    && protein.chains[ssVec.chainIdx].residues[ssVec.endResIdx].selected ) {
+                    bool inMembrane = false;
+                    for (int i=ssVec.begResIdx; i<=ssVec.endResIdx; i++) {
+                        if (protein.chains[ssVec.chainIdx].residues[i].selected 
+                            && any_cast<Tmdet::Types::Region>(protein.chains[ssVec.chainIdx].residues[i].temp["type"]).isNotAnnotatedMembrane()) {
+                            inMembrane = true;
+                        }
                     }
-                }
-                double angle = std::abs(90 - Tmdet::Helpers::Vector::angle(gemmi::Vec3(0,0,1),ssVec.end - ssVec.begin));
-                DEBUG_LOG("getSheet: {}:{}-{} = {} {}",
-                    protein.chains[ssVec.chainIdx].id,
-                    protein.chains[ssVec.chainIdx].residues[ssVec.begResIdx].authId,
-                    protein.chains[ssVec.chainIdx].residues[ssVec.endResIdx].authId,
-                    angle, (inMembrane?"Membrane":"NotMembrane"));
-                if (inMembrane &&  angle > 10) {
-                    sheetIndex.push_back(vectorIndex);
-                    ssVec.sheetIdx = numSheets++;
+                    double angle = std::abs(90 - Tmdet::Helpers::Vector::angle(gemmi::Vec3(0,0,1),ssVec.end - ssVec.begin));
+                    DEBUG_LOG("getSheet: {}:{}-{} = {} {}",
+                        protein.chains[ssVec.chainIdx].id,
+                        protein.chains[ssVec.chainIdx].residues[ssVec.begResIdx].authId,
+                        protein.chains[ssVec.chainIdx].residues[ssVec.endResIdx].authId,
+                        angle, (inMembrane?"Membrane":"NotMembrane"));
+                    if (inMembrane &&  angle > 10) {
+                        sheetIndex.push_back(vectorIndex);
+                        ssVec.sheetIdx = numSheets++;
+                    }
                 }
             }
             vectorIndex++;
@@ -70,19 +74,20 @@ namespace Tmdet::Engine {
                     if (residue1.selected 
                         && any_cast<Tmdet::Types::Region>(residue1.temp["type"]).isNotAnnotatedMembrane()) {
                             for(auto cr : Tmdet::Utils::NeighBors::get(residue1)) {
-                                auto residue2 = protein.chains[cr.chainIdx].residues[cr.residueIdx];
-                                int ssVecIdx = residue2.secStrVecIdx;
-                                if ( ssVecIdx != -1 && any_cast<Tmdet::Types::Region>(residue2.temp["type"]).isNotAnnotatedMembrane()
-                                    && protein.secStrVecs[ssVecIdx].sheetIdx != -1
-                                    && protein.secStrVecs[ssVecIdx].sheetIdx != ssVec.sheetIdx) {
-                                        double co_angle = (residue1.temp.contains("co")?Tmdet::Helpers::Vector::angle(
-                                                any_cast<gemmi::Vec3>(residue1.temp["co"]),
-                                                any_cast<gemmi::Vec3>(residue1.temp["ca"]) - any_cast<gemmi::Vec3>(residue2.temp["ca"])
-                                            ):0);
-                                        if (co_angle < 50 || co_angle > 130) {
-                                            connectome[ssVec.sheetIdx][protein.secStrVecs[ssVecIdx].sheetIdx]++;
-                                            connectome[protein.secStrVecs[ssVecIdx].sheetIdx][ssVec.sheetIdx]++;
-                                        }
+                                if (auto residue2 = protein.chains[cr.chainIdx].residues[cr.residueIdx]; residue2.selected) {
+                                    int ssVecIdx = residue2.secStrVecIdx;
+                                    if ( ssVecIdx != -1 && any_cast<Tmdet::Types::Region>(residue2.temp["type"]).isNotAnnotatedMembrane()
+                                        && protein.secStrVecs[ssVecIdx].sheetIdx != -1
+                                        && protein.secStrVecs[ssVecIdx].sheetIdx != ssVec.sheetIdx) {
+                                            double co_angle = (residue1.temp.contains("co")?Tmdet::Helpers::Vector::angle(
+                                                    any_cast<gemmi::Vec3>(residue1.temp["co"]),
+                                                    any_cast<gemmi::Vec3>(residue1.temp["ca"]) - any_cast<gemmi::Vec3>(residue2.temp["ca"])
+                                                ):0);
+                                            if (co_angle < 50 || co_angle > 130) {
+                                                connectome[ssVec.sheetIdx][protein.secStrVecs[ssVecIdx].sheetIdx]++;
+                                                connectome[protein.secStrVecs[ssVecIdx].sheetIdx][ssVec.sheetIdx]++;
+                                            }
+                                    }
                                 }
                             }
                     }
@@ -195,9 +200,12 @@ namespace Tmdet::Engine {
 
     void BetaAnnotator::setBarrel() {
         for(const auto& ssVec: protein.secStrVecs) {
-            if (ssVec.barrelIdx != -1) {
+            if (protein.chains[ssVec.chainIdx].residues[ssVec.begResIdx].selected
+                && protein.chains[ssVec.chainIdx].residues[ssVec.endResIdx].selected
+                && ssVec.barrelIdx != -1) {
                 for(int i=ssVec.begResIdx; i<=ssVec.endResIdx; i++) {
-                    if (any_cast<Tmdet::Types::Region>(protein.chains[ssVec.chainIdx].residues[i].temp.at("type")).isNotAnnotatedMembrane()
+                    if (protein.chains[ssVec.chainIdx].residues[i].selected
+                        && any_cast<Tmdet::Types::Region>(protein.chains[ssVec.chainIdx].residues[i].temp.at("type")).isNotAnnotatedMembrane()
                         && numConnects(protein.chains[ssVec.chainIdx],i) > 0) {
                         protein.chains[ssVec.chainIdx].residues[i].temp.at("type") = std::any(Tmdet::Types::RegionType::BETA);
                     }
@@ -230,8 +238,10 @@ namespace Tmdet::Engine {
                 int beg=0;
                 int end=0;
                 while(regionHandler.getNext<Tmdet::Types::Region>(chain,beg,end,"type")) {
-                    if (any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("type")).isBeta() 
+                    if (chain.residues[beg].selected
+                        && any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("type")).isBeta() 
                         && beg > 0
+                        && chain.residues[beg-1].selected
                         && end < chain.length-1
                         && end-beg < 3) {
                             regionHandler.replace(chain,beg,end-1,any_cast<Tmdet::Types::Region>(chain.residues[beg-1].temp.at("ztype")),"type");
@@ -296,7 +306,8 @@ namespace Tmdet::Engine {
         int beg=0;
         int end=0;
         while(regionHandler.getNext<Tmdet::Types::Region>(chain,beg,end,"type")) {
-            if (any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("type")).isNotAnnotatedMembrane()
+            if (chain.residues[beg].selected
+                && any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("type")).isNotAnnotatedMembrane()
                 && (beg == 0 || (beg >0 && chain.residues[beg-1].selected))
                 && (end == chain.length -1 || (end < chain.length-1 && chain.residues[end].selected))
                 && ((beg == 0 || (beg >0 && any_cast<Tmdet::Types::Region>(chain.residues[beg-1].temp.at("type")).isMembraneInside()))
@@ -310,7 +321,8 @@ namespace Tmdet::Engine {
         beg=0;
         end=0;
         while(regionHandler.getNext<Tmdet::Types::Region>(chain,beg,end,"type")) {
-            if (any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("type")).isNotMembrane()
+            if (chain.residues[beg].selected
+                && any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("type")).isNotMembrane()
                 && end <= chain.length-1
                 && beg > 0
                 && chain.residues[beg-1].selected

@@ -41,13 +41,13 @@ namespace Tmdet::Utils {
                             }
                         }
                     }
-                    residue.temp.try_emplace("neighbors",neighbors);
+                    residue.temp.try_emplace("ca_neighbors",neighbors);
                 }
             );
         }
 
         static std::vector<Tmdet::VOs::CR> get(Tmdet::VOs::Residue& residue) {
-            return any_cast<std::vector<Tmdet::VOs::CR>>(residue.temp["neighbors"]);
+            return any_cast<std::vector<Tmdet::VOs::CR>>(residue.temp["ca_neighbors"]);
         }
     };
 }

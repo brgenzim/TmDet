@@ -75,7 +75,7 @@ namespace Tmdet::Engine {
         DEBUG_LOG(" Processed RegionHandler::replace()");
     }
 
-    bool RegionHandler::sameDirection(Tmdet::VOs::Chain& chain, int p1, int p2) {
+    /*bool RegionHandler::sameDirection(Tmdet::VOs::Chain& chain, int p1, int p2) {
         if (!chain.residues[p1].temp.contains("direction") || !chain.residues[p2].temp.contains("direction")) {
             return false;
         }
@@ -92,7 +92,7 @@ namespace Tmdet::Engine {
         double d1 = any_cast<double>(chain.residues[p1].temp.at("direction"));
         double d2 = any_cast<double>(chain.residues[p2].temp.at("direction"));
         return (d1*d2<0);
-    }
+    }*/
 
     template <typename T>
     std::vector<simpleRegion> RegionHandler::getAll(Tmdet::VOs::Chain& chain, std::string what) {
@@ -157,8 +157,8 @@ namespace Tmdet::Engine {
                 }
             }
         );
-        return ret;
         DEBUG_LOG(" Processed RegionHandler::finalize({})",ret);
+        return ret;
     }
     template int RegionHandler::finalize<int>();
     template int RegionHandler::finalize<Tmdet::Types::Region>();

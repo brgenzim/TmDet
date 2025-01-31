@@ -90,7 +90,9 @@ namespace Tmdet::Engine {
     void Fragmenter::findClusters() {
         DEBUG_LOG("Processing Fragmenter:findClusters()");
         for(unsigned int i=0; i<data.size(); i++) {
-            DEBUG_LOG("Fragment {}: tmp: {} clusterId: {}",i,(data[i].tmp?"yes":"no"),data[i].clusterId);
+            DEBUG_LOG("Fragment {}: tmp: {} clusterId: {} {:.2f} {:.2f} {:.2f}",
+                i,(data[i].tmp?"yes":"no"),data[i].clusterId,
+                data[i].normal.x,data[i].normal.y,data[i].normal.z);
         }
         for(unsigned int i=0; i<data.size(); i++) {
             if (data[i].tmp) {
@@ -137,7 +139,7 @@ namespace Tmdet::Engine {
                 bestClusterId = i;
             }
         }
-        DEBUG_LOG("Processed Fragmenter:findBestCluster({})", bestClusterId);
+        DEBUG_LOG("Processed Fragmenter:findBestCluster({},{})", bestClusterId,max);
         return bestClusterId;
     }
 

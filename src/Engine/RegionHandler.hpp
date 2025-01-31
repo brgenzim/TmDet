@@ -134,7 +134,7 @@ namespace Tmdet::Engine {
              * @return true 
              * @return false 
              */
-            bool sameDirection(Tmdet::VOs::Chain& chain, int pos1, int pos2);
+            //bool sameDirection(Tmdet::VOs::Chain& chain, int pos1, int pos2);
 
             /**
              * @brief check if direction are not the same for two residues
@@ -145,6 +145,6 @@ namespace Tmdet::Engine {
              * @return true 
              * @return false 
              */
-            bool notSameDirection(Tmdet::VOs::Chain& chain, int pos1, int pos2);
+            //bool notSameDirection(Tmdet::VOs::Chain& chain, int pos1, int pos2);
     };
 }

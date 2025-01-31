@@ -44,7 +44,10 @@ namespace Tmdet::Engine {
                 DEBUG_LOG("Plane optimization");
                 optimizer = std::make_unique<PlaneOptimizer>(protein,args);
             }
-            if (!args.getValueAsBool("ns")) {
+            if (args.getValueAsBool("fr")) {
+                protein.forceSingleMembrane = true;
+            }
+            else if (!args.getValueAsBool("ns")) {
                 checkSymmetry();
             }
 
