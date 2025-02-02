@@ -7,6 +7,8 @@
 
 #include <iostream>
 #include <filesystem>
+#include <vector>
+#include <Helpers/String.hpp>
 #include <System/Command.hpp>
 #include <System/FilePaths.hpp>
 #include <Utils/Filter.hpp>
@@ -23,6 +25,8 @@ namespace Tmdet::Utils {
                 if (applyTmFilter && !chain.hasUnknownResidue()) {
                     if (createTempFasta(chain)) {
                         int tmp = 0;
+                        runSignalP(chain.id);
+                        parseSignalP(chain);
                         tmp += runPhobius(chain.id);
                         tmp += runScampi(chain.id);
                         tmp += runTMHMM(chain.id);
@@ -55,10 +59,42 @@ namespace Tmdet::Utils {
         tempDir = Tmdet::System::FilePaths::temp(hash);
         std::filesystem::create_directories(tempDir);
         std::string path = tempDir + "/" + protein.code + "_" + chain.id + ".fas";
-        bool ret = filePutContents(path,std::format(">{}_{}\n{}",protein.code,chain.id,chain.seq));
+        bool ret = filePutContents(path,std::format(">{}_{}\n{}",protein.code,chain.id,chain.seq.substr(chain.signalP[1])));
         path = tempDir + "/list";
         ret &= filePutContents(path,std::format("{}/{}_{}.fas",tempDir,protein.code,chain.id));
         return true;
+    }
+
+    void Filter::runSignalP(std::string id) {
+        std::string cmd = std::format("/usr/local/bin/signalp6 -fasta {}/{}_{}.fas -org euk --mode fast -od {}",
+            tempDir,protein.code,id,tempDir);
+        Tmdet::System::Command::run(cmd);
+    }
+
+    void Filter::parseSignalP(Tmdet::VOs::Chain& chain) {
+        std::string path = tempDir + "/output.gff3";
+        std::ifstream file(path);
+        if (!file.is_open()) {
+            logger.warn("Could not read file. Path: {}",path);
+            return;
+        }
+        std::string line;
+        std::getline(file, line);
+        if (file.eof()) {
+            return;
+        }
+        std::getline(file, line);
+        
+        auto fields = Tmdet::Helpers::String::explode("\t",line);
+        if (fields.size() > 4 && fields[2] == "signal_peptide") {
+            chain.signalP[0] = std::stoi(fields[3]);
+            chain.signalP[1] = std::stoi(fields[4]);
+            createTempFasta(chain);
+            for (int i=chain.signalP[0]-1; i<chain.signalP[1]; i++) {
+                chain.residues[i].selected = false;
+            }
+        }
+        file.close();
     }
 
     int Filter::runPhobius(std::string id) {

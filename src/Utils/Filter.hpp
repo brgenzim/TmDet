@@ -19,9 +19,11 @@ namespace Tmdet::Utils {
             std::string methodsDir;
             bool filePutContents(std::string filePath, std::string content);
             bool createTempFasta(Tmdet::VOs::Chain& chain );
+            void runSignalP(std::string id);
             int runPhobius(std::string id);
             int runScampi(std::string id);
             int runTMHMM(std::string id);
+            void parseSignalP(Tmdet::VOs::Chain& chain);
             int parsePhobius(std::string results);
             int parseScampi(std::string results);
             int parseTMHMM(std::string results);

@@ -35,6 +35,7 @@ namespace Tmdet::Helpers {
         "pink", //PERIPLASM
         "red", //ERROR - FP
         "blue", //ERROR - FN
+        "cyan", //SIGNAL
         "grey80" //UNK
     };
 

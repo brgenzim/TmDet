@@ -213,8 +213,14 @@ namespace Tmdet::Types {
             'R',
             "region outside of the membrane that should be in the membrane"
         };
-        const Region UNK = {
+        const Region SIGNAL = {
             15,
+            "signal peptide",
+            'S',
+            "Signal peptid region, predicted by SignalP6"
+        };
+        const Region UNK = {
+            16,
             "unknown",
             'U',
             "localisation of the region is unknown"
@@ -238,6 +244,7 @@ namespace Tmdet::Types {
         { 'E', RegionType::PERIPLASM },
         { 'P', RegionType::ERROR_FP },
         { 'R', RegionType::ERROR_FN },
+        { 'S', RegionType::SIGNAL },
         { 'U', RegionType::UNK }
     };
 

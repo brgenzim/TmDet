@@ -35,7 +35,9 @@ namespace Tmdet::Engine {
         runOnFragments(numFrags);
         findClusters();
         runOnBestCluster(findBestCluster());
-        finalize();
+        if (protein.tmp) {
+            finalize();
+        }
         DEBUG_LOG("Processed Fragmenter:run()");
     }
 
@@ -171,9 +173,20 @@ namespace Tmdet::Engine {
     }
 
     void Fragmenter::finalize() {
+        //invert selection
         protein.chains[chIdx].eachResidue(
             [&](Tmdet::VOs::Residue& residue) -> void {
                 residue.selected = !residue.selected;
+            }
+        );
+        //except for signal peptides
+        protein.eachSelectedChain(
+            [&](Tmdet::VOs::Chain& chain) -> void {
+                if (chain.signalP[1] > 0) {
+                    for (int i=0; i<chain.signalP[1]; i++) {
+                        chain.residues[i].selected = false;
+                    }
+                }
             }
         );
         auto sideDetector = Tmdet::Engine::PlaneSideDetector(protein);

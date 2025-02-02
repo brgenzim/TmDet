@@ -115,16 +115,18 @@ namespace Tmdet::Utils {
             [&](Tmdet::VOs::Chain& chain) -> void {
                 int numOne = 0;
                 for(int i=0; i<chain.length; i++) {
-                    if (any_cast<int>(chain.residues[i].temp["E"]) == 1) {
-                        numOne += 1;
-                    }
-                    else {   
-                        if (numOne > 4) {
-                            for (int j=1; j<=numOne; j++) {
-                                chain.residues[i-j].temp["E"] = std::any(0);
-                            }
+                    if (chain.residues[i].selected) {
+                        if (any_cast<int>(chain.residues[i].temp["E"]) == 1) {
+                            numOne += 1;
                         }
-                        numOne = 0;
+                        else {   
+                            if (numOne > 4) {
+                                for (int j=1; j<=numOne; j++) {
+                                    chain.residues[i-j].temp["E"] = std::any(0);
+                                }
+                            }
+                            numOne = 0;
+                        }
                     }
                 }
             }

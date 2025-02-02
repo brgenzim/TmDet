@@ -350,11 +350,12 @@ namespace Tmdet::Engine {
         DEBUG_LOG("Processing Annotator::detectTransmembraneHelices()");
         int begin = 0;
         int end = 0;
+        int lengthLimit = (args.getValueAsBool("fr")?14:10);
         while(regionHandler.getNext<Tmdet::Types::Region>(chain,begin,end,"type")) {
             DEBUG_LOG("detectTMH: {}:{}-{}",chain.id,chain.residues[begin].authId,chain.residues[end-1].authId);
             if (REGTYPE(chain.residues[begin]).isNotAnnotatedMembrane()
                 && helixContent(chain,begin,end) > 0.3
-                && (end-begin > 6 || ((begin < 2 || end > chain.length -2) && end-begin > 6))
+                && (end-begin > lengthLimit || ((begin < 2 || end > chain.length -2) && end-begin > 6))
                 && REGZ(chain.residues[begin]) * REGZ(chain.residues[end-1]) < 0) {
                     regionHandler.replace(chain,begin,end-1,Tmdet::Types::RegionType::HELIX);
             }

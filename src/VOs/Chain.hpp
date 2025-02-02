@@ -8,6 +8,7 @@
 
 #include <string>
 #include <vector>
+#include <array>
 #include <Config.hpp>
 #include <System/Logger.hpp>
 #include <Types/Chain.hpp>
@@ -88,6 +89,8 @@ namespace Tmdet::VOs {
         Tmdet::Types::Chain type = Tmdet::Types::ChainType::UNK;
 
         bool isTmp = false;
+
+        std::array<int,2> signalP = std::array<int,2>{0,0};
 
         /**
          * @brief transform atom coordinates in the chain
