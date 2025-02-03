@@ -23,7 +23,7 @@ namespace Tmdet::Utils {
      * @param unsigned int v
      * @return void
      */
-    void Graph::addEdge(unsigned int u, unsigned int v) {
+    void Graph::addEdge(unsigned int u, unsigned int v, bool uss, bool vss) {
         if (u>=V || v>=V ) {
             return;
         }
@@ -31,6 +31,8 @@ namespace Tmdet::Utils {
             adj[u].push_back(v);
             adj[v].push_back(u);
             edges[u][v] = edges[v][u] =true;
+            isSS[u] = uss;
+            isSS[v] = vss;
         }
     }
 
@@ -42,7 +44,7 @@ namespace Tmdet::Utils {
      * @return double
      */
     double Graph::graphValue(unsigned int clIdx, unsigned int cutPos) {
-        if (chain.residues[cutPos].secStrVecIdx != -1) {
+        if (isSS[cutPos]) {
             return manyContacts;
         }
         double ret=0;
@@ -63,6 +65,7 @@ namespace Tmdet::Utils {
             ret /= (numLeft<numRight?numLeft:numRight);
         }
         ret += (numLeft<10||numRight<10?manyContacts:0);
+        DEBUG_LOG("GraphValue: {} {}: {}",clIdx,cutPos,ret);
         return ret;
     }
 
@@ -75,6 +78,9 @@ namespace Tmdet::Utils {
      * @return double
      */
     double Graph::graphValue2(unsigned int clIdx, unsigned int beg, unsigned int end) {
+        if (isSS[beg] || isSS[end]) {
+            return manyContacts;
+        }
         double ret=0;
         unsigned int numLeft=0;
         unsigned int numRight=0;
@@ -147,13 +153,15 @@ namespace Tmdet::Utils {
      */
     std::vector<unsigned int> Graph::minPositions(std::vector<std::pair<double,unsigned int>> in) {
         std::vector<unsigned int> ret;
-        ret.push_back(in[0].second);
-        for(unsigned int i=1; i<in.size()-1; i++) {
-            if (in[i].first<in[i-1].first && in[i].first<in[i+1].first) {
-                ret.push_back(in[i].second);
+        if (in.size() > 0) {
+            ret.push_back(in[0].second);
+            for(unsigned int i=1; i<in.size()-1; i++) {
+                if ((in[i].first<in[i-1].first && in[i].first<in[i+1].first) || in[i].first == 0) {
+                    ret.push_back(in[i].second);
+                }
             }
+            ret.push_back(in[in.size()-1].second);
         }
-        ret.push_back(in[in.size()-1].second);
         return ret;
     }
 
@@ -171,14 +179,17 @@ namespace Tmdet::Utils {
         std::vector<std::pair<double,unsigned int>> sp = smooth(p);
         std::vector<unsigned int> mps = minPositions(sp);
 
-        for(unsigned int b=0; b<mps.size()-1; b++) {
-            for(unsigned int e=b+1; e<mps.size(); e++) {
-                double value = graphValue2(clIdx,mps[b],mps[e]);
-                if (value < minValue) {
-                    minValue = value;
-                    bestBeg = mps[b];
-                    bestEnd = mps[e];
-                    bestCluster = clIdx;
+        if (mps.size() > 0) {
+            for(unsigned int b=0; b<mps.size()-1; b++) {
+                for(unsigned int e=b+1; e<mps.size(); e++) {
+                    double value = graphValue2(clIdx,mps[b],mps[e]);
+                    DEBUG_LOG("Graph cut: {} - {} : {}",mps[b],mps[e],value);
+                    if (value < minValue) {
+                        minValue = value;
+                        bestBeg = mps[b];
+                        bestEnd = mps[e];
+                        bestCluster = clIdx;
+                    }
                 }
             }
         }

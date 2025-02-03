@@ -2,7 +2,7 @@
 
 ROOT="/bigdisk/users/tusi/pdbtm"
 AF_ROOT="/bigdisk/databases/AlphaFold/data"
-TMDET_ROOT="/bigdisk/users/tusi/pdbtm/data/AlphaFold"
+TMDET_ROOT="/bigdisk/users/tusi/pdbtm/data/AlphaFold/new"
 
 mkdir -p $TMDET_ROOT/$1
 

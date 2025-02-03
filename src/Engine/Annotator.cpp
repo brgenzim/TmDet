@@ -244,7 +244,8 @@ namespace Tmdet::Engine {
                         && sameSide(protein.chains[vector.chainIdx],vector.begResIdx,vector.endResIdx)
                         && hydrophocityMomentum(protein.chains[vector.chainIdx],vector.begResIdx,vector.endResIdx) > hfLimit) {
                             for (int i=vector.begResIdx; i<=vector.endResIdx; i++) {
-                                if (!REGTYPE(protein.chains[vector.chainIdx].residues[i]).isAnnotatedMembraneType()) {
+                                if (protein.chains[vector.chainIdx].residues[i].selected
+                                    && !REGTYPE(protein.chains[vector.chainIdx].residues[i]).isAnnotatedMembraneType()) {
                                     protein.chains[vector.chainIdx].residues[i].temp["type"] = std::any(Tmdet::Types::RegionType::IFH);
                                 }
                             }

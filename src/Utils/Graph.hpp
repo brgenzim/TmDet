@@ -20,9 +20,10 @@ namespace Tmdet::Utils {
             std::vector<std::vector<unsigned int>> adj;
             std::vector<std::vector<bool>> edges;
             std::vector<unsigned int> clusters;
+            std::vector<bool> isSS;
             unsigned int numClusters = 1;
             double ClusterCutLimit = 1.6;
-            const int manyContacts = 10;
+            const int manyContacts = 100;
 
             double graphValue(unsigned int clIdx, unsigned int cutPos);
             double graphValue2(unsigned int clIdx, unsigned int beg, unsigned int end);
@@ -37,9 +38,10 @@ namespace Tmdet::Utils {
                 V(V), 
                 adj(V), 
                 edges(V, std::vector<bool>(V, false)), 
-                clusters(V,0) {}
+                clusters(V,0),
+                isSS(V,false) {}
 
-            void addEdge(unsigned int u, unsigned int v);
+            void addEdge(unsigned int u, unsigned int v, bool uss, bool vss);
             std::vector<unsigned int> optim();
             int getNumClusters() const { return numClusters;}
     };

@@ -117,7 +117,10 @@ namespace Tmdet::Engine {
                 int end = 0;
                 while(getNext<T>(chain,beg,end,"type")) {
                     auto begType = any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("type"));
-                    DEBUG_LOG("Finalize checks: {}:{}-{}:{}",chain.id,chain.residues[beg].authId,chain.residues[end-1].authId,begType.code);
+                    DEBUG_LOG("Finalize checks: {}.{}:{}-{}:{}.{} {}::{}",
+                        (beg>0&&chain.residues[beg-1].selected?any_cast<Tmdet::Types::Region>(chain.residues[beg-1].temp.at("ztype")).code:'-'),
+                        chain.id,chain.residues[beg].authId,chain.residues[end-1].authId,begType.code,
+                        (end<chain.length&&chain.residues[end].selected?any_cast<Tmdet::Types::Region>(chain.residues[end].temp.at("ztype")).code:'-'),end,chain.length);
                     // 1111MM..MM111 or 111BB..BB1111 or 111HH..HH111
                     if ((begType.isAnnotatedTransMembraneType() 
                             || begType.isNotAnnotatedMembrane())
@@ -127,9 +130,9 @@ namespace Tmdet::Engine {
                         && chain.residues[end].selected
                         && chain.residues[beg].authId - chain.residues[beg-1].authId == 1
                         && chain.residues[end].authId - chain.residues[end-1].authId == 1
-                        && any_cast<Tmdet::Types::Region>(chain.residues[beg-1].temp.at("type")).isNotMembrane()
-                        && any_cast<Tmdet::Types::Region>(chain.residues[beg-1].temp.at("type")).code ==
-                            any_cast<Tmdet::Types::Region>(chain.residues[end].temp.at("type")).code) {
+                        && any_cast<Tmdet::Types::Region>(chain.residues[beg-1].temp.at("ztype")).isNotMembrane()
+                        && any_cast<Tmdet::Types::Region>(chain.residues[beg-1].temp.at("ztype")).code ==
+                            any_cast<Tmdet::Types::Region>(chain.residues[end].temp.at("ztype")).code) {
                                 DEBUG_LOG("rule: 1111MM..MM111 or 111BB..BB1111 or 111HH..HH111");
                                 DEBUG_LOG("{}::{} and {}::{}",
                                     chain.residues[beg-1].authId,chain.residues[beg].authId,
@@ -149,9 +152,13 @@ namespace Tmdet::Engine {
                     // any MMM anywhere that not handled so far
                     if (any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("type")).isNotAnnotatedMembrane()) {
                         replace(chain,beg,end-1,any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("ztype")));
-                        if (end-beg>4) {
+                        double q = any_cast<double>(chain.residues[beg].temp.at("z")) * any_cast<double>(chain.residues[end-1].temp.at("z"));
+                        if (end-beg>4 &&  q < -10
+                            && std::abs(any_cast<double>(chain.residues[beg].temp.at("z"))) > 10
+                            && std::abs(any_cast<double>(chain.residues[end-1].temp.at("z"))) > 10) {
                             ret += (end-beg);
                         }
+                        DEBUG_LOG("any ...MMMM... {}",q);
                     }
                     beg = end;
                 }

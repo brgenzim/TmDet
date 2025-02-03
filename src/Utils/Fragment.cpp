@@ -57,9 +57,7 @@ namespace Tmdet::Utils {
                 }
             }
         }
-        
-
-        DEBUG_LOG("Neighhor: res:{}:{} {} - {}",residueVO.authId,residueVO.ss.code,(check?"good":"wrong"),ns);
+        DEBUG_LOG("Neighhor: res({}):{}:{} {} - {}",residueVO.idx,residueVO.authId,residueVO.ss.code,(check?"good":"wrong"),ns);
         return (check?ret:empty);
     }
 
@@ -93,7 +91,7 @@ namespace Tmdet::Utils {
                     int u = any_cast<int>(residueVO.temp.at("node_index"));
                     if (proteinVO.chains[cr.chain_idx].residues[cr.residue_idx].temp.contains("node_index")) {
                         int v = NODE_ID(cr.chain_idx,cr.residue_idx);
-                        G.addEdge(u,v);
+                        G.addEdge(u,v,!residueVO.ss.isUnStructured(),!proteinVO.chains[cr.chain_idx].residues[cr.residue_idx].ss.isUnStructured());
                     }
                 }
             }
