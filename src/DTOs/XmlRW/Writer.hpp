@@ -48,6 +48,7 @@ namespace Tmdet::DTOs::XmlRW {
     <assembly>1</assembly>
     <qValue>00.00</qValue>
     <tmType>xxxxx</tmType>
+    <arguments></arguments>
   </rawData>
 </pdbtm>
 )";

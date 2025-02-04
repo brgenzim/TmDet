@@ -51,6 +51,7 @@ namespace Tmdet::Engine {
         detectLoops();        
         auto betaAnnotator = Tmdet::Engine::BetaAnnotator(protein,regionHandler);
         
+        loopHelixPart = args.getValueAsFloat("lhp");
         setChainsType();
         annotateChains();
         protein.eachSelectedChain(
@@ -333,18 +334,18 @@ namespace Tmdet::Engine {
         double maxPercent=0;
         numHelix = 0;
         for(auto& [idx,count]: helixCounts) {
-            double percent = 100.0 * count / (protein.secStrVecs[idx].endResIdx - protein.secStrVecs[idx].begResIdx + 1);
+            double percent = 1.0 * count / (protein.secStrVecs[idx].endResIdx - protein.secStrVecs[idx].begResIdx + 1);
             if (count > maxCount) {
                 maxCount = count;
                 maxPercent = percent;
             }
-            numHelix += (percent>25);
+            numHelix += (percent>=loopHelixPart);
         }
         DEBUG_LOG("hasOneHelix: {} {} {}: {}::{}% {} hzDiff:{} numHelix:{} return:{}",chain.id,
             chain.residues[begin].authId,chain.residues[end].authId,
             maxCount,maxPercent,numNoSS,maxHz-hz,numHelix,
             (maxPercent>25 &&  maxHz-hz > 3));
-        return (maxPercent>25 &&  maxHz-hz > 3);
+        return (maxPercent>=loopHelixPart &&  maxHz-hz > 3);
     }
 
     void Annotator::detectTransmembraneHelices(Tmdet::VOs::Chain& chain) {

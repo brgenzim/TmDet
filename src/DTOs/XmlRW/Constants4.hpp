@@ -36,6 +36,7 @@ namespace Tmdet::DTOs::XmlRW {
     inline const char* XML_ATTR_Y="y";
     inline const char* XML_ATTR_Z="z";
     
+    inline const char* XML_NODE_ARGUMENTS="arguments";
     inline const char* XML_NODE_ASSEMBLY="assembly";
     inline const char* XML_NODE_COPYRIGHT="copyright";
     inline const char* XML_NODE_CHAIN="chain";

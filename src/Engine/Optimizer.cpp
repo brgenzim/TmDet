@@ -42,6 +42,8 @@ namespace Tmdet::Engine {
         massCentre = protein.centre();
         ifhAngleLimit = args.getValueAsFloat("ian");
         ifhResLimit = args.getValueAsInt("irl");
+        boostAngle = args.getValueAsFloat("ba");
+        boostPolarity = args.getValueAsFloat("bp");
 
         protein.eachSelectedResidue(
             [](Tmdet::VOs::Residue& residue) -> void {
@@ -168,7 +170,7 @@ namespace Tmdet::Engine {
                 double angle = std::abs(90.0 - acos(cosAngle) * 180.0 / M_PI);
                 cosAngle = (cosAngle<0.2?-3:cosAngle);
                 if (protein.hasIdenticalChains) {
-                    cosAngle = (cosAngle>0.7?1:cosAngle);
+                    cosAngle = (cosAngle>boostAngle?1:cosAngle);
                 }
                 int d1 = distance(vector.begin);
                 int d2 = distance(vector.end);
@@ -254,7 +256,7 @@ namespace Tmdet::Engine {
             smoothedIfh /= k;
             smoothedCa /= k;
             smoothedStraight = divide(smoothedStraight,smoothedCa);
-            smoothedApol = (smoothedSurf>10?divide(smoothedApol, smoothedSurf):0); smoothedApol = (smoothedApol>0.55?1:smoothedApol);
+            smoothedApol = (smoothedSurf>10?divide(smoothedApol, smoothedSurf):0); smoothedApol = (smoothedApol>boostPolarity?1:smoothedApol);
             smoothedSsEnd = divide(smoothedSsEnd, smoothedCa);
             //slices[i].smoothedIfh = divide(smoothedIfh, smoothedCa);
             smoothedIfh /= ifhResLimit; smoothedIfh = (smoothedIfh>1?1:smoothedIfh);

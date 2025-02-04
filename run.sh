@@ -1,3 +1,3 @@
 #!/bin/bash
 
-./bin/tmdet -r -c $*
+./bin/tmdet -r -npf -c $*

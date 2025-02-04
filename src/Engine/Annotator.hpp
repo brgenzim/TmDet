@@ -48,6 +48,7 @@ namespace Tmdet::Engine {
             Tmdet::Engine::RegionHandler regionHandler;
 
             double ifhAngleLimit = 15;
+            double loopHelixPart = 0.25;
 
             /**
              * @brief the main entry point for annotation

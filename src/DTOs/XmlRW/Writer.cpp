@@ -58,7 +58,7 @@ namespace Tmdet::DTOs::XmlRW {
     }
 
     void Writer::setArguments(const Tmdet::System::Arguments& args) const {
-        
+        _root.child(XML_NODE_RAWDATA).child(XML_NODE_ARGUMENTS).text() = args.getCommandLine().c_str();
     }
 
     void Writer::setTMatrix(Tmdet::VOs::TMatrix& tmatrix) {
@@ -146,7 +146,7 @@ namespace Tmdet::DTOs::XmlRW {
             setChains(xmlData.chains);
         }
         write(path);
-        DEBUG_LOG(" Processed: Writer::writeXml({})",path);
+        DEBUG_LOG(" Processed: Writer::writeXml({} {})",path,args.getCommandLine());
     }
 
 }
