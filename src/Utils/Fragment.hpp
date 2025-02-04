@@ -11,32 +11,32 @@
 #include <VOs/Chain.hpp>
 #include <VOs/Residue.hpp>
 
-#define CA_DIST 8.0
-#define MAX_DIST 10000000
-#define CUT_LIMIT 50
 
 namespace Tmdet::Utils {
 
     struct _cr {
-        int chain_idx;
-        int residue_idx;
+        int chainIdx;
+        int residueIdx;
     };
 
     class Fragment {
         private:
-            Tmdet::VOs::Protein& proteinVO;
-            int chIdx;
+            Tmdet::VOs::Protein& protein;
+            int numFragments;
+            int nr;
+            std::vector<std::vector<bool>> contactMap;
+            std::vector<_cr> cmIndex;
             
-            std::vector<_cr> getNeighbors(const Tmdet::VOs::Residue& residueVO);
-            std::vector<_cr> getCAlphaNetwork();
-            std::vector<std::vector<int>> createFragments(const unsigned long size);
-            void writeBackFragmentInfoToStructure(std::vector<std::vector<int>> clusters, std::vector<_cr> crs);
+            std::vector<_cr> getNeighbors(const Tmdet::VOs::Residue& residue);
+            void setContactMap();
+            void createFragments();
+            void setFragment(Tmdet::VOs::Residue& residue);
             void freeTempValues();
-            bool sameChain(gemmi::Chain* chain, int chainIdx);
+            bool enableMove(Tmdet::VOs::Residue& from, Tmdet::VOs::Residue& to);
             
         public:
-            explicit Fragment(Tmdet::VOs::Protein& proteinVO) : 
-                proteinVO(proteinVO) {} ;
+            explicit Fragment(Tmdet::VOs::Protein& protein) : 
+                protein(protein) {} ;
             ~Fragment()=default;
 
             int run();            

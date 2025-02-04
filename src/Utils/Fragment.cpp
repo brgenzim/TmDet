@@ -16,113 +16,124 @@
 #include <VOs/Protein.hpp>
 #include <VOs/Residue.hpp>
 #include <Utils/Fragment.hpp>
-#include <Utils/Graph.hpp>
 
 namespace Tmdet::Utils {
 
-#define NODE_ID(c,r) any_cast<int>(proteinVO.chains[c].residues[r].temp.at("node_index"))
+
 
     /**
      * @brief main entry point for fragment generation
      *        the resulted fragment ids are inserted
-     *        to the proteinVO redidues temp map.
+     *        to the protein redidues temp map.
      * @return void
      */
     int Fragment::run() {
-        auto crs = getCAlphaNetwork();
-        auto clusters = createFragments(crs.size());
-        writeBackFragmentInfoToStructure(clusters, crs);
+        numFragments=0;
+        nr = protein.numberOfSelectedResidues();
+        for(int i=0; i<nr; i++) {
+            contactMap.push_back(std::vector<bool>(nr,false));
+        }
+        setContactMap();
+        createFragments();
         freeTempValues();
-        return (int)(clusters.size());
+        return numFragments;
     }
 
-    std::vector<_cr> Fragment::getNeighbors(const Tmdet::VOs::Residue& residueVO) {
+    void Fragment::setContactMap() {
+        nr = protein.numberOfSelectedResidues();
+        int cm_index=0;
+
+        protein.eachSelectedResidue(
+            [&](Tmdet::VOs::Residue& residue) -> void {
+                residue.temp.try_emplace("fragment",std::any(-1));
+                residue.temp.try_emplace("cm_index",std::any(cm_index));
+                residue.temp.try_emplace("neighbors",any_cast<std::vector<_cr>>(getNeighbors(residue)));
+                cmIndex.emplace_back(residue.chainIdx,residue.idx);
+            }
+        );
+
+        protein.eachSelectedResidue(
+            [&](Tmdet::VOs::Residue& residue) -> void {
+                for(auto& cr: any_cast<std::vector<_cr>>(residue.temp["neighbors"])) {
+                    auto& neighbor = protein.chains[cr.chainIdx].residues[cr.residueIdx];
+                    contactMap[any_cast<int>(residue.temp["cm_index"])][any_cast<int>(neighbor.temp["cm_index"])] = true;
+                }
+            }
+        );
+    }
+
+    std::vector<_cr> Fragment::getNeighbors(const Tmdet::VOs::Residue& residue) {
         std::vector<_cr> ret;
         std::vector<_cr> empty;
-        const gemmi::Atom* ca_atom = residueVO.gemmi.get_ca();
-        std::string ns="";
+        const gemmi::Atom* ca_atom = residue.gemmi.get_ca();
         bool check=false;
         if (ca_atom) {
-            for (auto mark: proteinVO.neighbors.find_neighbors(*ca_atom, 3, 9)) {
-                if (proteinVO.chains[mark->chain_idx].residues[mark->residue_idx].selected
-                    && proteinVO.chains[mark->chain_idx].residues[mark->residue_idx].atoms[mark->atom_idx].gemmi.name == "CA") {
-                    _cr cr;
-                    cr.chain_idx = mark->chain_idx;
-                    cr.residue_idx = mark->residue_idx;
-                    ret.emplace_back(cr);
-                    ns += std::format("{}, ",cr.residue_idx);
-                    if (std::abs(residueVO.idx - cr.residue_idx) > 3) {
-                        check = true;
-                    }
+            for (auto mark: protein.neighbors.find_neighbors(*ca_atom, 3, 9)) {
+                auto& neighbor = protein.chains[mark->chain_idx].residues[mark->residue_idx];
+                if (neighbor.selected && neighbor.atoms[mark->atom_idx].gemmi.name == "CA") {    
+                    ret.emplace_back(mark->chain_idx,mark->residue_idx);
+                    check |= (std::abs(residue.idx - neighbor.idx) > 3);
                 }
             }
         }
-        DEBUG_LOG("Neighhor: res({}):{}:{} {} - {}",residueVO.idx,residueVO.authId,residueVO.ss.code,(check?"good":"wrong"),ns);
+        DEBUG_LOG("Neighhor: res({}):{}:{} {}",residue.idx,residue.authId,residue.ss.code,(check?"good":"wrong"));
         return (check?ret:empty);
     }
 
-    std::vector<_cr> Fragment::getCAlphaNetwork() {
-        int node_idx = 0;
-        std::vector<_cr> crs;
-        proteinVO.eachSelectedResidue(
-            [&](Tmdet::VOs::Residue& residueVO) -> void {
-                chIdx = residueVO.chainIdx;
-                auto neighbors = getNeighbors(residueVO);
-                residueVO.temp.try_emplace("neighbors",std::any_cast<std::vector<_cr>>(neighbors));
-                if ( !neighbors.empty() ) {
-                    residueVO.temp.try_emplace("node_index",std::any_cast<int>(node_idx++));
-                    _cr cr;
-                    cr.chain_idx = residueVO.chainIdx;
-                    cr.residue_idx = residueVO.idx;
-                    crs.emplace_back(cr);
+    void Fragment::createFragments() {
+        protein.eachSelectedResidue(
+            [&](Tmdet::VOs::Residue& residue) -> void {
+                if (any_cast<int>(residue.temp["fragment"]) == -1 
+                    && any_cast<std::vector<_cr>>(residue.temp["neighbors"]).size() > 0) {
+                    setFragment(residue);
+                    numFragments++;
                 }
             }
         );
-        return crs;
     }
 
-    std::vector<std::vector<int>> Fragment::createFragments(const unsigned long size) {
-        auto& chainVO = proteinVO.chains[chIdx];
-        Graph G(chainVO,size);
-        chainVO.eachSelectedResidue(
-            [&](Tmdet::VOs::Residue& residueVO) -> void {
-                auto neighbors = std::any_cast<std::vector<_cr>>(residueVO.temp.at("neighbors"));
-                for (const auto& cr: neighbors) {
-                    int u = any_cast<int>(residueVO.temp.at("node_index"));
-                    if (proteinVO.chains[cr.chain_idx].residues[cr.residue_idx].temp.contains("node_index")) {
-                        int v = NODE_ID(cr.chain_idx,cr.residue_idx);
-                        G.addEdge(u,v,!residueVO.ss.isUnStructured(),!proteinVO.chains[cr.chain_idx].residues[cr.residue_idx].ss.isUnStructured());
+    void Fragment::setFragment(Tmdet::VOs::Residue& residue) {
+        residue.temp["fragment"] = std::any(numFragments);
+        DEBUG_LOG("setFragment: {}:{}",residue.authId,numFragments);
+        for(auto& cr: any_cast<std::vector<_cr>>(residue.temp["neighbors"])) {
+            auto& neighbor = protein.chains[cr.chainIdx].residues[cr.residueIdx];
+            if (enableMove(residue,neighbor)) {
+                setFragment(neighbor);
+            }
+        }
+    }
+
+    bool Fragment::enableMove(Tmdet::VOs::Residue& from, Tmdet::VOs::Residue& to) {
+        if (!to.selected) {
+            return false;
+        }
+        if (any_cast<int>(to.temp["fragment"]) != -1) {
+            return false;
+        }
+        if (from.chainIdx == to.chainIdx
+            && std::abs(from.authId - to.authId) <5) {
+                return true;
+        }
+        int numContacts = 0;
+        for (int i=-4; i<=4; i++) {
+            int k = any_cast<int>(from.temp["cm_index"]) + i;
+            if (k>=0 && k<nr) {
+                for (int j=-4; j<=4; j++) {
+                    int l = any_cast<int>(to.temp["cm_index"]) + j;
+                    if (l>=0 && l<nr) {
+                        numContacts += (contactMap[k][l]?1:0);
                     }
                 }
             }
-        );
-        std::vector<unsigned int> res = G.optim();
-        std::vector<std::vector<int>> ret(G.getNumClusters());
-        for(unsigned long i=0; i<size; i++) {
-            ret[res[i]].push_back(i);
         }
-        return ret;
-    }
-
-    void Fragment::writeBackFragmentInfoToStructure(std::vector<std::vector<int>> clusters, std::vector<_cr> crs) {
-        int cl_idx = 0;
-        
-        for (auto& cluster: clusters) {
-            for(auto& nodeIdx: cluster) {
-                proteinVO.chains[crs[nodeIdx].chain_idx].residues[crs[nodeIdx].residue_idx].temp.insert({"fragment",std::any_cast<int>(cl_idx)});
-            }
-            cl_idx++;
-        }
+        return (numContacts>3);
     }
 
     void Fragment::freeTempValues() {
-        proteinVO.eachSelectedChain(
-            [&](Tmdet::VOs::Chain& chainVO) -> void {
-                for (auto& residueVO: chainVO.residues) {
-                    residueVO.temp.erase("neighbors");
-                    if (residueVO.temp.contains("node_index")) {
-                        residueVO.temp.erase("node_index");
-                    }
+        protein.eachSelectedChain(
+            [&](Tmdet::VOs::Chain& chain) -> void {
+                for (auto& residue: chain.residues) {
+                    residue.temp.erase("neighbors");
                 }
             }
         );

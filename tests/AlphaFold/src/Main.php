@@ -26,6 +26,10 @@ foreach(file($idsFile) as $line) {
     $xml4 = new Xml4(TMDET_ROOT."/new/".$argv[1]."/".$id.".xml");
     $compare = new Compare($xml3,$xml4);
     $tmpStatus = $compare->tmpStatus();
+    if ($tmpStatus[1] == "missing") {
+        if ($tmpStatus[1] = "no");
+    }
+    $tmpStatus[0] = ($tmpStatus[1] == $tmpStatus[2]);
     if ($tmpStatus[0])  {
         if ($tmpStatus[1] == "no") {
             echo $id."  no OK\n";
