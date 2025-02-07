@@ -91,13 +91,33 @@ namespace Tmdet::Utils {
             "type",
             "pdbx_description",
         };
-
-        auto entityTable = block.find("_entity.", columns);
-
-        // Collect row values
         std::vector<std::vector<std::string>> newRows;
-        for (const auto& row : entityTable) {
-            newRows.push_back({ row.at(0), row.at(1), row.at(2) });
+
+        {
+            auto entityTable = block.find("_entity.", columns);
+
+            // Collect row values
+            for (const auto& row : entityTable) {
+                newRows.push_back({ row.at(0), row.at(1), row.at(2) });
+            }
+
+            // loop with these columns not found
+            if (newRows.size() == 0) {
+                // drop "pdbx_description";
+                // Probably tmdet input is a CIF file
+                // converted by 'gemmi convert' from an ENT file.
+                columns.erase(columns.end());
+
+                auto entityTable = block.find("_entity.", columns);
+                // Collect row values and append unknown pdbx_description
+                for (const auto& row : entityTable) {
+                    newRows.push_back({ row.at(0), row.at(1), "." });
+                }
+                // We will use these unknown descriptions;
+                // so we can reconstruct original entities
+                // from the input CIF in the overwrite block.
+                columns.push_back("pdbx_description");
+            }
         }
 
         // Overwrite _entity category by a new loop
