@@ -33,6 +33,7 @@ namespace Tmdet::Utils {
                         DEBUG_LOG("Filter results in {}",tmp);
                         chain.isTmp = (tmp>0);
                         protein.tmFilterResults |= chain.isTmp;
+                        std::filesystem::remove_all(tempDir); 
                     }
                 }
                 else {
