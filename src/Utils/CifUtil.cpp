@@ -11,6 +11,7 @@
 #include <vector>
 #include <DTOs/Protein.hpp>
 #include <Utils/CifUtil.hpp>
+#include <Services/ChemicalComponentDirectoryService.hpp>
 
 using namespace std;
 
@@ -137,12 +138,54 @@ namespace Tmdet::Utils {
         return newEntityId;
     }
 
+    /**
+     * @brief gemmi convert from pdb to cif does not add type details to
+     *        _chem_comp category. Therefore Mol* cannot apply cartoon
+     *        representation on polymer chains and displays everything with
+     *        space-ball representation.
+     *        This function update the given document block by the missing
+     *        details if the first type value is just a single "." (dot).
+     */
+    void updateChemicalComponentLoopIfNeeded(gemmi::cif::Block& block) {
+
+        // check whether this document resulted by pdb-cif conversion
+        auto chemCompTable = block.find("_chem_comp.", { "id", "type" });
+        std::vector<std::string> componentIds;
+        {
+            bool isTypeMissing = false;
+            for (const auto& row : chemCompTable) {
+                componentIds.push_back(row.at(0));
+                if (!isTypeMissing && row.at(1) == ".") {
+                    isTypeMissing = true;
+                }
+            }
+            if (!isTypeMissing) {
+                // _chemp_comp category has type information, update isn't needed
+                return;
+            }
+        }
+
+        //
+        // correction of _chem_comp
+        //
+
+        std::vector<std::string> columns{ "id", "type", "name", "one_letter_code",
+            "three_letter_code", "formula", "formula_weight" };
+        auto& newChemLoop = block.init_mmcif_loop("_chem_comp.", columns);
+
+        for (const auto& threeLetterCode : componentIds) {
+            const auto& row = Tmdet::Services::ChemicalComponentDirectoryService::getChemicalComponentInfo(threeLetterCode, columns);
+            newChemLoop.add_row(row);
+        }
+    }
+
     void CifUtil::prepareDocumentBlock(Tmdet::VOs::Protein& protein) {
 
         auto& document = protein.document;
         auto& oldBlock = document.blocks[0];
 
         auto entityId = addMembraneEntity(oldBlock);
+        updateChemicalComponentLoopIfNeeded(oldBlock);
 
         if (!oldBlock.has_mmcif_category("_atom_site")) {
             throw std::runtime_error("_atom_site not found");
@@ -259,4 +302,5 @@ namespace Tmdet::Utils {
         }
 
     }
+
 }
