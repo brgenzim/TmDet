@@ -143,24 +143,25 @@ namespace Tmdet::DTOs {
 
     }
 
-    Tmdet::VOs::Protein Protein::get(const std::string& inputPath) {
+    Tmdet::VOs::Protein Protein::get(const std::string& inputPath, const int modelIndex) {
         DEBUG_LOG("Processing Protein::get()");
         Tmdet::VOs::Protein protein;
         protein.getStructure(inputPath);
         protein.code = protein.gemmi.name;
         protein.inputFile = inputPath;
         Tmdet::Helpers::String::toLower(protein.code);
-        remove_hydrogens(protein.gemmi.models[0]);
-        remove_ligands_and_waters(protein.gemmi.models[0]);
-        remove_alternative_conformations(protein.gemmi.models[0]);
-        protein.gemmi.models.resize(1);
+        protein.modelIndex = (modelIndex>=(int)protein.gemmi.models.size()?0:modelIndex);
+        remove_hydrogens(protein.gemmi.models[protein.modelIndex]);
+        remove_ligands_and_waters(protein.gemmi.models[protein.modelIndex]);
+        remove_alternative_conformations(protein.gemmi.models[protein.modelIndex]);
+        //protein.gemmi.models.resize(1);
 
         int chainIdx = 0;
-        for(auto& chain: protein.gemmi.models[0].chains) {
+        for(auto& chain: protein.gemmi.models[protein.modelIndex].chains) {
             protein.chains.emplace_back(Tmdet::DTOs::Chain::get(protein.gemmi,chain,chainIdx));
             chainIdx++;
         }
-        protein.neighbors = gemmi::NeighborSearch(protein.gemmi.models[0], protein.gemmi.cell, 9);
+        protein.neighbors = gemmi::NeighborSearch(protein.gemmi.models[protein.modelIndex], protein.gemmi.cell, 9);
         protein.neighbors.populate();
         DEBUG_LOG(" Processed Protein::get()");
         return protein;

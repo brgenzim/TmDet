@@ -87,7 +87,7 @@ namespace Tmdet::Utils {
         getSymmetryOperand( R, t1, t2, curSim);
         double distance = (t2 - t1).squaredNorm();
         DEBUG_LOG("results {} {} distance: {} rmsd: {}",cidx1,cidx2,distance,rmsd);
-        if (distance > 2.0 && rmsd < 25 ) {
+        if (distance > 2.0 && rmsd < 20 ) {
             curSim.good = true;
         }
         sim.emplace_back(curSim);
@@ -100,19 +100,33 @@ namespace Tmdet::Utils {
     void Symmetry::getCoordinates(int cidx1, int cidx2, std::vector<Eigen::Vector3d>& coord1, std::vector<Eigen::Vector3d>& coord2, Eigen::Vector3d& t1, Eigen::Vector3d& t2) {
         DEBUG_LOG("Processing Symmetry::getCoordinates({}:{})",
         protein.chains[cidx1].id,protein.chains[cidx2].id);
-        const auto& length = (protein.chains[cidx1].length<protein.chains[cidx2].length?
-                        protein.chains[cidx1].length:protein.chains[cidx2].length);
         gemmi::Vec3 centre1;
         gemmi::Vec3 centre2;
         unsigned int nca = 0;
-        for (int idx = 0; idx<length; idx++) {
-            auto ca1 = protein.chains[cidx1].residues[idx].gemmi.get_ca();
-            auto ca2 = protein.chains[cidx2].residues[idx].gemmi.get_ca();
+        int idx1 = 0;
+        int idx2 = 0;
+        while (idx1 < protein.chains[cidx1].length && idx2 < protein.chains[cidx2].length) {
+            while (protein.chains[cidx1].residues[idx1].authId < protein.chains[cidx2].residues[idx2].authId) {
+                idx1++;
+            }
+            while (protein.chains[cidx1].residues[idx1].authId > protein.chains[cidx2].residues[idx2].authId) {
+                idx2++;
+            }
+            DEBUG_LOG("coord: {}:{} {}:{}",
+                protein.chains[cidx1].residues[idx1].authId,
+                protein.chains[cidx1].residues[idx1].type.a1,
+                protein.chains[cidx2].residues[idx2].authId,
+                protein.chains[cidx2].residues[idx2].type.a1
+            );
+            auto ca1 = protein.chains[cidx1].residues[idx1].gemmi.get_ca();
+            auto ca2 = protein.chains[cidx2].residues[idx2].gemmi.get_ca();
             if (ca1 && ca2) {
                 centre1 += ca1->pos;
                 centre2 += ca2->pos;
                 nca++;
             }
+            idx1++;
+            idx2++;
         }
         centre1 /= nca;
         centre2 /= nca;
@@ -121,14 +135,23 @@ namespace Tmdet::Utils {
         coord1.resize(nca);
         coord2.resize(nca);
         nca = 0;
-        for (int idx = 0; idx<length; idx++) {
-            auto ca1 = protein.chains[cidx1].residues[idx].gemmi.get_ca();
-            auto ca2 = protein.chains[cidx2].residues[idx].gemmi.get_ca();
+        idx1=idx2=0;
+        while (idx1 < protein.chains[cidx1].length && idx2 < protein.chains[cidx2].length) {
+            while (protein.chains[cidx1].residues[idx1].authId < protein.chains[cidx2].residues[idx2].authId) {
+                idx1++;
+            }
+            while (protein.chains[cidx1].residues[idx1].authId > protein.chains[cidx2].residues[idx2].authId) {
+                idx2++;
+            }
+            auto ca1 = protein.chains[cidx1].residues[idx1].gemmi.get_ca();
+            auto ca2 = protein.chains[cidx2].residues[idx2].gemmi.get_ca();
             if (ca1 && ca2) {
                 coord1[nca] = Eigen::Vector3d(ca1->pos.x - centre1.x, ca1->pos.y - centre1.y, ca1->pos.z - centre1.z);
                 coord2[nca] = Eigen::Vector3d(ca2->pos.x - centre2.x, ca2->pos.y - centre2.y, ca2->pos.z - centre2.z);
                 nca++;
             }
+            idx1++;
+            idx2++;
         }
         DEBUG_LOG(" Processed Symmetry::getCoordinates({}:{})",
             protein.chains[cidx1].id,protein.chains[cidx2].id);

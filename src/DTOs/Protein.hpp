@@ -40,8 +40,9 @@ namespace Tmdet::DTOs {
          * @brief get pdb structure and parse it into Protein Value Object
          * 
          * @param inputPath
+         * @param modelIndex
          */
-        static Tmdet::VOs::Protein get(const std::string& inputPath);
+        static Tmdet::VOs::Protein get(const std::string& inputPath, const int modelIndex);
 
         /**
          * @brief Unselect antibody chains

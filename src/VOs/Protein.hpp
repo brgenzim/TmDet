@@ -154,6 +154,8 @@ namespace Tmdet::VOs {
 
         bool tmFilterResults = false;
 
+        int modelIndex = 0;
+
         /**
          * @brief set transmembrane to no and clear data
          */

@@ -62,7 +62,7 @@ namespace Tmdet::System {
          */
         static std::string cif(const std::string& code, const int assemblyId = 0) {
             return std::format("{}/{}/{}{}",
-                    environment.get("PDB_CIF_DIR",DEFAULT_PDB_CIF_DIR),
+                    environment.get((assemblyId>0?"PDB_CIF_DIR":"PDB_AUCIF_DIR"),DEFAULT_PDB_CIF_DIR),
                     code.substr(1,2),code,
                     (assemblyId>0?std::format("-assembly{}.cif.gz",assemblyId):".cif.gz")
             );

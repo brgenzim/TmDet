@@ -51,6 +51,7 @@ Tmdet::System::Arguments getArguments(int argc, char *argv[]) {
     args.define(false,"xi","xml_input","Input xml file path","string","");
     args.define(false,"xo","xml_output","Output xml file path","string","");
     args.define(false,"a","assembly","Set assembly id","int","1");
+    args.define(false,"m","model","Set model id","int","0");
     
     //work 
     args.define(false,"r","run","Run the tmdet algorithm on the protein structure","bool","false");
@@ -81,6 +82,7 @@ Tmdet::System::Arguments getArguments(int argc, char *argv[]) {
     args.define(false,"ian","ifh_angle","Maximum angle between membrane plane and ifh","float","25");
     args.define(false,"irl","ifh_res_limit","Minimum number of residues in ifhs (all together)","int","10000");
     args.define(false,"ba","boost_angle","Boost secondary structure element angle in optimization","float","0.7");
+    args.define(false,"bba","boost_beta_angle","Boost beta sheet angle in optimization","float","0.55");
     args.define(false,"bp","boost_polarity","Boost polarity calculation in optimization","float","0.55");
     args.define(false,"lhp","loop_helix_part","Minimum of a helix be part as re-entrant loop","float","0.25");
     
@@ -144,7 +146,7 @@ int main(int argc, char *argv[], char **envp) {
         logger.error("file not found: {}",pdbInputPath);
         exit(EXIT_FAILURE);
     }
-    auto protein = Tmdet::DTOs::Protein::get(pdbInputPath);
+    auto protein = Tmdet::DTOs::Protein::get(pdbInputPath, args.getValueAsInt("m"));
     protein.forceSingleMembrane = !args.getValueAsBool("dm");
 
     if (code != "") {

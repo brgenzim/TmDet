@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 #include <array>
+#include <gemmi/math.hpp>
 #include <Config.hpp>
 #include <System/Logger.hpp>
 #include <Types/Chain.hpp>
@@ -132,6 +133,17 @@ namespace Tmdet::VOs {
                 }
             }
             return false;
+        }
+
+        bool isGapBetween(int r1, int r2) {
+            bool ret = false;
+            if (r1>=0 && r2>=0 && r1<length && r2<length
+                && residues[r1].temp.contains("ca")
+                && residues[r2].temp.contains("ca")) {
+                ret = (any_cast<gemmi::Vec3>(residues[r1].temp.at("ca")).dist(
+                            any_cast<gemmi::Vec3>(residues[r2].temp.at("ca"))) > 6.0);
+            }
+            return ret;
         }
 
     };

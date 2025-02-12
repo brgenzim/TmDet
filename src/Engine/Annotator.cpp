@@ -196,6 +196,7 @@ namespace Tmdet::Engine {
                         && REGZ(chain.residues[i]) > REGZ(chain.residues[i+1]))
                     )
                     && (maxDist(chain,i,i-2,beg,-1) > 4 && maxDist(chain,i,i+2,end,1) > 4)
+                    //&& !chain.residues[i].ss.isBeta()
              ) {
                 chain.residues[i].temp.at("type") = chain.residues[i].temp.at("ztype");
                 DEBUG_LOG("detectLoop: isLoop: {}:{}",chain.id, chain.residues[i].authId);
@@ -272,8 +273,10 @@ namespace Tmdet::Engine {
                     sameSide(chain,begin,end)
                 );
                 if (sameSide(chain,begin,end)
-                    && REGHZ(chain.residues[begin]) < 10.0 
-                    && REGHZ(chain.residues[end]) < 10.0
+                    && REGHZ(chain.residues[begin]) < 9.0 
+                    && REGHZ(chain.residues[end]) < 9.0
+                    && REGZ(chain.residues[begin]) > 6
+                    && REGZ(chain.residues[end]) > 6
                     && hasHelixTurnLoop(chain,begin,end,numHelix)) {
                         DEBUG_LOG("Loop found: {} {} {} {}",chain.id,chain.residues[begin].authId,
                                 chain.residues[end].authId,numHelix);
@@ -357,7 +360,7 @@ namespace Tmdet::Engine {
             DEBUG_LOG("detectTMH: {}:{}-{}",chain.id,chain.residues[begin].authId,chain.residues[end-1].authId);
             if (REGTYPE(chain.residues[begin]).isNotAnnotatedMembrane()
                 && helixContent(chain,begin,end) > 0.3
-                && (end-begin > lengthLimit || ((begin < 2 || end > chain.length -2) && end-begin > 6))
+                && (end-begin > lengthLimit || ((begin < 4 || end > chain.length -4) && end-begin > 6))
                 && REGZ(chain.residues[begin]) * REGZ(chain.residues[end-1]) < 0) {
                     regionHandler.replace(chain,begin,end-1,Tmdet::Types::RegionType::HELIX);
             }

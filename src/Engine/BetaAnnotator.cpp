@@ -163,7 +163,7 @@ namespace Tmdet::Engine {
                     && protein.secStrVecs[sheetIndex[i]].barrelIdx == -1
                     && !elements[i] ) {
                 max = connectome[sheetNum][i];
-                percent = 100 * max / (protein.secStrVecs[sheetIndex[i]].endResIdx-protein.secStrVecs[sheetIndex[i]].begResIdx+1);
+                percent = 50 * max / (protein.secStrVecs[sheetIndex[i]].endResIdx-protein.secStrVecs[sheetIndex[i]].begResIdx+1);
                 maxSheet = i;
             }
         }
@@ -171,7 +171,7 @@ namespace Tmdet::Engine {
             elements[maxSheet] = true;
             //connectome[sheetNum][maxSheet] = 0;
             //connectome[maxSheet][sheetNum] = 0;
-            DEBUG_LOG("Max: {}:{}",maxSheet,max);
+            DEBUG_LOG("Max: {}:{} {}",maxSheet,max,percent);
             detectBarrelSheets(maxSheet, sheetNum, elements);
         }
         std::string s="";
@@ -212,11 +212,13 @@ namespace Tmdet::Engine {
                 }
                 if (any_cast<Tmdet::Types::Region>(protein.chains[ssVec.chainIdx].residues[ssVec.begResIdx].temp.at("ztype")) !=
                         any_cast<Tmdet::Types::Region>(protein.chains[ssVec.chainIdx].residues[ssVec.endResIdx].temp.at("ztype"))) {
-                            if (ssVec.begResIdx>0) {
+                            if (ssVec.begResIdx>0 
+                                && protein.chains[ssVec.chainIdx].residues[ssVec.begResIdx-1].temp.contains("ztype")) {
                                 protein.chains[ssVec.chainIdx].residues[ssVec.begResIdx-1].temp.at("type") = 
                                     protein.chains[ssVec.chainIdx].residues[ssVec.begResIdx-1].temp.at("ztype");
                             }
-                            if (ssVec.endResIdx<protein.chains[ssVec.chainIdx].length-1) {
+                            if (ssVec.endResIdx<protein.chains[ssVec.chainIdx].length-1
+                                && protein.chains[ssVec.chainIdx].residues[ssVec.endResIdx+1].temp.contains("ztype")) {
                                 protein.chains[ssVec.chainIdx].residues[ssVec.endResIdx+1].temp.at("type") = 
                                     protein.chains[ssVec.chainIdx].residues[ssVec.endResIdx+1].temp.at("ztype");
                             }
@@ -295,7 +297,7 @@ namespace Tmdet::Engine {
         chain.eachSelectedResidue(
             [&](Tmdet::VOs::Residue& residue) -> void {
                 if (any_cast<Tmdet::Types::Region>(residue.temp.at("type")).isNotAnnotatedMembrane() 
-                    && residue.isInside()) {
+                   /* && residue.isInside()*/) {
                     residue.temp.at("type") = (any_cast<double>(residue.temp["hz"]) > 0 ? 
                         std::any(Tmdet::Types::RegionType::MEMBINS) :
                         std::any(residue.temp.at("ztype")));

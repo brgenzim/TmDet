@@ -128,9 +128,10 @@ namespace Tmdet::Engine {
                         && end<chain.length-1
                         && chain.residues[beg-1].selected
                         && chain.residues[end].selected
-                        && chain.residues[beg].authId - chain.residues[beg-1].authId == 1
-                        && chain.residues[end].authId - chain.residues[end-1].authId == 1
-                        && any_cast<Tmdet::Types::Region>(chain.residues[beg-1].temp.at("ztype")).isNotMembrane()
+                        && !chain.isGapBetween(beg-1,beg)
+                        && !chain.isGapBetween(end-1,end)
+                        && any_cast<Tmdet::Types::Region>(chain.residues[beg-1].temp.at("type")).isNotMembrane()
+                        && any_cast<Tmdet::Types::Region>(chain.residues[end].temp.at("type")).isNotMembrane()
                         && any_cast<Tmdet::Types::Region>(chain.residues[beg-1].temp.at("ztype")).code ==
                             any_cast<Tmdet::Types::Region>(chain.residues[end].temp.at("ztype")).code) {
                                 DEBUG_LOG("rule: 1111MM..MM111 or 111BB..BB1111 or 111HH..HH111");
