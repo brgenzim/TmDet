@@ -67,7 +67,7 @@ namespace Tmdet::Services {
             chemCompDirectory += "/" + std::string(1, threeLetterCode[1]);
         }
 
-        gemmi::cif::Document document = gemmi::cif::read(gemmi::MaybeGzipped(chemCompDirectory + "/" + threeLetterCode + ".cif"));
+        gemmi::cif::Document document = getChemicalComponentDocument(threeLetterCode);
         const auto& block = document.blocks[0];
 
         if (!block.has_mmcif_category("_chem_comp_atom") || !block.has_mmcif_category("_chem_comp")) {
@@ -133,7 +133,7 @@ namespace Tmdet::Services {
         pg.setNumTicks(doc.blocks.size());
         pg.displayPercentage();
         pg.displayTasksDone();
-        
+
         for (const auto& block : doc.blocks) {
             std::string cifPath = createDir(destDir, block.name) + "/" + block.name + ".cif";
             writeCif(cifPath.c_str(), block);
@@ -159,5 +159,40 @@ namespace Tmdet::Services {
         os.open(cifPath);
         write_cif_block_to_stream(os, block, wo);
         os.close();
+    }
+
+    gemmi::cif::Document ChemicalComponentDirectoryService::getChemicalComponentDocument(const std::string& threeLetterCode) {
+
+        std::string chemCompDirectory = environment.get("TMDET_CC_DIR",DEFAULT_TMDET_CC_DIR)
+                         + "/"
+                         + std::string(1, threeLetterCode[0]);
+        if (threeLetterCode.size() >= 2) {
+            chemCompDirectory += "/" + std::string(1, threeLetterCode[1]);
+        }
+
+        return gemmi::cif::read(gemmi::MaybeGzipped(chemCompDirectory + "/" + threeLetterCode + ".cif"));
+    }
+
+    std::vector<std::string> ChemicalComponentDirectoryService::getChemicalComponentInfo(const std::string& threeLetterCode, std::vector<std::string> columns) {
+
+        // collected values will be stored in this vector
+        std::vector<std::string> chemCompValues;
+
+        gemmi::cif::Document document = getChemicalComponentDocument(threeLetterCode);
+        auto& block = document.blocks[0];
+
+        if (!block.has_mmcif_category("_chem_comp")) {
+            throw std::runtime_error("Expected _chem_comp category not found");
+        }
+
+        // get the first (and probably the only one) row
+        auto table = block.find("_chem_comp.", columns);
+        auto chemCompRow = table.one();
+        // add values of columns
+        for (long unsigned int index = 0; index < columns.size(); index++) {
+            chemCompValues.push_back(chemCompRow.at(index));
+        }
+
+        return chemCompValues;
     }
 }

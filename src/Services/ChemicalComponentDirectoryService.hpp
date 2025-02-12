@@ -19,7 +19,7 @@
 namespace Tmdet::Services {
 
     /**
-     * @brief Service for acquiring CCD
+     * @brief Service for acquiring CCD and access chemical component information.
      */
     class ChemicalComponentDirectoryService {
         private:
@@ -32,5 +32,14 @@ namespace Tmdet::Services {
             static bool isBuilt();
             static Types::Residue getComponentAsResidue(const std::string& threeLetterCode);
 
+            /**
+             * @brief Get chemical component gemmi document from Chemical Component Directory (CCD).
+             */
+            static gemmi::cif::Document getChemicalComponentDocument(const std::string& threeLetterCode);
+
+            /**
+             * @brief Extract chemical component information from Chemical Component Directory (CCD).
+             */
+            static std::vector<std::string> getChemicalComponentInfo(const std::string& threeLetterCode, std::vector<std::string> columns);
     };
 }

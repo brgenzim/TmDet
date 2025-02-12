@@ -21,7 +21,7 @@ namespace Tmdet::Utils {
             static std::string getSuffix(const std::string& tag);
 
             /**
-             * Update _atom_site loop and add membrane-representation atoms
+             * @brief Update _atom_site loop and add membrane-representation atoms.
              */
             static void prepareDocumentBlock(Tmdet::VOs::Protein& protein);
 
