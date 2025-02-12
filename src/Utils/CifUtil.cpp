@@ -181,6 +181,8 @@ namespace Tmdet::Utils {
 
     void CifUtil::prepareDocumentBlock(Tmdet::VOs::Protein& protein) {
 
+        int modelIndex = protein.modelIndex;
+
         auto& document = protein.document;
         auto& oldBlock = document.blocks[0];
 
@@ -259,7 +261,17 @@ namespace Tmdet::Utils {
         };
 
         // Iterate on existing atoms
+        const std::string modelNumber = protein.gemmi.models[modelIndex].name;
+        int nextSerialId = 1;
         for (auto atom : atomTable) {
+
+            // skip unneeded models
+            if (atom[pdbxPDBModelNumIndex] != modelNumber) {
+                continue;
+            }
+
+            atom[serialIndex] = std::format("{:d}", nextSerialId);
+
             // outputStream << atom.row_index << std::endl;
             std::vector<std::string> atomLine;
             for (auto& value : atom) {
@@ -273,6 +285,7 @@ namespace Tmdet::Utils {
             atom[zIndex] = atomLine[zIndex];
             // add atom row to the loop
             newLoop.add_row(atom);
+            nextSerialId++;
         }
 
         // Add atoms for membrane representation
@@ -280,7 +293,6 @@ namespace Tmdet::Utils {
         // colIndex == number of columns
         const auto& membraneAtoms = Tmdet::DTOs::Protein::addMembraneAtoms(protein);
 
-        int nextSerialId = atomTable.length() + 1;
         for (const auto& atomPosition : membraneAtoms) {
             std::vector<std::string> atomLine(colIndex, ".");
             atomLine[0] = "HETATM";
@@ -292,7 +304,7 @@ namespace Tmdet::Utils {
             atomLine[labelSeqIdIndex] = "1"; // This is a single giant residue
             atomLine[occupancyIndex] = "1.00";
             atomLine[bIsoIndex] = "0.00";
-            atomLine[pdbxPDBModelNumIndex] = "1";
+            atomLine[pdbxPDBModelNumIndex] = modelNumber;
             atomLine[xIndex] = std::format("{:.3f}", atomPosition.x);
             atomLine[yIndex] = std::format("{:.3f}", atomPosition.y);
             atomLine[zIndex] = std::format("{:.3f}", atomPosition.z);
