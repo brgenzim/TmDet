@@ -261,7 +261,7 @@ namespace Tmdet::Utils {
         };
 
         // Iterate on existing atoms
-        const std::string modelNumber = protein.gemmi.models[modelIndex].name;
+        const std::string modelNumber = std::to_string(protein.gemmi.models[modelIndex].num);
         int nextSerialId = 1;
         for (auto atom : atomTable) {
 
