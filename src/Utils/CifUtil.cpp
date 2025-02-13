@@ -41,21 +41,13 @@ namespace Tmdet::Utils {
             return result;
         };
 
-        // if this category has pairs
-        auto asymIdListPair = block.find_pair("_pdbx_struct_assembly_gen.asym_id_list");
-        if (asymIdListPair != nullptr) {
-            std::string newList = appendMembraneId((*asymIdListPair)[1]);
-            block.set_pair("_pdbx_struct_assembly_gen.asym_id_list", newList);
-            return;
-        }
-        // if this category is a loop
-        auto asymGenLoopPtr = block.find_loop_item("_pdbx_struct_assembly_gen.assembly_id");
-        if (asymGenLoopPtr == nullptr) {
-            return;
-        }
         // relevant columns (others will be excluded from the new loop):
         std::vector<std::string> columns{ "assembly_id", "oper_expression", "asym_id_list" };
         auto asymGenTable = block.find("_pdbx_struct_assembly_gen.", columns);
+
+        if (asymGenTable.size() == 0) {
+            return;
+        }
 
         // Collect row values
         std::vector<std::vector<std::string>> newRows;
@@ -67,10 +59,8 @@ namespace Tmdet::Utils {
         // _pdbx_struct_assembly_gen.asym_id_list
         auto& newGenLoop = block.init_mmcif_loop("_pdbx_struct_assembly_gen.", columns);
         for (auto& row : newRows) {
-            // WARNING: need more work to check this is the identity operator
-            if (row[1] == "1") {
-                row[2] = appendMembraneId(row[2]);
-            }
+            // add TM_ entity to each assembly
+            row[2] = appendMembraneId(row[2]);
             newGenLoop.add_row(row);
         }
     }
