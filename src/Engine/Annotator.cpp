@@ -51,7 +51,9 @@ namespace Tmdet::Engine {
         detectLoops();        
         auto betaAnnotator = Tmdet::Engine::BetaAnnotator(protein,regionHandler);
         
-        loopHelixPart = args.getValueAsFloat("lhp");
+        loopMinHelixPart = args.getValueAsFloat("lmhp");
+        loopMinDeep = args.getValueAsFloat("lmd");
+        loopMinNoSS = args.getValueAsInt("lmnss");
         setChainsType();
         annotateChains();
         protein.eachSelectedChain(
@@ -231,9 +233,10 @@ namespace Tmdet::Engine {
 
     void Annotator::detectInterfacialHelices() {
         
-        float hfLimit = args.getValueAsFloat("hml");
+        float hfLimit = args.getValueAsFloat("ihml");
         float avgSurface = args.getValueAsFloat("ias");
         ifhAngleLimit = args.getValueAsFloat("ian");
+        int ifhMinLength = args.getValueAsInt("iml");
         DEBUG_LOG("Processing Annotator::detectInterfacialHelices(hfm:{}, as:{})",hfLimit,avgSurface);
         for(auto& membrane: protein.membranes) {
             auto alphaVecs = getParallelAlphas(membrane);
@@ -242,9 +245,10 @@ namespace Tmdet::Engine {
                     if (vector.endResIdx -vector.begResIdx>2
                         && protein.chains[vector.chainIdx].residues[vector.begResIdx].selected
                         && protein.chains[vector.chainIdx].residues[vector.endResIdx].selected
-                        && averageSurface(protein.chains[vector.chainIdx],vector.begResIdx,vector.endResIdx) > avgSurface
+                        && averageSurface(protein.chains[vector.chainIdx],vector.begResIdx,vector.endResIdx) >= avgSurface
                         && sameSide(protein.chains[vector.chainIdx],vector.begResIdx,vector.endResIdx)
-                        && hydrophocityMomentum(protein.chains[vector.chainIdx],vector.begResIdx,vector.endResIdx) > hfLimit) {
+                        && hydrophocityMomentum(protein.chains[vector.chainIdx],vector.begResIdx,vector.endResIdx) >= hfLimit
+                        && vector.endResIdx -vector.begResIdx + 1 >= ifhMinLength) {
                             for (int i=vector.begResIdx; i<=vector.endResIdx; i++) {
                                 if (protein.chains[vector.chainIdx].residues[i].selected
                                     && !REGTYPE(protein.chains[vector.chainIdx].residues[i]).isAnnotatedMembraneType()) {
@@ -342,13 +346,13 @@ namespace Tmdet::Engine {
                 maxCount = count;
                 maxPercent = percent;
             }
-            numHelix += (percent>=loopHelixPart);
+            numHelix += (percent>=loopMinHelixPart);
         }
         DEBUG_LOG("hasOneHelix: {} {} {}: {}::{}% {} hzDiff:{} numHelix:{} return:{}",chain.id,
             chain.residues[begin].authId,chain.residues[end].authId,
             maxCount,maxPercent,numNoSS,maxHz-hz,numHelix,
-            (maxPercent>25 &&  maxHz-hz > 3));
-        return (maxPercent>=loopHelixPart &&  maxHz-hz > 3);
+            (maxPercent>=loopMinHelixPart &&  maxHz-hz >= loopMinDeep && numNoSS >= loopMinNoSS));
+        return (maxPercent>=loopMinHelixPart &&  maxHz-hz >= loopMinDeep && numNoSS >= loopMinNoSS);
     }
 
     void Annotator::detectTransmembraneHelices(Tmdet::VOs::Chain& chain) {

@@ -41,7 +41,7 @@ namespace Tmdet::Engine {
         higherQ2 = args.getValueAsFloat("hq2");
         massCentre = protein.centre();
         ifhAngleLimit = args.getValueAsFloat("ian");
-        ifhResLimit = args.getValueAsInt("irl");
+        ifhResLimit = 10000;//args.getValueAsInt("irl");
         boostAngle = args.getValueAsFloat("ba");
         boostBetaAngle = args.getValueAsFloat("bba");
         boostPolarity = args.getValueAsFloat("bp");
@@ -195,7 +195,8 @@ namespace Tmdet::Engine {
                     && protein.chains[vector.chainIdx].residues[vector.begResIdx].selected
                     && protein.chains[vector.chainIdx].residues[vector.endResIdx].selected
                     && dend-dbeg<5 
-                    && angle < ifhAngleLimit)  {
+                    && angle < ifhAngleLimit
+                    && vector.endResIdx - vector.begResIdx + 1 >= ifhMinLength)  {
                     for (int j=vector.begResIdx; j<=vector.endResIdx; j++) {
                         if (protein.chains[vector.chainIdx].residues[j].selected) {
                             int i = distance(any_cast<gemmi::Vec3&>(protein.chains[vector.chainIdx].residues[j].temp["ca"])) - minZ;

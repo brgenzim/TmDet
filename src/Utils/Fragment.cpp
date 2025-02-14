@@ -48,15 +48,23 @@ namespace Tmdet::Utils {
                 residue.temp.try_emplace("fragment",std::any(-1));
                 residue.temp.try_emplace("cm_index",std::any(cm_index));
                 residue.temp.try_emplace("neighbors",any_cast<std::vector<_cr>>(getNeighbors(residue)));
-                cmIndex.emplace_back(residue.chainIdx,residue.idx);
+                cm_index++;
             }
         );
 
         protein.eachSelectedResidue(
             [&](Tmdet::VOs::Residue& residue) -> void {
                 for(auto& cr: any_cast<std::vector<_cr>>(residue.temp["neighbors"])) {
-                    auto& neighbor = protein.chains[cr.chainIdx].residues[cr.residueIdx];
-                    contactMap[any_cast<int>(residue.temp["cm_index"])][any_cast<int>(neighbor.temp["cm_index"])] = true;
+                    if (protein.chains[cr.chainIdx].selected 
+                            && protein.chains[cr.chainIdx].residues[cr.residueIdx].selected) {
+                        auto& neighbor = protein.chains[cr.chainIdx].residues[cr.residueIdx];
+                            DEBUG_LOG("Set CM[{}][{}] = true ({},{})",
+                                any_cast<int>(residue.temp["cm_index"]),
+                                any_cast<int>(neighbor.temp["cm_index"]),
+                                residue.authId,neighbor.authId
+                            );
+                            contactMap[any_cast<int>(residue.temp["cm_index"])][any_cast<int>(neighbor.temp["cm_index"])] = true;
+                    }
                 }
             }
         );
@@ -69,10 +77,11 @@ namespace Tmdet::Utils {
         bool check=false;
         if (ca_atom) {
             for (auto mark: protein.neighbors.find_neighbors(*ca_atom, 3, 9)) {
-                auto& neighbor = protein.chains[mark->chain_idx].residues[mark->residue_idx];
-                if (neighbor.selected && neighbor.atoms[mark->atom_idx].gemmi.name == "CA") {    
+                if (protein.chains[mark->chain_idx].selected
+                    && protein.chains[mark->chain_idx].residues[mark->residue_idx].selected
+                    && protein.chains[mark->chain_idx].residues[mark->residue_idx].atoms[mark->atom_idx].gemmi.name == "CA") {
                     ret.emplace_back(mark->chain_idx,mark->residue_idx);
-                    check |= (std::abs(residue.idx - neighbor.idx) > 3);
+                    check |= (std::abs(residue.idx - protein.chains[mark->chain_idx].residues[mark->residue_idx].idx) > 3);
                 }
             }
         }
@@ -104,7 +113,8 @@ namespace Tmdet::Utils {
     }
 
     bool Fragment::enableMove(Tmdet::VOs::Residue& from, Tmdet::VOs::Residue& to) {
-        if (!to.selected) {
+        if (!to.selected || !to.temp.contains("fragment") 
+            || !to.temp.contains("cm_index") || !from.temp.contains("cm_index")) {
             return false;
         }
         if (any_cast<int>(to.temp["fragment"]) != -1) {

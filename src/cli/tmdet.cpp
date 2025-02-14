@@ -77,14 +77,16 @@ Tmdet::System::Arguments getArguments(int argc, char *argv[]) {
     args.define(false,"minht","minimum_of_half_thickness","Minimum value of half thickness","float","10.0");
     args.define(false,"maxht","maximum_of_half_thickness","Maximum value of half thickness","float","20.0");
     args.define(false,"maxcht","maximum_of_curved_half_thickness","Maximum value of half thickness for curved membrane detection","float","14");
-    args.define(false,"hml","hydrph_limit","Hydrophobicity momentum limit for ifh detection","float","0.0"/*"1.6"*/);
-    args.define(false,"ias","ifh_avg_surface","Average free solvent accessible surface limit for ifh detection","float","0"/*"40"*/);
+    args.define(false,"ihml","ifh_hydrph_limit","Hydrophobicity momentum limit for ifh detection","float","1.6");
+    args.define(false,"ias","ifh_avg_surface","Average free solvent accessible surface limit for ifh detection","float","40");
     args.define(false,"ian","ifh_angle","Maximum angle between membrane plane and ifh","float","25");
-    args.define(false,"irl","ifh_res_limit","Minimum number of residues in ifhs (all together)","int","10000");
+    args.define(false,"iml","ifh_min_length","Minimum length of ifhs","int","4");
     args.define(false,"ba","boost_angle","Boost secondary structure element angle in optimization","float","0.7");
     args.define(false,"bba","boost_beta_angle","Boost beta sheet angle in optimization","float","0.55");
     args.define(false,"bp","boost_polarity","Boost polarity calculation in optimization","float","0.55");
-    args.define(false,"lhp","loop_helix_part","Minimum of a helix be part as re-entrant loop","float","0.25");
+    args.define(false,"lmhp","loop_min_helix_part","Minimum of a helix be part as re-entrant loop","float","0.25");
+    args.define(false,"lmd","loop_min_deep","Minimum deep of a re-entrant loop in angstrom","float","3.0");
+    args.define(false,"lmnss","loop_min_no_sec_str","Minimum number of residues in a re-entrant loop that has no secondary structure","int","2");
     
     args.set(argc,argv);
     args.check();

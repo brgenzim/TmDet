@@ -21,7 +21,7 @@ namespace Tmdet::Utils {
      */
     struct NeighBors {
         static void store(Tmdet::VOs::Protein& protein) {
-            protein.eachResidue(
+            protein.eachSelectedResidue(
                 [&](Tmdet::VOs::Residue& residue) -> void {
                     std::vector<Tmdet::VOs::CR> neighbors;
                     auto ca =residue.getCa();
@@ -47,7 +47,8 @@ namespace Tmdet::Utils {
         }
 
         static std::vector<Tmdet::VOs::CR> get(Tmdet::VOs::Residue& residue) {
-            return any_cast<std::vector<Tmdet::VOs::CR>>(residue.temp["ca_neighbors"]);
+            std::vector<Tmdet::VOs::CR> empty;
+            return (residue.temp.contains("ca_neighbors")?any_cast<std::vector<Tmdet::VOs::CR>>(residue.temp["ca_neighbors"]):empty);
         }
     };
 }

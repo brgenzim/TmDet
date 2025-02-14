@@ -107,6 +107,7 @@ namespace Tmdet::Engine {
             double higherQ2;
             double ifhAngleLimit;
             int ifhResLimit;
+            int ifhMinLength;
             double boostAngle;
             double boostBetaAngle;
             double boostPolarity;

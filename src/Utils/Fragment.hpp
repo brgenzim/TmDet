@@ -25,7 +25,6 @@ namespace Tmdet::Utils {
             int numFragments;
             int nr;
             std::vector<std::vector<bool>> contactMap;
-            std::vector<_cr> cmIndex;
             
             std::vector<_cr> getNeighbors(const Tmdet::VOs::Residue& residue);
             void setContactMap();
