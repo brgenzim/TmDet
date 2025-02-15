@@ -21,7 +21,7 @@ namespace Tmdet::Utils {
     void MyDssp::exec() {
         setCO();
         setAngle();
-        setHelix();
+        //setHelix();
         setExtended();
         //removeMins("S");
         //removeMins("E");

@@ -360,6 +360,7 @@ namespace Tmdet::Engine {
         int begin = 0;
         int end = 0;
         int lengthLimit = (args.getValueAsBool("fr")?14:10);
+        lengthLimit=(getNumberOfMembraneSegments(chain)>1?lengthLimit:9);
         while(regionHandler.getNext<Tmdet::Types::Region>(chain,begin,end,"type")) {
             DEBUG_LOG("detectTMH: {}:{}-{}",chain.id,chain.residues[begin].authId,chain.residues[end-1].authId);
             if (REGTYPE(chain.residues[begin]).isNotAnnotatedMembrane()
@@ -371,6 +372,19 @@ namespace Tmdet::Engine {
             begin = end;
         }
         DEBUG_LOG(" Processed Annotator::detectTransmembraneHelices()");
+    }
+
+    int Annotator::getNumberOfMembraneSegments(Tmdet::VOs::Chain& chain) {
+        int begin = 0;
+        int end = 0;
+        int n = 0;
+        while(regionHandler.getNext<Tmdet::Types::Region>(chain,begin,end,"type")) {
+            if (REGTYPE(chain.residues[begin]).isNotAnnotatedMembrane()) {
+                n++;
+            }
+            begin=end;
+        }
+        return n;
     }
 
     double Annotator::helixContent(Tmdet::VOs::Chain& chain, int beg, int end) {
@@ -408,8 +422,8 @@ namespace Tmdet::Engine {
             && protein.chains[vec.chainIdx].selected 
             && begRes.selected 
             && endRes.selected
-            && (REGHZ(begRes) < (REGTYPE(begRes).isNotMembrane()?10.0:5.0) 
-                    || REGHZ(endRes) < (REGTYPE(endRes).isNotMembrane()?10.0:5.0))
+            && (REGHZ(begRes) < (REGTYPE(begRes).isNotMembrane()?5.0:3.0) 
+                    || REGHZ(endRes) < (REGTYPE(endRes).isNotMembrane()?5.0:3.0))
             //&& (REGTYPE(begRes).isNotAnnotatedMembrane() || REGTYPE(begRes).isNotMembrane())
             //&& (REGTYPE(endRes).isNotAnnotatedMembrane() || REGTYPE(endRes).isNotMembrane())
          ) {

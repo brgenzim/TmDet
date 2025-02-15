@@ -339,6 +339,7 @@ namespace Tmdet::Engine {
             if (minz > 0
                 && slices[minz].qValue > higherQ 
                 && slices[minz].smoothedIfh < ifhLimit
+                && slices[minz].qValue > slices[minz-1].qValue
                 && maxz-minz < 2*maxHT) {
                     q += slices[minz].qValue;
                     minz--;
@@ -347,6 +348,7 @@ namespace Tmdet::Engine {
             if (maxz < (int)slices.size()-1
                 && slices[maxz].qValue > higherQ
                 && slices[maxz].smoothedIfh < ifhLimit
+                && slices[maxz].qValue > slices[maxz+1].qValue
                 && maxz-minz < 2*maxHT) {
                     q += slices[maxz].qValue;
                     maxz++;
@@ -361,6 +363,7 @@ namespace Tmdet::Engine {
                 if (minz > 0
                     && slices[minz].qValue > lowerQ 
                     && slices[minz].smoothedIfh < ifhResLimit
+                    && slices[minz].qValue > slices[minz-1].qValue
                     && maxz-minz < 2*maxHT) {
                         q += slices[minz].qValue;
                         minz--;
@@ -369,6 +372,7 @@ namespace Tmdet::Engine {
                 if (maxz < (int)slices.size()-1
                     && slices[maxz].qValue > lowerQ
                     && slices[maxz].smoothedIfh < ifhResLimit
+                    && slices[maxz].qValue > slices[maxz+1].qValue
                     && maxz-minz < 2*maxHT) {
                         q += slices[maxz].qValue;
                         maxz++;
@@ -378,8 +382,22 @@ namespace Tmdet::Engine {
             minz++;
             maxz--;
         }
+        int out = 0;
+        if (!args.getValueAsBool("dm")) {
+            for (int i=0; i<minz; i++) {
+                if (slices[i].qValue > higherQ) {
+                    out++;
+                }
+            }
+            for (int i=maxz+1; i<slices.size(); i++) {
+                if (slices[i].qValue > higherQ) {
+                    out++;
+                }
+            }
+        }
+
         DEBUG_LOG("getWidth(): {} {} {} {}",minz,maxz,q,slices[z].qValue);
-        return slices[z].qValue;
+        return (out>10?0:slices[z].qValue);
     }
 
     void Optimizer::testMembraneNormalOne() {

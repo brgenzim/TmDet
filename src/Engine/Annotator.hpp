@@ -133,6 +133,8 @@ namespace Tmdet::Engine {
              */
             void detectTransmembraneHelices(Tmdet::VOs::Chain& chain);
 
+            int getNumberOfMembraneSegments(Tmdet::VOs::Chain& chain);
+
             double helixContent(Tmdet::VOs::Chain& chain, int beg, int end);
 
             /**
