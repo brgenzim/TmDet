@@ -105,18 +105,24 @@ namespace Tmdet::DTOs {
                     // number of columns in the table
                     int colNum = table.tags().size();
                     int column = 0;
+                    // previousWasLongText flag to avoid double std::endl after long value
+                    bool previousWasLongText = false;
                     // iterate on values in the loop object;
                     // 'column' helps to identify end of rows
                     for (auto value : loop.values) {
                         column++;
                         // print value of a column
-                        if (value[0] == ';') {
-                            // insert new line before long string separator
+                        if (value[0] == ';' && !previousWasLongText) {
+                            // insert new line before long string separator,
+                            // except the previous long value already printed it
                             outputStream << std::endl;
+                            previousWasLongText = true;
+                        } else {
+                            previousWasLongText = false;
                         }
                         outputStream << value;
-                        // if new row begins
-                        if (column % colNum == 0) {
+                        // if new row begins or last char is ; (so it is a long value)
+                        if (column % colNum == 0 || *(value.end() - 1) == ';') {
                             outputStream << std::endl;
                         } else {
                             // separator between column values
