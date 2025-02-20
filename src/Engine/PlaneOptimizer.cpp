@@ -34,7 +34,7 @@ namespace Tmdet::Engine {
     }
 
     void PlaneOptimizer::setMembraneOrigo(Tmdet::VOs::Membrane& membrane, double minz, double maxz) {
-        double o = (minz+maxz) / 2 + minZ;
+        double o = (minz+maxz) / 2 + minZ + args.getValueAsFloat("sm");
         if (protein.membranes.empty()) {
             massCentre += o * bestNormal;
             membrane.origo = 0;

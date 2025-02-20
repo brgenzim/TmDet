@@ -71,22 +71,27 @@ Tmdet::System::Arguments getArguments(int argc, char *argv[]) {
     args.define(false,"xf3","xml_out_fmt3","Set xml output format to v3","bool","false");
     
     //parameters
-    args.define(false,"lq","lower_qvalue","Lower qValue, above it is membrane","float","38");
-    args.define(false,"hq","higher_qvalue","Higher qValue, limit for transmembrane type","float","48");
+    args.define(false,"lq","lower_qvalue","Lower qValue, above it is membrane","float","30");
+    args.define(false,"hq","higher_qvalue","Higher qValue, limit for transmembrane type","float","36");
     args.define(false,"hq2","higher_qvalue2","Higher qValue2, limit for second membrane","float","55");
     args.define(false,"minht","minimum_of_half_thickness","Minimum value of half thickness","float","10.0");
     args.define(false,"maxht","maximum_of_half_thickness","Maximum value of half thickness","float","20.0");
     args.define(false,"maxcht","maximum_of_curved_half_thickness","Maximum value of half thickness for curved membrane detection","float","14");
     args.define(false,"ihml","ifh_hydrph_limit","Hydrophobicity momentum limit for ifh detection","float","1.6");
     args.define(false,"ias","ifh_avg_surface","Average free solvent accessible surface limit for ifh detection","float","40");
-    args.define(false,"ian","ifh_angle","Maximum angle between membrane plane and ifh","float","25");
-    args.define(false,"iml","ifh_min_length","Minimum length of ifhs","int","4");
+    args.define(false,"ian","ifh_angle","Maximum angle between membrane plane and ifh","float","15");
+    args.define(false,"iml","ifh_min_length","Minimum length of ifhs","int","6");
     args.define(false,"ba","boost_angle","Boost secondary structure element angle in optimization","float","0.7");
     args.define(false,"bba","boost_beta_angle","Boost beta sheet angle in optimization","float","0.55");
     args.define(false,"bp","boost_polarity","Boost polarity calculation in optimization","float","0.55");
     args.define(false,"lmhp","loop_min_helix_part","Minimum of a helix be part as re-entrant loop","float","0.25");
     args.define(false,"lmd","loop_min_deep","Minimum deep of a re-entrant loop in angstrom","float","3.0");
     args.define(false,"lmnss","loop_min_no_sec_str","Minimum number of residues in a re-entrant loop that has no secondary structure","int","2");
+    args.define(false,"mums","max_unannotated_memb_segm","Maximum number of residues that can not be annotated","int","10");
+    args.define(false,"sm","shift_membrane","Shift membrane with the given distance","float","0");
+    args.define(false,"mltmh","min_length_of_tmh","Minimum length of transmembrane helix","int","12");
+    args.define(false,"spen","straigth_penalty","Additional value for normalizing straigth","float","0.0");
+    args.define(false,"mcbs","min_contacts_between_sheets","Minimum of contacts between sheets for barrel detection","int","5");
     
     args.set(argc,argv);
     args.check();

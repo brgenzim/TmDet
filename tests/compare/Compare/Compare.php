@@ -45,7 +45,10 @@ class Compare {
 
     private function chain(array $ch3, array $ch4) : array {
         $ret = [];
-        if ( abs(intval($ch3['numtm']) - intval($ch4['numtm'])) > 1) {
+        if ( abs(intval($ch3['numtm']) - intval($ch4['numtm'])) != 0 
+            && abs(intval($ch3['numtm']) - intval($ch4['numtm'])) != 1
+            && abs(intval($ch3['numtm']) - intval($ch4['numtm'])) != 2
+            && abs(intval($ch3['numtm']) - intval($ch4['numtm'])) != 4) {
             $ret[] = "Number of tms is different for chain ".$ch3['id'].": ".$ch3['numtm']." vs ".$ch4['numtm'];
         }
         /*if ($ch3['seq'] != $ch4['seq']) {

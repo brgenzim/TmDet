@@ -55,19 +55,23 @@ namespace Tmdet::Utils {
         int numChains = 0 ;
         int numRotated = 0;
         sim.clear();
-        if (auto cidx1 = protein.searchChainByLabId(chainIds[0]); cidx1 != -1) {
-            for(const auto& chain2Id: chainIds) {
-                if (auto cidx2 = protein.searchChainByLabId(chain2Id); cidx2 != -1) {
-                    if (cidx1 != cidx2) {
-                        numRotated += calculateRotationalOperation(cidx1,cidx2);
-                        numChains++;
+        for(const auto& chain1Id: chainIds) {
+            if (auto cidx1 = protein.searchChainByLabId(chain1Id); cidx1 != -1) {
+                for(const auto& chain2Id: chainIds) {
+                    if (auto cidx2 = protein.searchChainByLabId(chain2Id); cidx2 != -1) {
+                        if (cidx1 != cidx2) {
+                            numRotated += calculateRotationalOperation(cidx1,cidx2);
+                            numChains++;
+                        }
                     }
                 }
+                break;
             }
         }
         DEBUG_LOG("\t\tNumber of chains: {} Number of rotated chains: {}",numChains,numRotated);
         DEBUG_LOG(" Processed Symmetry::searchForRotatedChains({})",ids);
-        return numRotated == numChains && numRotated !=0;
+        return numRotated > 0;
+        //return numRotated == numChains && numRotated !=0;
     }
 
     int Symmetry::calculateRotationalOperation(int cidx1, int cidx2) {
@@ -87,10 +91,11 @@ namespace Tmdet::Utils {
         getSymmetryOperand( R, t1, t2, curSim);
         double distance = (t2 - t1).squaredNorm();
         DEBUG_LOG("results {} {} distance: {} rmsd: {}",cidx1,cidx2,distance,rmsd);
-        if (distance > 2.0 && rmsd < 20 ) {
+        if (distance > 2.0 && rmsd < 12 ) {
             curSim.good = true;
+            sim.emplace_back(curSim);
         }
-        sim.emplace_back(curSim);
+        
 
         DEBUG_LOG(" Processed Symmetry::calculateRotationalOperation({}:{})",
             protein.chains[cidx1].id,protein.chains[cidx2].id);

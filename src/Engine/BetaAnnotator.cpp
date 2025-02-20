@@ -138,16 +138,12 @@ namespace Tmdet::Engine {
             if (protein.secStrVecs[sheetIndex[i]].barrelIdx == -1) {
                 std::vector<bool> elements(numSheets,false);
                 elements[i] = true;
-                //std::vector<std::vector<int>> cme = connectome;
                 int nb = detectBarrelSheets(i,-1,elements);
                 nb = detectBarrelSheets(i,-1,elements); 
                 if (nb > 7) {
                     DEBUG_LOG("Barrel detected: {}",nb);
                     setIndex(elements);
                 }
-               // else {
-                //    connectome = cme;
-                //}
             }
         }
         DEBUG_LOG("Processed BetaAnnotator::detectBarrels()");
@@ -158,6 +154,7 @@ namespace Tmdet::Engine {
         int max = 0;
         double percent = 0.0;
         int maxSheet = -1;
+        int minContactBetweenSheets = args.getValueAsInt("mcbs");
         for (int i=0; i<numSheets; i++) {
             if (max<connectome[sheetNum][i]
                     && protein.secStrVecs[sheetIndex[i]].barrelIdx == -1
@@ -167,7 +164,7 @@ namespace Tmdet::Engine {
                 maxSheet = i;
             }
         }
-        if (max>4 || percent > 20) {
+        if (max>=minContactBetweenSheets || percent > 20) {
             elements[maxSheet] = true;
             //connectome[sheetNum][maxSheet] = 0;
             //connectome[maxSheet][sheetNum] = 0;

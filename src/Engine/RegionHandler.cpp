@@ -144,7 +144,7 @@ namespace Tmdet::Engine {
                     if ((begType.isAnnotatedTransMembraneType()
                             || begType.isNotAnnotatedMembrane())
                         && (beg==0 || end == chain.length-1)
-                        && end-beg < (begType.isBeta()?3:10)
+                        && end-beg < (begType.isBeta()?3:0)
                         && chain.residues[beg].selected
                         && chain.residues[end].selected ) {
                         replace(chain,beg,end-1,(beg==0?any_cast<Tmdet::Types::Region>(chain.residues[end].temp.at("ztype")):

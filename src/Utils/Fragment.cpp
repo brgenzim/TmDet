@@ -76,7 +76,7 @@ namespace Tmdet::Utils {
         const gemmi::Atom* ca_atom = residue.gemmi.get_ca();
         bool check=false;
         if (ca_atom) {
-            for (auto mark: protein.neighbors.find_neighbors(*ca_atom, 3, 9)) {
+            for (auto mark: protein.neighbors.find_neighbors(*ca_atom, 3, 6.5)) {
                 if (protein.chains[mark->chain_idx].selected
                     && protein.chains[mark->chain_idx].residues[mark->residue_idx].selected
                     && protein.chains[mark->chain_idx].residues[mark->residue_idx].atoms[mark->atom_idx].gemmi.name == "CA") {
@@ -124,19 +124,29 @@ namespace Tmdet::Utils {
             && std::abs(from.authId - to.authId) <5) {
                 return true;
         }
-        int numContacts = 0;
-        for (int i=-4; i<=4; i++) {
+        int numContacts = checkRegionForContact(from,to,-4,-1,-4,-1)
+            + checkRegionForContact(from,to,-4,-1,1,4)
+            + checkRegionForContact(from,to,1,4,-4,-1)
+            + checkRegionForContact(from,to,1,4,1,4);
+        DEBUG_LOG("Move: {}->{}: {}({})",from.authId,to.authId,numContacts,(numContacts>2));
+        return (numContacts>2);
+    }
+
+    int Fragment::checkRegionForContact(Tmdet::VOs::Residue& from, Tmdet::VOs::Residue& to, int fb, int fe, int tb, int te) {
+        for (int i=fb; i<=fe; i++) {
             int k = any_cast<int>(from.temp["cm_index"]) + i;
             if (k>=0 && k<nr) {
-                for (int j=-4; j<=4; j++) {
+                for (int j=tb; j<=te; j++) {
                     int l = any_cast<int>(to.temp["cm_index"]) + j;
                     if (l>=0 && l<nr) {
-                        numContacts += (contactMap[k][l]?1:0);
+                        if (contactMap[k][l]) {
+                            return 1;
+                        }
                     }
                 }
             }
         }
-        return (numContacts>3);
+        return 0;
     }
 
     void Fragment::freeTempValues() {

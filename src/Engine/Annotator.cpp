@@ -49,7 +49,7 @@ namespace Tmdet::Engine {
         }
         smoothRegions("type");
         detectLoops();        
-        auto betaAnnotator = Tmdet::Engine::BetaAnnotator(protein,regionHandler);
+        auto betaAnnotator = Tmdet::Engine::BetaAnnotator(protein,args,regionHandler);
         
         loopMinHelixPart = args.getValueAsFloat("lmhp");
         loopMinDeep = args.getValueAsFloat("lmd");
@@ -64,12 +64,12 @@ namespace Tmdet::Engine {
             }
         );
         detectInterfacialHelices();
-        int limit = protein.type.isBeta()?50:10;
+        int limit = args.getValueAsInt("mums");
         if (args.getValueAsBool("fr")) {
             limit = 0;
         }
         if (int nm = regionHandler.finalize<Tmdet::Types::Region>(); nm>limit) {
-            DEBUG_LOG("Too many unhandled membrane segments: {}",nm);
+            WARN_LOG("Too many unhandled membrane segments: {}",nm);
             protein.notTransmembrane();
         }
         else {
@@ -121,7 +121,7 @@ namespace Tmdet::Engine {
                             }
                         }
                     }
-                    if (alpha>6) {
+                    if (alpha>3) {
                         chain.type = Tmdet::Types::ChainType::ALPHA;
                         protein.type = (protein.type.isBeta()?
                                 Tmdet::Types::ProteinType::TM_MIXED:
@@ -197,7 +197,7 @@ namespace Tmdet::Engine {
                         (REGZ(chain.residues[i]) > REGZ(chain.residues[i-1])
                         && REGZ(chain.residues[i]) > REGZ(chain.residues[i+1]))
                     )
-                    && (maxDist(chain,i,i-2,beg,-1) > 4 && maxDist(chain,i,i+2,end,1) > 4)
+                    && (maxDist(chain,i,i-2,beg,-1) > 5 && maxDist(chain,i,i+2,end,1) > 5)
                     //&& !chain.residues[i].ss.isBeta()
              ) {
                 chain.residues[i].temp.at("type") = chain.residues[i].temp.at("ztype");
@@ -359,13 +359,14 @@ namespace Tmdet::Engine {
         DEBUG_LOG("Processing Annotator::detectTransmembraneHelices()");
         int begin = 0;
         int end = 0;
-        int lengthLimit = (args.getValueAsBool("fr")?14:10);
-        lengthLimit=(getNumberOfMembraneSegments(chain)>1?lengthLimit:9);
+        int lengthLimit = args.getValueAsInt("mltmh");
+        lengthLimit = (args.getValueAsBool("fr")?lengthLimit - 4:lengthLimit);
+        lengthLimit=(getNumberOfMembraneSegments(chain)==1?lengthLimit - 3:lengthLimit);
         while(regionHandler.getNext<Tmdet::Types::Region>(chain,begin,end,"type")) {
             DEBUG_LOG("detectTMH: {}:{}-{}",chain.id,chain.residues[begin].authId,chain.residues[end-1].authId);
             if (REGTYPE(chain.residues[begin]).isNotAnnotatedMembrane()
-                && helixContent(chain,begin,end) > 0.3
-                && (end-begin > lengthLimit || ((begin < 4 || end > chain.length -4) && end-begin > 6))
+                && helixContent(chain,begin,end-1) > 0.25
+                && (end-begin >= lengthLimit || ((begin < 4 || end > chain.length -4) && end-begin > 6))
                 && REGZ(chain.residues[begin]) * REGZ(chain.residues[end-1]) < 0) {
                     regionHandler.replace(chain,begin,end-1,Tmdet::Types::RegionType::HELIX);
             }
@@ -388,6 +389,9 @@ namespace Tmdet::Engine {
     }
 
     double Annotator::helixContent(Tmdet::VOs::Chain& chain, int beg, int end) {
+        if (args.getValueAsBool("fr")) {
+            return 1.0;
+        }
         double ret = 0.0;
         for (int i=beg; i<=end; i++) {
             if (chain.residues[i].ss.isAlpha()) {
@@ -395,6 +399,7 @@ namespace Tmdet::Engine {
             }
         }
         ret /= (end-beg+1);
+        DEBUG_LOG("Helix content: {}:{}-{} = {}",chain.id,chain.residues[beg].authId,chain.residues[end].authId,ret);
         return ret;
     }
     bool Annotator::sameSide(Tmdet::VOs::Chain& chain, int beg, int end) {

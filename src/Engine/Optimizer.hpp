@@ -111,6 +111,7 @@ namespace Tmdet::Engine {
             double boostAngle;
             double boostBetaAngle;
             double boostPolarity;
+            double addStraigth = 0;
             
             /**
              * @brief initialize the algorithm

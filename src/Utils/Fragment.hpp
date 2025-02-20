@@ -32,6 +32,7 @@ namespace Tmdet::Utils {
             void setFragment(Tmdet::VOs::Residue& residue);
             void freeTempValues();
             bool enableMove(Tmdet::VOs::Residue& from, Tmdet::VOs::Residue& to);
+            int checkRegionForContact(Tmdet::VOs::Residue& from, Tmdet::VOs::Residue& to, int fb, int fe, int tb, int te);
             
         public:
             explicit Fragment(Tmdet::VOs::Protein& protein) : 

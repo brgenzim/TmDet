@@ -8,6 +8,7 @@
 
 #include <gemmi/model.hpp>
 #include <Engine/RegionHandler.hpp>
+#include <System/Arguments.hpp>
 #include <VOs/Chain.hpp>
 
 /**
@@ -27,6 +28,11 @@ namespace Tmdet::Engine {
              * @brief protein value object
              */
             Tmdet::VOs::Protein& protein;
+
+            /**
+             * @brief command line arguments
+             */
+            Tmdet::System::Arguments& args;
 
             /**
              * @brief region handler 
@@ -105,8 +111,10 @@ namespace Tmdet::Engine {
              * @param regionHandler 
              */
             explicit BetaAnnotator(Tmdet::VOs::Protein& protein,
+                Tmdet::System::Arguments& args,
                 Tmdet::Engine::RegionHandler& regionHandler) :
                 protein(protein),
+                args(args),
                 regionHandler(regionHandler) {
                     run();
                 }

@@ -41,19 +41,22 @@ namespace Tmdet::Engine {
         higherQ2 = args.getValueAsFloat("hq2");
         massCentre = protein.centre();
         ifhAngleLimit = args.getValueAsFloat("ian");
-        ifhResLimit = 10000;//args.getValueAsInt("irl");
         boostAngle = args.getValueAsFloat("ba");
         boostBetaAngle = args.getValueAsFloat("bba");
         boostPolarity = args.getValueAsFloat("bp");
-
+        int numRes = 0;
         protein.eachSelectedResidue(
-            [](Tmdet::VOs::Residue& residue) -> void {
+            [&](Tmdet::VOs::Residue& residue) -> void {
                 residue.temp.try_emplace("dist",std::any(0.0));
                 for(auto& atom: residue.atoms) {
                     atom.temp.try_emplace("dist",std::any(0.0));
                 }
+                numRes++;
             }
         );
+        addStraigth = args.getValueAsFloat("spen");
+        addStraigth +=  (numRes>500?0.5:0) ;
+        addStraigth +=  (numRes>1000?0.5:0) ;
         protein.eachSelectedChain(
             [&](Tmdet::VOs::Chain& chain) -> void {
                 for (int i=0; i<chain.length; i++) {
@@ -154,10 +157,11 @@ namespace Tmdet::Engine {
                 }
                 else {
                     for(const auto& atom: residue.atoms) {
-                        slices[sliceIndex].surf += atom.outSurface /* (residue.ss.isBeta()?1.1:0.9)*/;
+                        slices[sliceIndex].surf += atom.outSurface;
                         if (residue.type.atoms.contains(atom.gemmi.name)) {
-                            slices[sliceIndex].apol += residue.apol * atom.outSurface 
-                                 /* (residue.ss.isBeta()?1.2:1.0)*/;
+                            slices[sliceIndex].apol += atom.outSurface * (residue.ss.isBeta()?1.1:1.0) * ( 1-
+                                    (residue.type.atoms.at(atom.gemmi.name).mean - Tmdet::Types::voronotaMeanMin) / 
+                                        (Tmdet::Types::voronotaMeanMax - Tmdet::Types::voronotaMeanMin));
                         }
                     }
                 }
@@ -169,9 +173,11 @@ namespace Tmdet::Engine {
                 && protein.chains[vector.chainIdx].residues[vector.endResIdx].selected) {
                 double cosAngle = getAngle(vector);
                 double angle = std::abs(90.0 - acos(cosAngle) * 180.0 / M_PI);
-                cosAngle = (cosAngle<0.25?-3:cosAngle);
-                if (protein.hasIdenticalChains) {
-                    cosAngle = (cosAngle>boostAngle?1:cosAngle);
+                if (vector.type.isAlpha()) {
+                    cosAngle = (cosAngle<0.25?-3:cosAngle);
+                    if (protein.hasIdenticalChains) {
+                        cosAngle = (cosAngle>boostAngle?1:cosAngle);
+                    }
                 }
                 int d1 = distance(vector.begin);
                 int d2 = distance(vector.end);
@@ -190,18 +196,25 @@ namespace Tmdet::Engine {
                     protein.chains[vector.chainIdx].residues[vector.begResIdx].authId,
                     protein.chains[vector.chainIdx].residues[vector.endResIdx].authId,
                     slices.size(),cosAngle,angle);
-                //for(int i=dbeg; i<= dend; i++) {
-                if (vector.type.isAlpha()
-                    && protein.chains[vector.chainIdx].residues[vector.begResIdx].selected
-                    && protein.chains[vector.chainIdx].residues[vector.endResIdx].selected
-                    && dend-dbeg<5 
-                    && angle < ifhAngleLimit
-                    && vector.endResIdx - vector.begResIdx + 1 >= ifhMinLength)  {
+                if (protein.chains[vector.chainIdx].residues[vector.begResIdx].selected
+                    && protein.chains[vector.chainIdx].residues[vector.endResIdx].selected)  {
                     for (int j=vector.begResIdx; j<=vector.endResIdx; j++) {
                         if (protein.chains[vector.chainIdx].residues[j].selected) {
                             int i = distance(any_cast<gemmi::Vec3&>(protein.chains[vector.chainIdx].residues[j].temp["ca"])) - minZ;
                             if (i>=0 && i<(int)slices.size()) {
-                                slices[i].ifh++;
+                                
+                                if (vector.type.isBeta()) {
+                                    slices[i].beta+= (cosAngle>boostBetaAngle?1:cosAngle);
+                                }
+                                else {
+                                    slices[i].alpha+= cosAngle;
+                                    if (dend-dbeg<5 
+                                        && angle < ifhAngleLimit
+                                        && vector.endResIdx - vector.begResIdx + 1 >= ifhMinLength) {
+                                        slices[i].ifh++;
+                                    }
+                                }
+                                slices[i].numCa++;
                             }
                         }
                     }
@@ -242,7 +255,7 @@ namespace Tmdet::Engine {
             double smoothedIfh = 0.0;
             for (int j=-2; j<=2; j++) {
                 if (j+(int)i>=0 && j+i<s) {
-                    smoothedStraight += (slices[j+i].alpha>slices[j+i].beta?slices[i+j].alpha:(slices[j+i].beta>4?slices[j+i].beta:0));
+                    smoothedStraight += (slices[j+i].alpha + slices[j+i].beta);
                     smoothedApol += slices[j+i].apol;
                     smoothedSsEnd += slices[j+i].ssEnd;
                     smoothedSurf += slices[i+j].surf;
@@ -257,17 +270,17 @@ namespace Tmdet::Engine {
             smoothedSurf /= k;
             smoothedIfh /= k;
             smoothedCa /= k;
-            smoothedStraight = divide(smoothedStraight,smoothedCa);
-            smoothedApol = (smoothedSurf>5?divide(smoothedApol, smoothedSurf):0); smoothedApol = (smoothedApol>boostPolarity?1:smoothedApol);
+            smoothedStraight = 1.2*divide(smoothedStraight,(smoothedCa + addStraigth));
+            smoothedStraight = (smoothedStraight<0?0:smoothedStraight);
+            smoothedApol = (smoothedSurf>5?divide(smoothedApol, smoothedSurf):0); 
+            smoothedApol = (smoothedApol>boostPolarity?1:smoothedApol);
             smoothedSsEnd = divide(smoothedSsEnd, smoothedCa);
-            //slices[i].smoothedIfh = divide(smoothedIfh, smoothedCa);
-            smoothedIfh /= ifhResLimit; smoothedIfh = (smoothedIfh>1?1:smoothedIfh);
-
+            smoothedIfh = 0; //divide(smoothedIfh, smoothedCa);
+            slices[i].smoothedIfh = smoothedIfh;
             
             slices[i].rawQ = 100.0 * smoothedStraight * (1.0 - smoothedSsEnd) * (1.0 - smoothedIfh) * smoothedApol;
-            slices[i].rawQ = (slices[i].alpha < 0 ? 0:slices[i].rawQ);
             DEBUG_LOG("{} straight:{:5.2f} apol:{:5.2f} surf:{:5.2f} end:{:5.2f} ifh:{} q:{:5.2f}",
-                i,smoothedStraight,smoothedApol,slices[i].surf,smoothedSsEnd,slices[i].ifh,slices[i].rawQ);
+                i,smoothedStraight,smoothedApol,slices[i].surf,smoothedSsEnd,slices[i].smoothedIfh,slices[i].rawQ);
         }
         for(unsigned long int i = 0; i<s; i++) {
             int k=0;
@@ -313,7 +326,9 @@ namespace Tmdet::Engine {
                 int maxz;
                 if (slices[i].qValue>higherQ) {
                     double q = getWidth(i,minz,maxz);
-                    if (maxz-minz > 2 * minHalfThickness && q>bestQ) {
+                    if (maxz-minz > 2 * minHalfThickness 
+                        && ((q>bestQ && minz>5 && maxz<s-5)
+                            || q>bestQ + 6)) {
                         bestQ = q;
                         bestMinZ = minz; bestMinZ -= 0.5;
                         bestMaxZ = maxz; bestMaxZ -= 0.5;
@@ -329,7 +344,7 @@ namespace Tmdet::Engine {
 
     double Optimizer::getWidth(const int z, int& minz, int& maxz) {
         double maxHT = (type=="Plane"?maxHalfThickness:maxCurvedHalfThickness);
-        double ifhLimit = (type=="Plane"?ifhResLimit:10000);
+        double ifhLimit = (type=="Plane"?0.1:1.1);
         minz = z;
         maxz = z+1;
         double q = 0.0;
@@ -339,7 +354,6 @@ namespace Tmdet::Engine {
             if (minz > 0
                 && slices[minz].qValue > higherQ 
                 && slices[minz].smoothedIfh < ifhLimit
-                && slices[minz].qValue > slices[minz-1].qValue
                 && maxz-minz < 2*maxHT) {
                     q += slices[minz].qValue;
                     minz--;
@@ -348,7 +362,6 @@ namespace Tmdet::Engine {
             if (maxz < (int)slices.size()-1
                 && slices[maxz].qValue > higherQ
                 && slices[maxz].smoothedIfh < ifhLimit
-                && slices[maxz].qValue > slices[maxz+1].qValue
                 && maxz-minz < 2*maxHT) {
                     q += slices[maxz].qValue;
                     maxz++;
@@ -362,8 +375,7 @@ namespace Tmdet::Engine {
                 ok = false;
                 if (minz > 0
                     && slices[minz].qValue > lowerQ 
-                    && slices[minz].smoothedIfh < ifhResLimit
-                    && slices[minz].qValue > slices[minz-1].qValue
+                    && slices[minz].smoothedIfh < ifhLimit
                     && maxz-minz < 2*maxHT) {
                         q += slices[minz].qValue;
                         minz--;
@@ -371,8 +383,7 @@ namespace Tmdet::Engine {
                 }
                 if (maxz < (int)slices.size()-1
                     && slices[maxz].qValue > lowerQ
-                    && slices[maxz].smoothedIfh < ifhResLimit
-                    && slices[maxz].qValue > slices[maxz+1].qValue
+                    && slices[maxz].smoothedIfh < ifhLimit
                     && maxz-minz < 2*maxHT) {
                         q += slices[maxz].qValue;
                         maxz++;
@@ -382,22 +393,7 @@ namespace Tmdet::Engine {
             minz++;
             maxz--;
         }
-        int out = 0;
-        if (!args.getValueAsBool("dm")) {
-            for (int i=0; i<minz; i++) {
-                if (slices[i].qValue > higherQ) {
-                    out++;
-                }
-            }
-            for (int i=maxz+1; i<slices.size(); i++) {
-                if (slices[i].qValue > higherQ) {
-                    out++;
-                }
-            }
-        }
-
-        DEBUG_LOG("getWidth(): {} {} {} {}",minz,maxz,q,slices[z].qValue);
-        return (out>10?0:slices[z].qValue);
+        return slices[z].qValue;
     }
 
     void Optimizer::testMembraneNormalOne() {
