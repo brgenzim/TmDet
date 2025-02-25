@@ -92,6 +92,8 @@ Tmdet::System::Arguments getArguments(int argc, char *argv[]) {
     args.define(false,"mltmh","min_length_of_tmh","Minimum length of transmembrane helix","int","12");
     args.define(false,"spen","straigth_penalty","Additional value for normalizing straigth","float","0.0");
     args.define(false,"mcbs","min_contacts_between_sheets","Minimum of contacts between sheets for barrel detection","int","5");
+    args.define(false,"bh","broken_helix","Type of broken helix (loop or transmembrane helix)","string","L");
+    args.define(false,"minbs","min_number_of_beta_sheets","Minimum number of beta sheets in beta barrel","int","8");
     
     args.set(argc,argv);
     args.check();

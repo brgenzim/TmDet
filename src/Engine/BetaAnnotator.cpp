@@ -21,11 +21,11 @@ namespace Tmdet::Engine {
 
     void BetaAnnotator::run() {
         DEBUG_LOG("Processing BetaAnnotator::run()");
+        protein.numBarrels = 0;
         getSheets();
         DEBUG_LOG("Number of sheets: {}",numSheets);
         if (numSheets>7) {
             setConnections();
-            //cleanConnectome();
             detectBarrels();
             if (protein.numBarrels > 0) {
                 setBarrel();
@@ -106,32 +106,6 @@ namespace Tmdet::Engine {
         }
     }
 
-    void BetaAnnotator::cleanConnectome() {
-        DEBUG_LOG("Processing Barrel::cleanConnectom()");
-        bool deleted = true;
-        while (deleted) {
-            deleted = false;
-            for (int i=0; i<numSheets; i++) {
-                int count = 0;
-                for (int j=0; j<numSheets; j++) {
-                    if (connectome[i][j] > 1) {
-                        count++;
-                    }
-                }
-                if (count == 1) {
-                    deleted = true;
-                    for (int j=0; j<numSheets; j++) {
-                        if (connectome[i][j] > 1) {
-                            connectome[i][j] = connectome[j][i] = 0;
-                            DEBUG_LOG("Removing: {} {}",i,j);
-                        }
-                    }
-                }
-            }
-        }
-        DEBUG_LOG("Processed Barrel::cleanConnectom()");
-    }
-
     void BetaAnnotator::detectBarrels() {
         DEBUG_LOG("Processing BetaAnnotator::detectBarrels()");
         for (int i=0; i<numSheets; i++) {
@@ -140,7 +114,7 @@ namespace Tmdet::Engine {
                 elements[i] = true;
                 int nb = detectBarrelSheets(i,-1,elements);
                 nb = detectBarrelSheets(i,-1,elements); 
-                if (nb > 7) {
+                if (nb >= args.getValueAsInt("minbs")) {
                     DEBUG_LOG("Barrel detected: {}",nb);
                     setIndex(elements);
                 }
@@ -164,10 +138,9 @@ namespace Tmdet::Engine {
                 maxSheet = i;
             }
         }
-        if (max>=minContactBetweenSheets || percent > 20) {
+        if ((minContactBetweenSheets<=5 && (max>=minContactBetweenSheets || percent > 20))
+            || max>=minContactBetweenSheets) {
             elements[maxSheet] = true;
-            //connectome[sheetNum][maxSheet] = 0;
-            //connectome[maxSheet][sheetNum] = 0;
             DEBUG_LOG("Max: {}:{} {}",maxSheet,max,percent);
             detectBarrelSheets(maxSheet, sheetNum, elements);
         }

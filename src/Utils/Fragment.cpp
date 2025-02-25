@@ -76,7 +76,7 @@ namespace Tmdet::Utils {
         const gemmi::Atom* ca_atom = residue.gemmi.get_ca();
         bool check=false;
         if (ca_atom) {
-            for (auto mark: protein.neighbors.find_neighbors(*ca_atom, 3, 6.5)) {
+            for (auto mark: protein.neighbors.find_neighbors(*ca_atom, 3, 9)) {
                 if (protein.chains[mark->chain_idx].selected
                     && protein.chains[mark->chain_idx].residues[mark->residue_idx].selected
                     && protein.chains[mark->chain_idx].residues[mark->residue_idx].atoms[mark->atom_idx].gemmi.name == "CA") {
@@ -128,8 +128,8 @@ namespace Tmdet::Utils {
             + checkRegionForContact(from,to,-4,-1,1,4)
             + checkRegionForContact(from,to,1,4,-4,-1)
             + checkRegionForContact(from,to,1,4,1,4);
-        DEBUG_LOG("Move: {}->{}: {}({})",from.authId,to.authId,numContacts,(numContacts>2));
-        return (numContacts>2);
+        DEBUG_LOG("Move: {}->{}: {}({})",from.authId,to.authId,numContacts,(numContacts>0));
+        return (numContacts>0);
     }
 
     int Fragment::checkRegionForContact(Tmdet::VOs::Residue& from, Tmdet::VOs::Residue& to, int fb, int fe, int tb, int te) {

@@ -255,7 +255,7 @@ namespace Tmdet::Engine {
             double smoothedIfh = 0.0;
             for (int j=-2; j<=2; j++) {
                 if (j+(int)i>=0 && j+i<s) {
-                    smoothedStraight += (slices[j+i].alpha + slices[j+i].beta);
+                    smoothedStraight += (slices[j+i].beta>7?slices[j+i].beta:slices[j+i].alpha);
                     smoothedApol += slices[j+i].apol;
                     smoothedSsEnd += slices[j+i].ssEnd;
                     smoothedSurf += slices[i+j].surf;
@@ -327,7 +327,7 @@ namespace Tmdet::Engine {
                 if (slices[i].qValue>higherQ) {
                     double q = getWidth(i,minz,maxz);
                     if (maxz-minz > 2 * minHalfThickness 
-                        && ((q>bestQ && minz>5 && maxz<s-5)
+                        && ((q>bestQ && minz>5 && maxz<(int)s-5)
                             || q>bestQ + 6)) {
                         bestQ = q;
                         bestMinZ = minz; bestMinZ -= 0.5;

@@ -46,9 +46,19 @@ class Xml3 {
         return $ret;
     }
 
-    private function getRegions() : array {
+    private function getRegions($chain) : array {
         $ret = [];
-
+        foreach($chain->{XML::NODE_REGION} as $region) {
+            $type = $region[XML::ATTR_type]->__toString();
+            $type = ($type=='M'?'H':$type);
+            $ret [] = [
+                'start' => intval($region[XML::ATTR_SEQ_BEG])-1,
+                'end' => intval($region[XML::ATTR_SEQ_END])-1,
+                'type' => $type,
+                'astart' => intval($region[XML::ATTR_PDB_BEG])-1,
+                'aend' => intval($region[XML::ATTR_PDB_END])-1,
+            ];
+        }
         return $ret;
     }
 }

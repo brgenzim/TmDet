@@ -143,11 +143,11 @@ namespace Tmdet::Engine {
                     //short B or H or M at the end of the chain
                     if ((begType.isAnnotatedTransMembraneType()
                             || begType.isNotAnnotatedMembrane())
-                        && (beg==0 || end == chain.length-1)
+                        && (beg==0 || end == chain.length)
                         && end-beg < (begType.isBeta()?3:0)
                         && chain.residues[beg].selected
-                        && chain.residues[end].selected ) {
-                        replace(chain,beg,end-1,(beg==0?any_cast<Tmdet::Types::Region>(chain.residues[end].temp.at("ztype")):
+                        && chain.residues[end-1].selected ) {
+                        replace(chain,beg,end-1,(beg==0?any_cast<Tmdet::Types::Region>(chain.residues[end-1].temp.at("ztype")):
                             any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("ztype"))));
                     }
                     // any MMM anywhere that not handled so far

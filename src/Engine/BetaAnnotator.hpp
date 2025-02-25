@@ -62,8 +62,6 @@ namespace Tmdet::Engine {
              */
             void setConnections();
 
-            void cleanConnectome();
-
             /**
              * @brief detect connected sheets
              */

@@ -270,23 +270,27 @@ namespace Tmdet::Utils {
     void SecStrVec::checkVectorsForMerging() {
         auto vectors = protein.secStrVecs;
         protein.secStrVecs.clear();
-        unsigned long int i = 0;
-        unsigned long step = 1;
-        while (i<vectors.size()-1) {
-            if (vectors[i].type == vectors[i+1].type 
-                && vectors[i].type.isAlpha()
-                && checkVectorForMerging(vectors[i],vectors[i+1])) {
-                protein.secStrVecs.emplace_back(mergeVectors(vectors[i],vectors[i+1]));
-                step = 2;
+        unsigned long int i = 1;
+        bool needStore = false;
+        auto prevVector = vectors[0];
+        while (i<vectors.size()) {
+            if (prevVector.type == vectors[i].type 
+                //&& vectors[i].type.isAlpha()
+                && checkVectorForMerging(prevVector,vectors[i])) {
+                    auto mergedVector = mergeVectors(prevVector,vectors[i]);
+                    protein.secStrVecs.emplace_back(mergedVector);
+                    prevVector = mergedVector;
+                    needStore = false;
             }
             else {
-                protein.secStrVecs.emplace_back(vectors[i]);
-                step = 1;
+                protein.secStrVecs.emplace_back(prevVector);
+                prevVector = vectors[i];
+                needStore = true;
             }
-            i+=step;
+            i++;
         }
-        if (step == 1) {
-            protein.secStrVecs.emplace_back(vectors[i]);
+        if (needStore) {
+            protein.secStrVecs.emplace_back(prevVector);
         }
     }
 
@@ -294,11 +298,13 @@ namespace Tmdet::Utils {
         double d = v1.end.dist(v2.begin);
         double angle = Tmdet::Helpers::Vector::angle((v1.end-v1.begin),(v2.end-v2.begin));
         DEBUG_LOG("check merge {} {}-{}: {} {}",
-            protein.chains[v1.chainIdx].id,v1.endResIdx,v2.begResIdx,d,angle);
+            protein.chains[v1.chainIdx].id,
+            protein.chains[v1.chainIdx].residues[v1.endResIdx].authId,
+            protein.chains[v1.chainIdx].residues[v2.begResIdx].authId,d,angle);
         return (d < TMDET_SECSTRVEC_MERGE_DIST
                 && v1.chainIdx==v2.chainIdx
                 && isStraight(protein.chains[v1.chainIdx],v1.begResIdx,v2.endResIdx,v1.type)
-                && angle < 20
+                && angle < (v1.type.isAlpha()?20:30)
         );
     }
 

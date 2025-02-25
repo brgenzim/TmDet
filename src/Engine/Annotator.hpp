@@ -149,6 +149,17 @@ namespace Tmdet::Engine {
             bool sameSide(Tmdet::VOs::Chain& chain, int beg, int end);
 
             /**
+             * @brief check if the end of a region is not in the same side of the membrane
+             * 
+             * @param chain 
+             * @param beg 
+             * @param end 
+             * @return true 
+             * @return false 
+             */
+             bool notSameSide(Tmdet::VOs::Chain& chain, int beg, int end);
+
+            /**
              * @brief Get alpha helical regions parallel to the membrane plane
              * 
              * @param membrane 

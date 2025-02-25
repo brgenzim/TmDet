@@ -23,7 +23,7 @@ foreach(file($argv[1]) as $line) {
         if ($tmpStatus[1] == "no") {
             echo $id."  no OK\n";
         }
-        else {
+        elseif ($tmpStatus[1] == "yes") {
             $proteinType = $compare->proteinType();
             if ($proteinType[0]) {
                 $chains = $compare->chains();
@@ -37,6 +37,9 @@ foreach(file($argv[1]) as $line) {
             else {
                 echo $id." FAILED ".$proteinType[1]." - ".$proteinType[2]."\n";
             }
+        }
+        else {
+            echo $id." missing both\n";
         }
     }
     else {

@@ -209,7 +209,8 @@ namespace Tmdet::Engine {
     double Annotator::maxDist(Tmdet::VOs::Chain& chain, int pos, int beg, int end, int dir) {
         double maxDist = 0;
         int i;
-        for (i=beg; (i!=(end+dir) && REGDIR(chain.residues[beg]) * REGDIR(chain.residues[i]) > -10); i+=dir) {
+        int step;
+        for (i=beg, step = 0; (step < 10 && i!=(end+dir) && REGDIR(chain.residues[beg]) * REGDIR(chain.residues[i]) > -10); i+=dir, step++) {
             double dist = (REGZ(chain.residues[pos]) > 0?
                             REGZ(chain.residues[pos]) - REGZ(chain.residues[i]) :
                             REGZ(chain.residues[i]) - REGZ(chain.residues[pos]));
@@ -217,8 +218,8 @@ namespace Tmdet::Engine {
                 maxDist = dist;
             }
         }
-        DEBUG_LOG("maxDist: {}:{} {}-{} ==> {} {}",
-            chain.id,chain.residues[pos].authId,chain.residues[beg].authId,chain.residues[end].authId,i,maxDist);
+        DEBUG_LOG("maxDist: {}:{} {}-{} ==> {}",
+            chain.id,chain.residues[pos].authId,chain.residues[beg].authId,chain.residues[end].authId,maxDist);
         return (std::abs(pos-i)>3?maxDist:0);
     }
 
@@ -279,8 +280,8 @@ namespace Tmdet::Engine {
                 if (sameSide(chain,begin,end)
                     && REGHZ(chain.residues[begin]) < 9.0 
                     && REGHZ(chain.residues[end]) < 9.0
-                    && REGZ(chain.residues[begin]) > 6
-                    && REGZ(chain.residues[end]) > 6
+                    && std::abs(REGZ(chain.residues[begin])) > 6
+                    && std::abs(REGZ(chain.residues[end])) > 6
                     && hasHelixTurnLoop(chain,begin,end,numHelix)) {
                         DEBUG_LOG("Loop found: {} {} {} {}",chain.id,chain.residues[begin].authId,
                                 chain.residues[end].authId,numHelix);
@@ -291,7 +292,9 @@ namespace Tmdet::Engine {
                             regionHandler.replace(chain,begin,end,Tmdet::Types::RegionType::TWO_H_LOOP);
                         }
                 }
-                else if (begin>0
+                else if (
+                        args.getValueAsString("bh") == "L"
+                        && begin>0
                         && end<chain.length-1
                         && (chain.residues[begin].labelId - chain.residues[begin-1].labelId > 1
                             || chain.residues[end+1].labelId - chain.residues[end].labelId > 1)
@@ -366,8 +369,8 @@ namespace Tmdet::Engine {
             DEBUG_LOG("detectTMH: {}:{}-{}",chain.id,chain.residues[begin].authId,chain.residues[end-1].authId);
             if (REGTYPE(chain.residues[begin]).isNotAnnotatedMembrane()
                 && helixContent(chain,begin,end-1) > 0.25
-                && (end-begin >= lengthLimit || ((begin < 4 || end > chain.length -4) && end-begin > 6))
-                && REGZ(chain.residues[begin]) * REGZ(chain.residues[end-1]) < 0) {
+                && end-begin >= lengthLimit
+                && notSameSide(chain,begin,end-1)) {
                     regionHandler.replace(chain,begin,end-1,Tmdet::Types::RegionType::HELIX);
             }
             begin = end;
@@ -402,10 +405,17 @@ namespace Tmdet::Engine {
         DEBUG_LOG("Helix content: {}:{}-{} = {}",chain.id,chain.residues[beg].authId,chain.residues[end].authId,ret);
         return ret;
     }
+
     bool Annotator::sameSide(Tmdet::VOs::Chain& chain, int beg, int end) {
         return ((std::abs(REGZ(chain.residues[beg]))<4.0?0:REGZ(chain.residues[beg])) * 
                 (std::abs(REGZ(chain.residues[end]))<4.0?0:REGZ(chain.residues[end])) > -0.1);
     }
+
+    bool Annotator::notSameSide(Tmdet::VOs::Chain& chain, int beg, int end) {
+        return ((std::abs(REGZ(chain.residues[beg]))<4.0?0:REGZ(chain.residues[beg])) * 
+                (std::abs(REGZ(chain.residues[end]))<4.0?0:REGZ(chain.residues[end])) < 0.1);
+    }
+
     std::vector<Tmdet::VOs::SecStrVec> Annotator::getParallelAlphas(Tmdet::VOs::Membrane& membrane) {
         std::vector<Tmdet::VOs::SecStrVec> ret;
         for (auto& vector : protein.secStrVecs) {
@@ -487,7 +497,7 @@ namespace Tmdet::Engine {
         );
         DEBUG_LOG("Annotator::finalCheck: type: {} na: {} nb: {} tmp: {}",
             protein.type.name,nA,nB,protein.tmp?"yes":"no");
-        if ((!protein.type.isAlpha() && nB < 8)
+        if ((!protein.type.isAlpha() && nB < args.getValueAsInt("minbs"))
             || (nA == 0 && nB == 0)
             || (!protein.type.isBeta() && nA == 0)) {
             protein.notTransmembrane();

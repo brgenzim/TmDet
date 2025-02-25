@@ -62,9 +62,11 @@ class Xml4 {
             && $chainNode->{XML::NODE_REGIONS}->{XML::NODE_REGION} !== null) {
             foreach($chainNode->{XML::NODE_REGIONS}->{XML::NODE_REGION} as $region) {
                 $ret[] = [
-                    'start' => $region[XML::ATTR_START_LABEL_ID],
-                    'end' => $region[XML::ATTR_END_LABEL_ID],
-                    'type' => $region[XML::ATTR_TYPE]
+                    'start' => intval($region[XML::ATTR_START_LABEL_ID])-1,
+                    'end' => intval($region[XML::ATTR_END_LABEL_ID])-1,
+                    'type' => $region[XML::ATTR_TYPE]->__toString(),
+                    'astart' => intval($region[XML::ATTR_START_AUTH_ID])-1,
+                    'aend' => intval($region[XML::ATTR_END_AUTH_ID])-1,
                 ];
             }
         }
