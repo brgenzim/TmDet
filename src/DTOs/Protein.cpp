@@ -94,9 +94,13 @@ namespace Tmdet::DTOs {
                     const char separator = pair[1][0] == ';' ? '\n' : ' ';
                     outputStream << std::format("{}{}{}", pair[0], separator, pair[1]) << std::endl;
                 } else if (item.type == gemmi::cif::ItemType::Loop) {
-                    outputStream << "#" << std::endl;
                     auto loop = item.loop;
                     auto table = block.item_as_table(item);
+                    if ((int)table.length() == 0) {
+                        // skip empty loops, chimera parser fails on them
+                        continue;
+                    }
+                    outputStream << "#" << std::endl;
                     outputStream << "loop_" << std::endl;
                     // process the loop as table
                     for (const auto& tag : table.tags()) {
