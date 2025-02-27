@@ -169,11 +169,26 @@ namespace Tmdet::Utils {
         }
     }
 
+    void CifUtil::updateDataBlockNameIfNeeded(gemmi::cif::Document& document) {
+        auto& oldBlock = document.blocks[0];
+        auto name = oldBlock.name;
+        // Is it in synchron with the entry id?
+        // TmMol* needs identical names due to its caching mechanism.
+        auto entryId = oldBlock.find_pair_item("_entry.id");
+        if (entryId != nullptr) {
+            const std::string newName{entryId->pair[1]};
+            if (name != newName) {
+                oldBlock.name = newName;
+            }
+        }
+    }
+
     void CifUtil::prepareDocumentBlock(Tmdet::VOs::Protein& protein) {
 
         int modelIndex = protein.modelIndex;
 
         auto& document = protein.document;
+        updateDataBlockNameIfNeeded(document);
         auto& oldBlock = document.blocks[0];
 
         auto entityId = addMembraneEntity(oldBlock);

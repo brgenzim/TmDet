@@ -25,5 +25,10 @@ namespace Tmdet::Utils {
              */
             static void prepareDocumentBlock(Tmdet::VOs::Protein& protein);
 
+            /**
+             * @brief Update the first data block name, if _entry.id exists and differs from it.
+             */
+            static void updateDataBlockNameIfNeeded(gemmi::cif::Document& document);
+
     };
 }

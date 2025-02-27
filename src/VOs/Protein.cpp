@@ -24,6 +24,7 @@
 #include <System/Logger.hpp>
 #include <Types/Protein.hpp>
 #include <VOs/Protein.hpp>
+#include <Utils/CifUtil.hpp>
 #include <Utils/Md5.hpp>
 
 namespace Tmdet::VOs {
@@ -32,6 +33,12 @@ namespace Tmdet::VOs {
 
         logger.debug("Processing protein.getStructure()");
         Tmdet::System::FilePaths::isCif(inputPath)?getCifStructure(inputPath):getEntStructure(inputPath);
+        const auto& entryId = gemmi.get_info("_entry.id");
+        logger.error("structure name: {}; _entry.id '{}'", gemmi.name, entryId);
+        if (entryId != gemmi.name) {
+            Tmdet::Utils::CifUtil::updateDataBlockNameIfNeeded(document);
+            gemmi.name = document.blocks[0].name;
+        }
         logger.debug(" Processed protein.getStructure()");
     }
 
