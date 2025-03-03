@@ -86,7 +86,7 @@ Tmdet::System::Arguments getArguments(int argc, char *argv[]) {
     args.define(false,"bp","boost_polarity","Boost polarity calculation in optimization","float","0.55");
     args.define(false,"lmhp","loop_min_helix_part","Minimum of a helix be part as re-entrant loop","float","0.25");
     args.define(false,"lmd","loop_min_deep","Minimum deep of a re-entrant loop in angstrom","float","3.0");
-    args.define(false,"lmnss","loop_min_no_sec_str","Minimum number of residues in a re-entrant loop that has no secondary structure","int","2");
+    args.define(false,"lmnss","loop_min_no_sec_str","Minimum number of residues in a re-entrant loop that has no secondary structure","int","1");
     args.define(false,"mums","max_unannotated_memb_segm","Maximum number of residues that can not be annotated","int","10");
     args.define(false,"sm","shift_membrane","Shift membrane with the given distance","float","0");
     args.define(false,"mltmh","min_length_of_tmh","Minimum length of transmembrane helix","int","12");
