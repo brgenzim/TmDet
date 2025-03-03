@@ -9,6 +9,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <unordered_map>
 #include <DTOs/Protein.hpp>
 #include <Utils/CifUtil.hpp>
 #include <Services/ChemicalComponentDirectoryService.hpp>
@@ -65,9 +66,71 @@ namespace Tmdet::Utils {
         }
     }
 
+    bool hasMemebraneEntity(gemmi::cif::Block& block, std::string& entityId) {
+        bool result = false;
+        if (!block.has_mmcif_category("_struct_asym")) {
+            return result;
+        }
+        auto structAsymTable = block.find("_struct_asym.", { "id", "entity_id" });
+        for (const auto& row : structAsymTable) {
+            if (row.at(0) == CifUtil::TMDET_MEMBRANE_ASYM_ID) {
+                result = true;
+                entityId = row.at(1);
+                break;
+            }
+        }
+        return result;
+    }
+
+    void updateStructAsymLoop(gemmi::cif::Block& block, std::string& entityId) {
+        if (!block.has_mmcif_category("_struct_asym")) {
+            return;
+        }
+
+        auto* structAsymLoop = block.find_loop_item("_struct_asym.id");
+        if (structAsymLoop == nullptr) {
+            return;
+        }
+
+        auto item = *structAsymLoop;
+        auto structAsymTable = block.item_as_table(item);
+        std::unordered_map<std::string, int> columns;
+        std::vector<std::string> columnNames;
+
+        // collect relevant column indecies
+        int colNumber = 0;
+        for (auto& tag: structAsymTable.tags()) {
+            auto colName = CifUtil::getSuffix(tag.data());
+            columnNames.push_back(colName);
+            columns[colName] = colNumber;
+            colNumber++;
+        }
+        std::vector<std::vector<std::string>> newRows;
+        for (const auto& row : structAsymTable) {
+            std::vector<std::string> values;
+            values.insert(values.begin(), row.begin(), row.end());
+            newRows.push_back(values);
+        }
+        // construct and append the membrane entity's row
+        std::vector<std::string> membraneRow{ columns.size(), "." };
+        membraneRow[columns["id"]] = CifUtil::TMDET_MEMBRANE_ASYM_ID;
+        membraneRow[columns["entity_id"]] = entityId;
+        newRows.push_back(membraneRow);
+
+        // add rows to the new loop (it overwrites the old loop)
+        auto& newStructAsymLoop = block.init_mmcif_loop("_struct_asym.", columnNames);
+        for (const auto& newRow : newRows) {
+            newStructAsymLoop.add_row(newRow);
+        }
+    }
+
     std::string addMembraneEntity(gemmi::cif::Block& block) {
         if (!block.has_mmcif_category("_entity")) {
             throw std::runtime_error("_entity not found");
+        }
+        std::string existingEntityId{""};
+        if (hasMemebraneEntity(block, existingEntityId)) {
+            return existingEntityId;
         }
 
         if (block.has_mmcif_category("_pdbx_struct_assembly_gen")) {
@@ -122,9 +185,12 @@ namespace Tmdet::Utils {
             newEntityId,
             "non-polymer",
             //gemmi::cif::quote("TMDET MEMBRANE REPRESENTATION"),
-            "\"TMDET MEMBRANE\""
+            "'TMDET MEMBRANE'"
         };
         newLoop.add_row(values);
+
+        // append the new entity to _struct_asym loop
+        updateStructAsymLoop(block, newEntityId);
 
         return newEntityId;
     }
