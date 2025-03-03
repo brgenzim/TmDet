@@ -120,8 +120,9 @@ namespace Tmdet::Utils {
         std::string newEntityId = std::format("{:d}", newRows.size() + 1);
         std::vector<std::string> values{
             newEntityId,
-            ".",
-            gemmi::cif::quote("TMDET MEMBRANE REPRESENTATION"),
+            "non-polymer",
+            //gemmi::cif::quote("TMDET MEMBRANE REPRESENTATION"),
+            "\"TMDET MEMBRANE\""
         };
         newLoop.add_row(values);
 
@@ -207,6 +208,7 @@ namespace Tmdet::Utils {
         int zIndex = -1;
         int serialIndex = -1;
         int typeSymbolIndex = -1;
+        int labelAtomIdIndex = -1;
         int labelCompIdIndex = -1;
         int labelAsymIdIndex = -1;
         int labelEntityIdIndex = -1;
@@ -230,6 +232,8 @@ namespace Tmdet::Utils {
                 serialIndex = colIndex;
             } else if (colName == "type_symbol") {
                 typeSymbolIndex = colIndex;
+            } else if (colName == "label_atom_id") {
+                labelAtomIdIndex = colIndex;
             } else if (colName == "label_comp_id") {
                 labelCompIdIndex = colIndex;
             } else if (colName == "label_asym_id") {
@@ -304,9 +308,10 @@ namespace Tmdet::Utils {
             atomLine[serialIndex] = std::format("{:d}", nextSerialId);
             atomLine[typeSymbolIndex] = "AG";
             atomLine[labelCompIdIndex] = "AG";
+            atomLine[labelAtomIdIndex] = "AG";
             atomLine[labelAsymIdIndex] = TMDET_MEMBRANE_ASYM_ID;
             atomLine[labelEntityIdIndex] = entityId;
-            atomLine[labelSeqIdIndex] = "1"; // This is a single giant residue
+            atomLine[labelSeqIdIndex] = "."; // This is a single giant residue
             atomLine[occupancyIndex] = "1.00";
             atomLine[bIsoIndex] = "0.00";
             atomLine[pdbxPDBModelNumIndex] = modelNumber;

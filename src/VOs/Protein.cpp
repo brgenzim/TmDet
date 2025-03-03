@@ -31,15 +31,15 @@ namespace Tmdet::VOs {
 
     void Protein::getStructure(const std::string& inputPath) {
 
-        logger.debug("Processing protein.getStructure()");
+        DEBUG_LOG("Processing protein.getStructure()");
         Tmdet::System::FilePaths::isCif(inputPath)?getCifStructure(inputPath):getEntStructure(inputPath);
         const auto& entryId = gemmi.get_info("_entry.id");
-        logger.error("structure name: {}; _entry.id '{}'", gemmi.name, entryId);
+        DEBUG_LOG("structure name: {}; _entry.id '{}'", gemmi.name, entryId);
         if (entryId != gemmi.name) {
             Tmdet::Utils::CifUtil::updateDataBlockNameIfNeeded(document);
             gemmi.name = document.blocks[0].name;
         }
-        logger.debug(" Processed protein.getStructure()");
+        DEBUG_LOG(" Processed protein.getStructure()");
     }
 
     void Protein::getEntStructure(const std::string& inputPath) {

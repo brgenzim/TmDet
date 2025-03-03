@@ -92,7 +92,11 @@ namespace Tmdet::DTOs::XmlRW {
     }
 
     void Writer3::setBioMatrix(const Tmdet::VOs::BioMatrix& bioMatrix) {
-
+        auto pnode = _root.insert_child_after(XML3_NODE_BIOMATRIX,_root.child(XML3_NODE_RAWRES));
+        for (auto& chId: bioMatrix.deletedChainIds) {
+            auto node = pnode.append_child(XML3_NODE_DELETE);
+            node.append_attribute(XML3_ATTR_CHAINID) = chId.c_str();
+        }
     }
 
     void Writer3::setMembrane(std::vector<Tmdet::VOs::Membrane>& membranes, Tmdet::VOs::TMatrix& tmatrix) {
