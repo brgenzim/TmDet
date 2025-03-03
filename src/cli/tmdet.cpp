@@ -41,59 +41,59 @@ Tmdet::System::Arguments getArguments(int argc, char *argv[]) {
     Tmdet::System::Arguments args;
     
     //system
-    args.define(false,"e","env","Path for environment variable file","string",".env");
+    args.define(false,false,"e","env","Path for environment variable file","string",".env");
 
     //path related
-    args.define(false,"c","code","Input PDB code (c or pi is mandatory)","string","");
-    args.define(false,"x","xml","Input/Output xml file path","string","");
-    args.define(false,"pi","pdb_input","Input PDB file full path (in ent or cif format)","string","");
-    args.define(false,"po","pdb_output","Output pdb file path","string","");
-    args.define(false,"xi","xml_input","Input xml file path","string","");
-    args.define(false,"xo","xml_output","Output xml file path","string","");
-    args.define(false,"a","assembly","Set assembly id","int","1");
-    args.define(false,"m","model","Set model id","int","0");
+    args.define(false,true,"c","code","Input PDB code (c or pi is mandatory)","string","");
+    args.define(false,false,"x","xml","Input/Output xml file path","string","");
+    args.define(false,false,"pi","pdb_input","Input PDB file full path (in ent or cif format)","string","");
+    args.define(false,false,"po","pdb_output","Output pdb file path","string","");
+    args.define(false,false,"xi","xml_input","Input xml file path","string","");
+    args.define(false,false,"xo","xml_output","Output xml file path","string","");
+    args.define(false,true,"a","assembly","Set assembly id","int","1");
+    args.define(false,true,"m","model","Set model id","int","0");
     
     //work 
-    args.define(false,"r","run","Run the tmdet algorithm on the protein structure","bool","false");
-    args.define(false,"n","not","Set transmembrane='not' in the xml file","bool","false");
-    args.define(false,"cm","curved_membrane","Search for curved membrane","bool","false");
-    args.define(false,"dm","duble_membrane","Enable duble membrane mode","bool","false");
-    args.define(false,"fr","fragment_analysis","Investigate protein domains/fragments separately","bool","false");
-    args.define(false,"bi","barrel_inside","Indicate chains those are within a barrel (but not part of barrel, like 5iv8)","string","");
-    args.define(false,"ns","no_symmetry","Do not use symmetry axes as membrane normal","bool","false");
-    args.define(false,"s","show","Show annotated structure by pymol","bool","false");
-    args.define(false,"sp","show","Show parsed structure in the console","bool","false");
-    args.define(false,"uc","unselect_chains","Unselect proteins chains","string","");
-    args.define(false,"na","no_annotation","Do not make annotation","bool","false");
-    args.define(false,"fa","force_nodel_antibody","Do not unselect antibodies in the structure","bool","false");
-    args.define(false,"nc","no_cache","Do not use cached data","bool","false");
-    args.define(false,"npf","no_pre_filter","Do not apply TmFilter","bool","false");
-    args.define(false,"xf3","xml_out_fmt3","Set xml output format to v3","bool","false");
+    args.define(false,false,"r","run","Run the tmdet algorithm on the protein structure","bool","false");
+    args.define(false,true,"n","not","Set transmembrane='not' in the xml file","bool","false");
+    args.define(false,true,"cm","curved_membrane","Search for curved membrane","bool","false");
+    args.define(false,true,"dm","duble_membrane","Enable duble membrane mode","bool","false");
+    args.define(false,true,"fr","fragment_analysis","Investigate protein domains/fragments separately","bool","false");
+    args.define(false,true,"bi","barrel_inside","Indicate chains those are within a barrel (but not part of barrel, like 5iv8)","string","");
+    args.define(false,true,"ns","no_symmetry","Do not use symmetry axes as membrane normal","bool","false");
+    args.define(false,true,"s","show","Show annotated structure by pymol","bool","false");
+    args.define(false,true,"sp","show","Show parsed structure in the console","bool","false");
+    args.define(false,true,"uc","unselect_chains","Unselect proteins chains","string","");
+    args.define(false,true,"na","no_annotation","Do not make annotation","bool","false");
+    args.define(false,true,"fa","force_nodel_antibody","Do not unselect antibodies in the structure","bool","false");
+    args.define(false,true,"nc","no_cache","Do not use cached data","bool","false");
+    args.define(false,true,"npf","no_pre_filter","Do not apply TmFilter","bool","false");
+    args.define(false,true,"xf3","xml_out_fmt3","Set xml output format to v3","bool","false");
     
     //parameters
-    args.define(false,"lq","lower_qvalue","Lower qValue, above it is membrane","float","30");
-    args.define(false,"hq","higher_qvalue","Higher qValue, limit for transmembrane type","float","36");
-    args.define(false,"hq2","higher_qvalue2","Higher qValue2, limit for second membrane","float","55");
-    args.define(false,"minht","minimum_of_half_thickness","Minimum value of half thickness","float","10.0");
-    args.define(false,"maxht","maximum_of_half_thickness","Maximum value of half thickness","float","20.0");
-    args.define(false,"maxcht","maximum_of_curved_half_thickness","Maximum value of half thickness for curved membrane detection","float","14");
-    args.define(false,"ihml","ifh_hydrph_limit","Hydrophobicity momentum limit for ifh detection","float","1.6");
-    args.define(false,"ias","ifh_avg_surface","Average free solvent accessible surface limit for ifh detection","float","40");
-    args.define(false,"ian","ifh_angle","Maximum angle between membrane plane and ifh","float","15");
-    args.define(false,"iml","ifh_min_length","Minimum length of ifhs","int","6");
-    args.define(false,"ba","boost_angle","Boost secondary structure element angle in optimization","float","0.7");
-    args.define(false,"bba","boost_beta_angle","Boost beta sheet angle in optimization","float","0.55");
-    args.define(false,"bp","boost_polarity","Boost polarity calculation in optimization","float","0.55");
-    args.define(false,"lmhp","loop_min_helix_part","Minimum of a helix be part as re-entrant loop","float","0.25");
-    args.define(false,"lmd","loop_min_depth","Minimum depth of a re-entrant loop in angstrom","float","3.0");
-    args.define(false,"lmnss","loop_min_no_sec_str","Minimum number of residues in a re-entrant loop that has no secondary structure","int","1");
-    args.define(false,"mums","max_unannotated_memb_segm","Maximum number of residues that can not be annotated","int","10");
-    args.define(false,"sm","shift_membrane","Shift membrane with the given distance","float","0");
-    args.define(false,"mltmh","min_length_of_tmh","Minimum length of transmembrane helix","int","12");
-    args.define(false,"spen","straigth_penalty","Additional value for normalizing straigth","float","0.0");
-    args.define(false,"mcbs","min_contacts_between_sheets","Minimum of contacts between sheets for barrel detection","int","5");
-    args.define(false,"bh","broken_helix","Type of broken helix (loop or transmembrane helix)","string","L");
-    args.define(false,"minbs","min_number_of_beta_sheets","Minimum number of beta sheets in beta barrel","int","8");
+    args.define(false,true,"lq","lower_qvalue","Lower qValue, above it is membrane","float","30");
+    args.define(false,true,"hq","higher_qvalue","Higher qValue, limit for transmembrane type","float","36");
+    args.define(false,true,"hq2","higher_qvalue2","Higher qValue2, limit for second membrane","float","55");
+    args.define(false,true,"minht","minimum_of_half_thickness","Minimum value of half thickness","float","10.0");
+    args.define(false,true,"maxht","maximum_of_half_thickness","Maximum value of half thickness","float","20.0");
+    args.define(false,true,"maxcht","maximum_of_curved_half_thickness","Maximum value of half thickness for curved membrane detection","float","14");
+    args.define(false,true,"ihml","ifh_hydrph_limit","Hydrophobicity momentum limit for ifh detection","float","1.6");
+    args.define(false,true,"ias","ifh_avg_surface","Average free solvent accessible surface limit for ifh detection","float","40");
+    args.define(false,true,"ian","ifh_angle","Maximum angle between membrane plane and ifh","float","15");
+    args.define(false,true,"iml","ifh_min_length","Minimum length of ifhs","int","6");
+    args.define(false,true,"ba","boost_angle","Boost secondary structure element angle in optimization","float","0.7");
+    args.define(false,true,"bba","boost_beta_angle","Boost beta sheet angle in optimization","float","0.55");
+    args.define(false,true,"bp","boost_polarity","Boost polarity calculation in optimization","float","0.55");
+    args.define(false,true,"lmhp","loop_min_helix_part","Minimum of a helix be part as re-entrant loop","float","0.25");
+    args.define(false,true,"lmd","loop_min_depth","Minimum depth of a re-entrant loop in angstrom","float","3.0");
+    args.define(false,true,"lmnss","loop_min_no_sec_str","Minimum number of residues in a re-entrant loop that has no secondary structure","int","1");
+    args.define(false,true,"mums","max_unannotated_memb_segm","Maximum number of residues that can not be annotated","int","10");
+    args.define(false,true,"sm","shift_membrane","Shift membrane with the given distance","float","0");
+    args.define(false,true,"mltmh","min_length_of_tmh","Minimum length of transmembrane helix","int","12");
+    args.define(false,true,"spen","straigth_penalty","Additional value for normalizing straigth","float","0.0");
+    args.define(false,true,"mcbs","min_contacts_between_sheets","Minimum of contacts between sheets for barrel detection","int","5");
+    args.define(false,true,"bh","broken_helix","Type of broken helix (loop or transmembrane helix)","string","L");
+    args.define(false,true,"minbs","min_number_of_beta_sheets","Minimum number of beta sheets in beta barrel","int","8");
     
     args.set(argc,argv);
     args.check();
@@ -107,6 +107,7 @@ int main(int argc, char *argv[], char **envp) {
 
     //get environment file content and shell environment variables
     environment.init(envp,args.getValueAsString("e"));
+    args.setCommandLine();
 
     //setting up logger
     std::ostream& coutRef = std::cout;

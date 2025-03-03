@@ -26,6 +26,8 @@ namespace Tmdet::System {
          */
         bool mandatory;
 
+        bool show;
+
         /**
          * @brief flag that gives if the argument is actually given in
          *        the command line
@@ -124,7 +126,7 @@ namespace Tmdet::System {
              * @param type : type, can be bool, int, real, double, string
              * @param defaultValue : default value (if not mandatory)
              */
-            void define(bool mandatory, std::string shortFlag, std::string longFlag,
+            void define(bool mandatory, bool show, std::string shortFlag, std::string longFlag,
                 std::string descr, std::string type, std::string defaultValue);
 
             /**
@@ -188,6 +190,10 @@ namespace Tmdet::System {
              * @return std::string 
              */
             std::string getCommandLine() const;
+
+            void setCommandLine();
+
+            std::string hidePaths(std::string input);
     };
     
 }

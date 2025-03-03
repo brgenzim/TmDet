@@ -6,20 +6,21 @@
 
 #include <unordered_map>
 #include <iostream>
+#include <format>
 #include <string.h>
 #include <System/Arguments.hpp>
 
 namespace Tmdet::System {
 
     Arguments::Arguments() {
-        this->define(false,"h","help","Get list of arguments","bool","false");
+        this->define(false,false,"h","help","Get list of arguments","bool","false");
     }
 
-    void Arguments::define(bool mandatory, std::string shortFlag, std::string longFlag,
+    void Arguments::define(bool mandatory, bool show, std::string shortFlag, std::string longFlag,
                 std::string descr, std::string type, std::string defaultValue) {
         this->_args.emplace(
             shortFlag.c_str(),
-            _arg({mandatory, false, shortFlag, longFlag, descr, 
+            _arg({mandatory, show, false, shortFlag, longFlag, descr, 
                 type, defaultValue, (defaultValue.length() > 0?defaultValue:"")})
         );
     }
@@ -56,13 +57,10 @@ namespace Tmdet::System {
     }
 
     void Arguments::set(int argc, char *argv[]) {
-        commandLine = "";
         char *c=(char *)nullptr;
         char flag[1024];
         std::string name;
         for(int i=1; i<argc; i++) {
-            commandLine += argv[i];
-            commandLine += " ";
             if (!strncmp(argv[i],"--",2)) {
                 if ((c=strchr(argv[i],'=')) != (char*)nullptr) {
                     strncpy(flag, &argv[i][2], (int)(c-argv[i])-2);
@@ -87,8 +85,6 @@ namespace Tmdet::System {
                     }
                     else {
                         this->_setValue(name,argv[++i]);
-                        commandLine += argv[i];
-                        commandLine += " ";
                     }
                 }
             }
@@ -116,7 +112,7 @@ namespace Tmdet::System {
     void Arguments::_setValue(std::string name, char *value) {
         if (value != (char *)nullptr) {
             this->_args[name].value = (std::string)value;
-            this->_args[name].has = 1;
+            this->_args[name].has = true;
         }
         else {
             std::cerr << "Syntas error in argument list" << std::endl;
@@ -184,4 +180,17 @@ namespace Tmdet::System {
     std::string Arguments::getCommandLine() const {
         return commandLine;
     }
+
+    void Arguments::setCommandLine() {
+        commandLine = "";
+        for (const auto& [name, arg] : this->_args){
+            if (arg.has && arg.show) {
+                commandLine += (arg.type=="bool"?
+                    std::format("--{} ",arg.longFlag):
+                    std::format("--{} {} ",arg.longFlag,arg.value)
+                );
+            }
+        }
+    }
+
 }
