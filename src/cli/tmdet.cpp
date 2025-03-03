@@ -67,7 +67,7 @@ Tmdet::System::Arguments getArguments(int argc, char *argv[]) {
     args.define(false,true,"na","no_annotation","Do not make annotation","bool","false");
     args.define(false,true,"fa","force_nodel_antibody","Do not unselect antibodies in the structure","bool","false");
     args.define(false,true,"nc","no_cache","Do not use cached data","bool","false");
-    args.define(false,true,"npf","no_pre_filter","Do not apply TmFilter","bool","false");
+    args.define(false,true,"pf","pre_filter","Apply TmFilter","bool","false");
     args.define(false,true,"xf3","xml_out_fmt3","Set xml output format to v3","bool","false");
     
     //parameters
@@ -181,8 +181,8 @@ int main(int argc, char *argv[], char **envp) {
 
     //do the membrane region determination and annotation
     if (bool r = args.getValueAsBool("r"); r) {
-        bool npf = args.getValueAsBool("npf");
-        auto filter = Tmdet::Utils::Filter(protein,!npf);
+        bool pf = args.getValueAsBool("pf");
+        auto filter = Tmdet::Utils::Filter(protein,pf);
         auto dssp = Tmdet::Utils::Dssp(protein);
         auto mydssp = Tmdet::Utils::MyDssp(protein);
         auto ssVec = Tmdet::Utils::SecStrVec(protein);
