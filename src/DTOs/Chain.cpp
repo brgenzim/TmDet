@@ -18,12 +18,26 @@
 #include <Helpers/String.hpp>
 #include <System/Logger.hpp>
 #include <System/Environment.hpp>
+#include <Types/Residue.hpp>
 #include <VOs/Protein.hpp>
 #include <VOs/Chain.hpp>
 #include <VOs/Residue.hpp>
 
 namespace Tmdet::DTOs {
-    
+
+    /**
+     * @brief It calculates one-letter sequence from chain residues.
+     */
+    std::string getOneLetterCodeForEmptySequence(gemmi::Chain& chain) {
+
+        std::string oneLetterSequence;
+        for (const auto& residue : chain.residues) {
+            auto residueType = Tmdet::Types::ResidueType::getResidue(residue.name);
+            oneLetterSequence += residueType.a1;
+        }
+        return oneLetterSequence;
+    }
+
     Tmdet::VOs::Chain Chain::get(gemmi::Structure& protein, gemmi::Chain& chain, int chainIdx) {
         Tmdet::VOs::Chain chainVO;
         chainVO.id = chain.name;
@@ -37,7 +51,11 @@ namespace Tmdet::DTOs {
                 && protein.entities[chainVO.entityIdx].polymer_type == gemmi::PolymerType::PeptideL) {
                 chainVO.selected = true;
                 auto sequence = protein.entities[chainVO.entityIdx].full_sequence;
-                chainVO.seq = gemmi::one_letter_code(sequence);
+                if (sequence.size() > 0) {
+                    chainVO.seq = gemmi::one_letter_code(sequence);
+                } else {
+                    chainVO.seq = getOneLetterCodeForEmptySequence(chain);
+                }
                 chainVO.idx = chainIdx;
                 int residueIdx = 0;
                 for(auto& residue: chain.residues) {
