@@ -4,8 +4,10 @@
 //
 // License:    CC-BY-NC-4.0, see LICENSE.txt
 
+#include <filesystem>
 #include <format>
 #include <iostream>
+#include <regex>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -17,14 +19,6 @@
 using namespace std;
 
 namespace Tmdet::Utils {
-
-    std::string CifUtil::getSuffix(const std::string& tag) {
-        auto pos = tag.find(".");
-        if (pos == tag.npos) {
-            throw std::runtime_error(std::format("no prefix in '{}'", tag));
-        }
-        return tag.substr(pos + 1);
-    }
 
     void updateStructAssemblyGen(gemmi::cif::Block& block) {
         // local function
@@ -391,4 +385,48 @@ namespace Tmdet::Utils {
 
     }
 
+    std::string CifUtil::getSuffix(const std::string& tag) {
+        auto pos = tag.find(".");
+        if (pos == tag.npos) {
+            throw std::runtime_error(std::format("no prefix in '{}'", tag));
+        }
+        return tag.substr(pos + 1);
+    }
+
+    std::string CifUtil::getPrefix(const std::string& tag) {
+        auto pos = tag.find(".");
+        if (pos == tag.npos) {
+            throw std::runtime_error(std::format("no prefix in '{}'", tag));
+        }
+        return tag.substr(0, pos);
+    }
+
+    void CifUtil::setEntryIdFromFilePath(gemmi::cif::Document& documemt, const std::string& filePath) {
+
+        //
+        // WARNING: TmdetWeb should have the same logic during annotation JSON generation
+        //
+
+        std::string fileName = filesystem::path(filePath).filename();
+        fileName = CifUtil::getPrefix(fileName);
+
+        auto& block = documemt.blocks[0];
+        if (block.has_tag("_entry.id")) {
+            auto* entryId = block.find_value("_entry.id");
+            const std::regex hashRegex{"([:xdigit:]{4,}-?){36,}", std::regex::extended};
+            std::smatch matches;
+            const int MAX_LENGTH_OF_DATABASE_FIELD = 30;
+            if ((entryId->size() <= MAX_LENGTH_OF_DATABASE_FIELD)
+                || (*entryId == fileName && fileName.size() <= MAX_LENGTH_OF_DATABASE_FIELD
+                && !std::regex_match(fileName, matches, hashRegex))) {
+
+                // update not needed
+                return;
+            }
+        }
+
+        // set the entry
+        fileName = CifUtil::ENTRY_PREFIX + fileName.substr(0, 4);
+        block.set_pair("_entry.id", fileName);
+    }
 }

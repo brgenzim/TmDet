@@ -48,18 +48,6 @@ namespace Tmdet::DTOs {
 
     void printDocument(std::ostream& outputStream, Tmdet::VOs::Protein& protein) {
 
-        //
-        // Helper functions
-        //
-
-        auto getPrefix = [](const std::string& key) -> std::string {
-            auto pos = key.find(".");
-            if (pos == key.npos) {
-                throw std::runtime_error(std::format("no prefix in '{}'", key));
-            }
-            return key.substr(0, pos);
-        };
-
         /////////////////////////////////////////////////////////////
         //
         // Main logic
@@ -82,7 +70,7 @@ namespace Tmdet::DTOs {
                 if (item.type == gemmi::cif::ItemType::Pair) {
                     auto pair = item.pair;
                     // get category prefix
-                    const std::string currentPrefix = getPrefix(pair[0]);
+                    const std::string currentPrefix = Tmdet::Utils::CifUtil::getPrefix(pair[0]);
                     if (currentPrefix != lastPrefix) {
                         // if prefix changes print category delimiter
                         lastPrefix = currentPrefix;

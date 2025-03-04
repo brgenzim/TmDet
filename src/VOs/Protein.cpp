@@ -35,6 +35,7 @@ namespace Tmdet::VOs {
         Tmdet::System::FilePaths::isCif(inputPath)?getCifStructure(inputPath):getEntStructure(inputPath);
         const auto& entryId = gemmi.get_info("_entry.id");
         DEBUG_LOG("structure name: {}; _entry.id '{}'", gemmi.name, entryId);
+        Tmdet::Utils::CifUtil::setEntryIdFromFilePath(document, inputPath);
         if (entryId != gemmi.name) {
             Tmdet::Utils::CifUtil::updateDataBlockNameIfNeeded(document);
             gemmi.name = document.blocks[0].name;

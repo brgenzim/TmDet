@@ -14,11 +14,18 @@ namespace Tmdet::Utils {
     class CifUtil {
         public:
             static constexpr std::string TMDET_MEMBRANE_ASYM_ID = "TM_";
+            static constexpr std::string ENTRY_PREFIX = "JOB_";
 
             /**
              * @brief Util function to get last part of a tag name.
              */
             static std::string getSuffix(const std::string& tag);
+
+            /**
+             * @brief Util function to get first part of a tag name.
+             */
+            static std::string getPrefix(const std::string& tag);
+
 
             /**
              * @brief Update _atom_site loop and add membrane-representation atoms.
@@ -30,5 +37,9 @@ namespace Tmdet::Utils {
              */
             static void updateDataBlockNameIfNeeded(gemmi::cif::Document& document);
 
+            /**
+             * @brief Set _entry.id, if it has a too long name. It is important for TmdetWeb's job management.
+             */
+            static void setEntryIdFromFilePath(gemmi::cif::Document& documemt, const std::string& filePath);
     };
 }
