@@ -16,7 +16,6 @@
 #include <Config.hpp>
 #include <DTOs/SecStrVec.hpp>
 #include <Helpers/Vector.hpp>
-#include <Helpers/Pymol.hpp>
 #include <System/Logger.hpp>
 #include <Types/Residue.hpp>
 #include <Utils/Surface.hpp>

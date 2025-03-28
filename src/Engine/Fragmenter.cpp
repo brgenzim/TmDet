@@ -13,7 +13,6 @@
 #include <Engine/Organizer.hpp>
 #include <Engine/PlaneSideDetector.hpp>
 #include <Engine/RegionHandler.hpp>
-#include <Helpers/Pymol.hpp>
 #include <System/Logger.hpp>
 #include <Utils/Fragment.hpp>
 #include <VOs/Protein.hpp>
