@@ -33,7 +33,6 @@ namespace Tmdet::Utils {
         protein.eachSelectedChain(
             [&](Tmdet::VOs::Chain& chain) -> void {
                 calcDsspOnChain(chain);
-                DEBUG_LOG("DSSP: {}:{}",chain.id,Tmdet::DTOs::Dssp::getSecondaryStructure(chain));
             }
         );
         end();
@@ -318,8 +317,6 @@ namespace Tmdet::Utils {
                     double kap = 180.0 * atan2(skap,ckap) / M_PI;
                     if (kap>70.5) {
                         chain.residues[i].ss = Tmdet::Types::SecStructType::S;
-//                        DEBUG_LOG("detectS: {}:{} {} {} {}",chain.id,chain.residues[i].authId,
-//                                    ckap,skap,kap);
                     }
                 }
             }

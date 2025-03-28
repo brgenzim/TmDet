@@ -101,7 +101,7 @@ Tmdet::System::Arguments getArguments(int argc, char *argv[]) {
 }
 
 int main(int argc, char *argv[], char **envp) {
-    
+
     //get and check command line arguments
     Tmdet::System::Arguments args = getArguments(argc,argv);
 
@@ -115,8 +115,6 @@ int main(int argc, char *argv[], char **envp) {
     logger.addStream(coutRef);
     logger.addStream(logFile);
     logger.setLevel(Tmdet::System::level::TMDET_LOG_LEVEL);
-    INFO_LOG("Starting Tmdet(version: {})",Tmdet::version());
-    INFO_LOG("Command line arguments: {}",args.getCommandLine());
 
     //check ccd and fetch it if missing
     if (!Tmdet::Services::ChemicalComponentDirectoryService::isBuilt()) {

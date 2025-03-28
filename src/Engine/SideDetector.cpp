@@ -16,26 +16,19 @@
 namespace Tmdet::Engine {
 
     void SideDetector::run() {
-        DEBUG_LOG("Processing: SideDetector::run({})",type);
         auto membranes = protein.membranes;
-        //for(auto& membrane: membranes){
-        //    membrane.halfThickness = 4.0;
-        //}
-        //setType("ttype",membranes);
         for(auto& membrane: membranes){
             membrane.halfThickness = 0.0;
         }
         setType("ztype",membranes);
         setType("type",protein.membranes);
         setDirection();
-        DEBUG_LOG(" Processed: SideDetector::run()");
     }
 
     void SideDetector::end() {
         protein.eachSelectedResidue(
             [&](Tmdet::VOs::Residue& residue) -> void {
                 residue.temp.erase("type");
-               // residue.temp.erase("ttype");
                 residue.temp.erase("ztype");
                 residue.temp.erase("z");
                 residue.temp.erase("hz");
@@ -122,23 +115,8 @@ namespace Tmdet::Engine {
                 for(int i=0; i<chain.length; i++) {
                     if (chain.residues[i].selected) {
                         chain.residues[i].temp.try_emplace("direction",std::any(getResidueDirection(chain,i)));
-                        DEBUG_LOG("RES: chain:{} res:{} type:{} ss:{}:{}:{} out:{:.2f} surf:{:.2f} isInside:{} z:{:.2f} z1:{:.2f} hz:{:.2f} z4:{:.2f} direction:{:.2f}",chain.id,chain.residues[i].authId,
-                            any_cast<Tmdet::Types::Region>(chain.residues[i].temp.at("type")).code,
-                            chain.residues[i].ss.code,
-                            chain.residues[i].secStrVecIdx,
-                            (chain.residues[i].secStrVecIdx==-1?-1:protein.secStrVecs[chain.residues[i].secStrVecIdx].barrelIdx),
-                            chain.residues[i].outSurface,
-                            chain.residues[i].surface,
-                            (chain.residues[i].isInside()?"inside":"outside"),
-                            any_cast<double>(chain.residues[i].temp.at("z")),
-                            z1,
-                            any_cast<double>(chain.residues[i].temp.at("hz")),
-                            z4,
-                            any_cast<double>(chain.residues[i].temp.at("direction"))
-                        );
                     }
                 }
-                
             }
         );
     }

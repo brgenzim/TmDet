@@ -27,14 +27,11 @@ namespace Tmdet::DTOs::XmlRW {
 
     void Reader3::readXml(Tmdet::VOs::Xml& xmlData) {
         xmlData.tmp = getTmp();
-        DEBUG_LOG("tmp: {}",(xmlData.tmp?"yes":"no"));
         xmlData.code = getCode();
         xmlData.date = getCreateDate();
         xmlData.modifications = getModifications();
         xmlData.qValue = getQvalue();
-        DEBUG_LOG("qValue: {}",xmlData.qValue);
         auto type = getTmtype();
-        DEBUG_LOG("type: {}",type);
         xmlData.type = Tmdet::Types::Proteins.at(type);
         xmlData.spres = getSpres();
         xmlData.pdbkwres = getPdbkwres();

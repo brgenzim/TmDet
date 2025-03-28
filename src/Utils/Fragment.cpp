@@ -55,15 +55,10 @@ namespace Tmdet::Utils {
         protein.eachSelectedResidue(
             [&](Tmdet::VOs::Residue& residue) -> void {
                 for(auto& cr: any_cast<std::vector<_cr>>(residue.temp["neighbors"])) {
-                    if (protein.chains[cr.chainIdx].selected 
-                            && protein.chains[cr.chainIdx].residues[cr.residueIdx].selected) {
+                    if (protein.chains[cr.chainIdx].selected
+                        && protein.chains[cr.chainIdx].residues[cr.residueIdx].selected) {
                         auto& neighbor = protein.chains[cr.chainIdx].residues[cr.residueIdx];
-                            DEBUG_LOG("Set CM[{}][{}] = true ({},{})",
-                                any_cast<int>(residue.temp["cm_index"]),
-                                any_cast<int>(neighbor.temp["cm_index"]),
-                                residue.authId,neighbor.authId
-                            );
-                            contactMap[any_cast<int>(residue.temp["cm_index"])][any_cast<int>(neighbor.temp["cm_index"])] = true;
+                        contactMap[any_cast<int>(residue.temp["cm_index"])][any_cast<int>(neighbor.temp["cm_index"])] = true;
                     }
                 }
             }
@@ -85,7 +80,6 @@ namespace Tmdet::Utils {
                 }
             }
         }
-        DEBUG_LOG("Neighhor: res({}):{}:{} {}",residue.idx,residue.authId,residue.ss.code,(check?"good":"wrong"));
         return (check?ret:empty);
     }
 
@@ -103,7 +97,6 @@ namespace Tmdet::Utils {
 
     void Fragment::setFragment(Tmdet::VOs::Residue& residue) {
         residue.temp["fragment"] = std::any(numFragments);
-        DEBUG_LOG("setFragment: {}:{}",residue.authId,numFragments);
         for(auto& cr: any_cast<std::vector<_cr>>(residue.temp["neighbors"])) {
             auto& neighbor = protein.chains[cr.chainIdx].residues[cr.residueIdx];
             if (enableMove(residue,neighbor)) {
@@ -128,7 +121,6 @@ namespace Tmdet::Utils {
             + checkRegionForContact(from,to,-4,-1,1,4)
             + checkRegionForContact(from,to,1,4,-4,-1)
             + checkRegionForContact(from,to,1,4,1,4);
-        DEBUG_LOG("Move: {}->{}: {}({})",from.authId,to.authId,numContacts,(numContacts>0));
         return (numContacts>0);
     }
 

@@ -117,10 +117,8 @@ CHAIN idx:{} authId:{} labelId:{} entityId:{} entityIdx:{} length:{} selected:{}
             nr += (residue.hasAllSideChainAtoms()?1:0);
             nb += (residue.hasOnlyBackBoneAtoms()?1:0);
         }
-        DEBUG_LOG("selectChain: id:{} nr:{} nb:{}",chainVO.id,nr,nb);
         if (nb > nr) {
             chainVO.type = Tmdet::Types::ChainType::LOW_RES;
-            DEBUG_LOG("Low Resolution chain: {}",chainVO.id);
         }
         if (nr+nb < std::stoi(environment.get("TMDET_MIN_NUMBER_OF_RESIDUES_IN_CHAIN",DEFAULT_TMDET_MIN_NUMBER_OF_RESIDUES_IN_CHAIN))) {
             chainVO.selected = false;

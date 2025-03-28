@@ -68,13 +68,11 @@ namespace Tmdet::Utils {
     }
 
     bool surfaceCache::read(Tmdet::VOs::Protein& protein) {
-        DEBUG_LOG("Processing surfaceCache::read()");
         std::string hash = protein.hash();
         std::string dir = Tmdet::System::FilePaths::cache(hash);
         std::string path = dir + "/" + hash + "_" + protein.code + ".bin";
         std::ifstream file(path, ios::binary);
         if (!file.is_open()) {
-            INFO_LOG("No data in surface cache for {}",protein.code);
             return false;
         }
         auto size = cache.size();
@@ -83,12 +81,10 @@ namespace Tmdet::Utils {
         file.read(reinterpret_cast<char*>(cache.data()), size * sizeof(double));
         file.close();
         proteinFromCache(protein);
-        DEBUG_LOG(" Processed surfaceCache::read()");
         return true;
     }
 
     void surfaceCache::write(const Tmdet::VOs::Protein& protein) {
-        DEBUG_LOG("Processing surfaceCache::write()");
         proteinToCache(protein);
         std::string hash = protein.hash();
         std::string dir = Tmdet::System::FilePaths::cache(hash);
@@ -103,11 +99,9 @@ namespace Tmdet::Utils {
         file.write(reinterpret_cast<const char*>(&size), sizeof(size));
         file.write(reinterpret_cast<const char*>(cache.data()), size * sizeof(double));
         file.close();
-        DEBUG_LOG(" Processed surfaceCache::write()");
     }
     
     void Surface::run() {
-        DEBUG_LOG("Processing Surface::run()");
         surfaceCache cache;
         if (noCache || !cache.read(protein) ) {
             initTempData();
@@ -115,11 +109,9 @@ namespace Tmdet::Utils {
             setOutsideSurface();
             cache.write(protein);
         }
-        DEBUG_LOG(" Processed Surface::run()");
     }
 
     void Surface::initTempData() {
-        DEBUG_LOG("Processing Surface::initTempData()");
         const double probSize = std::stof(environment.get("TMDET_SURF_PROBSIZE",DEFAULT_TMDET_SURF_PROBSIZE));
         protein.eachSelectedResidue(
             [&](Tmdet::VOs::Residue& residue) -> void {
@@ -135,11 +127,9 @@ namespace Tmdet::Utils {
                 }
             }
         );
-        DEBUG_LOG(" Processed Surface::initTempData()");
     }
 
     void Surface::setContacts() {
-        DEBUG_LOG("Processing Surface::setContacts()");
         protein.eachSelectedResidue(
             [&](Tmdet::VOs::Residue& residue) -> void {
                 residue.surface = 0.0;
@@ -150,7 +140,6 @@ namespace Tmdet::Utils {
                 //residue.outSurface = residue.surface;
             }
         );
-        DEBUG_LOG(" Processed Surface::setContacts()");
     }
 
     void Surface::setContactsOfAtom(Tmdet::VOs::Atom& a_atom) {

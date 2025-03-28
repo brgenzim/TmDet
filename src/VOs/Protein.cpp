@@ -31,16 +31,13 @@ namespace Tmdet::VOs {
 
     void Protein::getStructure(const std::string& inputPath) {
 
-        DEBUG_LOG("Processing protein.getStructure()");
         Tmdet::System::FilePaths::isCif(inputPath)?getCifStructure(inputPath):getEntStructure(inputPath);
         const auto& entryId = gemmi.get_info("_entry.id");
-        DEBUG_LOG("structure name: {}; _entry.id '{}'", gemmi.name, entryId);
         Tmdet::Utils::CifUtil::setEntryIdFromFilePath(document, inputPath);
         if (entryId != gemmi.name) {
             Tmdet::Utils::CifUtil::updateDataBlockNameIfNeeded(document);
             gemmi.name = document.blocks[0].name;
         }
-        DEBUG_LOG(" Processed protein.getStructure()");
     }
 
     void Protein::getEntStructure(const std::string& inputPath) {
@@ -71,9 +68,6 @@ namespace Tmdet::VOs {
                 polymerNames[entity[0]] = entity[1];
             }
         }
-        for(auto& [key, val]: polymerNames) {
-            DEBUG_LOG("polymerNames[{}]: {}",key,val);
-        }
     }
 
     void Protein::notTransmembrane() {
@@ -95,7 +89,6 @@ namespace Tmdet::VOs {
                 chain.regions.clear();
             }
         );
-        DEBUG_LOG("Protein data cleared: {}",tmp);
     }
 
     std::string Protein::hash() const {
@@ -156,7 +149,6 @@ namespace Tmdet::VOs {
         if (n>0) {
             ret /= n;
         }
-        DEBUG_LOG("Mass centre: {}:{}:{}",ret.x,ret.y,ret.z);
         return ret;
     }
 

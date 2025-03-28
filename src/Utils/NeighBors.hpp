@@ -34,10 +34,6 @@ namespace Tmdet::Utils {
                                     (residue.chainIdx == m->chain_idx 
                                         && std::abs(residue.labelId - protein.chains[m->chain_idx].residues[m->residue_idx].labelId) > 2))) {
                                 neighbors.emplace_back(m->chain_idx,m->residue_idx);
-                                DEBUG_LOG("NeighBor: {}:{}-{}:{} ({})",
-                                    protein.chains[residue.chainIdx].id,residue.authId,
-                                    protein.chains[m->chain_idx].id,protein.chains[m->chain_idx].residues[m->residue_idx].authId,
-                                    ca->pos.dist(protein.chains[m->chain_idx].residues[m->residue_idx].atoms[m->atom_idx].gemmi.pos));
                             }
                         }
                     }

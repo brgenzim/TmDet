@@ -37,7 +37,6 @@ namespace Tmdet::DTOs::XmlRW {
     }
     
     void Writer::setCode(const std::string& code) const {
-        DEBUG_LOG("setCode: >>{}<<",code);
         _root.attribute(XML_ATTR_PDB_CODE).set_value(code.c_str());
     }
             
@@ -131,7 +130,6 @@ namespace Tmdet::DTOs::XmlRW {
     }
             
     void Writer::writeXml(Tmdet::VOs::Xml& xmlData, const std::string& path, const Tmdet::System::Arguments& args) {
-        DEBUG_LOG("Processing: Writer::writeXml({})",path);
         create();
         setTmp(xmlData.tmp);
         setCode(xmlData.code);
@@ -146,7 +144,6 @@ namespace Tmdet::DTOs::XmlRW {
             setChains(xmlData.chains);
         }
         write(path);
-        DEBUG_LOG(" Processed: Writer::writeXml({} {})",path,args.getCommandLine());
     }
 
 }

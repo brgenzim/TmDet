@@ -39,7 +39,6 @@ namespace Tmdet::Helpers::Vector {
             auto intersectionPoint = begin + l * (numerator / denominator);
             if (Tmdet::Helpers::Vector::isPointOnVector(vectorDiff, begin, intersectionPoint)) {
                 result = true; // intersects the plane and between BEGIN and END
-                DEBUG_LOG("Intersection Point: {}",vec3ToString(intersectionPoint));
             }
         }
 
@@ -47,7 +46,6 @@ namespace Tmdet::Helpers::Vector {
     }
 
     bool simplifiedDoesVectorCrossPlane(double begin, double end, double plane) {
-        DEBUG_LOG("simplifiedDoesVectorCrossPlane: {} {} {}",begin,end,plane);
         return ((begin<plane && plane<end) || (begin>plane && plane>end));
     }
 
@@ -70,7 +68,6 @@ namespace Tmdet::Helpers::Vector {
             // if same direction and between begin-end (length less than vector length)
             if (Tmdet::Helpers::Vector::isPointOnVector(vectorDiff, begin, intersectionPoint)) {
                 result = true; // intersects the plane and between BEGIN and END
-                DEBUG_LOG("Intersection Point: {}",Tmdet::Helpers::Vector::vec3ToString(intersectionPoint));
             }
         } else if (discriminant > 0) {
             // line and sphere have two intersection points
@@ -81,11 +78,9 @@ namespace Tmdet::Helpers::Vector {
             auto intersectionPoint2 = begin + l * d2;
             if (Tmdet::Helpers::Vector::isPointOnVector(vectorDiff, begin, intersectionPoint1)) {
                 result = true;
-                DEBUG_LOG("Intersection Point1: {}",Tmdet::Helpers::Vector::vec3ToString(intersectionPoint1));
             }
             if (Tmdet::Helpers::Vector::isPointOnVector(vectorDiff, begin, intersectionPoint2)) {
                 result = true;
-                DEBUG_LOG("Intersection Point2: {}",Tmdet::Helpers::Vector::vec3ToString(intersectionPoint2));
             }
         }
 

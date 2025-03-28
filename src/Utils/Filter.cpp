@@ -30,7 +30,6 @@ namespace Tmdet::Utils {
                         tmp += runPhobius(chain.id);
                         tmp += runScampi(chain.id);
                         tmp += runTMHMM(chain.id);
-                        DEBUG_LOG("Filter results in {}",tmp);
                         chain.isTmp = (tmp>1);
                         protein.tmFilterResults |= chain.isTmp;
                         std::filesystem::remove_all(tempDir); 

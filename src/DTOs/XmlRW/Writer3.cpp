@@ -141,7 +141,6 @@ namespace Tmdet::DTOs::XmlRW {
     }
             
     void Writer3::writeXml(Tmdet::VOs::Xml& xmlData, const std::string& path, const Tmdet::System::Arguments& args) {
-        DEBUG_LOG("Processing: Writer3::writeXml({})",path);
         create();
         setTmp(xmlData.tmp);
         setCode(xmlData.code);
@@ -158,7 +157,6 @@ namespace Tmdet::DTOs::XmlRW {
             setChains(xmlData.chains);
         }
         write(path);
-        DEBUG_LOG(" Processed: Writer3::writeXml({})",path);
     }
 
 }

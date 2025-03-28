@@ -63,36 +63,12 @@ namespace Tmdet::Engine {
     template bool RegionHandler::getNextSame<Tmdet::Types::Region>(Tmdet::VOs::Chain& chain, const int& begin, int& end, std::string what) const;
 
     void RegionHandler::replace(Tmdet::VOs::Chain& chain, int beg, int end, Tmdet::Types::Region regionType, std::string what, bool check, Tmdet::Types::Region checkType) {
-        DEBUG_LOG("Processing RegionHandler::replace({} {} {} {} --> {})",
-            chain.id,chain.residues[beg].authId,chain.residues[end].authId,
-            any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at(what)).name,
-            regionType.name);
         for (int i = beg; i<= end; i++) {
             if (!check || (check && std::any_cast<Tmdet::Types::Region>(chain.residues[i].temp.at(what)) == checkType)) {
                 chain.residues[i].temp.at(what) = std::any(regionType);
             }
         }
-        DEBUG_LOG(" Processed RegionHandler::replace()");
     }
-
-    /*bool RegionHandler::sameDirection(Tmdet::VOs::Chain& chain, int p1, int p2) {
-        if (!chain.residues[p1].temp.contains("direction") || !chain.residues[p2].temp.contains("direction")) {
-            return false;
-        }
-        double d1 = any_cast<double>(chain.residues[p1].temp.at("direction"));
-        double d2 = any_cast<double>(chain.residues[p2].temp.at("direction"));
-        DEBUG_LOG("sameDirection: {} {} {} {} {}",chain.id,chain.residues[p1].authId,chain.residues[p2].authId,d1,d2);
-        return (d1*d2>0 && std::abs(d1)>8 && std::abs(d2)>8);
-    }
-
-    bool RegionHandler::notSameDirection(Tmdet::VOs::Chain& chain, int p1, int p2) {
-        if (!chain.residues[p1].temp.contains("direction") || !chain.residues[p2].temp.contains("direction")) {
-            return false;
-        }
-        double d1 = any_cast<double>(chain.residues[p1].temp.at("direction"));
-        double d2 = any_cast<double>(chain.residues[p2].temp.at("direction"));
-        return (d1*d2<0);
-    }*/
 
     template <typename T>
     std::vector<simpleRegion> RegionHandler::getAll(Tmdet::VOs::Chain& chain, std::string what) {
@@ -109,7 +85,6 @@ namespace Tmdet::Engine {
 
     template <typename T>
     int RegionHandler::finalize() {
-        DEBUG_LOG("Processing regionHandler::finalize()");
         int ret = 0;
         protein.eachSelectedChain(
             [&](Tmdet::VOs::Chain& chain) -> void {
@@ -117,10 +92,6 @@ namespace Tmdet::Engine {
                 int end = 0;
                 while(getNext<T>(chain,beg,end,"type")) {
                     auto begType = any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("type"));
-                    DEBUG_LOG("Finalize checks: {}.{}:{}-{}:{}.{} {}::{}",
-                        (beg>0&&chain.residues[beg-1].selected?any_cast<Tmdet::Types::Region>(chain.residues[beg-1].temp.at("ztype")).code:'-'),
-                        chain.id,chain.residues[beg].authId,chain.residues[end-1].authId,begType.code,
-                        (end<chain.length&&chain.residues[end].selected?any_cast<Tmdet::Types::Region>(chain.residues[end].temp.at("ztype")).code:'-'),end,chain.length);
                     // 1111MM..MM111 or 111BB..BB1111 or 111HH..HH111
                     if ((begType.isAnnotatedTransMembraneType() 
                             || begType.isNotAnnotatedMembrane())
@@ -134,10 +105,7 @@ namespace Tmdet::Engine {
                         && any_cast<Tmdet::Types::Region>(chain.residues[end].temp.at("type")).isNotMembrane()
                         && any_cast<Tmdet::Types::Region>(chain.residues[beg-1].temp.at("ztype")).code ==
                             any_cast<Tmdet::Types::Region>(chain.residues[end].temp.at("ztype")).code) {
-                                DEBUG_LOG("rule: 1111MM..MM111 or 111BB..BB1111 or 111HH..HH111");
-                                DEBUG_LOG("{}::{} and {}::{}",
-                                    chain.residues[beg-1].authId,chain.residues[beg].authId,
-                                    chain.residues[end-1].authId,chain.residues[end].authId);
+
                         replace(chain,beg,end-1,any_cast<Tmdet::Types::Region>(chain.residues[end].temp.at("ztype")));
                     }
                     //short B or H or M at the end of the chain
@@ -159,13 +127,11 @@ namespace Tmdet::Engine {
                             && std::abs(any_cast<double>(chain.residues[end-1].temp.at("z"))) > 10) {
                             ret += (end-beg);
                         }
-                        DEBUG_LOG("any ...MMMM... {}",q);
                     }
                     beg = end;
                 }
             }
         );
-        DEBUG_LOG(" Processed RegionHandler::finalize({})",ret);
         return ret;
     }
     template int RegionHandler::finalize<int>();
@@ -173,7 +139,6 @@ namespace Tmdet::Engine {
 
     template <typename T>
     void RegionHandler::store() {
-        DEBUG_LOG("Processing: RegionHandler::store()");
         protein.eachSelectedChain(
             [&](Tmdet::VOs::Chain& chain) -> void {
                 if (chain.signalP[1] > 0) {
@@ -197,7 +162,6 @@ namespace Tmdet::Engine {
                         if (std::any_cast<Tmdet::Types::Region>(chain.residues[begin].temp.at("type")).isAnnotatedTransMembraneType()) {
                             chain.numtm++;
                         }
-                        DEBUG_LOG("Region stored: {}:{}-{}-{}",chain.id,region.beg.authId,region.end.authId,region.type.code);
                         chain.regions.push_back(region);
                     }
                     begin = end;
@@ -207,7 +171,6 @@ namespace Tmdet::Engine {
                 }
             }
         );
-        DEBUG_LOG(" Processed: RegionHandler::store()");
     }
 
     template void RegionHandler::store<int>();

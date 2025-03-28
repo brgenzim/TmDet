@@ -26,11 +26,6 @@ namespace Tmdet::Utils {
         //removeMins("S");
         //removeMins("E");
         end();
-        protein.eachSelectedChain(
-            [&](Tmdet::VOs::Chain& chain) -> void {
-                DEBUG_LOG("MYDSSP: {}:{}",chain.id,Tmdet::DTOs::Dssp::getSecondaryStructure(chain));
-            }
-        );
     }
 
     void MyDssp::end() {
@@ -97,13 +92,6 @@ namespace Tmdet::Utils {
                             else if (a3<80 && any_cast<int>(chain.residues[i].temp["E"]) == 1) {
                                 chain.residues[i].temp["E"] = std::any(0);
                             }
-
-                        INFO_LOG("Angle: {}:{}:{} {:.2f} {:.2f} {:.2f} {} {}:{}",
-                            chain.id,chain.residues[i].authId,
-                            chain.residues[i].ss.code,a1,a2,a3,
-                            any_cast<int>(chain.residues[i].temp["S"]),
-                            any_cast<int>(chain.residues[i].temp["E"]),
-                            (any_cast<int>(chain.residues[i].temp["E"])>0?'E':' '));
                     }
                 }
             }

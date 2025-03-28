@@ -20,7 +20,6 @@ namespace Tmdet::DTOs {
 
         void Xml::fromProtein(const Tmdet::VOs::Protein& protein) {
             xmlData.code = protein.code;
-            DEBUG_LOG("fromProtein(): code: >>{}<<",protein.code);
             xmlData.tmp = protein.tmp;
             xmlData.date = protein.date;
             xmlData.version = protein.version;
