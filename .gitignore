@@ -4,17 +4,9 @@
 #
 # SPDX-License-Identifier: CC-BY-NC-4.0
 
-bin/
 build/
 lib/
 .vscode/
-data/ccd/
 .env
-.cache/
-Doc/
-tests/archive/
-tests/issue_*
-*.log
-contrib**
-*.xlsx
-pymol_debug/
+tests/
+
