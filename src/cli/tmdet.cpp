@@ -59,7 +59,6 @@ Tmdet::System::Arguments getArguments(int argc, char *argv[]) {
     args.define(false,true,"fr","fragment_analysis","Investigate protein domains/fragments separately","bool","false");
     args.define(false,true,"bi","barrel_inside","Indicate chains those are within a barrel (but not part of barrel, like 5iv8)","string","");
     args.define(false,true,"ns","no_symmetry","Do not use symmetry axes as membrane normal","bool","false");
-    args.define(false,true,"sp","show","Show parsed structure in the console","bool","false");
     args.define(false,true,"uc","unselect_chains","Unselect proteins chains","string","");
     args.define(false,true,"na","no_annotation","Do not make annotation","bool","false");
     args.define(false,true,"fa","force_nodel_antibody","Do not unselect antibodies in the structure","bool","false");
