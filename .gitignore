@@ -1,0 +1,14 @@
+# SPDX-FileCopyrightText: © 2003 Gabor E. Tusnady <tusnady.gabor@ttk.hu
+# SPDX-FileCopyrightText: © 2003 HUN-REN Research Center of Natural Sciences
+# SPDX-FileContributor: Csongor Gerdan <gerdan.csongor@ttk.hu
+#
+# SPDX-License-Identifier: CC-BY-NC-4.0
+
+build/
+lib/
+bin/
+.vscode/
+.env
+.git_*
+tests/
+
