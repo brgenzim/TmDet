@@ -20,4 +20,4 @@ CONFIGURATION AND REQUIREMENTS
 Environment variables are deined in .env file, but can be set via shell environment variable:
 
 Chemical component directory is important during parsing CIF files. If it is missing, tmdet
-downloaded it from WWPDB and install it automatically.
+download it from WWPDB and install it automatically.
