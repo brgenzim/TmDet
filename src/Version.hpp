@@ -10,7 +10,7 @@
 #include <format>
 
 #define TMDET_VERSION_MAJOR 4
-#define TMDET_VERSION_MINOR 0
+#define TMDET_VERSION_MINOR 1
 #define TMDET_VERSION_PATCH 0
 
 /**

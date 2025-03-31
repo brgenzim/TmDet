@@ -51,7 +51,7 @@ namespace Tmdet::Engine {
                 optimizer->searchForMembraneNormal();
                 optimizer->setMembranesToProtein();
             }
-            if (bool na = args.getValueAsBool("na"); !na && protein.tmp) {
+            if (protein.tmp) {
                 protein.transform();
                 auto annotator = Tmdet::Engine::Annotator(protein, args);
             }
