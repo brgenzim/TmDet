@@ -117,7 +117,6 @@ int main(int argc, char *argv[], char **envp) {
     //else user should provide the full path of xml and cif files
     Tmdet::DTOs::Xml xml;
     string code = args.getValueAsString("c");
-    string xmlInputPath = xml.setPath(code,args.getValueAsString("x"),"");
     string xmlOutputPath = xml.setPath(code,args.getValueAsString("x"),"");
     string pdbInputPath = (code != ""?Tmdet::System::FilePaths::cif(code,args.getValueAsInt("a")):args.getValueAsString("pi"));
     string pdbOutputPath = (code != ""?Tmdet::System::FilePaths::pdbOut(code):args.getValueAsString("po"));
