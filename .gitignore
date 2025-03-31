@@ -9,5 +9,6 @@ lib/
 bin/
 .vscode/
 .env
+.git_*
 tests/
 
