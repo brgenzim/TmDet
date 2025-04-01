@@ -11,6 +11,33 @@
 
 4. Enjoy it!
 
+# Docker
+
+1. Clone the TmDet repository:
+
+```
+git clone https://github.com/brgenzim/TmDet
+```
+
+2. Create your own environment file - edit a copy of `.env.example`:
+
+```
+cd Tmdet
+cp .env.example .env
+```
+
+2. Build docker image:
+
+```
+docker compose build
+```
+
+3. Run tmdet in docker container:
+
+```
+docker compose  run --rm -u $(id -u):$(id -g)  tmdet  build/src/tmdet
+```
+
 
 # Command line arguments
 - Get help:

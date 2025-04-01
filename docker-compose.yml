@@ -1,0 +1,20 @@
+services:
+  tmdet:
+    labels:
+      - tmdet
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ${USER}/${APP_NAME}:${VERSION}
+    container_name: ${APP_NAME}
+    working_dir: /usr/local/src/tmdet
+    volumes:
+      - ${PWD}:/usr/local/src/tmdet
+      - ${PDB_DATA_ROOT}:${PDB_DATA_ROOT}
+      - ${PWD}/data:${TMDET_DATA_ROOT}
+    networks:
+      - tmdet
+
+networks:
+  tmdet:
+    driver: bridge
