@@ -13,7 +13,7 @@ services:
     volumes:
       - ${PWD}:/usr/local/src/tmdet
       - ${PDB_DATA_ROOT}:${PDB_DATA_ROOT}
-      - ${PWD}/data:${TMDET_DATA_ROOT}
+      - ${PWD}:/work
     networks:
       - tmdet
 
