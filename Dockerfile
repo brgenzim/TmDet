@@ -2,6 +2,7 @@
 FROM ubuntu:24.04
 
 ARG GEMMI_VERSION=0.7.0
+ARG SRC_DESTINATION=/usr/local/src/tmdet
 
 # Update the package list and install essential build tools and libraries
 RUN apt-get update && apt-get install -y \
@@ -38,12 +39,14 @@ RUN curl -L -O https://github.com/zeux/pugixml/archive/refs/tags/v1.14.tar.gz &&
     ln -s pugixml-1.14 pugixml
 
 # Set the working directory for tmdet source and build
-COPY . /usr/local/src/tmdet
-WORKDIR /usr/local/src/tmdet
+COPY . $SRC_DESTINATION
+WORKDIR $SRC_DESTINATION
 RUN cmake -B build && \
     make -j4 -C build && \
     make -C build install && \
     cp .env /etc/tmdet.env
+
+RUN rm -rf $SRC_DESTINATION
 
 # Default command to run tmdet
 ENV LD_LIBRARY_PATH=/usr/local/lib
