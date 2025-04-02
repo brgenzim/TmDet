@@ -54,5 +54,5 @@ RUN rm -rf /tmp/Tmdet
 # Default command to run tmdet
 ENV LD_LIBRARY_PATH=/usr/local/lib
 WORKDIR /work
-ENTRYPOINT [ "/usr/local/bin/tmdet" ]
-CMD [ "-e", "/work/.env", "-h" ]
+ENTRYPOINT [ "/usr/local/bin/tmdet", "-e", "/etc/tmdet.env" ]
+CMD [ "-h" ]
