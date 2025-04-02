@@ -7,7 +7,9 @@
 build/
 lib/
 bin/
+data/
 .vscode/
 .env
+.git_*
 tests/
 

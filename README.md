@@ -1,26 +1,65 @@
 # Get and Install **TmDet**
 
 1. Clone the TmDet repository:
-> git clone https://github.com/brgenzim/TmDet
+
+```
+git clone https://github.com/brgenzim/TmDet
+```
 
 2. Change to the TmDet folder:
-> cd TmDet
+
+```
+cd TmDet
+```
 
 3. Compile the TmDet:
-> cmake -B build; make -C build; make -C build install
 
-4. Enjoy it!
+```
+cmake -B build && make -C build && make -C build install
+```
+
+4. The binary is located in the ```bin``` folder. Enjoy it!
+
+# Build and run Docker image from local source directory
+
+## Prerequisite:
+
+Current user must have ```sudo``` right or user must be member of ```docker``` user group.
+In the latter case ```sudo``` can be omitted from the command lines below.
+
+## Commands
+
+1. Clone the TmDet repository:
+
+```
+git clone https://github.com/brgenzim/TmDet
+```
+
+2. Build docker image:
+
+```
+cd Tmdet && sudo docker compose build
+```
+
+3. Run tmdet in docker container:
+
+```
+sudo bash run-tmdet.sh -pi 1a0s.cif -po 1a0s.tr.cif -x 1a0s.xml
+```
 
 
 # Command line arguments
 - Get help:
->tmdet -h
+
+```
+tmdet -h
+```
 
 - Set input:
 
     - by path:
         >-pi /path/to/the/pdb/struct[.cif|.cif.gz|ent|ent.gz]
-    - by pdbCode (PDB_ENT_DIR and/or PDB_CIF_DIR have to be defined in this case, see Set environments)
+    - by pdbCode (```PDB_ENT_DIR``` and/or ```PDB_CIF_DIR``` have to be defined in this case, see *Set environments*)
         >-c pdbCode
 
         - refine by assembly id (using assemblies downloaded from rcsb.org):
@@ -39,7 +78,7 @@
     - by path (if -c is not used (see input parameters)):
         >-po /path/to/the/pdb/transformed_struct.cif.gz
         >-x /path/to/the/tmdet/output.xml
-    
+
 - Set main operation mode:
     - Search for curved membrane:
         >-cm
@@ -80,9 +119,9 @@
 
 # Set environment
 
-Default environment file is *.env* in the current directory. The peth of the environment file can be set by the *-e* command line arguments.
+Default environment file is ```.env``` in the current directory. The path of the environment file can be set by the ```-e``` command line arguments.
 
 # Chemical component directory
 
 Chemical component directory is important during parsing CIF files. If it is missing, TmDet
-download it from WWPDB and install it automatically.
+downloads it from WWPDB and install it automatically.
