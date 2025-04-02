@@ -40,7 +40,7 @@ RUN curl -L -O https://github.com/zeux/pugixml/archive/refs/tags/v1.14.tar.gz &&
 # Set the working directory for tmdet source and build
 WORKDIR /tmp
 RUN ln -s /usr/local/src/contrib /tmp/contrib
-RUN git clone 'https://csgerdan:%247%234AN%21j%24y%29%40en_X@git.enzim.ttk.hu/csgerdan/TmdetPublic.git' Tmdet
+RUN git clone https://github.com/brgenzim/TmDet.git Tmdet
 WORKDIR /tmp/Tmdet
 RUN git switch github-public && \
     cmake -B build && \
