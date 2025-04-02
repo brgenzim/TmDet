@@ -38,9 +38,8 @@ RUN curl -L -O https://github.com/zeux/pugixml/archive/refs/tags/v1.14.tar.gz &&
     ln -s pugixml-1.14 pugixml
 
 # Set the working directory for tmdet source and build
-COPY . /tmp/tmdet
-# WORKDIR /usr/local/src/tmdet
-WORKDIR /tmp/tmdet
+COPY . /usr/local/src/tmdet
+WORKDIR /usr/local/src/tmdet
 RUN cmake -B build && \
     make -j4 -C build && \
     make -C build install && \
