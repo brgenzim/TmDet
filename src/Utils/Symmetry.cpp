@@ -65,7 +65,6 @@ namespace Tmdet::Utils {
             }
         }
         return numRotated > 0;
-        //return numRotated == numChains && numRotated !=0;
     }
 
     int Symmetry::calculateRotationalOperation(int cidx1, int cidx2) {
