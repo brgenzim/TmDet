@@ -7,7 +7,7 @@ services:
       dockerfile: Dockerfile
     environment:
       - LD_LIBRARY_PATH=/usr/local/lib
-    image: ${USER}/${APP_NAME}:${VERSION}
+    image: brgenzim/${APP_NAME}:${VERSION}
     container_name: ${APP_NAME}
     working_dir: /usr/local/src/tmdet
     volumes:

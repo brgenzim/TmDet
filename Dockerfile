@@ -38,18 +38,13 @@ RUN curl -L -O https://github.com/zeux/pugixml/archive/refs/tags/v1.14.tar.gz &&
     ln -s pugixml-1.14 pugixml
 
 # Set the working directory for tmdet source and build
-WORKDIR /tmp
-RUN ln -s /usr/local/src/contrib /tmp/contrib
-RUN git clone https://github.com/brgenzim/TmDet.git Tmdet
-WORKDIR /tmp/Tmdet
-RUN git switch github-public && \
-    cmake -B build && \
+COPY . /tmp/tmdet
+# WORKDIR /usr/local/src/tmdet
+WORKDIR /tmp/tmdet
+RUN cmake -B build && \
     make -j4 -C build && \
     make -C build install && \
     cp .env /etc/tmdet.env
-
-WORKDIR /work
-RUN rm -rf /tmp/Tmdet
 
 # Default command to run tmdet
 ENV LD_LIBRARY_PATH=/usr/local/lib
