@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <format>
 #include <string>
 #include <exception>
 
@@ -18,41 +19,40 @@
 namespace Tmdet::Exceptions {
 
     /**
-     * @brief Missing Envirenment Key Exception
+     * @brief Missing Environment Key Exception
      */
     class MissingEnvironmentKeyException : public std::exception {
         private:
+
             /**
-             * @brief name of the missing key
-             * 
+             * @brief to store description of error
              */
-            std::string key;
+            std::string message;
 
         public:
 
             /**
              * @brief Construct a new Missing Environment Key Exception object
-             * 
+             *
              * @param k
              */
-            MissingEnvironmentKeyException(std::string k)
-                : key(k) {}
-            
+            MissingEnvironmentKeyException(std::string k) {
+                message = std::format("Key ({}) not found, nor default value is given", k);
+            }
+
             /**
              * @brief Destroy the Missing Environment Key Exception object
-             * 
+             *
              */
             ~MissingEnvironmentKeyException()=default;
 
-            
+
             /**
              * @brief format the error message and throw it
-             * 
-             * @return const char* 
+             *
+             * @return const char*
              */
             const char* what() const throw() {
-                std::string message = "Key ("
-                        + key + ") not found, nor default value is given";
                 return message.c_str();
             }
     };

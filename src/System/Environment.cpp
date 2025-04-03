@@ -4,11 +4,13 @@
 //
 // License:    CC-BY-NC-4.0, see LICENSE.txt
 
-#include <unordered_map>
+#include <cstdlib>
+#include <filesystem>
+#include <fstream>
 #include <iostream>
 #include <string>
+#include <unordered_map>
 #include <utility>
-#include <fstream>
 #include <System/Environment.hpp>
 #include <Exceptions/SyntaxErrorException.hpp>
 #include <Exceptions/FileNotFoundException.hpp>
@@ -111,11 +113,38 @@ namespace Tmdet::System {
 
     void Environment::init(char** envp, std::string envFile) {
         //get environment file content and shell environment variables
-        try {
-                readEnvFile(envFile);
+
+        std::string selectedEnvFile{envFile};
+        if (envFile == DOTENV_FILE_NAME) {
+            // This is the default value.
+            const char* variableValue = std::getenv(DOTENV_FILE_VARIABLE_NAME);
+            if (variableValue != nullptr) {
+                std::cerr << std::format("{} variable overwrites default .env file value with {}",
+                    DOTENV_FILE_VARIABLE_NAME, variableValue) << std::endl;
+                selectedEnvFile = variableValue;
+            }
+
+            std::filesystem::path environmentFilePath{selectedEnvFile};
+            if (!std::filesystem::exists(environmentFilePath)) {
+                std::cerr << std::format("'{}' does not exist; falling back to .env in current directory",
+                    selectedEnvFile) << std::endl;
+                selectedEnvFile = DOTENV_FILE_NAME;
+            } else {
+                std::ifstream env{selectedEnvFile};
+                if (!env.is_open()) {
+                    std::cerr << std::format("'{}' file is not readable; falling back to .env in current directory",
+                        selectedEnvFile) << std::endl;
+                        selectedEnvFile = DOTENV_FILE_NAME;
+                }
+            }
         }
-        catch(std::string& msg) {
-            std::cerr << "Environment file not found: " << msg << std::endl;
+
+        try {
+            readEnvFile(selectedEnvFile);
+        }
+        catch(Tmdet::Exceptions::FileNotFoundException& exception) {
+            std::cerr << "Environment file not found: " << exception.what() << std::endl;
+            std::exit(EXIT_FAILURE);
         }
         updateByEnvVars(envp);
     }
