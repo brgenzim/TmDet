@@ -3,6 +3,7 @@ FROM ubuntu:24.04
 
 ARG GEMMI_VERSION=0.7.0
 ARG SRC_DESTINATION=/usr/local/src/tmdet
+ARG ENV_FILE=/etc/tmdet.env
 
 # Update the package list and install essential build tools and libraries
 RUN apt-get update && apt-get install -y \
@@ -44,7 +45,8 @@ WORKDIR $SRC_DESTINATION
 RUN cmake -B build && \
     make -j4 -C build && \
     make -C build install && \
-    cp .env /etc/tmdet.env
+    cp .env $ENV_FILE && \
+    chmod 644 $ENV_FILE
 
 RUN rm -rf $SRC_DESTINATION
 
