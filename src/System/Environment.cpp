@@ -123,7 +123,10 @@ namespace Tmdet::System {
                     DOTENV_FILE_VARIABLE_NAME, variableValue) << std::endl;
                 selectedEnvFile = variableValue;
             }
+        }
 
+        // pre-check before reading the given .env file
+        if (selectedEnvFile != DOTENV_FILE_NAME) {
             std::filesystem::path environmentFilePath{selectedEnvFile};
             if (!std::filesystem::exists(environmentFilePath)) {
                 std::cerr << std::format("'{}' does not exist; falling back to .env in current directory",
