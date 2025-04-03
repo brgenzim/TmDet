@@ -1,8 +1,60 @@
 # Get and Install **TmDet**
 
+## Setup required software environment
+
+> **NOTE**
+>
+> These commands were tested on Ubuntu 24.04. Other Linux distributions are out of
+> scope of this document.
+>
+> Below commands requires ```sudo``` permission.
+
+1. Install build tools
+
+```
+sudo apt-get update && apt-get install -y \
+    build-essential \
+    cmake \
+    gcc g++
+```
+
+2. Install dependencies
+
+```
+sudo apt-get install -y \
+    curl \
+    git \
+    libcurl4-openssl-dev \
+    libeigen3-dev \
+    libzip-dev \
+    nlohmann-json3-dev
+
+GEMMI_VERSION=0.7.0
+cd /tmp
+curl -L -O https://github.com/project-gemmi/gemmi/archive/refs/tags/v$GEMMI_VERSION.tar.gz && \
+    tar -xzf v$GEMMI_VERSION.tar.gz && \
+    rm v$GEMMI_VERSION.tar.gz && \
+    cd gemmi-$GEMMI_VERSION && \
+    cmake -B build && \
+    make -j4 -C build && \
+    sudo make -C build install
+```
+
+```
+PUGIXML_VERSION=1.14
+cd /tmp && mkdir -p contrib && cd contrib
+curl -L -O https://github.com/zeux/pugixml/archive/refs/tags/v$PUGIXML_VERSION.tar.gz && \
+    tar -xzf v$PUGIXML_VERSION.tar.gz && \
+    rm v$PUGIXML_VERSION.tar.gz && \
+    ln -s pugixml-$PUGIXML_VERSION pugixml
+```
+
+## Build commands
+
 1. Clone the TmDet repository:
 
 ```
+cd /tmp
 git clone https://github.com/brgenzim/TmDet
 ```
 
@@ -15,14 +67,14 @@ cd TmDet
 3. Compile the TmDet:
 
 ```
-cmake -B build && make -C build && make -C build install
+cmake -B build && make -j4 -C build && make -C build install
 ```
 
-4. The binary is located in the ```bin``` folder. Enjoy it!
+4. The binary is located in the ```/usr/local/bin``` folder. Enjoy it by typing ```tmdet -h```!
 
 # Build and run Docker image from local source directory
 
-## Prerequisite:
+## Prerequisite
 
 Current user must have ```sudo``` right or user must be member of ```docker``` user group.
 In the latter case ```sudo``` can be omitted from the command lines below.
@@ -47,6 +99,9 @@ cd Tmdet && sudo docker compose build
 sudo bash run-tmdet.sh -pi 1a0s.cif -po 1a0s.tr.cif -x 1a0s.xml
 ```
 
+> **NOTE**
+>
+> Input file must be in the current directory where ```run-tmdet.sh``` is executed.
 
 # Command line arguments
 - Get help:

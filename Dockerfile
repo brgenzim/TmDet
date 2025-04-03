@@ -2,6 +2,7 @@
 FROM ubuntu:24.04
 
 ARG GEMMI_VERSION=0.7.0
+ARG PUGIXML_VERSION=1.14
 ARG SRC_DESTINATION=/usr/local/src/tmdet
 ARG ENV_FILE=/etc/tmdet.env
 
@@ -12,14 +13,12 @@ RUN apt-get update && apt-get install -y \
     curl \
     git \
     libcurl4-openssl-dev \
+    libeigen3-dev \
     libzip-dev \
     nlohmann-json3-dev
 
 # Install the latest GCC compiler that supports the C++20 standard
 RUN apt-get install -y gcc g++ gdb
-
-# Install Eigen3 from the Ubuntu repositories
-RUN apt-get install -y libeigen3-dev
 
 # Download, build, and install Gemmi
 WORKDIR /opt
@@ -32,12 +31,12 @@ RUN curl -L -O https://github.com/project-gemmi/gemmi/archive/refs/tags/v$GEMMI_
     make -j4 -C build && \
     make -C build install
 
-# Download pugixml 1.14
+# Download pugixml
 WORKDIR /usr/local/src/contrib
-RUN curl -L -O https://github.com/zeux/pugixml/archive/refs/tags/v1.14.tar.gz && \
-    tar -xzf v1.14.tar.gz && \
-    rm v1.14.tar.gz && \
-    ln -s pugixml-1.14 pugixml
+RUN curl -L -O https://github.com/zeux/pugixml/archive/refs/tags/v$PUGIXML_VERSION.tar.gz && \
+    tar -xzf v$PUGIXML_VERSION.tar.gz && \
+    rm v$PUGIXML_VERSION.tar.gz && \
+    ln -s pugixml-$PUGIXML_VERSION pugixml
 
 # Set the working directory for tmdet source and build
 COPY . $SRC_DESTINATION
