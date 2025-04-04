@@ -108,7 +108,7 @@ git clone https://github.com/brgenzim/TmDet.git
 2. Build docker image:
 
 ```
-cd Tmdet && sudo docker compose build
+cd TmDet && sudo docker compose build
 ```
 
 3. Run tmdet in docker container:
@@ -194,7 +194,7 @@ tmdet -h
 <a name="variables"></a>
 # Set environment
 
-Default environment file is ```.env``` in the current directory. The path of the environment file can be set by the ```-e``` command line argument or ```TMDET_ENV_FILE```. The priority of environment files is as follows:
+Default environment file is ```.env``` in the current directory. The path of the environment file can be set by the ```-e``` command line argument or by the ```TMDET_ENV_FILE``` environment variable. The priority of environment files is as follows:
 
 * if ```-e``` is given, this file takes precedence over ```TMDET_ENV_FILE``` variable or ```.env``` in the current directory
 * if ```-e``` is omitted but ```TMDET_ENV_FILE``` variable is set, the given file will be processed
