@@ -55,7 +55,7 @@ curl -L -O https://github.com/zeux/pugixml/archive/refs/tags/v$PUGIXML_VERSION.t
 
 ```
 cd /tmp
-git clone https://github.com/brgenzim/TmDet
+git clone https://github.com/brgenzim/TmDet.git
 ```
 
 2. Change to the TmDet folder:
@@ -67,7 +67,7 @@ cd TmDet
 3. Compile the TmDet:
 
 ```
-cmake -B build && make -j4 -C build && make -C build install
+cmake -B build && make -j4 -C build && sudo make -C build install
 ```
 
 4. The binary is located in the ```/usr/local/bin``` folder. Enjoy it by typing ```tmdet -h```!
@@ -84,7 +84,7 @@ In the latter case ```sudo``` can be omitted from the command lines below.
 1. Clone the TmDet repository:
 
 ```
-git clone https://github.com/brgenzim/TmDet
+git clone https://github.com/brgenzim/TmDet.git
 ```
 
 2. Build docker image:
@@ -96,7 +96,7 @@ cd Tmdet && sudo docker compose build
 3. Run tmdet in docker container:
 
 ```
-sudo bash run-tmdet.sh -pi 1a0s.cif -po 1a0s.tr.cif -x 1a0s.xml
+sudo bash run-tmdet.sh -pi ./data/1a0s.cif -po ./data/1a0s.tr.cif -x ./data/1a0s.xml
 ```
 
 > **NOTE**

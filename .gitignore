@@ -7,7 +7,6 @@
 build/
 lib/
 bin/
-data/
 .vscode/
 .env
 .git_*
