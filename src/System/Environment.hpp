@@ -11,19 +11,26 @@
 #include <iostream>
 
 /**
+ * @brief default dot env filename
+ */
+#define DOTENV_FILE_NAME ".env"
+#define DOTENV_FILE_VARIABLE_NAME "TMDET_ENV_FILE"
+
+
+/**
  * @brief namespace for tmdet system
  *
  * @namespace Tmdet
  * @namespace System
  */
 namespace Tmdet::System {
-    
+
     /**
      * @brief handling environment files and variables
      *
      */
     class Environment {
-        
+
         private:
             /**
              * @var key value pairs of environment variables
@@ -59,6 +66,7 @@ namespace Tmdet::System {
 
 
         public:
+
             /**
              * @brief Get the Envs object
              *
@@ -84,7 +92,7 @@ namespace Tmdet::System {
              * @brief get value of an environment variable.
              *        If it is not set return default value
              *
-             * @throw MissingEnvironmentKeyException if key not found nor default value is given
+             * @throws MissingEnvironmentKeyException if key not found nor default value is given
              * 
              * @param key 
              * @param defaultValue

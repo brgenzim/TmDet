@@ -152,8 +152,6 @@ namespace Tmdet::VOs {
 
         bool hasIdenticalChains = false;
 
-        bool tmFilterResults = false;
-
         int modelIndex = 0;
 
         /**

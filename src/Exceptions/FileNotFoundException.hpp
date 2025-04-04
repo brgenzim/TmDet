@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <format>
 #include <string>
 #include <exception>
 
@@ -24,18 +25,23 @@ namespace Tmdet::Exceptions {
         private:
             /**
              * @brief path of the missing file
-             * 
              */
             std::string fileName;
+
+            /**
+             * @brief to store description
+             */
+            std::string message;
 
         public:
             /**
              * @brief Construct a new File Not Found Exception object
-             * 
-             * @param fn 
+             *
+             * @param fn
              */
             FileNotFoundException(std::string fn)
-                : fileName(fn) {}
+                : fileName(fn), message{std::format("File not found: {}", fn)} {
+                }
 
             /**
              * @brief Destroy the File Not Found Exception object
@@ -49,7 +55,6 @@ namespace Tmdet::Exceptions {
              * @return const char* 
              */
             const char* what() const throw() {
-                std::string message = "File not found: " + fileName;
                 return message.c_str();
             }
     };

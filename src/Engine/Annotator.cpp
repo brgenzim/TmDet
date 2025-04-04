@@ -70,7 +70,7 @@ namespace Tmdet::Engine {
         }
         else {
             regionHandler.store<Tmdet::Types::Region>();
-            finalCheck();
+            //finalCheck();
         }
         if (protein.tmp) {
             setMembraneSize();
@@ -104,7 +104,7 @@ namespace Tmdet::Engine {
         protein.eachChain(
             [&](Tmdet::VOs::Chain& chain) -> void {
                 int alpha=0;
-                if (chain.type == Tmdet::Types::ChainType::NON_TM && (chain.isTmp || chain.length < 50)) {
+                if (chain.type == Tmdet::Types::ChainType::NON_TM) {
                     for(const auto& residue: chain.residues) {
                         if (residue.selected) {
                             if (REGTYPE(residue) == Tmdet::Types::RegionType::MEMB) {

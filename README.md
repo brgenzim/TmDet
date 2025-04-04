@@ -1,26 +1,139 @@
+[Get and Install TmDet](#local-install) section describes setup on user's operating system.
+By installing the software and configuring the necessary dependencies, the environment will be altered to support the application.
+
+Read [Build and run Docker image from local source directory](#docker-install) section,
+if you would like to avoid modifying your local environment.
+We recommend running the software in a Docker container in this case.
+This ensures the software runs in an isolated environment with minimal changes to your system's core settings.
+
+# Table of Contents
+
+* [Get and Install **TmDet**](#local-install)
+* [Build and run Docker image from local source directory](#docker-install)
+* [Command line arguments](#cmd-args)
+* [Set environment](#variables)
+* [Chemical component directory](#ccd)
+
+<a name="local-install"></a>
 # Get and Install **TmDet**
 
+## Setup required software environment
+
+> **NOTE**
+>
+> These commands were tested on Ubuntu 24.04. Other Linux distributions are out of
+> scope of this document.
+>
+> Below commands requires ```sudo``` permission.
+
+1. Install build tools
+
+```
+sudo apt-get update && apt-get install -y \
+    build-essential \
+    cmake \
+    gcc g++
+```
+
+2. Install dependencies
+
+```
+sudo apt-get install -y \
+    curl \
+    git \
+    libcurl4-openssl-dev \
+    libeigen3-dev \
+    libzip-dev \
+    nlohmann-json3-dev
+
+GEMMI_VERSION=0.7.0
+cd /tmp
+curl -L -O https://github.com/project-gemmi/gemmi/archive/refs/tags/v$GEMMI_VERSION.tar.gz && \
+    tar -xzf v$GEMMI_VERSION.tar.gz && \
+    rm v$GEMMI_VERSION.tar.gz && \
+    cd gemmi-$GEMMI_VERSION && \
+    cmake -B build && \
+    make -j4 -C build && \
+    sudo make -C build install
+```
+
+```
+PUGIXML_VERSION=1.14
+cd /tmp && mkdir -p contrib && cd contrib
+curl -L -O https://github.com/zeux/pugixml/archive/refs/tags/v$PUGIXML_VERSION.tar.gz && \
+    tar -xzf v$PUGIXML_VERSION.tar.gz && \
+    rm v$PUGIXML_VERSION.tar.gz && \
+    ln -s pugixml-$PUGIXML_VERSION pugixml
+```
+
+## Build commands
+
 1. Clone the TmDet repository:
-> git clone https://github.com/brgenzim/TmDet
+
+```
+cd /tmp
+git clone https://github.com/brgenzim/TmDet.git
+```
 
 2. Change to the TmDet folder:
-> cd TmDet
+
+```
+cd TmDet
+```
 
 3. Compile the TmDet:
-> cmake -B build; make -C build; make -C build install
 
-4. Enjoy it!
+```
+cmake -B build && make -j4 -C build && sudo make -C build install
+```
 
+4. The binary is located in the ```/usr/local/bin``` folder. Enjoy it by typing ```tmdet -h```!
 
+<a name="docker-install"></a>
+# Build and run Docker image from local source directory
+
+## Prerequisite
+
+Current user must have ```sudo``` right or user must be member of ```docker``` user group.
+In the latter case ```sudo``` can be omitted from the command lines below.
+
+## Commands
+
+1. Clone the TmDet repository:
+
+```
+git clone https://github.com/brgenzim/TmDet.git
+```
+
+2. Build docker image:
+
+```
+cd TmDet && sudo docker compose build
+```
+
+3. Run tmdet in docker container:
+
+```
+sudo bash run-tmdet.sh -pi ./data/1a0s.cif -po ./data/1a0s.tr.cif -x ./data/1a0s.xml
+```
+
+> **NOTE**
+>
+> Input file must be in the current directory where ```run-tmdet.sh``` is executed.
+
+<a name="cmd-args"></a>
 # Command line arguments
 - Get help:
->tmdet -h
+
+```
+tmdet -h
+```
 
 - Set input:
 
     - by path:
         >-pi /path/to/the/pdb/struct[.cif|.cif.gz|ent|ent.gz]
-    - by pdbCode (PDB_ENT_DIR and/or PDB_CIF_DIR have to be defined in this case, see Set environments)
+    - by pdbCode (```PDB_ENT_DIR``` and/or ```PDB_CIF_DIR``` have to be defined in this case, see *Set environments*)
         >-c pdbCode
 
         - refine by assembly id (using assemblies downloaded from rcsb.org):
@@ -39,7 +152,7 @@
     - by path (if -c is not used (see input parameters)):
         >-po /path/to/the/pdb/transformed_struct.cif.gz
         >-x /path/to/the/tmdet/output.xml
-    
+
 - Set main operation mode:
     - Search for curved membrane:
         >-cm
@@ -78,11 +191,17 @@
     | -minbs | --min_number_of_beta_sheets | int | Minimum number of beta sheets in beta barrel (default: *8*)|
     | -bi | --barrel_inside | string | Indicate chains those are within a beta-barrel (but not part of barrel, like chain B in 5iv8)|
 
+<a name="variables"></a>
 # Set environment
 
-Default environment file is *.env* in the current directory. The peth of the environment file can be set by the *-e* command line arguments.
+Default environment file is ```.env``` in the current directory. The path of the environment file can be set by the ```-e``` command line argument or by the ```TMDET_ENV_FILE``` environment variable. The priority of environment files is as follows:
 
+* if ```-e``` is given, this file takes precedence over ```TMDET_ENV_FILE``` variable or ```.env``` in the current directory
+* if ```-e``` is omitted but ```TMDET_ENV_FILE``` variable is set, the given file will be processed
+* if neither ```-e``` nor ```TMDET_ENV_FILE``` are used, TMDET attempts to read ```.env``` file in the current directory
+
+<a name="ccd"></a>
 # Chemical component directory
 
 Chemical component directory is important during parsing CIF files. If it is missing, TmDet
-download it from WWPDB and install it automatically.
+downloads it from WWPDB and install it automatically.

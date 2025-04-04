@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <format>
 #include <string>
 #include <exception>
 
@@ -24,54 +25,54 @@ namespace Tmdet::Exceptions {
         private:
             /**
              * @brief file name where the syntax error present
-             * 
+             *
              */
             std::string fileName;
 
             /**
              * @brief line number of the syntax error
-             * 
+             *
              */
             int lineNum;
 
             /**
              * @brief description of the syntax error
-             * 
+             *
              */
             std::string message;
-            
+
         public:
 
             /**
              * @brief Construct a new Syntax Error Exception object
-             * 
-             * @param fn 
-             * @param ln 
-             * @param msg 
+             *
+             * @param fn
+             * @param ln
+             * @param msg
              */
             SyntaxErrorException(std::string fn, int ln, std::string msg)
                 : fileName(fn),
                   lineNum(ln),
-                  message(msg) {}
-            
+                  message(msg) {
+
+                message = std::format("Syntax error in file {} (line: {}): Error: {}",
+                    fileName, std::to_string(lineNum), message);
+            }
+
             /**
              * @brief Destroy the Syntax Error Exception object
-             * 
+             *
              */
             ~SyntaxErrorException()=default;
 
-            
+
             /**
              * @brief format the error message and throw it
-             * 
+             *
              * @return const char* 
              */
             const char* what() const throw() {
-                std::string fullMessage = (std::string)"Syntax error in file "
-                        + fileName
-                        + "(line: " + std::to_string(lineNum) + "): "
-                        + "Error: " + message;
-                return fullMessage.c_str();
+                return message.c_str();
             }
     };
 }

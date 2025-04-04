@@ -86,12 +86,6 @@ namespace Tmdet::Engine {
                 }
             }
         }
-        for (int i=0; i<numSheets; i++) {
-            std::string res = "";
-            for (int j=0; j<numSheets; j++) {
-                res += std::format("{:2d} ",connectome[i][j]);
-            }
-        }
     }
 
     void BetaAnnotator::detectBarrels() {

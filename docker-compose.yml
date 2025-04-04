@@ -1,0 +1,22 @@
+services:
+  tmdet:
+    labels:
+      - tmdet
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - LD_LIBRARY_PATH=/usr/local/lib
+    image: brgenzim/${APP_NAME}:${VERSION}
+    container_name: ${APP_NAME}
+    working_dir: /usr/local/src/tmdet
+    volumes:
+      - ${PWD}:/usr/local/src/tmdet
+      - ${PDB_DATA_ROOT}:${PDB_DATA_ROOT}
+      - ${PWD}:/work
+    networks:
+      - tmdet
+
+networks:
+  tmdet:
+    driver: bridge
