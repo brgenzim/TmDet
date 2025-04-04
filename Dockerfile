@@ -44,7 +44,7 @@ WORKDIR $SRC_DESTINATION
 RUN cmake -B build && \
     make -j4 -C build && \
     make -C build install && \
-    cp .env $ENV_FILE && \
+    cp .env.example $ENV_FILE && \
     chmod 644 $ENV_FILE
 
 RUN rm -rf $SRC_DESTINATION
