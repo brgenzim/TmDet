@@ -111,42 +111,70 @@ namespace Tmdet::System {
         }
     }
 
-    void Environment::init(char** envp, std::string envFile) {
-        //get environment file content and shell environment variables
+    std::string preCheckEnvFile(const std::string& expectedFile, const std::string& alternateFile, bool& readable) {
 
-        std::string selectedEnvFile{envFile};
-        if (envFile == DOTENV_FILE_NAME) {
-            // This is the default value.
-            const char* variableValue = std::getenv(DOTENV_FILE_VARIABLE_NAME);
-            if (variableValue != nullptr) {
-                std::cerr << std::format("{} variable overwrites default .env file value with {}",
-                    DOTENV_FILE_VARIABLE_NAME, variableValue) << std::endl;
-                selectedEnvFile = variableValue;
-            }
+        readable = true;
+        // Ignore switching to backup file behaviour
+        if (expectedFile == alternateFile) {
+            return expectedFile;
         }
 
-        // pre-check before reading the given .env file
-        if (selectedEnvFile != DOTENV_FILE_NAME) {
-            std::filesystem::path environmentFilePath{selectedEnvFile};
-            if (!std::filesystem::exists(environmentFilePath)) {
-                std::cerr << std::format("'{}' does not exist; falling back to .env in current directory",
-                    selectedEnvFile) << std::endl;
-                selectedEnvFile = DOTENV_FILE_NAME;
-            } else {
-                std::ifstream env{selectedEnvFile};
-                if (!env.is_open()) {
-                    std::cerr << std::format("'{}' file is not readable; falling back to .env in current directory",
-                        selectedEnvFile) << std::endl;
-                        selectedEnvFile = DOTENV_FILE_NAME;
-                }
+        std::filesystem::path environmentFilePath{expectedFile};
+
+        std::string suffix{ alternateFile == DOTENV_FILE_NAME ? " in current directory" : ""};
+        std::string message{""};
+
+        if (!std::filesystem::exists(environmentFilePath)) {
+            message += std::format("'{}' does not exist; falling back to '{}'", expectedFile, alternateFile);
+            readable = false;
+        } else {
+            std::ifstream env{expectedFile};
+            if (!env.is_open()) {
+                message += std::format("'{}' file is not readable; falling back to '{}'", expectedFile, alternateFile);
+                readable = false;
             }
+        }
+        if (!readable) {
+            std::cerr << std::format("{}{}", message, suffix) << std::endl;
+        }
+
+        return readable ? expectedFile : alternateFile;
+    }
+
+    /**
+     * @brief get environment file content and shell environment variables
+     */
+    void Environment::init(char** envp, std::string envFile) {
+
+        const char* variableValue = std::getenv(DOTENV_FILE_VARIABLE_NAME);
+        std::string selectedEnvFile{""};
+        bool valid = false;
+
+        // pre-checks before reading the given .env file
+        // TMDET_ENV_FILE can overwrite -e or default value
+        if (envFile == "" && variableValue != nullptr) {
+            selectedEnvFile = preCheckEnvFile(variableValue, DOTENV_FILE_NAME, valid);
+            if (valid) {
+                std::cerr << std::format("{} variable ({}) takes precedence over environment file '{}'",
+                    DOTENV_FILE_VARIABLE_NAME, variableValue, DOTENV_FILE_NAME) << std::endl;
+            }
+        } else if (envFile != "" && variableValue != nullptr) {
+            selectedEnvFile = preCheckEnvFile(envFile, variableValue, valid);
+            if (!valid) {
+                std::cerr << std::format("{} variable ({}) takes precedence over environment file '{}'",
+                    DOTENV_FILE_VARIABLE_NAME, variableValue, envFile) << std::endl;
+            }
+        } else if (envFile != "") {
+            selectedEnvFile = preCheckEnvFile(envFile, DOTENV_FILE_NAME, valid);
+        } else {
+            selectedEnvFile = DOTENV_FILE_NAME;
         }
 
         try {
             readEnvFile(selectedEnvFile);
         }
         catch(Tmdet::Exceptions::FileNotFoundException& exception) {
-            std::cerr << "Environment file not found: " << exception.what() << std::endl;
+            std::cerr << exception.what() << std::endl;
             std::exit(EXIT_FAILURE);
         }
         updateByEnvVars(envp);

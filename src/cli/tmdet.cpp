@@ -39,7 +39,7 @@ Tmdet::System::Arguments getArguments(int argc, char *argv[]) {
     Tmdet::System::Arguments args;
 
     //system
-    args.define(false,false,"e","env","Path for environment variable file","string",".env");
+    args.define(false,false,"e","env","Path for environment variable file","string","");
 
     //path related
     args.define(false,true,"c","code","Input PDB code (c or pi is mandatory)","string","");

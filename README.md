@@ -1,3 +1,20 @@
+[Get and Install TmDet](#local-install) section describes setup on user's operating system.
+By installing the software and configuring the necessary dependencies, the environment will be altered to support the application.
+
+Read [Build and run Docker image from local source directory](#docker-install) section,
+if you would like to avoid modifying your local environment.
+We recommend running the software in a Docker container in this case.
+This ensures the software runs in an isolated environment with minimal changes to your system's core settings.
+
+# Table of Contents
+
+* [Get and Install **TmDet**](#local-install)
+* [Build and run Docker image from local source directory](#docker-install)
+* [Command line arguments](#cmd-args)
+* [Set environment](#variables)
+* [Chemical component directory](#ccd)
+
+<a name="local-install"></a>
 # Get and Install **TmDet**
 
 ## Setup required software environment
@@ -72,6 +89,7 @@ cmake -B build && make -j4 -C build && sudo make -C build install
 
 4. The binary is located in the ```/usr/local/bin``` folder. Enjoy it by typing ```tmdet -h```!
 
+<a name="docker-install"></a>
 # Build and run Docker image from local source directory
 
 ## Prerequisite
@@ -103,6 +121,7 @@ sudo bash run-tmdet.sh -pi ./data/1a0s.cif -po ./data/1a0s.tr.cif -x ./data/1a0s
 >
 > Input file must be in the current directory where ```run-tmdet.sh``` is executed.
 
+<a name="cmd-args"></a>
 # Command line arguments
 - Get help:
 
@@ -172,10 +191,16 @@ tmdet -h
     | -minbs | --min_number_of_beta_sheets | int | Minimum number of beta sheets in beta barrel (default: *8*)|
     | -bi | --barrel_inside | string | Indicate chains those are within a beta-barrel (but not part of barrel, like chain B in 5iv8)|
 
+<a name="variables"></a>
 # Set environment
 
-Default environment file is ```.env``` in the current directory. The path of the environment file can be set by the ```-e``` command line arguments.
+Default environment file is ```.env``` in the current directory. The path of the environment file can be set by the ```-e``` command line argument or ```TMDET_ENV_FILE```. The priority of environment files is as follows:
 
+* if ```-e``` is given, this file takes precedence over ```TMDET_ENV_FILE``` variable or ```.env``` in the current directory
+* if ```-e``` is omitted but ```TMDET_ENV_FILE``` variable is set, the given file will be processed
+* if neither ```-e``` nor ```TMDET_ENV_FILE``` are used, TMDET attempts to read ```.env``` file in the current directory
+
+<a name="ccd"></a>
 # Chemical component directory
 
 Chemical component directory is important during parsing CIF files. If it is missing, TmDet
