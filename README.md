@@ -108,7 +108,7 @@ git clone https://github.com/brgenzim/TmDet.git
 2. Build docker image:
 
 ```
-cd TmDet && sudo docker compose build
+cd Tmdet && sudo docker compose --env-file .env.example build
 ```
 
 3. Run tmdet in docker container:
