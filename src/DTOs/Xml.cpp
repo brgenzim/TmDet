@@ -132,4 +132,8 @@ namespace Tmdet::DTOs {
         void Xml::setV3Fmt() {
             outXmlFmt = "v3";
         }
+
+        bool Xml::isV3Fmt() {
+            return outXmlFmt == "v3";
+        }
 }

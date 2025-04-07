@@ -103,5 +103,10 @@ namespace Tmdet::DTOs {
              * @brief set output xml format to v3
              */
             void setV3Fmt();
+
+            /**
+             * @brief query v3 format compatibility
+             */
+            bool isV3Fmt();
     };
 }

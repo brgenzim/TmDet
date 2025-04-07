@@ -88,7 +88,7 @@ namespace Tmdet::DTOs::XmlRW {
         node.append_attribute(XML3_ATTR_X) = std::format("{:.6f}",tmatrix.rot[2][0]).c_str();
         node.append_attribute(XML3_ATTR_Y) = std::format("{:.6f}",tmatrix.rot[2][1]).c_str();
         node.append_attribute(XML3_ATTR_Z) = std::format("{:.6f}",tmatrix.rot[2][2]).c_str();
-        node.append_attribute(XML3_ATTR_T) = std::format("{:.6f}",tmatrix.trans.x).c_str();
+        node.append_attribute(XML3_ATTR_T) = std::format("{:.6f}",tmatrix.trans.z).c_str();
     }
 
     void Writer3::setBioMatrix(const Tmdet::VOs::BioMatrix& bioMatrix) {
