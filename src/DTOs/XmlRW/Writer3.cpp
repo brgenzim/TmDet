@@ -19,6 +19,7 @@
 #include <VOs/TMatrix.hpp>
 #include <VOs/BioMatrix.hpp>
 #include <VOs/Chain.hpp>
+#include <Types/Region.hpp>
 #include <VOs/Xml.hpp>
 
 namespace Tmdet::DTOs::XmlRW {
@@ -136,10 +137,14 @@ namespace Tmdet::DTOs::XmlRW {
             if (r.end.authIcode != ' ') {
                 node.append_attribute(XML3_ATTR_PDB_ENDI) = std::to_string(r.end.authIcode).c_str();
             }
-            node.append_attribute(XML3_ATTR_type) = std::format("{}",r.type.code).c_str();
+            auto typeCode = r.type.code;
+            if (typeCode == Tmdet::Types::RegionType::MEMBINS.code) {
+                typeCode = Tmdet::Types::RegionType::MEMBINS_V3.code;
+            }
+            node.append_attribute(XML3_ATTR_type) = std::format("{}", typeCode).c_str();
         }
     }
-            
+
     void Writer3::writeXml(Tmdet::VOs::Xml& xmlData, const std::string& path, const Tmdet::System::Arguments& args) {
         create();
         setTmp(xmlData.tmp);

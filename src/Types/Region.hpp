@@ -21,7 +21,7 @@ namespace Tmdet::Types {
      */
     struct Region {
         /**
-         * @brief uniq udentifier number
+         * @brief unique identifier number
          */
         int id;
 
@@ -225,7 +225,12 @@ namespace Tmdet::Types {
             'U',
             "localisation of the region is unknown"
         };
-        
+        const Region MEMBINS_V3 = {
+            17,
+            MEMBINS.name,
+            'I',
+            MEMBINS.description
+        };
     }
 
     const std::unordered_map<char, const Region> Regions = {

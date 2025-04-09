@@ -323,7 +323,11 @@ namespace Tmdet::Utils {
             double z = std::stod(values[zColumn]);
 
             gemmi::Vec3 pos{x, y, z};
-            protein.tmatrix.transform(pos);
+            // protein.tmatrix.transform(pos);
+            // NOTE: transform() does not use the PDBTM formula,
+            //       it should be enforced here; as Writer3
+            pos = protein.tmatrix.rot.multiply(pos);
+            pos += protein.tmatrix.trans;
             values[xColumn] = std::format("{:.3f}", pos.x);
             values[yColumn] = std::format("{:.3f}", pos.y);
             values[zColumn] = std::format("{:.3f}", pos.z);

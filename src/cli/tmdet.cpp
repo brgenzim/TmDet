@@ -171,10 +171,10 @@ int main(int argc, char *argv[], char **envp) {
         }
         protein.version = Tmdet::version();
         protein.date = Tmdet::System::Date::get();
-        if (xml.isV3Fmt()) {
-            // update tmatricies before writing XML and CIF
-            protein.tmatrix.trans = protein.tmatrix.rot.multiply(protein.tmatrix.trans);
-        }
+
+        // update tmatrix before writing XML and CIF, so R and t are compatible with
+        // PDBTM formula (Tmdet V3 XML TMATRIX)
+        protein.tmatrix.trans = protein.tmatrix.rot.multiply(protein.tmatrix.trans);
 
         //write xml output if required
         if (xmlOutputPath != "") {
