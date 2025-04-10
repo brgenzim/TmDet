@@ -326,8 +326,8 @@ namespace Tmdet::Utils {
             // protein.tmatrix.transform(pos);
             // NOTE: transform() does not use the PDBTM formula,
             //       it should be enforced here; as Writer3
-            pos = protein.tmatrix.rot.multiply(pos);
-            pos += protein.tmatrix.trans;
+            // pos = protein.tmatrix.rot.multiply(pos);
+            pos = pos + protein.tmatrix.trans;
             values[xColumn] = std::format("{:.3f}", pos.x);
             values[yColumn] = std::format("{:.3f}", pos.y);
             values[zColumn] = std::format("{:.3f}", pos.z);
@@ -366,6 +366,7 @@ namespace Tmdet::Utils {
         // colIndex == number of columns
         const auto& membraneAtoms = Tmdet::DTOs::Protein::addMembraneAtoms(protein);
 
+        const gemmi::Vec3 minus = protein.tmatrix.trans * -1;
         for (const auto& atomPosition : membraneAtoms) {
             std::vector<std::string> atomLine(colIndex, ".");
             atomLine[0] = "HETATM";
@@ -379,9 +380,10 @@ namespace Tmdet::Utils {
             atomLine[occupancyIndex] = "1.00";
             atomLine[bIsoIndex] = "0.00";
             atomLine[pdbxPDBModelNumIndex] = modelNumber;
-            atomLine[xIndex] = std::format("{:.3f}", atomPosition.x);
-            atomLine[yIndex] = std::format("{:.3f}", atomPosition.y);
-            atomLine[zIndex] = std::format("{:.3f}", atomPosition.z);
+            auto newPos = atomPosition; // + minus;
+            atomLine[xIndex] = std::format("{:.3f}", newPos.x);
+            atomLine[yIndex] = std::format("{:.3f}", newPos.y);
+            atomLine[zIndex] = std::format("{:.3f}", newPos.z);
 
             newLoop.add_row(atomLine);
             nextSerialId++;

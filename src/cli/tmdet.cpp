@@ -174,7 +174,7 @@ int main(int argc, char *argv[], char **envp) {
 
         // update tmatrix before writing XML and CIF, so R and t are compatible with
         // PDBTM formula (Tmdet V3 XML TMATRIX)
-        protein.tmatrix.trans = protein.tmatrix.rot.multiply(protein.tmatrix.trans);
+        //protein.tmatrix.trans = protein.tmatrix.rot.multiply(protein.tmatrix.trans);
 
         //write xml output if required
         if (xmlOutputPath != "") {
