@@ -42,20 +42,9 @@ namespace Tmdet::Utils {
              */
             static void setEntryIdFromFilePath(gemmi::cif::Document& documemt, const std::string& filePath);
 
-            static gemmi::Vec3 multiply(const gemmi::Mat33& mx, const gemmi::Vec3& vec) {
-                return mx.multiply(vec);
-            }
-
-            static gemmi::Vec3 multiply(const gemmi::Vec3& vec, const double scalar) {
-                return vec * scalar;
-            }
-
-            static gemmi::Vec3 add(const gemmi::Vec3& v1, const gemmi::Vec3& v2) {
-                return v1 + v2;
-            }
-
-            static gemmi::Mat33 transpose(const gemmi::Mat33& mx) {
-                return mx.transpose();
-            }
+            static gemmi::Vec3 multiply(const gemmi::Mat33& mx, const gemmi::Vec3& vec);
+            static gemmi::Vec3 multiply(const gemmi::Vec3& vec, const double scalar);
+            static gemmi::Vec3 add(const gemmi::Vec3& v1, const gemmi::Vec3& v2);
+            static gemmi::Mat33 transpose(const gemmi::Mat33& mx);
     };
 }

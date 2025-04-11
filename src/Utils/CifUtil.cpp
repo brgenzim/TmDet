@@ -331,8 +331,10 @@ namespace Tmdet::Utils {
         std::cout << "TMATRIX: " << std::endl << protein.tmatrix.toString();
 
         auto structTransformation = [&](gemmi::Vec3& coords) {
-            protein.tmatrix.transform(coords);
-            return coords;
+            auto copy = coords;
+            //protein.tmatrix.transform(copy);
+            copy = multiply(protein.tmatrix.rot, add(protein.tmatrix.trans, add(protein.firstTranslation, coords)));
+            return copy;
         };
         auto updateCoords = [&](std::vector<std::string>& values, int xColumn, int yColumn, int zColumn) {
 
@@ -341,6 +343,12 @@ namespace Tmdet::Utils {
             double z = std::stod(values[zColumn]);
 
             gemmi::Vec3 pos{x, y, z};
+            // (gdb) p protein.gemmi.models[0].chains[0].residues[0].atoms[0].pos
+            // (gdb) p Tmdet::Utils::CifUtil::multiply(protein.tmatrix.rot, pos)
+
+            // moving to CM, moving by tmatrix.trans, then rotating by tmatrix.rot: it gives the same result as in the gemmi object
+            // p Tmdet::Utils::CifUtil::multiply(protein.tmatrix.rot, Tmdet::Utils::CifUtil::add(protein.tmatrix.trans, Tmdet::Utils::CifUtil::add(protein.firstTranslation, pos)))
+
             // protein.tmatrix.transform(pos);
             // NOTE: transform() does not use the PDBTM formula,
             //       it should be enforced here; as Writer3
@@ -451,4 +459,25 @@ namespace Tmdet::Utils {
         fileName = CifUtil::ENTRY_PREFIX + fileName.substr(0, 4);
         block.set_pair("_entry.id", fileName);
     }
+
+    __attribute__((noinline))
+    gemmi::Vec3 CifUtil::multiply(const gemmi::Mat33& mx, const gemmi::Vec3& vec) {
+        return mx.multiply(vec);
+    }
+
+    __attribute__((noinline))
+    gemmi::Vec3 CifUtil::multiply(const gemmi::Vec3& vec, const double scalar) {
+        return vec * scalar;
+    }
+
+    __attribute__((noinline))
+    gemmi::Vec3 CifUtil::add(const gemmi::Vec3& v1, const gemmi::Vec3& v2) {
+        return v1 + v2;
+    }
+
+    __attribute__((noinline))
+    gemmi::Mat33 CifUtil::transpose(const gemmi::Mat33& mx) {
+        return mx.transpose();
+    }
+
 }
