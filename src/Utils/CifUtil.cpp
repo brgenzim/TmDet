@@ -316,6 +316,19 @@ namespace Tmdet::Utils {
         auto& newLoop = document.blocks[0].init_mmcif_loop("_atom_site.", columns);
 
         // lambda function to update atom coords - including transformation
+        auto rotation = protein.tmatrix.rot.transpose();
+        auto translation = rotation.multiply(protein.tmatrix.trans);
+        translation = protein.tmatrix.trans;
+        auto membraneTransformation = [&](const gemmi::Vec3& coords) -> gemmi::Vec3 {
+            return coords;
+        };
+        std::cout << std::format("Membrane origo: {}", protein.membranes[0].origo) << std::endl;
+        std::cout << std::format("Translation: ({:.2f}, {:.2f}, {:.2f})", translation.x, translation.y, translation.z) << std::endl;
+
+        auto structTransformation = [&](gemmi::Vec3& coords) {
+            protein.tmatrix.transform(coords);
+            return coords;
+        };
         auto updateCoords = [&](std::vector<std::string>& values, int xColumn, int yColumn, int zColumn) {
 
             double x = std::stod(values[xColumn]);
@@ -326,8 +339,7 @@ namespace Tmdet::Utils {
             // protein.tmatrix.transform(pos);
             // NOTE: transform() does not use the PDBTM formula,
             //       it should be enforced here; as Writer3
-            // pos = protein.tmatrix.rot.multiply(pos);
-            pos = pos + protein.tmatrix.trans;
+            pos = structTransformation(pos);
             values[xColumn] = std::format("{:.3f}", pos.x);
             values[yColumn] = std::format("{:.3f}", pos.y);
             values[zColumn] = std::format("{:.3f}", pos.z);
@@ -366,7 +378,6 @@ namespace Tmdet::Utils {
         // colIndex == number of columns
         const auto& membraneAtoms = Tmdet::DTOs::Protein::addMembraneAtoms(protein);
 
-        const gemmi::Vec3 minus = protein.tmatrix.trans * -1;
         for (const auto& atomPosition : membraneAtoms) {
             std::vector<std::string> atomLine(colIndex, ".");
             atomLine[0] = "HETATM";
@@ -380,7 +391,7 @@ namespace Tmdet::Utils {
             atomLine[occupancyIndex] = "1.00";
             atomLine[bIsoIndex] = "0.00";
             atomLine[pdbxPDBModelNumIndex] = modelNumber;
-            auto newPos = atomPosition; // + minus;
+            auto newPos = membraneTransformation(atomPosition);
             atomLine[xIndex] = std::format("{:.3f}", newPos.x);
             atomLine[yIndex] = std::format("{:.3f}", newPos.y);
             atomLine[zIndex] = std::format("{:.3f}", newPos.z);
