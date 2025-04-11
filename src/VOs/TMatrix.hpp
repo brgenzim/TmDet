@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <format>
 #include <string>
 #include <vector>
 #include <gemmi/unitcell.hpp>
@@ -52,6 +53,15 @@ namespace Tmdet::VOs {
             vec.y = y;
             vec.z = z;
 
+        }
+
+        std::string toString() {
+            std::string result{
+                std::format("{: 4.3f}, {: 4.3f}, {: 4.3f} | {: 4.3f}\n", rot[0][0], rot[0][1], rot[0][2], trans.x)
+            };
+            result += std::format("{: 4.3f}, {: 4.3f}, {: 4.3f} | {: 4.3f}\n", rot[1][0], rot[1][1], rot[1][2], trans.y);
+            result += std::format("{: 4.3f}, {: 4.3f}, {: 4.3f} | {: 4.3f}\n", rot[2][0], rot[2][1], rot[2][2], trans.z);
+            return result;
         }
     };
 }

@@ -49,6 +49,7 @@ namespace Tmdet::Engine {
 
             if (!protein.tmp) {
                 auto centre = protein.centre();
+                protein.firstTranslation = centre * -1;
                 std::cout << std::format("Mass centre: {:.2f}, {:.2f}, {:.2f}",centre.x,centre.y,centre.z) << std::endl;
                 protein.tmatrix.trans = centre * -1;
                 protein.transform();
@@ -64,6 +65,8 @@ namespace Tmdet::Engine {
                 centre = protein.centre();
                 std::cout << std::format("Mass centre after transform: {:.2f}, {:.2f}, {:.2f}",centre.x,centre.y,centre.z) << std::endl;
                 auto annotator = Tmdet::Engine::Annotator(protein, args);
+                centre = protein.centre();
+                std::cout << std::format("Mass centre after transform II: {:.2f}, {:.2f}, {:.2f}",centre.x,centre.y,centre.z) << std::endl;
             }
         }
         else {

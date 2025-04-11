@@ -323,7 +323,12 @@ namespace Tmdet::Utils {
             return coords;
         };
         std::cout << std::format("Membrane origo: {}", protein.membranes[0].origo) << std::endl;
+        auto centre = protein.centre();
+        std::cout << std::format("Mass centre: {:.2f}, {:.2f}, {:.2f}",centre.x,centre.y,centre.z) << std::endl;
         std::cout << std::format("Translation: ({:.2f}, {:.2f}, {:.2f})", translation.x, translation.y, translation.z) << std::endl;
+        auto& first = protein.firstTranslation;
+        std::cout << std::format("First Translation: ({:.2f}, {:.2f}, {:.2f})", first.x, first.y, first.z) << std::endl;
+        std::cout << "TMATRIX: " << std::endl << protein.tmatrix.toString();
 
         auto structTransformation = [&](gemmi::Vec3& coords) {
             protein.tmatrix.transform(coords);
