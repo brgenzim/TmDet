@@ -104,7 +104,7 @@ namespace Tmdet::Engine {
         protein.eachChain(
             [&](Tmdet::VOs::Chain& chain) -> void {
                 int alpha=0;
-                if (chain.type == Tmdet::Types::ChainType::NON_TM) {
+                if (chain.type == Tmdet::Types::ChainType::NON_TM && (chain.isTmp || chain.length < 50)) {
                     for(const auto& residue: chain.residues) {
                         if (residue.selected) {
                             if (REGTYPE(residue) == Tmdet::Types::RegionType::MEMB) {
