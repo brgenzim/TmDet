@@ -154,8 +154,6 @@ namespace Tmdet::VOs {
 
         int modelIndex = 0;
 
-        gemmi::Vec3 firstTranslation = gemmi::Vec3(0, 0, 0);
-
         /**
          * @brief set transmembrane to no and clear data
          */
