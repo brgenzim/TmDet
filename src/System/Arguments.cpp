@@ -115,7 +115,7 @@ namespace Tmdet::System {
             this->_args[name].has = true;
         }
         else {
-            std::cerr << "Syntas error in argument list" << std::endl;
+            std::cerr << "Syntasx error in argument list" << std::endl;
             this->list();
             exit(EXIT_FAILURE);
         }
