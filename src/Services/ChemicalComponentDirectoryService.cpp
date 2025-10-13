@@ -68,7 +68,7 @@ namespace Tmdet::Services {
         }
 
         gemmi::cif::Document document = getChemicalComponentDocument(threeLetterCode);
-        const auto& block = document.blocks[0];
+        auto& block = document.blocks[0];
 
         if (!block.has_mmcif_category("_chem_comp_atom") || !block.has_mmcif_category("_chem_comp")) {
             throw std::runtime_error("Expected _chem_comp_atom or _chem_comp category not found");
@@ -79,27 +79,26 @@ namespace Tmdet::Services {
         residue.name = threeLetterCode;
         residue.a1 = oneLetterCode->at(0);
 
-        auto atomLoop = block.find_loop_item("_chem_comp_atom.comp_id")->loop;
-        int loopLength = atomLoop.length();
-        int atomIdCol = atomLoop.find_tag("_chem_comp_atom.atom_id");
-        int altAtomIdCol = atomLoop.find_tag("_chem_comp_atom.alt_atom_id");
-        int typeSymbolCol = atomLoop.find_tag("_chem_comp_atom.type_symbol");
-        int aromaticFlagCol = atomLoop.find_tag("_chem_comp_atom.pdbx_aromatic_flag");
-        for (int row = 0; row < loopLength; row++) {
-            const std::string& type = atomLoop.val(row, typeSymbolCol);
+        // Use GEMMI's find function to get a table view of the category
+        std::vector<std::string> columns = {
+            "atom_id", "alt_atom_id", "type_symbol", "pdbx_aromatic_flag"
+        };
+        auto atomTable = block.find("_chem_comp_atom.", columns);
+        for (const auto& row : atomTable) {
+            const std::string& type = row.at(2); // type_symbol
             // ignore hydrogen atoms
             if (type == "H") {
                 continue;
             }
-            std::string atomId = atomLoop.val(row, atomIdCol);
-            std::string altAtomId = atomLoop.val(row, altAtomIdCol);
+            std::string atomId = row.at(0); // atom_id
+            std::string altAtomId = row.at(1); // alt_atom_id
             if (atomId[0] == '"') {
                 // strip off the quote marks
                 atomId = std::string(atomId.begin() + 1, atomId.end() - 1);
             }
             Types::Atom atom;
             if (type == "C") {
-                const std::string& aromaticFlag = atomLoop.val(row, aromaticFlagCol);
+                const std::string& aromaticFlag = row.at(3); // pdbx_aromatic_flag
                 if (aromaticFlag == "Y" || atomId == "C") {
                     atom = Tmdet::Types::Atoms.at("C_CAR");
                 } else {

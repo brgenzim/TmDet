@@ -48,7 +48,7 @@ namespace Tmdet::DTOs::XmlRW {
     <TMTYPE>Tm_Xxxxx</TMTYPE>
     <SPRES>Unknown</SPRES>
     <PDBKWRES>Unknown</PDBKWRES>
-    <PDBKWORD>Unjnown</PDBKWORD>
+    <PDBKWORD>Unknown</PDBKWORD>
   </RAWRES>
 </pdbtm>
 )";

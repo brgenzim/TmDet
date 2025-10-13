@@ -141,7 +141,7 @@ namespace Tmdet::Engine {
     void RegionHandler::store() {
         protein.eachSelectedChain(
             [&](Tmdet::VOs::Chain& chain) -> void {
-                if (chain.signalP[1] > 0) {
+               if (chain.signalP[1] > 0) {
                     Tmdet::VOs::Region region = {
                         {chain.residues[0].authId, chain.residues[0].authIcode,chain.residues[0].labelId,0},
                         {chain.residues[chain.signalP[1]-1].authId, chain.residues[chain.signalP[1]-1].authIcode,chain.residues[chain.signalP[1]-1].labelId,chain.signalP[1]-1},
@@ -150,7 +150,7 @@ namespace Tmdet::Engine {
                     chain.regions.push_back(region);
                 }
                 chain.numtm = 0;
-                int begin = 0;
+                int begin = chain.signalP[1];
                 int end = 0;
                 while(getNext<T>(chain,begin,end,"type")) {
                     if (end - begin > 0) {
