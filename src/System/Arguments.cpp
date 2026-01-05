@@ -187,7 +187,7 @@ namespace Tmdet::System {
             if (arg.has && arg.show) {
                 commandLine += (arg.type=="bool"?
                     std::format("--{} ",arg.longFlag):
-                    std::format("--{} {} ",arg.longFlag,arg.value)
+                    std::format("--{}={} ",arg.longFlag,arg.value)
                 );
             }
         }
