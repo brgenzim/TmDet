@@ -153,6 +153,11 @@ namespace Tmdet::DTOs {
             protein.chains.emplace_back(Tmdet::DTOs::Chain::get(protein.gemmi,chain,chainIdx));
             chainIdx++;
         }
+        if (protein.gemmi.cell.a == 0.0 && protein.gemmi.cell.b == 0.0 && protein.gemmi.cell.c == 0.0 ) {
+            protein.gemmi.cell.a = 1.0;
+            protein.gemmi.cell.b = 1.0;
+            protein.gemmi.cell.c = 1.0;
+        }
         protein.neighbors = gemmi::NeighborSearch(protein.gemmi.models[protein.modelIndex], protein.gemmi.cell, 9);
         protein.neighbors.populate();
         return protein;
