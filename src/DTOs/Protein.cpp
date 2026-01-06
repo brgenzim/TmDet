@@ -182,6 +182,7 @@ namespace Tmdet::DTOs {
         for(auto chainId: Tmdet::Helpers::String::explode(",",chainIds)) {
             if (int chainIdx = protein.searchChainById(chainId); chainIdx != -1) {
                 protein.chains[chainIdx].selected = false;
+                protein.bioMatrix.deletedChainIds.push_back(chainId);
             }
             else {
                 WARN_LOG("Could not find chain: {}",chainId);
