@@ -1,5 +1,6 @@
 stages:
   - validate
+  - sync
 
 validate-merge-policy:
   stage: validate
@@ -21,7 +22,7 @@ validate-merge-policy:
       # ---- public branch rules ----
       if [ "$TGT" = "github-public" ]; then
         if [ "$SRC" != "develop" ]; then
-          echo "ERROR: Only 'develop' may be merged into 'public'"
+          echo "ERROR: Only 'develop' may be merged into 'github-public'"
           exit 1
         fi
       fi
@@ -36,11 +37,30 @@ validate-merge-policy:
 
       # ---- local branch rules ----
       if [ "$TGT" = "local" ]; then
-        if [ "$SRC" = "public" ] || [ "$SRC" = "develop" ]; then
-          echo "ERROR: 'local' must not receive merges from 'public' or 'develop'"
+        if [ "$SRC" = "github-public" ] || [ "$SRC" = "develop" ]; then
+          echo "ERROR: 'local' must not receive merges from 'github-public' or 'develop'"
           echo "Use rebase instead."
           exit 1
         fi
       fi
 
       echo "Merge policy validation passed."
+
+sync-public-to-github:
+  stage: sync
+  image: alpine:latest
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "github-public"'
+      when: on_success
+    - when: never
+  before_script:
+    - apk add --no-cache git openssh
+    - mkdir -p ~/.ssh
+    - echo "$GITHUB_SSH_KEY" | tr -d '\r' > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+    - ssh-keyscan github.com >> ~/.ssh/known_hosts
+    - git config --global user.name "GitLab Sync Bot"
+    - git config --global user.email "sync@gitlab.pbrg.hu"
+  script:
+    - git remote add github "$GITHUB_REPO" || git remote set-url github "$GITHUB_REPO"
+    - git push github main:github-public --force-with-lease
