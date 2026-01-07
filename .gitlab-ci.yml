@@ -66,4 +66,4 @@ sync-public-to-github:
     - git config --global user.email "sync@gitlab.pbrg.hu"
   script:
     - git remote add github "$GITHUB_REPO" || git remote set-url github "$GITHUB_REPO"
-    - git push github github-public:main --force-with-lease
+    - git push github github-public:main
