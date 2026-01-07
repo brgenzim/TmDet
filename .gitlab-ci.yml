@@ -1,0 +1,46 @@
+stages:
+  - validate
+
+validate-merge-policy:
+  stage: validate
+  image: alpine:latest
+  rules:
+    # Run only for merge requests
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: always
+    - when: never
+  script:
+    - |
+      echo "Validating merge policy"
+      echo "Source branch: $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME"
+      echo "Target branch: $CI_MERGE_REQUEST_TARGET_BRANCH_NAME"
+
+      SRC="$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME"
+      TGT="$CI_MERGE_REQUEST_TARGET_BRANCH_NAME"
+
+      # ---- public branch rules ----
+      if [ "$TGT" = "github-public" ]; then
+        if [ "$SRC" != "develop" ]; then
+          echo "ERROR: Only 'develop' may be merged into 'public'"
+          exit 1
+        fi
+      fi
+
+      # ---- develop branch rules ----
+      if [ "$TGT" = "develop" ]; then
+        if [ "$SRC" = "local" ] || [ "$SRC" = "github-public" ]; then
+          echo "ERROR: 'local' or 'github-public' must never be merged into 'develop'"
+          exit 1
+        fi
+      fi
+
+      # ---- local branch rules ----
+      if [ "$TGT" = "local" ]; then
+        if [ "$SRC" = "public" ] || [ "$SRC" = "develop" ]; then
+          echo "ERROR: 'local' must not receive merges from 'public' or 'develop'"
+          echo "Use rebase instead."
+          exit 1
+        fi
+      fi
+
+      echo "Merge policy validation passed."
