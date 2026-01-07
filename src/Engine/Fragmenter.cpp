@@ -13,6 +13,7 @@
 #include <Engine/Organizer.hpp>
 #include <Engine/PlaneSideDetector.hpp>
 #include <Engine/RegionHandler.hpp>
+#include <Helpers/Pymol.hpp>
 #include <System/Logger.hpp>
 #include <Utils/Fragment.hpp>
 #include <VOs/Protein.hpp>
@@ -21,19 +22,24 @@
 namespace Tmdet::Engine {
 
     void Fragmenter::run() {
+        DEBUG_LOG("Processing Fragmenter:run()");
         saveState();
         auto fragmentUtil = Tmdet::Utils::Fragment(protein);
         auto numFrags = fragmentUtil.run();
+        DEBUG_LOG("Number of fragments: {}",numFrags);
         runOnFragments(numFrags);
         findClusters();
         runOnBestCluster(findBestCluster());
         if (protein.tmp) {
             finalize();
         }
+        DEBUG_LOG("Processed Fragmenter:run()");
     }
 
     void Fragmenter::runOnFragments(int numFragments) {
+        DEBUG_LOG("Processing Fragmenter:runOnFragments()");
         for(int i=0; i<numFragments; i++) {
+            DEBUG_LOG("FragmentId: {}",i);
             protein.eachResidue(
                 [&](Tmdet::VOs::Residue& residue) -> void {
                     if (residue.temp.contains("fragment")) {
@@ -46,6 +52,7 @@ namespace Tmdet::Engine {
             );
             protein.clear();
             auto organizer = Tmdet::Engine::Organizer(protein, args);
+            DEBUG_LOG("After searching: fragment {} tmp {}",i,(protein.tmp?"yes":"no"));
             auto d = _fragmentData();
             d.id = i;
             d.clusterId = i;
@@ -65,9 +72,16 @@ namespace Tmdet::Engine {
             }
             data.push_back(d);
         }
+        DEBUG_LOG("Processed Fragmenter:runOnFragments()");
     }
 
     void Fragmenter::findClusters() {
+        DEBUG_LOG("Processing Fragmenter:findClusters()");
+        for(unsigned int i=0; i<data.size(); i++) {
+            DEBUG_LOG("Fragment {}: tmp: {} clusterId: {} {:.2f} {:.2f} {:.2f}",
+                i,(data[i].tmp?"yes":"no"),data[i].clusterId,
+                data[i].normal.x,data[i].normal.y,data[i].normal.z);
+        }
         for(unsigned int i=0; i<data.size(); i++) {
             if (data[i].tmp) {
                 for(unsigned int j=0; j<i; j++) {
@@ -75,12 +89,14 @@ namespace Tmdet::Engine {
                         for (unsigned int k=0; k<=i; k++) {
                             if (data[k].clusterId == i) {
                                 data[k].clusterId = j;
+                                DEBUG_LOG("Merging fragments: {} {}",i,j);
                             }
                         }
                     }
                 }
             }
         }
+        DEBUG_LOG("Processed Fragmenter:findClusters()");
     }
 
     bool Fragmenter::checkAngle(int i, int j) {
@@ -88,6 +104,7 @@ namespace Tmdet::Engine {
     }
 
     int Fragmenter::findBestCluster() {
+        DEBUG_LOG("Processing Fragmenter:findBestCluster()");
         int largestClusterId=0;
         for (auto& d: data) {
             if ((int)d.clusterId > largestClusterId) {
@@ -110,10 +127,12 @@ namespace Tmdet::Engine {
                 bestClusterId = i;
             }
         }
+        DEBUG_LOG("Processed Fragmenter:findBestCluster({},{})", bestClusterId,max);
         return bestClusterId;
     }
 
     void Fragmenter::runOnBestCluster(int bestClusterId) {
+        DEBUG_LOG("Processing Fragmenter:runOnBestCluster()");
         protein.clear();
         restoreState();
         for (auto& d: data){
@@ -135,6 +154,7 @@ namespace Tmdet::Engine {
             }
         );
         auto organizer = Tmdet::Engine::Organizer(protein, args);
+        DEBUG_LOG("Processed Fragmenter:runOnBestCluster()");
     }
 
     void Fragmenter::finalize() {
@@ -185,6 +205,7 @@ namespace Tmdet::Engine {
             }
         }
         auto regionHandler = Tmdet::Engine::RegionHandler(protein);
+        DEBUG_LOG("Final regions: {}",regionHandler.toString("type"));
         protein.eachSelectedChain(
             [&](Tmdet::VOs::Chain& chain) -> void {
                 chain.regions.clear();

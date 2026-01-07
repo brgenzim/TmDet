@@ -16,6 +16,7 @@
 #include <Config.hpp>
 #include <DTOs/SecStrVec.hpp>
 #include <Helpers/Vector.hpp>
+#include <Helpers/Pymol.hpp>
 #include <System/Logger.hpp>
 #include <Types/Residue.hpp>
 #include <Utils/Surface.hpp>
@@ -29,6 +30,7 @@ using namespace std;
 namespace Tmdet::Utils {
     
     void SecStrVec::define() {
+        DEBUG_LOG("Processing SecStrVec::define()");
         protein.secStrVecs.clear();
         for(auto& chain: protein.chains) {
             int begin = 0;
@@ -45,11 +47,13 @@ namespace Tmdet::Utils {
             checkVectorsForMerging();
         }
         for(unsigned long int i=0; auto& vector: protein.secStrVecs) {
+           // DEBUG_LOG("{}",Tmdet::DTOs::SecStrVec::toString(protein,vector));
             for (int j=vector.begResIdx; j<=vector.endResIdx; j++) {
                 protein.chains[vector.chainIdx].residues[j].secStrVecIdx = (int)i;
             }
             i++;
         }
+        DEBUG_LOG(" Processed SecStrVec::define(#vectors: {})",protein.secStrVecs.size());
     }
 
     
@@ -78,6 +82,9 @@ namespace Tmdet::Utils {
     }
 
     Tmdet::VOs::SecStrVec SecStrVec::getVector(const Tmdet::VOs::Chain& chain, int begin, int end) const {
+        DEBUG_LOG("getVector: {}-{}-{}::{}",
+            chain.id,chain.residues[begin].authId,chain.residues[end].authId,
+            chain.residues[begin].ss.code);
         return (chain.residues[begin].ss.isAlpha()?
                     getAlphaVector(chain, begin, end):
                     getBetaVector(chain,begin,end));
@@ -178,14 +185,17 @@ namespace Tmdet::Utils {
             if (vector.type.isAlpha()) {
                 if (!isStraight(protein.chains[vector.chainIdx],vector.begResIdx,vector.endResIdx,vector.type)) {
                     for (auto part: splitVector(vector)) {
+                        DEBUG_LOG("Splitted: {}",Tmdet::DTOs::SecStrVec::toString(protein,part));
                         protein.secStrVecs.emplace_back(part);
                     }
                 }
                 else {
+                    DEBUG_LOG("Straigth: {}",Tmdet::DTOs::SecStrVec::toString(protein,vector));
                     protein.secStrVecs.emplace_back(vector);
                 }
             }
             else {
+                DEBUG_LOG("Not alpha: {}",Tmdet::DTOs::SecStrVec::toString(protein,vector));
                 protein.secStrVecs.emplace_back(vector);
             }
         }
@@ -206,6 +216,7 @@ namespace Tmdet::Utils {
     }
 
     std::vector<Tmdet::VOs::SecStrVec> SecStrVec::splitVector(const Tmdet::VOs::SecStrVec& vector) {
+        DEBUG_LOG("Processing splitVector()");
         std::vector<Tmdet::VOs::SecStrVec> ret;
         Tmdet::VOs::Chain& chain = protein.chains[vector.chainIdx];
         int beg = vector.begResIdx;
@@ -231,6 +242,7 @@ namespace Tmdet::Utils {
             if (vector.endResIdx-end > 3)
             ret.push_back(getVector(chain,end+1,vector.endResIdx));
         }
+        DEBUG_LOG("Processed splitVector()");
         return ret;
     }
 
@@ -248,6 +260,9 @@ namespace Tmdet::Utils {
                 }
             }
         }
+        DEBUG_LOG("getStraight: {}:{}-{} -> {}-{}",chain.id,
+            chain.residues[beg].authId,chain.residues[end].authId,
+            chain.residues[newBegin].authId,chain.residues[newEnd].authId);
         beg = newBegin;
         end = newEnd;
     }
@@ -282,7 +297,10 @@ namespace Tmdet::Utils {
     bool SecStrVec::checkVectorForMerging(const Tmdet::VOs::SecStrVec& v1, const Tmdet::VOs::SecStrVec& v2) {
         double d = v1.end.dist(v2.begin);
         double angle = Tmdet::Helpers::Vector::angle((v1.end-v1.begin),(v2.end-v2.begin));
-
+        DEBUG_LOG("check merge {} {}-{}: {} {}",
+            protein.chains[v1.chainIdx].id,
+            protein.chains[v1.chainIdx].residues[v1.endResIdx].authId,
+            protein.chains[v1.chainIdx].residues[v2.begResIdx].authId,d,angle);
         return (d < TMDET_SECSTRVEC_MERGE_DIST
                 && v1.chainIdx==v2.chainIdx
                 && isStraight(protein.chains[v1.chainIdx],v1.begResIdx,v2.endResIdx,v1.type)
@@ -291,6 +309,7 @@ namespace Tmdet::Utils {
     }
 
     Tmdet::VOs::SecStrVec SecStrVec::mergeVectors(const Tmdet::VOs::SecStrVec& v1, const Tmdet::VOs::SecStrVec& v2) const {
+        DEBUG_LOG("merge");
         return Tmdet::VOs::SecStrVec({
             v1.type,v1.begin,v2.end,v1.chainIdx,v1.begResIdx,v2.endResIdx
         });

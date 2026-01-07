@@ -28,6 +28,7 @@ namespace Tmdet::DTOs {
 
     void Protein::writeCif(Tmdet::VOs::Protein& protein, const std::string& path) {
 
+        logger.debug("Processing Protein::writeCif()");
 
         void printDocument(std::ostream& outputStream, Tmdet::VOs::Protein& protein);
 
@@ -41,6 +42,8 @@ namespace Tmdet::DTOs {
             outCif << sstream.str();
         }
 
+        logger.debug(" Document is written into {}", path);
+        logger.debug(" Processed Protein::writeCif()");
     }
 
     void printDocument(std::ostream& outputStream, Tmdet::VOs::Protein& protein) {
@@ -137,6 +140,7 @@ namespace Tmdet::DTOs {
     }
 
     Tmdet::VOs::Protein Protein::get(const std::string& inputPath, const int modelIndex) {
+        DEBUG_LOG("Processing Protein::get()");
         Tmdet::VOs::Protein protein;
         protein.getStructure(inputPath);
         protein.code = protein.gemmi.name;
@@ -160,17 +164,20 @@ namespace Tmdet::DTOs {
         }
         protein.neighbors = gemmi::NeighborSearch(protein.gemmi.models[protein.modelIndex], protein.gemmi.cell, 9);
         protein.neighbors.populate();
+        DEBUG_LOG(" Processed Protein::get()");
         return protein;
     }
 
     void Protein::unselectAntiBodyChains(Tmdet::VOs::Protein& protein) {
         for (auto& chain : protein.chains) {
+            DEBUG_LOG("Checking {} {} to unselect",chain.id, chain.entityId);
             if (!protein.polymerNames.contains(chain.entityId)) {
                 continue;
             }
             auto name = protein.polymerNames[chain.entityId];
             for (auto& filter : Tmdet::ANTIBODY_NAMES) {
                 if (Tmdet::Helpers::String::toUpper(name).find(filter) != name.npos) {
+                    INFO_LOG("Unselecting Ab chain: {}",chain.id);
                     chain.selected = false;
                     break;
                 }
@@ -183,6 +190,7 @@ namespace Tmdet::DTOs {
             if (int chainIdx = protein.searchChainById(chainId); chainIdx != -1) {
                 protein.chains[chainIdx].selected = false;
                 protein.bioMatrix.deletedChainIds.push_back(chainId);
+                INFO_LOG("Unselecting chain: {}",chainId);
             }
             else {
                 WARN_LOG("Could not find chain: {}",chainId);

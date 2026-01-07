@@ -28,16 +28,20 @@
 namespace Tmdet::Engine {
 
     Organizer::~Organizer() {
+        DEBUG_LOG("Destroying Organizer");
     }
 
     void Organizer::run() {
+        DEBUG_LOG("Processing Organizer::run()");
         if (protein.numberOfSelectedChains() > 0) {
             surface();
             if (args.getValueAsBool("cm")) {
+                DEBUG_LOG("Curved optimization");
                 protein.forceSingleMembrane = true;
                 optimizer = std::make_unique<CurvedOptimizer>(protein,args);
             }
             else {
+                DEBUG_LOG("Plane optimization");
                 optimizer = std::make_unique<PlaneOptimizer>(protein,args);
             }
             if (args.getValueAsBool("fr")) {
@@ -51,7 +55,7 @@ namespace Tmdet::Engine {
                 optimizer->searchForMembraneNormal();
                 optimizer->setMembranesToProtein();
             }
-            if (protein.tmp) {
+            if (bool na = args.getValueAsBool("na"); !na && protein.tmp) {
                 protein.transform();
                 auto annotator = Tmdet::Engine::Annotator(protein, args);
             }
@@ -61,6 +65,7 @@ namespace Tmdet::Engine {
             protein.qValue = 0;
             protein.type = Tmdet::Types::ProteinType::NOPROTEIN;
         }
+        DEBUG_LOG(" Processed Organizer::run()");
     }
 
     gemmi::Vec3 Organizer::getBestNormal() const {
@@ -68,10 +73,14 @@ namespace Tmdet::Engine {
     }
 
     void Organizer::surface() {
+        DEBUG_LOG("Processing Organizer::surface()");
         auto surf = Tmdet::Utils::Surface(protein,args.getValueAsBool("nc"));
+        //DEBUG_LOG("{}",Tmdet::DTOs::Protein::toString(protein));
+        DEBUG_LOG(" Processed Organizer::surface()");
     }
 
     void Organizer::checkSymmetry() {
+        DEBUG_LOG("Processing Organizer::checkSymmetry()");
         if (auto oligomerChains = Tmdet::Utils::Oligomer::getHomoOligomerEntities(protein.gemmi); !oligomerChains.empty()) {
             auto symmetry = Tmdet::Utils::Symmetry(protein);
             auto axes = symmetry.getMembraneAxes();
@@ -87,6 +96,7 @@ namespace Tmdet::Engine {
                 optimizer->setMembranesToProtein();
             }
         }
+        DEBUG_LOG(" Processed Organizer::checkSymmetry()");
     }
 
 }

@@ -18,6 +18,7 @@
 #include <DTOs/Xml.hpp>
 #include <Engine/Fragmenter.hpp>
 #include <Engine/Organizer.hpp>
+#include <Helpers/Pymol.hpp>
 #include <Services/ChemicalComponentDirectoryService.hpp>
 #include <System/Arguments.hpp>
 #include <System/Date.hpp>
@@ -25,6 +26,7 @@
 #include <System/FilePaths.hpp>
 #include <System/Logger.hpp>
 #include <Utils/Dssp.hpp>
+#include <Utils/Filter.hpp>
 #include <Utils/MyDssp.hpp>
 #include <Utils/NeighBors.hpp>
 #include <Utils/SecStrVec.hpp>
@@ -43,21 +45,30 @@ Tmdet::System::Arguments getArguments(int argc, char *argv[]) {
 
     //path related
     args.define(false,true,"c","code","Input PDB code (c or pi is mandatory)","string","");
-    args.define(false,false,"x","xml","Output xml file path","string","");
+    args.define(false,false,"x","xml","Input/Output xml file path","string","");
     args.define(false,false,"pi","pdb_input","Input PDB file full path (in ent or cif format)","string","");
     args.define(false,false,"po","pdb_output","Output pdb file path","string","");
+    args.define(false,false,"xi","xml_input","Input xml file path","string","");
+    args.define(false,false,"xo","xml_output","Output xml file path","string","");
     args.define(false,true,"a","assembly","Set assembly id","int","1");
     args.define(false,true,"m","model","Set model id","int","0");
 
     //work 
+    args.define(false,false,"r","run","Run the tmdet algorithm on the protein structure","bool","false");
+    args.define(false,true,"n","not","Set transmembrane='not' in the xml file","bool","false");
     args.define(false,true,"cm","curved_membrane","Search for curved membrane","bool","false");
     args.define(false,true,"dm","duble_membrane","Enable duble membrane mode","bool","false");
     args.define(false,true,"fr","fragment_analysis","Investigate protein domains/fragments separately","bool","false");
     args.define(false,true,"bi","barrel_inside","Indicate chains those are within a barrel (but not part of barrel, like chain B in 5iv8)","string","");
     args.define(false,true,"ns","no_symmetry","Do not use symmetry axes as membrane normal","bool","false");
+    args.define(false,false,"s","show","Show annotated structure by pymol","bool","false");
+    args.define(false,false,"sp","show","Show parsed structure in the console","bool","false");
     args.define(false,true,"uc","unselect_chains","Unselect proteins chains","string","");
+    args.define(false,true,"na","no_annotation","Do not make annotation","bool","false");
     args.define(false,true,"fa","force_nodel_antibody","Do not unselect antibodies in the structure","bool","false");
     args.define(false,true,"nc","no_cache","Do not use cached data","bool","false");
+    args.define(false,true,"pf","pre_filter","Apply TmFilter","bool","false");
+    args.define(false,true,"xf3","xml_out_fmt3","Set xml output format to v3","bool","false");
 
     //parameters
     args.define(false,true,"lq","lower_qvalue","Lower qValue, above it is membrane","float","30");
@@ -104,6 +115,8 @@ int main(int argc, char *argv[], char **envp) {
     logger.addStream(coutRef);
     logger.addStream(logFile);
     logger.setLevel(Tmdet::System::level::TMDET_LOG_LEVEL);
+    INFO_LOG("Starting Tmdet(version: {})",Tmdet::version());
+    INFO_LOG("Command line arguments: {}",args.getCommandLine());
 
     //check ccd and fetch it if missing
     if (!Tmdet::Services::ChemicalComponentDirectoryService::isBuilt()) {
@@ -116,11 +129,21 @@ int main(int argc, char *argv[], char **envp) {
     //if code is given then system directories are used
     //else user should provide the full path of xml and cif files
     Tmdet::DTOs::Xml xml;
+    if (bool xf3 = args.getValueAsBool("xf3"); xf3) {
+        xml.setV3Fmt();
+    }
     string code = args.getValueAsString("c");
-    string xmlOutputPath = xml.setPath(code,args.getValueAsString("x"),"");
+    string xmlInputPath = xml.setPath(code,args.getValueAsString("x"),args.getValueAsString("xi"));
+    string xmlOutputPath = xml.setPath(code,args.getValueAsString("x"),args.getValueAsString("xo"));
     string pdbInputPath = (code != ""?Tmdet::System::FilePaths::cif(code,args.getValueAsInt("a")):args.getValueAsString("pi"));
     string pdbOutputPath = (code != ""?Tmdet::System::FilePaths::pdbOut(code):args.getValueAsString("po"));
 
+    //change xml file to TMP="no" if the protein is set to not transmembrane and exit
+    if (bool n = args.getValueAsBool("n"); n) {
+        xml.notTransmembrane(xmlInputPath, xmlOutputPath, args);
+        exit(EXIT_SUCCESS);
+    }
+    
     //if -n or --not is not set then input is mandatory
     if (pdbInputPath == "") {
         ERROR_LOG("argument -pi or -c is mandatory");
@@ -139,7 +162,8 @@ int main(int argc, char *argv[], char **envp) {
     if (code != "") {
 	    protein.code = code;
     }
-    
+    bool na = args.getValueAsBool("na");
+
     //unselect antibodies if not prevented
     if (bool fa = args.getValueAsBool("fa"); !fa) {
         Tmdet::DTOs::Protein::unselectAntiBodyChains(protein);
@@ -156,7 +180,9 @@ int main(int argc, char *argv[], char **envp) {
     }
 
     //do the membrane region determination and annotation
-    {
+    if (bool r = args.getValueAsBool("r"); r) {
+        bool pf = args.getValueAsBool("pf");
+        auto filter = Tmdet::Utils::Filter(protein,pf);
         auto dssp = Tmdet::Utils::Dssp(protein);
         auto mydssp = Tmdet::Utils::MyDssp(protein);
         auto ssVec = Tmdet::Utils::SecStrVec(protein);
@@ -173,14 +199,35 @@ int main(int argc, char *argv[], char **envp) {
         protein.date = Tmdet::System::Date::get();
 
         //write xml output if required
-        if (xmlOutputPath != "") {
+        if (xmlOutputPath != "" && !na) {
             xml.write(xmlOutputPath, protein, args);
         }
 
         //write transformed pdb file if required and protein is tmp
-        if (pdbOutputPath != "" && protein.tmp) {
+        if (pdbOutputPath != "" && protein.tmp && !na) {
             Tmdet::DTOs::Protein::writeCif(protein,pdbOutputPath);
         }
     }
+    else {
+        //if xml input is given then read it's content
+        if (xmlInputPath != "" && !na) {
+            xml.read(xmlInputPath, protein);
+        }    
+    }
+
+    //show protein by pymol if required
+    if (bool s = args.getValueAsBool("s"); s && protein.tmp) {
+        auto pymol = Tmdet::Helpers::Pymol(protein);
+        pymol.show(pdbOutputPath);
+    }
+
+    //print out protein structrure and properties
+    if (bool sp = args.getValueAsBool("sp"); sp) {
+        std::cout << Tmdet::DTOs::Protein::toString(protein) << std::endl;
+    }
     
+    //if no annotation flag is given, just witeout tm / not tm info
+    if (na) {
+       std::cout << protein.code << " " << (protein.tmp?"yes":"no") << " " << protein.qValue  << std::endl;
+    }
 }
