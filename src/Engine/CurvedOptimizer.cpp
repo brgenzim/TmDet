@@ -31,6 +31,7 @@ namespace Tmdet::Engine {
         for (auto& o: origos) {
             origo = -1.0 * o;
             origoVec3 = massCentre + origo * normal;
+            DEBUG_LOG("Test Radius: {}",o);
             testMembraneNormalOne(); 
         }
     }
@@ -38,6 +39,7 @@ namespace Tmdet::Engine {
     void CurvedOptimizer::testMembraneNormalFinal() {
         origo = bestOrigo;
         origoVec3 = massCentre + bestOrigo * normal;
+        DEBUG_LOG("Test Final Radius: {}",bestOrigo);
         testMembraneNormalOne(); 
     }
 
@@ -45,12 +47,15 @@ namespace Tmdet::Engine {
         bestOrigo = origo;
         double mcz = distance(massCentre) - minZ;
         bestSphereRadius = -origo - mcz + (maxz + minz) / 2;
+        DEBUG_LOG("setBestOrigo: origo:{:5.2f} mcz:{:5.2f} minZ:{:5.2f} maxZ:{:5.2f} minz:{:5.2f} maxz:{:5.2f} R:{:5.2f}",
+            origo,mcz,minZ,maxZ,minz,maxz,bestSphereRadius);
     }
 
     void CurvedOptimizer::setMembraneOrigo(Tmdet::VOs::Membrane& membrane, double minz, double maxz) {
         membrane.type = Tmdet::Types::MembraneType::CURVED;
         membrane.sphereRadius = bestSphereRadius;
         membrane.origo = bestOrigo;
+        DEBUG_LOG("setMembraneOrigo: origo:{} r:{}",membrane.origo,membrane.sphereRadius);
     }
 
 }

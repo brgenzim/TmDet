@@ -20,8 +20,10 @@
 namespace Tmdet::Engine {
 
     void BetaAnnotator::run() {
+        DEBUG_LOG("Processing BetaAnnotator::run()");
         protein.numBarrels = 0;
         getSheets();
+        DEBUG_LOG("Number of sheets: {}",numSheets);
         if (numSheets>7) {
             setConnections();
             detectBarrels();
@@ -29,6 +31,7 @@ namespace Tmdet::Engine {
                 setBarrel();
             }
         }
+        DEBUG_LOG(" Processed BetaAnnotator::run()");
     }
 
     void BetaAnnotator::getSheets() {
@@ -45,6 +48,11 @@ namespace Tmdet::Engine {
                         }
                     }
                     double angle = std::abs(90 - Tmdet::Helpers::Vector::angle(gemmi::Vec3(0,0,1),ssVec.end - ssVec.begin));
+                    DEBUG_LOG("getSheet: {}:{}-{} = {} {}",
+                        protein.chains[ssVec.chainIdx].id,
+                        protein.chains[ssVec.chainIdx].residues[ssVec.begResIdx].authId,
+                        protein.chains[ssVec.chainIdx].residues[ssVec.endResIdx].authId,
+                        angle, (inMembrane?"Membrane":"NotMembrane"));
                     if (inMembrane &&  angle > 10) {
                         sheetIndex.push_back(vectorIndex);
                         ssVec.sheetIdx = numSheets++;
@@ -86,9 +94,20 @@ namespace Tmdet::Engine {
                 }
             }
         }
+        for (int i=0; i<numSheets; i++) {
+            std::string res = "";
+            for (int j=0; j<numSheets; j++) {
+                res += std::format("{:2d} ",connectome[i][j]);
+            }
+            auto& ssVec = protein.secStrVecs[sheetIndex[i]];
+            DEBUG_LOG("{}:{}:{:3d}-{:3d} {}",i,protein.chains[ssVec.chainIdx].id,
+                protein.chains[ssVec.chainIdx].residues[ssVec.begResIdx].authId,
+                protein.chains[ssVec.chainIdx].residues[ssVec.endResIdx].authId,res);
+        }
     }
 
     void BetaAnnotator::detectBarrels() {
+        DEBUG_LOG("Processing BetaAnnotator::detectBarrels()");
         for (int i=0; i<numSheets; i++) {
             if (protein.secStrVecs[sheetIndex[i]].barrelIdx == -1) {
                 std::vector<bool> elements(numSheets,false);
@@ -96,13 +115,16 @@ namespace Tmdet::Engine {
                 int nb = detectBarrelSheets(i,-1,elements);
                 nb = detectBarrelSheets(i,-1,elements); 
                 if (nb >= args.getValueAsInt("minbs")) {
+                    DEBUG_LOG("Barrel detected: {}",nb);
                     setIndex(elements);
                 }
             }
         }
+        DEBUG_LOG("Processed BetaAnnotator::detectBarrels()");
     }
 
     int BetaAnnotator::detectBarrelSheets(int sheetNum, int prevSheet, std::vector<bool>& elements) {
+        DEBUG_LOG("Processing BetaAnnotator::detectBarrelSheets: {}->{}",prevSheet,sheetNum);
         int max = 0;
         double percent = 0.0;
         int maxSheet = -1;
@@ -119,6 +141,7 @@ namespace Tmdet::Engine {
         if ((minContactBetweenSheets<=5 && (max>=minContactBetweenSheets || percent > 20))
             || max>=minContactBetweenSheets) {
             elements[maxSheet] = true;
+            DEBUG_LOG("Max: {}:{} {}",maxSheet,max,percent);
             detectBarrelSheets(maxSheet, sheetNum, elements);
         }
         std::string s="";
@@ -129,6 +152,7 @@ namespace Tmdet::Engine {
                 ret++;
             }
         }
+        DEBUG_LOG("Processed BetaAnnotator::detectBarrelSheets({}:{})",ret,s);
         return ret;
     }
 
@@ -180,6 +204,7 @@ namespace Tmdet::Engine {
                 }
             );
         }
+        DEBUG_LOG("setBarrel: {} {}",numSheetsInBarrels[0],regionHandler.toString("type"));
         protein.eachSelectedChain(
             [&](Tmdet::VOs::Chain& chain) -> void {
                 int beg=0;
@@ -208,8 +233,35 @@ namespace Tmdet::Engine {
                 }
             }
         }
+        DEBUG_LOG("numConnects {}:{} = {}",chain.id,chain.residues[pos].authId,ret);
         return ret;
     }
+
+    /*void BetaAnnotator::detectLoops() {
+        int beg=0;
+        int end=0;
+        while(regionHandler.getNext<Tmdet::Types::Region>(chain,beg,end,"type")) {
+            if (any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("type")).isBeta() 
+                && end-beg < 3) {
+                regionHandler.replace(chain,beg,end-1,Tmdet::Types::RegionType::MEMB,"type");
+            }
+            beg=end;
+        }
+        beg=0;
+        end=0;
+        while(regionHandler.getNext<Tmdet::Types::Region>(chain,beg,end,"type")) {
+            if (end <= chain.length-1
+                && beg > 0
+                && any_cast<double>(chain.residues[beg].temp.at("hz")) < 4.0
+                && any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("type")).isNotAnnotatedMembrane() 
+                && ((chain.residues[beg-1].temp.contains("type") && any_cast<Tmdet::Types::Region>(chain.residues[beg-1].temp.at("type")).isAnnotatedTransMembraneType())
+                    || (chain.residues[end].temp.contains("type") && any_cast<Tmdet::Types::Region>(chain.residues[end].temp.at("type")).isAnnotatedTransMembraneType()))
+                && end-beg < 6) {
+                regionHandler.replace(chain,beg,end-1,any_cast<Tmdet::Types::Region>(chain.residues[beg].temp.at("ztype")),"type");
+            }
+            beg=end;
+        }
+    }*/
 
     void BetaAnnotator::detectBarrelInside(Tmdet::VOs::Chain& chain) {
         chain.eachSelectedResidue(
@@ -222,6 +274,7 @@ namespace Tmdet::Engine {
                 }
             }
         );
+        DEBUG_LOG("Barrel inside1: {}",regionHandler.toString("type"));
         int beg=0;
         int end=0;
         while(regionHandler.getNext<Tmdet::Types::Region>(chain,beg,end,"type")) {
@@ -236,6 +289,7 @@ namespace Tmdet::Engine {
             }
             beg=end;
         }
+        DEBUG_LOG("Barrel inside2: {}",regionHandler.toString("type"));
         beg=0;
         end=0;
         while(regionHandler.getNext<Tmdet::Types::Region>(chain,beg,end,"type")) {
@@ -252,6 +306,7 @@ namespace Tmdet::Engine {
             }
             beg=end;
         }
+        DEBUG_LOG("Barrel inside3: {}",regionHandler.toString("type"));
     }
 
     
