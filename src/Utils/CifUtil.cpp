@@ -81,13 +81,12 @@ namespace Tmdet::Utils {
             return;
         }
 
-        auto* structAsymLoop = block.find_loop_item("_struct_asym.id");
-        if (structAsymLoop == nullptr) {
+        // Get table using find() which handles both loops and key-value pairs
+        auto structAsymTable = block.find_mmcif_category("_struct_asym");
+        if (structAsymTable.length() == 0) {
             return;
         }
 
-        auto item = *structAsymLoop;
-        auto structAsymTable = block.item_as_table(item);
         std::unordered_map<std::string, int> columns;
         std::vector<std::string> columnNames;
 
