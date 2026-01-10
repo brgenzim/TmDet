@@ -38,8 +38,10 @@ LIST (APPEND FULL_SRC
 )
 
 ADD_LIBRARY( TmdetLib STATIC ${FULL_SRC} )
+
 INSTALL( TARGETS TmdetLib ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX_LIB} )
+TARGET_LINK_LIBRARIES(TmdetLib PRIVATE project_version)
 
 ADD_EXECUTABLE( tmdet . cli/tmdet.cpp)
-TARGET_LINK_LIBRARIES(tmdet PRIVATE TmdetLib z Eigen3::Eigen gemmi::gemmi_cpp curl)
+TARGET_LINK_LIBRARIES(tmdet PRIVATE TmdetLib z Eigen3::Eigen gemmi::gemmi_cpp curl project_version)
 INSTALL( TARGETS tmdet RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX_BIN} )

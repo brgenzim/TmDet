@@ -9,9 +9,9 @@
 #include <string>
 #include <format>
 
-#define TMDET_VERSION_MAJOR 4
-#define TMDET_VERSION_MINOR 1
-#define TMDET_VERSION_PATCH 4
+#define TMDET_VERSION_MAJOR @TMDET_VERSION_MAJOR@
+#define TMDET_VERSION_MINOR @TMDET_VERSION_MINOR@
+#define TMDET_VERSION_PATCH @TMDET_VERSION_PATCH@
 
 /**
  * @namespace Tmdet
