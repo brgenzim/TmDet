@@ -14,13 +14,8 @@ MARK_AS_ADVANCED(CMAKE_BACKWARDS_COMPATIBILITY)
 
 # Project related settings
 
-  PROJECT(TmDet)
-
-  SET( ${PROJECT_NAME}_VERSION_MAJOR 4 )
-  SET( ${PROJECT_NAME}_VERSION_MINOR 1 )
-  SET( ${PROJECT_NAME}_VERSION_MICRO 1 )
-  SET( ${PROJECT_NAME}_VERSION_BUILD 0 )
-
+  PROJECT(TMDET VERSION 4.1.5)
+  
 # Global settings
 
   SET( CMAKE_ALLOW_LOOSE_LOOP_CONSTRUCTS TRUE )
@@ -64,8 +59,21 @@ find_package(gemmi 0.6.4 CONFIG REQUIRED)
 # Eigen3
 find_package(Eigen3 3.3 CONFIG REQUIRED)
 
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Version.hpp.in
+    ${CMAKE_CURRENT_BINARY_DIR}/src/Version.hpp
+    @ONLY
+)
+
+add_library(project_version INTERFACE)
+
+target_include_directories(project_version INTERFACE
+    ${CMAKE_BINARY_DIR}/src
+)
+
 # Include files (system)
   INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/src/)
+  INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
   INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/../contrib/pugixml/src/)
   INCLUDE_DIRECTORIES(${GEMMI_INCLUDE_DIRS})
 
