@@ -2,6 +2,9 @@ stages:
   - validate
   - sync
 
+variables:
+  GIT_DEPTH: "0"
+
 validate-merge-policy:
   stage: validate
   image: alpine:latest
@@ -66,4 +69,4 @@ sync-public-to-github:
     - git fetch origin github-public
     - git checkout -B github-public origin/github-public
     - git remote add github "$GITHUB_REPO" || git remote set-url github "$GITHUB_REPO"
-    - git push github github-public:main --force
+    - git push github github-public:main --force-with-lease
