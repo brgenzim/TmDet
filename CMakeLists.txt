@@ -14,7 +14,7 @@ MARK_AS_ADVANCED(CMAKE_BACKWARDS_COMPATIBILITY)
 
 # Project related settings
 
-  PROJECT(TMDET VERSION 4.1.6)
+  PROJECT(TMDET VERSION 4.1.5)
   
 # Global settings
 
