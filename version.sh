@@ -50,7 +50,7 @@ if git rev-parse "$TAG" >/dev/null 2>&1; then
 fi
 
 # ---- Create git tag ----
-git tag -a "$TAG" -m "Release $VERSION"
-
+git tag -a "$TAG"
+git push origin "$TAG"
 echo "Created git tag: $TAG"
 echo "Version synchronization complete."
