@@ -60,7 +60,7 @@ namespace Tmdet::Utils {
         tempDir = Tmdet::System::FilePaths::temp(hash);
         std::filesystem::create_directories(tempDir);
         std::string path = tempDir + "/" + protein.code + "_" + chain.id + ".fas";
-        bool ret = filePutContents(path,std::format(">{}_{}\n{}",protein.code,chain.id,chain.seq.substr(chain.signalP[1])));
+        bool ret = filePutContents(path,std::format(">{}_{}\n{}",protein.code,chain.id,chain.seq.substr(chain.signalP[1]+1)));
         path = tempDir + "/list";
         ret &= filePutContents(path,std::format("{}/{}_{}.fas",tempDir,protein.code,chain.id));
         return true;
@@ -88,10 +88,12 @@ namespace Tmdet::Utils {
         
         auto fields = Tmdet::Helpers::String::explode("\t",line);
         if (fields.size() > 4 && fields[2] == "signal_peptide") {
-            chain.signalP[0] = std::stoi(fields[3]);
-            chain.signalP[1] = std::stoi(fields[4]);
+            chain.signalP[0] = std::stoi(fields[3])-1;
+            chain.signalP[1] = std::stoi(fields[4])-1;
+            chain.signalP[0] = chain.signalP[0] < 0 ? 0 : chain.signalP[0];
+            chain.signalP[1] = chain.signalP[1] < 0 ? 0 : chain.signalP[1];
             createTempFasta(chain);
-            for (int i=chain.signalP[0]-1; i<chain.signalP[1]; i++) {
+            for (int i=chain.signalP[0]; i<=chain.signalP[1]; i++) {
                 chain.residues[i].selected = false;
             }
         }
