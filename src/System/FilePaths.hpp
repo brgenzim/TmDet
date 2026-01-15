@@ -112,9 +112,9 @@ namespace Tmdet::System {
          * @return std::string 
          */
         static std::string temp(const std::string& hash) {
-            return std::format("{}/{}/{}/{}",
+            return std::format("{}/{}/{}/{}/{}",
                     environment.get("TMDET_TEMP_ROOT",DEFAULT_TMDET_TEMP_ROOT),
-                    hash.substr(0,2), hash.substr(2,2), hash.substr(4,2));
+                    hash.substr(0,2), hash.substr(2,2), hash.substr(4,2), hash.substr(6));
         }
 
         /**
