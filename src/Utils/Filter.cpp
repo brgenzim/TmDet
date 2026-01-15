@@ -33,7 +33,7 @@ namespace Tmdet::Utils {
                         DEBUG_LOG("Filter results in {}",tmp);
                         chain.isTmp = (tmp>1);
                         protein.tmFilterResults |= chain.isTmp;
-                        std::filesystem::remove_all(tempDir); 
+                        //std::filesystem::remove_all(tempDir); 
                     }
                 }
                 else {
@@ -63,7 +63,7 @@ namespace Tmdet::Utils {
         bool ret = filePutContents(path,std::format(">{}_{}\n{}",protein.code,chain.id,chain.seq.substr(chain.signalP[1]+1)));
         path = tempDir + "/list";
         ret &= filePutContents(path,std::format("{}/{}_{}.fas",tempDir,protein.code,chain.id));
-        return true;
+        return ret;
     }
 
     void Filter::runSignalP(std::string id) {
