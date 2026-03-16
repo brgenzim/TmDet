@@ -188,13 +188,13 @@ namespace Tmdet::Engine {
 
     void Annotator::detectLoop(Tmdet::VOs::Chain& chain, int beg, int end) {
         DEBUG_LOG("detectLoop: {}:{}-{}",chain.id, chain.residues[beg].authId,chain.residues[end].authId);
-        for(int i=beg+5; i<=end-5; i++) {
+        for(int i=beg+4; i<=end-4; i++) {
             if ( (std::abs(REGZ(chain.residues[i])) > 5 || REGHZ(chain.residues[i]) < 9.0)
-                    && ((REGZ(chain.residues[i]) < REGZ(chain.residues[i-1])
-                        && REGZ(chain.residues[i]) < REGZ(chain.residues[i+1]))
+                    && ((REGZ(chain.residues[i]) < REGZ(chain.residues[i-2])
+                        && REGZ(chain.residues[i]) < REGZ(chain.residues[i+2]))
                         ||
-                        (REGZ(chain.residues[i]) > REGZ(chain.residues[i-1])
-                        && REGZ(chain.residues[i]) > REGZ(chain.residues[i+1]))
+                        (REGZ(chain.residues[i]) > REGZ(chain.residues[i-2])
+                        && REGZ(chain.residues[i]) > REGZ(chain.residues[i+2]))
                     )
                     && (maxDist(chain,i,i-2,beg,-1) > 5 && maxDist(chain,i,i+2,end,1) > 5)
                     //&& !chain.residues[i].ss.isBeta()

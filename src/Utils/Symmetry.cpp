@@ -111,16 +111,40 @@ namespace Tmdet::Utils {
         int idx1 = 0;
         int idx2 = 0;
         while (idx1 < protein.chains[cidx1].length && idx2 < protein.chains[cidx2].length) {
+            DEBUG_LOG("coord: {}:{}({},{}) {}:{}({},{})",
+                    protein.chains[cidx1].residues[idx1].authId,
+                    protein.chains[cidx1].residues[idx1].type.a1,
+                    idx1, protein.chains[cidx1].length,
+                    protein.chains[cidx2].residues[idx2].authId,
+                    protein.chains[cidx2].residues[idx2].type.a1,
+                    idx2, protein.chains[cidx2].length
+                );
             while (idx1 < protein.chains[cidx1].length
                 && protein.chains[cidx1].residues[idx1].authId < protein.chains[cidx2].residues[idx2].authId) {
+                    DEBUG_LOG(">>idx1 coord: {}:{}({},{}) {}:{}({},{})",
+                    protein.chains[cidx1].residues[idx1].authId,
+                    protein.chains[cidx1].residues[idx1].type.a1,
+                    idx1, protein.chains[cidx1].length,
+                    protein.chains[cidx2].residues[idx2].authId,
+                    protein.chains[cidx2].residues[idx2].type.a1,
+                    idx2, protein.chains[cidx2].length
+                );
                 idx1++;
             }
-            while (idx2 < protein.chains[cidx2].length
-                && protein.chains[cidx1].residues[idx1].authId > protein.chains[cidx2].residues[idx2].authId) {
-                idx2++;
+            if (idx1 < protein.chains[cidx1].length) {
+                while (idx2 < protein.chains[cidx2].length
+                    && protein.chains[cidx1].residues[idx1].authId > protein.chains[cidx2].residues[idx2].authId) {
+                        DEBUG_LOG(">>idx2 coord: {}:{} {}:{}",
+                        protein.chains[cidx1].residues[idx1].authId,
+                        protein.chains[cidx1].residues[idx1].type.a1,
+                        protein.chains[cidx2].residues[idx2].authId,
+                        protein.chains[cidx2].residues[idx2].type.a1
+                    );
+                    idx2++;
+                }
             }
             if (idx1 < protein.chains[cidx1].length && idx2 < protein.chains[cidx2].length) {
-                DEBUG_LOG("coord: {}:{} {}:{}",
+                DEBUG_LOG(">>both coord: {}:{} {}:{}",
                     protein.chains[cidx1].residues[idx1].authId,
                     protein.chains[cidx1].residues[idx1].type.a1,
                     protein.chains[cidx2].residues[idx2].authId,
@@ -150,9 +174,11 @@ namespace Tmdet::Utils {
                 && protein.chains[cidx1].residues[idx1].authId < protein.chains[cidx2].residues[idx2].authId) {
                 idx1++;
             }
-            while (idx2 < protein.chains[cidx2].length
-                && protein.chains[cidx1].residues[idx1].authId > protein.chains[cidx2].residues[idx2].authId) {
-                idx2++;
+            if (idx1 < protein.chains[cidx1].length) {
+                while (idx2 < protein.chains[cidx2].length
+                    && protein.chains[cidx1].residues[idx1].authId > protein.chains[cidx2].residues[idx2].authId) {
+                    idx2++;
+                }
             }
             if (idx1 < protein.chains[cidx1].length && idx2 < protein.chains[cidx2].length) {
                 auto ca1 = protein.chains[cidx1].residues[idx1].gemmi.get_ca();
